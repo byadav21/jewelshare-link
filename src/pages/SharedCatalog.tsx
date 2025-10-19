@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { InterestDialog } from "@/components/InterestDialog";
+import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
 import { Gem, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -64,11 +65,16 @@ const SharedCatalog = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-2">
-            <Gem className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-serif font-bold text-foreground">Jewelry Catalog</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Gem className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-serif font-bold text-foreground">Jewelry Catalog</h1>
+            </div>
+            {shareLinkId && (
+              <ContactOwnerDialog shareLinkId={shareLinkId} />
+            )}
           </div>
         </div>
       </header>

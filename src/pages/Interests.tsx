@@ -4,8 +4,9 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Heart, Mail, Phone, ArrowLeft, Calendar } from "lucide-react";
+import { Heart, Mail, Phone, ArrowLeft, Calendar, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
@@ -25,13 +26,24 @@ interface ProductInterest {
   };
 }
 
+interface CatalogInquiry {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  message: string;
+  created_at: string;
+}
+
 const Interests = () => {
   const [interests, setInterests] = useState<ProductInterest[]>([]);
+  const [inquiries, setInquiries] = useState<CatalogInquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchInterests();
+    fetchInquiries();
   }, []);
 
   const fetchInterests = async () => {
@@ -64,6 +76,20 @@ const Interests = () => {
     }
   };
 
+  const fetchInquiries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("catalog_inquiries")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setInquiries(data || []);
+    } catch (error: any) {
+      toast.error("Failed to load inquiries");
+    }
+  };
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
@@ -76,10 +102,16 @@ const Interests = () => {
                 </Button>
                 <h1 className="text-2xl font-serif font-bold text-foreground">Customer Interests</h1>
               </div>
-              <Badge variant="secondary" className="text-sm">
-                <Heart className="h-3 w-3 mr-1" />
-                {interests.length} Total
-              </Badge>
+              <div className="flex gap-2">
+                <Badge variant="secondary" className="text-sm">
+                  <Heart className="h-3 w-3 mr-1" />
+                  {interests.length} Product Interests
+                </Badge>
+                <Badge variant="outline" className="text-sm">
+                  <MessageCircle className="h-3 w-3 mr-1" />
+                  {inquiries.length} General Inquiries
+                </Badge>
+              </div>
             </div>
           </div>
         </header>
@@ -87,21 +119,39 @@ const Interests = () => {
         <main className="container mx-auto px-4 py-8">
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-pulse text-primary text-xl">Loading interests...</div>
+              <div className="animate-pulse text-primary text-xl">Loading...</div>
             </div>
-          ) : interests.length === 0 ? (
+          ) : interests.length === 0 && inquiries.length === 0 ? (
             <div className="text-center py-12">
               <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-2xl font-serif mb-2 text-foreground">No interests yet</h2>
+              <h2 className="text-2xl font-serif mb-2 text-foreground">No messages yet</h2>
               <p className="text-muted-foreground mb-6">
-                When customers show interest in your products through shared catalogs, they'll appear here
+                When customers contact you or show interest in products, they'll appear here
               </p>
               <Button onClick={() => navigate("/")}>
                 Go to Catalog
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <Tabs defaultValue="interests" className="w-full">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+                <TabsTrigger value="interests">
+                  <Heart className="h-4 w-4 mr-2" />
+                  Product Interests ({interests.length})
+                </TabsTrigger>
+                <TabsTrigger value="inquiries">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  General Inquiries ({inquiries.length})
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="interests">
+                {interests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No product interests yet</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
               {interests.map((interest) => (
                 <Card key={interest.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <CardHeader className="bg-muted/50">
@@ -181,6 +231,71 @@ const Interests = () => {
                 </Card>
               ))}
             </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="inquiries">
+                {inquiries.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No general inquiries yet</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {inquiries.map((inquiry) => (
+                      <Card key={inquiry.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                        <CardHeader className="bg-muted/50">
+                          <div className="flex items-start justify-between gap-4">
+                            <CardTitle className="text-lg">General Inquiry</CardTitle>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(inquiry.created_at), "MMM d, yyyy")}
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                              <div>
+                                <p className="text-sm font-medium text-muted-foreground mb-1">Customer Name</p>
+                                <p className="text-foreground font-semibold">{inquiry.customer_name}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
+                                <a
+                                  href={`mailto:${inquiry.customer_email}`}
+                                  className="text-primary hover:underline flex items-center gap-1"
+                                >
+                                  <Mail className="h-4 w-4" />
+                                  {inquiry.customer_email}
+                                </a>
+                              </div>
+                              {inquiry.customer_phone && (
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
+                                  <a
+                                    href={`tel:${inquiry.customer_phone}`}
+                                    className="text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    <Phone className="h-4 w-4" />
+                                    {inquiry.customer_phone}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-muted-foreground mb-1">Message</p>
+                              <p className="text-sm text-foreground bg-muted p-3 rounded-md">
+                                {inquiry.message}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
         </main>
       </div>
