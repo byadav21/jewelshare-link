@@ -69,14 +69,18 @@ const Import = () => {
         const costPrice = parseNumber(row.GOLD) || parseNumber(row.MKG) || parseNumber(row['COST PRICE']);
         const retailPrice = parseNumber(row.TOTAL) || parseNumber(row['RETAIL PRICE']) || costPrice;
         
-        // Parse image URL - handle backslash escaping and pipe separators
+        // Parse image URLs - handle backslash escaping and pipe separators
         let imageUrl = null;
+        let imageUrl2 = null;
         if (row.IMAGE_URL) {
-          const cleanUrl = String(row.IMAGE_URL)
+          const cleanUrls = String(row.IMAGE_URL)
             .replace(/\\/g, '') // Remove backslashes
-            .split('|')[0] // Take first URL if multiple
-            .trim();
-          imageUrl = cleanUrl.startsWith('http') ? cleanUrl : null;
+            .split('|') // Split by pipe
+            .map(url => url.trim())
+            .filter(url => url.startsWith('http'));
+          
+          imageUrl = cleanUrls[0] || null;
+          imageUrl2 = cleanUrls[1] || null;
         }
         
         const product: any = {
@@ -88,6 +92,7 @@ const Import = () => {
           metal_type: row.PURITY_FRACTION_USED ? `${Math.round(parseFloat(row.PURITY_FRACTION_USED) * 100)}% Gold` : null,
           gemstone: row['Diamond Color'] && row.CLARITY ? `${row['Diamond Color']} ${row.CLARITY}` : null,
           image_url: imageUrl,
+          image_url_2: imageUrl2,
           weight_grams: parseNumber(row['NET WT']) || null,
           cost_price: costPrice,
           retail_price: retailPrice,
@@ -97,6 +102,7 @@ const Import = () => {
         console.log(`Product ${index + 1}:`, {
           name: product.name,
           image: product.image_url,
+          image2: product.image_url_2,
           cost: product.cost_price,
           retail: product.retail_price,
           valid: !!(product.name && product.cost_price > 0 && product.retail_price > 0)
@@ -217,7 +223,7 @@ const Import = () => {
                     <li>• Diamond Color, CLARITY (gemstone details)</li>
                     <li>• NET WT (weight in grams)</li>
                     <li>• GOLD, MKG, TOTAL (pricing)</li>
-                    <li>• IMAGE_URL (product images)</li>
+                    <li>• IMAGE_URL (product images - use pipe | to separate multiple: url1|url2)</li>
                   </ul>
                 </div>
 
