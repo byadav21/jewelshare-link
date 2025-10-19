@@ -93,7 +93,11 @@ const Catalog = () => {
                         alt={product.name}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
+                          console.error(`Failed to load image for ${product.sku}: ${product.image_url}`);
                           e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
+                        }}
+                        onLoad={() => {
+                          console.log(`Successfully loaded image for ${product.sku}`);
                         }}
                       />
                     </div>
