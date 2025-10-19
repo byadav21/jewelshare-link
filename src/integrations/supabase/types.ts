@@ -52,6 +52,54 @@ export type Database = {
           },
         ]
       }
+      custom_orders: {
+        Row: {
+          admin_notes: string | null
+          budget_range: string | null
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          design_description: string
+          gemstone_preference: string | null
+          id: string
+          metal_type: string | null
+          reference_images: string[] | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          budget_range?: string | null
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          design_description: string
+          gemstone_preference?: string | null
+          id?: string
+          metal_type?: string | null
+          reference_images?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          budget_range?: string | null
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          design_description?: string
+          gemstone_preference?: string | null
+          id?: string
+          metal_type?: string | null
+          reference_images?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_interests: {
         Row: {
           created_at: string

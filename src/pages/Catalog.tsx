@@ -218,6 +218,10 @@ const Catalog = () => {
                   </AlertDialogContent>
                 </AlertDialog>
               )}
+              <Button variant="default" onClick={() => navigate("/custom-order")}>
+                <Gem className="h-4 w-4 mr-2" />
+                Build Your Jewelry
+              </Button>
               <Button variant="outline" onClick={() => navigate("/interests")}>
                 <Heart className="h-4 w-4 mr-2" />
                 View Interests

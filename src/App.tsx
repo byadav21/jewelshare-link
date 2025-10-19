@@ -12,6 +12,7 @@ import SharedCatalog from "./pages/SharedCatalog";
 import Interests from "./pages/Interests";
 import TeamManagement from "./pages/TeamManagement";
 import SuperAdmin from "./pages/SuperAdmin";
+import CustomOrder from "./pages/CustomOrder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/share" element={<Share />} />
           <Route path="/interests" element={<Interests />} />
           <Route path="/team" element={<TeamManagement />} />
+          <Route path="/custom-order" element={<CustomOrder />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
