@@ -53,25 +53,50 @@ const Import = () => {
       }
       console.log("User authenticated:", user.id);
 
-      const products = jsonData.map((row: any) => {
-        // Map your Excel columns to database fields
+      const products = jsonData.map((row: any, index: number) => {
+        // Parse numbers safely
+        const parseNumber = (val: any): number => {
+          if (typeof val === 'number') return val;
+          if (typeof val === 'string') {
+            const cleaned = val.replace(/[^0-9.-]/g, '');
+            return parseFloat(cleaned) || 0;
+          }
+          return 0;
+        };
+
+        const costPrice = parseNumber(row.GOLD) || parseNumber(row.MKG) || parseNumber(row['COST PRICE']);
+        const retailPrice = parseNumber(row.TOTAL) || parseNumber(row['RETAIL PRICE']) || costPrice;
+        
         const product: any = {
           user_id: user.id,
-          name: row.PRODUCT || row.CERT || "Unnamed Product",
-          description: `${row['Diamond Color'] || ''} ${row.CLARITY || ''} ${row['T DWT'] || ''} ct`.trim(),
-          sku: row.CERT,
-          category: row['Prodcut Type'] || "Jewelry",
+          name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
+          description: `${row['Diamond Color'] || ''} ${row.CLARITY || ''} ${row['T DWT'] ? row['T DWT'] + ' ct' : ''}`.trim() || null,
+          sku: row.CERT || null,
+          category: row['Prodcut Type'] || row['Product Type'] || "Diamond Jewelry",
           metal_type: row.PURITY_FRACTION_USED ? `${Math.round(parseFloat(row.PURITY_FRACTION_USED) * 100)}% Gold` : null,
-          gemstone: row['Diamond Color'] && row.CLARITY ? `${row['Diamond Color']} ${row.CLARITY}` : "Diamond",
-          image_url: row.IMAGE_URL?.split('|')[0] || null,
-          weight_grams: parseFloat(row['NET WT']) || null,
-          cost_price: parseFloat(row.GOLD) || parseFloat(row.MKG) || 0,
-          retail_price: parseFloat(row.TOTAL) || parseFloat(row.GOLD) || 0,
+          gemstone: row['Diamond Color'] && row.CLARITY ? `${row['Diamond Color']} ${row.CLARITY}` : null,
+          image_url: row.IMAGE_URL?.split('|')[0]?.trim() || null,
+          weight_grams: parseNumber(row['NET WT']) || null,
+          cost_price: costPrice,
+          retail_price: retailPrice,
           stock_quantity: 1,
         };
 
+        console.log(`Product ${index + 1}:`, {
+          name: product.name,
+          cost: product.cost_price,
+          retail: product.retail_price,
+          valid: !!(product.name && product.cost_price > 0 && product.retail_price > 0)
+        });
+
         return product;
-      }).filter((p: any) => p.name && p.cost_price && p.retail_price);
+      }).filter((p: any) => {
+        const valid = p.name && p.cost_price > 0 && p.retail_price > 0;
+        if (!valid) {
+          console.log("Filtered out product:", p.name, "cost:", p.cost_price, "retail:", p.retail_price);
+        }
+        return valid;
+      });
 
       console.log(`Processed ${products.length} valid products`);
       console.log("Sample product:", products[0]);
