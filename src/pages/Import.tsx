@@ -45,6 +45,8 @@ const Import = () => {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       console.log("Parsed rows:", jsonData.length);
       console.log("First row sample:", jsonData[0]);
+      console.log("Column names:", Object.keys(jsonData[0] || {}));
+      console.log("All columns in first 3 rows:", jsonData.slice(0, 3));
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
