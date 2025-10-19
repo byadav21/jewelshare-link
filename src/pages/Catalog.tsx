@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
+import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -12,8 +13,16 @@ import { useNavigate } from "react-router-dom";
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usdRate, setUsdRate] = useState(87.67); // Default INR to USD rate
+  const [usdRate, setUsdRate] = useState(87.67);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [filters, setFilters] = useState<FilterState>({
+    category: "",
+    metalType: "",
+    minPrice: "",
+    maxPrice: "",
+    diamondColor: "",
+    diamondClarity: "",
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -91,8 +100,59 @@ const Catalog = () => {
     navigate("/auth");
   };
 
-  // Calculate totals
-  const totalINR = products.reduce((sum, p) => sum + (p.retail_price || 0), 0);
+  // Extract unique filter values
+  const categories = useMemo(() => 
+    [...new Set(products.map(p => p.category).filter(Boolean))].sort(),
+    [products]
+  );
+  
+  const metalTypes = useMemo(() => 
+    [...new Set(products.map(p => p.metal_type).filter(Boolean))].sort(),
+    [products]
+  );
+
+  const diamondColors = useMemo(() => 
+    [...new Set(products.map(p => p.gemstone?.split(' ')[0]).filter(Boolean))].sort(),
+    [products]
+  );
+
+  const diamondClarities = useMemo(() => 
+    [...new Set(products.map(p => p.gemstone?.split(' ')[1]).filter(Boolean))].sort(),
+    [products]
+  );
+
+  // Filter products
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      if (filters.category && product.category !== filters.category) return false;
+      if (filters.metalType && product.metal_type !== filters.metalType) return false;
+      
+      if (filters.minPrice) {
+        const minPrice = parseFloat(filters.minPrice);
+        if (product.retail_price < minPrice) return false;
+      }
+      
+      if (filters.maxPrice) {
+        const maxPrice = parseFloat(filters.maxPrice);
+        if (product.retail_price > maxPrice) return false;
+      }
+
+      if (filters.diamondColor) {
+        const color = product.gemstone?.split(' ')[0];
+        if (color !== filters.diamondColor) return false;
+      }
+
+      if (filters.diamondClarity) {
+        const clarity = product.gemstone?.split(' ')[1];
+        if (clarity !== filters.diamondClarity) return false;
+      }
+
+      return true;
+    });
+  }, [products, filters]);
+
+  // Calculate totals based on filtered products
+  const totalINR = filteredProducts.reduce((sum, p) => sum + (p.retail_price || 0), 0);
   const totalUSD = totalINR / usdRate;
 
   return (
@@ -107,6 +167,11 @@ const Catalog = () => {
                   <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Inventory Value</div>
                   <div className="text-2xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
                   <div className="text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
+                  {filteredProducts.length !== products.length && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Showing {filteredProducts.length} of {products.length} products
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -172,20 +237,43 @@ const Catalog = () => {
             </div>
           ) : (
             <>
-              {products.length > 0 && (
+              <CatalogFilters
+                filters={filters}
+                onFilterChange={setFilters}
+                categories={categories}
+                metalTypes={metalTypes}
+                diamondColors={diamondColors}
+                diamondClarities={diamondClarities}
+              />
+              {filteredProducts.length > 0 && (
                 <div className="mb-4 flex items-center gap-3 pb-3 border-b border-border">
                   <Checkbox
                     id="select-all"
-                    checked={selectedProducts.size === products.length}
+                    checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
                     onCheckedChange={toggleSelectAll}
                   />
                   <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
-                    Select All ({products.length})
+                    Select All ({filteredProducts.length})
                   </label>
                 </div>
               )}
+              {filteredProducts.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No products match your filters</p>
+                  <Button variant="outline" onClick={() => setFilters({
+                    category: "",
+                    metalType: "",
+                    minPrice: "",
+                    maxPrice: "",
+                    diamondColor: "",
+                    diamondClarity: "",
+                  })} className="mt-4">
+                    Clear Filters
+                  </Button>
+                </div>
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
@@ -195,6 +283,7 @@ const Catalog = () => {
                 />
               ))}
             </div>
+              )}
             </>
           )}
         </main>

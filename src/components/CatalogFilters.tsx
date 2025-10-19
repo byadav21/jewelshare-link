@@ -1,0 +1,147 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { X } from "lucide-react";
+
+export interface FilterState {
+  category: string;
+  metalType: string;
+  minPrice: string;
+  maxPrice: string;
+  diamondColor: string;
+  diamondClarity: string;
+}
+
+interface CatalogFiltersProps {
+  filters: FilterState;
+  onFilterChange: (filters: FilterState) => void;
+  categories: string[];
+  metalTypes: string[];
+  diamondColors: string[];
+  diamondClarities: string[];
+}
+
+export const CatalogFilters = ({
+  filters,
+  onFilterChange,
+  categories,
+  metalTypes,
+  diamondColors,
+  diamondClarities,
+}: CatalogFiltersProps) => {
+  const updateFilter = (key: keyof FilterState, value: string) => {
+    onFilterChange({ ...filters, [key]: value });
+  };
+
+  const clearFilters = () => {
+    onFilterChange({
+      category: "",
+      metalType: "",
+      minPrice: "",
+      maxPrice: "",
+      diamondColor: "",
+      diamondClarity: "",
+    });
+  };
+
+  const hasActiveFilters = Object.values(filters).some(v => v !== "");
+
+  return (
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-4 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-foreground">Filter Catalog</h3>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <X className="h-4 w-4 mr-1" />
+            Clear All
+          </Button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="category">Category</Label>
+          <Select value={filters.category} onValueChange={(v) => updateFilter("category", v)}>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="metal">Metal Type</Label>
+          <Select value={filters.metalType} onValueChange={(v) => updateFilter("metalType", v)}>
+            <SelectTrigger id="metal">
+              <SelectValue placeholder="All Metals" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Metals</SelectItem>
+              {metalTypes.map((metal) => (
+                <SelectItem key={metal} value={metal}>{metal}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="minPrice">Min Price (₹)</Label>
+          <Input
+            id="minPrice"
+            type="number"
+            placeholder="0"
+            value={filters.minPrice}
+            onChange={(e) => updateFilter("minPrice", e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="maxPrice">Max Price (₹)</Label>
+          <Input
+            id="maxPrice"
+            type="number"
+            placeholder="No limit"
+            value={filters.maxPrice}
+            onChange={(e) => updateFilter("maxPrice", e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="diamondColor">Diamond Color</Label>
+          <Select value={filters.diamondColor} onValueChange={(v) => updateFilter("diamondColor", v)}>
+            <SelectTrigger id="diamondColor">
+              <SelectValue placeholder="All Colors" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Colors</SelectItem>
+              {diamondColors.map((color) => (
+                <SelectItem key={color} value={color}>{color}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="diamondClarity">Diamond Clarity</Label>
+          <Select value={filters.diamondClarity} onValueChange={(v) => updateFilter("diamondClarity", v)}>
+            <SelectTrigger id="diamondClarity">
+              <SelectValue placeholder="All Clarity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Clarity</SelectItem>
+              {diamondClarities.map((clarity) => (
+                <SelectItem key={clarity} value={clarity}>{clarity}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  );
+};
