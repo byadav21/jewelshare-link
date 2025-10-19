@@ -1,1 +1,7 @@
 project_id = "mznwzwuyhcmuaewqsojo"
+
+[functions.get-shared-catalog]
+verify_jwt = false
+
+[functions.import-from-sheets]
+verify_jwt = true

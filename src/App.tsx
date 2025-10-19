@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Catalog from "./pages/Catalog";
 import Auth from "./pages/Auth";
 import AddProduct from "./pages/AddProduct";
+import Import from "./pages/Import";
 import Share from "./pages/Share";
 import SharedCatalog from "./pages/SharedCatalog";
 import NotFound from "./pages/NotFound";
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Catalog />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/add-product" element={<AddProduct />} />
+          <Route path="/import" element={<Import />} />
           <Route path="/share" element={<Share />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -4,7 +4,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2 } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Catalog = () => {
@@ -50,6 +50,10 @@ const Catalog = () => {
               <Button variant="outline" onClick={() => navigate("/share")}>
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Catalog
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/import")}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Import
               </Button>
               <Button variant="outline" onClick={() => navigate("/add-product")}>
                 <Plus className="h-4 w-4 mr-2" />
