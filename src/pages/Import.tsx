@@ -42,11 +42,14 @@ const Import = () => {
       console.log("Sheet name:", sheetName);
       
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      // Skip first row (the one with Base 24K rate info) and use row 2 as headers
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
       console.log("Parsed rows:", jsonData.length);
-      console.log("First row sample:", jsonData[0]);
-      console.log("Column names:", Object.keys(jsonData[0] || {}));
-      console.log("All columns in first 3 rows:", jsonData.slice(0, 3));
+      
+      if (jsonData.length > 0) {
+        console.log("First row sample:", jsonData[0]);
+        console.log("Column names:", Object.keys(jsonData[0]));
+      }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
