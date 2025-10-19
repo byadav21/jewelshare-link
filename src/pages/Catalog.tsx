@@ -7,7 +7,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2 } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Catalog = () => {
@@ -216,6 +216,10 @@ const Catalog = () => {
                   </AlertDialogContent>
                 </AlertDialog>
               )}
+              <Button variant="outline" onClick={() => navigate("/interests")}>
+                <Heart className="h-4 w-4 mr-2" />
+                View Interests
+              </Button>
               <Button variant="outline" onClick={() => navigate("/share")}>
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Catalog

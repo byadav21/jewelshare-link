@@ -9,6 +9,7 @@ import AddProduct from "./pages/AddProduct";
 import Import from "./pages/Import";
 import Share from "./pages/Share";
 import SharedCatalog from "./pages/SharedCatalog";
+import Interests from "./pages/Interests";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/import" element={<Import />} />
           <Route path="/share" element={<Share />} />
+          <Route path="/interests" element={<Interests />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
