@@ -118,9 +118,30 @@ const Import = () => {
         throw new Error("No valid products found in file. Please check your Excel format.");
       }
 
+      // Get existing SKUs to avoid duplicates
+      const skus = products.map(p => p.sku).filter(Boolean);
+      const { data: existingProducts } = await supabase
+        .from("products")
+        .select("sku")
+        .in("sku", skus);
+
+      const existingSkus = new Set(existingProducts?.map(p => p.sku) || []);
+      const newProducts = products.filter(p => !p.sku || !existingSkus.has(p.sku));
+
+      console.log(`Found ${existingSkus.size} existing products, importing ${newProducts.length} new products`);
+
+      if (newProducts.length === 0) {
+        toast({
+          title: "No New Products",
+          description: "All products in this file already exist in your catalog",
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data: insertedProducts, error: insertError } = await supabase
         .from("products")
-        .insert(products)
+        .insert(newProducts)
         .select();
 
       if (insertError) {
@@ -130,9 +151,10 @@ const Import = () => {
 
       console.log(`Successfully inserted ${insertedProducts?.length} products`);
 
+      const skipped = products.length - newProducts.length;
       toast({
         title: "Success!",
-        description: `Imported ${insertedProducts?.length || 0} products from Excel file`,
+        description: `Imported ${insertedProducts?.length || 0} products${skipped > 0 ? `, skipped ${skipped} duplicates` : ''}`,
       });
 
       navigate("/");
