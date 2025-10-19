@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { InterestDialog } from "@/components/InterestDialog";
 import { Gem, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -10,6 +11,7 @@ const SharedCatalog = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shareLinkId, setShareLinkId] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -29,6 +31,7 @@ const SharedCatalog = () => {
         setError(data.error);
       } else {
         setProducts(data.products || []);
+        setShareLinkId(data.shareLinkId || null);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load catalog");
@@ -125,11 +128,18 @@ const SharedCatalog = () => {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="border-t border-border pt-4">
+                <CardFooter className="border-t border-border pt-4 flex-col gap-3">
                   <div className="w-full">
                     <p className="text-xs text-muted-foreground mb-1">Price</p>
                     <p className="text-2xl font-bold text-primary">${product.displayed_price}</p>
                   </div>
+                  {shareLinkId && (
+                    <InterestDialog
+                      productId={product.id}
+                      productName={product.name}
+                      shareLinkId={shareLinkId}
+                    />
+                  )}
                 </CardFooter>
               </Card>
             ))}

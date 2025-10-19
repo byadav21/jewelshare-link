@@ -96,7 +96,11 @@ serve(async (req) => {
     console.log(`Returning ${adjustedProducts.length} products`);
 
     return new Response(
-      JSON.stringify({ products: adjustedProducts, shareLink }),
+      JSON.stringify({ 
+        products: adjustedProducts, 
+        shareLinkId: shareLink.id,
+        shareLink 
+      }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
