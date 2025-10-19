@@ -100,11 +100,20 @@ const Catalog = () => {
     navigate("/auth");
   };
 
-  // Extract unique filter values
-  const categories = useMemo(() => 
-    [...new Set(products.map(p => p.category).filter(Boolean))].sort(),
-    [products]
-  );
+  // Predefined categories
+  const predefinedCategories = [
+    "DIAMOND PANDENT SET",
+    "DIAMOND LADIES RING",
+    "DIAMOND TOPS",
+    "DIAMOND PANDENT"
+  ];
+
+  // Extract unique filter values and merge with predefined
+  const categories = useMemo(() => {
+    const productCategories = products.map(p => p.category).filter(Boolean);
+    const allCategories = [...new Set([...predefinedCategories, ...productCategories])];
+    return allCategories.sort();
+  }, [products]);
   
   const metalTypes = useMemo(() => 
     [...new Set(products.map(p => p.metal_type).filter(Boolean))].sort(),
