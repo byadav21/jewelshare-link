@@ -24,6 +24,7 @@ export type Database = {
           gemstone: string | null
           id: string
           image_url: string | null
+          image_url_2: string | null
           metal_type: string | null
           name: string
           net_weight: number | null
@@ -43,6 +44,7 @@ export type Database = {
           gemstone?: string | null
           id?: string
           image_url?: string | null
+          image_url_2?: string | null
           metal_type?: string | null
           name: string
           net_weight?: number | null
@@ -62,6 +64,7 @@ export type Database = {
           gemstone?: string | null
           id?: string
           image_url?: string | null
+          image_url_2?: string | null
           metal_type?: string | null
           name?: string
           net_weight?: number | null

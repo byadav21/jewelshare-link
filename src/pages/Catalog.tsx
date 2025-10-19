@@ -185,7 +185,10 @@ const Catalog = () => {
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => (
+              {products.map((product) => {
+                const images = [product.image_url, product.image_url_2].filter(Boolean);
+                
+                return (
                 <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow relative">
                   <div className="absolute top-3 left-3 z-10">
                     <Checkbox
@@ -194,20 +197,33 @@ const Catalog = () => {
                       className="bg-background border-2"
                     />
                   </div>
-                  {product.image_url ? (
-                    <div className="aspect-square overflow-hidden bg-muted">
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          console.error(`Failed to load image for ${product.sku}: ${product.image_url}`);
-                          e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
-                        }}
-                        onLoad={() => {
-                          console.log(`Successfully loaded image for ${product.sku}`);
-                        }}
-                      />
+                  {images.length > 0 ? (
+                    <div className="aspect-square overflow-hidden bg-muted relative group">
+                      <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-full">
+                        {images.map((imageUrl, idx) => (
+                          <div key={idx} className="min-w-full snap-center">
+                            <img
+                              src={imageUrl}
+                              alt={`${product.name} - Image ${idx + 1}`}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                console.error(`Failed to load image ${idx + 1} for ${product.sku}: ${imageUrl}`);
+                                e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
+                              }}
+                              onLoad={() => {
+                                console.log(`Successfully loaded image ${idx + 1} for ${product.sku}`);
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      {images.length > 1 && (
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {images.map((_, idx) => (
+                            <div key={idx} className="w-2 h-2 rounded-full bg-white/60 backdrop-blur-sm" />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="aspect-square overflow-hidden bg-muted flex items-center justify-center">
@@ -282,7 +298,7 @@ const Catalog = () => {
                     </div>
                   </CardFooter>
                 </Card>
-              ))}
+              )})}
             </div>
             </>
           )}
