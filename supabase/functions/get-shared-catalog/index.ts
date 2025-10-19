@@ -6,15 +6,73 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute per IP
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+// Clean up old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of rateLimitMap.entries()) {
+    if (data.resetTime < now) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}, RATE_LIMIT_WINDOW_MS);
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const rateLimitData = rateLimitMap.get(ip);
+
+  if (!rateLimitData || rateLimitData.resetTime < now) {
+    // New window or expired window
+    rateLimitMap.set(ip, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW_MS,
+    });
+    return true;
+  }
+
+  if (rateLimitData.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false; // Rate limit exceeded
+  }
+
+  rateLimitData.count++;
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || 
+                     req.headers.get("x-real-ip") || 
+                     "unknown";
+
+    // Check rate limit
+    if (!checkRateLimit(clientIP)) {
+      console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": "60"
+          }
+        }
+      );
+    }
+
     const { shareToken } = await req.json();
 
-    console.log("Fetching shared catalog for token:", shareToken);
+    // Log request without exposing sensitive token
+    console.log(`Catalog request from IP: ${clientIP}`);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -29,10 +87,11 @@ serve(async (req) => {
       .eq("is_active", true)
       .single();
 
+    // Use generic error message to avoid information leakage
     if (shareLinkError || !shareLink) {
-      console.error("Share link not found:", shareLinkError);
+      console.error("Invalid share link attempt");
       return new Response(
-        JSON.stringify({ error: "Share link not found or expired" }),
+        JSON.stringify({ error: "Invalid or expired share link" }),
         { 
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -40,13 +99,13 @@ serve(async (req) => {
       );
     }
 
-    // Check if link is expired
+    // Check if link is expired - use same generic message
     if (new Date(shareLink.expires_at) < new Date()) {
-      console.log("Share link expired");
+      console.log("Expired share link attempt");
       return new Response(
-        JSON.stringify({ error: "Share link has expired" }),
+        JSON.stringify({ error: "Invalid or expired share link" }),
         { 
-          status: 410,
+          status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
@@ -93,7 +152,7 @@ serve(async (req) => {
       .update({ view_count: shareLink.view_count + 1 })
       .eq("id", shareLink.id);
 
-    console.log(`Returning ${adjustedProducts.length} products`);
+    console.log(`Returning catalog with ${adjustedProducts.length} products to ${clientIP}`);
 
     return new Response(
       JSON.stringify({ 
