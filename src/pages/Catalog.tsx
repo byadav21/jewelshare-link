@@ -86,13 +86,20 @@ const Catalog = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
                 <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  {product.image_url && (
+                  {product.image_url ? (
                     <div className="aspect-square overflow-hidden bg-muted">
                       <img
                         src={product.image_url}
                         alt={product.name}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
+                        }}
                       />
+                    </div>
+                  ) : (
+                    <div className="aspect-square overflow-hidden bg-muted flex items-center justify-center">
+                      <Gem className="h-24 w-24 text-muted-foreground/30" />
                     </div>
                   )}
                   <CardHeader>
