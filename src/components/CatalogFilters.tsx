@@ -62,12 +62,11 @@ export const CatalogFilters = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
-          <Select value={filters.category} onValueChange={(v) => updateFilter("category", v)}>
+          <Select value={filters.category || undefined} onValueChange={(v) => updateFilter("category", v)}>
             <SelectTrigger id="category">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
@@ -77,12 +76,11 @@ export const CatalogFilters = ({
 
         <div className="space-y-2">
           <Label htmlFor="metal">Metal Type</Label>
-          <Select value={filters.metalType} onValueChange={(v) => updateFilter("metalType", v)}>
+          <Select value={filters.metalType || undefined} onValueChange={(v) => updateFilter("metalType", v)}>
             <SelectTrigger id="metal">
               <SelectValue placeholder="All Metals" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Metals</SelectItem>
               {metalTypes.map((metal) => (
                 <SelectItem key={metal} value={metal}>{metal}</SelectItem>
               ))}
@@ -114,12 +112,11 @@ export const CatalogFilters = ({
 
         <div className="space-y-2">
           <Label htmlFor="diamondColor">Diamond Color</Label>
-          <Select value={filters.diamondColor} onValueChange={(v) => updateFilter("diamondColor", v)}>
+          <Select value={filters.diamondColor || undefined} onValueChange={(v) => updateFilter("diamondColor", v)}>
             <SelectTrigger id="diamondColor">
               <SelectValue placeholder="All Colors" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Colors</SelectItem>
               {diamondColors.map((color) => (
                 <SelectItem key={color} value={color}>{color}</SelectItem>
               ))}
@@ -129,12 +126,11 @@ export const CatalogFilters = ({
 
         <div className="space-y-2">
           <Label htmlFor="diamondClarity">Diamond Clarity</Label>
-          <Select value={filters.diamondClarity} onValueChange={(v) => updateFilter("diamondClarity", v)}>
+          <Select value={filters.diamondClarity || undefined} onValueChange={(v) => updateFilter("diamondClarity", v)}>
             <SelectTrigger id="diamondClarity">
               <SelectValue placeholder="All Clarity" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Clarity</SelectItem>
               {diamondClarities.map((clarity) => (
                 <SelectItem key={clarity} value={clarity}>{clarity}</SelectItem>
               ))}
