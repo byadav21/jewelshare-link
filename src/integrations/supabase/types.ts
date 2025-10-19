@@ -247,6 +247,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_approval_status: {
+        Row: {
+          business_name: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          rejection_reason: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["approval_status"]
+          user_id: string
+        }
+        Insert: {
+          business_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          user_id: string
+        }
+        Update: {
+          business_name?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -280,9 +319,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_user_approved: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "team_member"
+      approval_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -411,6 +455,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "team_member"],
+      approval_status: ["pending", "approved", "rejected"],
     },
   },
 } as const

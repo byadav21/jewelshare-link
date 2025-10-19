@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthGuard } from "@/components/AuthGuard";
+import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,7 +68,7 @@ const AddProduct = () => {
   };
 
   return (
-    <AuthGuard>
+    <ApprovalGuard>
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto px-4 max-w-2xl">
           <Button
@@ -234,7 +234,7 @@ const AddProduct = () => {
           </Card>
         </div>
       </div>
-    </AuthGuard>
+    </ApprovalGuard>
   );
 };
 

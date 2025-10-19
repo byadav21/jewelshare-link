@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthGuard } from "@/components/AuthGuard";
+import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -188,7 +188,7 @@ export default function SuperAdmin() {
   }
 
   return (
-    <AuthGuard>
+    <ApprovalGuard>
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="container mx-auto px-6 py-4">
@@ -292,6 +292,10 @@ export default function SuperAdmin() {
                 <CardDescription>Manage your business operations</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
+                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/vendor-approvals")}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Vendor Approvals
+                </Button>
                 <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/team")}>
                   <Users className="mr-2 h-4 w-4" />
                   Manage Team Members
@@ -362,6 +366,6 @@ export default function SuperAdmin() {
           </div>
         </main>
       </div>
-    </AuthGuard>
+    </ApprovalGuard>
   );
 }

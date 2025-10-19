@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthGuard } from "@/components/AuthGuard";
+import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
@@ -175,7 +175,7 @@ const Catalog = () => {
   const totalUSD = totalINR / usdRate;
 
   return (
-    <AuthGuard>
+    <ApprovalGuard>
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card backdrop-blur-sm sticky top-0 z-50 shadow-sm">
           <div className="container mx-auto px-4 py-4 space-y-4">
@@ -397,7 +397,7 @@ const Catalog = () => {
           )}
         </main>
       </div>
-    </AuthGuard>
+    </ApprovalGuard>
   );
 };
 

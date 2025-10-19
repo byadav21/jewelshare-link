@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthGuard } from "@/components/AuthGuard";
+import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,7 +101,7 @@ const Share = () => {
   };
 
   return (
-    <AuthGuard>
+    <ApprovalGuard>
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto px-4 max-w-4xl">
           <Button variant="ghost" onClick={() => navigate("/")} className="mb-6">
@@ -231,7 +231,7 @@ const Share = () => {
           </Card>
         </div>
       </div>
-    </AuthGuard>
+    </ApprovalGuard>
   );
 };
 

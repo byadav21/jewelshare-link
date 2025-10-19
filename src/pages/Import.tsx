@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthGuard } from "@/components/AuthGuard";
+import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -160,7 +160,7 @@ const Import = () => {
   };
 
   return (
-    <AuthGuard>
+    <ApprovalGuard>
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-2xl mx-auto">
           <Button
@@ -232,7 +232,7 @@ const Import = () => {
           </Card>
         </div>
       </div>
-    </AuthGuard>
+    </ApprovalGuard>
   );
 };
 

@@ -16,15 +16,38 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        const { data: approvalData } = await supabase
+          .from("user_approval_status")
+          .select("status")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        if (approvalData?.status === "approved") {
+          navigate("/");
+        } else {
+          navigate("/pending-approval");
+        }
       }
-    });
+    };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        navigate("/");
+        const { data: approvalData } = await supabase
+          .from("user_approval_status")
+          .select("status")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        if (approvalData?.status === "approved") {
+          navigate("/");
+        } else {
+          navigate("/pending-approval");
+        }
       }
     });
 
@@ -37,7 +60,7 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -45,14 +68,45 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success("Account created! Please check your email.");
+        
+        // Create approval status entry
+        if (data.user) {
+          const { error: approvalError } = await supabase
+            .from("user_approval_status")
+            .insert({
+              user_id: data.user.id,
+              status: "pending",
+            });
+          
+          if (approvalError) {
+            console.error("Error creating approval status:", approvalError);
+          }
+        }
+        
+        toast.success("Account created! Your request is pending admin approval.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        toast.success("Welcome back!");
+        
+        // Check approval status
+        if (data.user) {
+          const { data: approvalData } = await supabase
+            .from("user_approval_status")
+            .select("status")
+            .eq("user_id", data.user.id)
+            .single();
+          
+          if (approvalData?.status === "approved") {
+            toast.success("Welcome back!");
+          } else if (approvalData?.status === "pending") {
+            toast.info("Your account is pending approval.");
+          } else if (approvalData?.status === "rejected") {
+            toast.error("Your account was not approved.");
+          }
+        }
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");

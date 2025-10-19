@@ -14,6 +14,8 @@ import TeamManagement from "./pages/TeamManagement";
 import SuperAdmin from "./pages/SuperAdmin";
 import CustomOrder from "./pages/CustomOrder";
 import NotFound from "./pages/NotFound";
+import PendingApproval from "./pages/PendingApproval";
+import VendorApprovals from "./pages/VendorApprovals";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/interests" element={<Interests />} />
           <Route path="/team" element={<TeamManagement />} />
           <Route path="/custom-order" element={<CustomOrder />} />
+          <Route path="/pending-approval" element={<PendingApproval />} />
+          <Route path="/vendor-approvals" element={<VendorApprovals />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

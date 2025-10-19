@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthGuard } from "@/components/AuthGuard";
+import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,7 +104,21 @@ export default function TeamManagement() {
 
       if (roleError) throw roleError;
 
-      toast.success("Team member added successfully");
+      // Auto-approve admin-created accounts
+      const { error: approvalError } = await supabase
+        .from("user_approval_status")
+        .update({
+          status: "approved",
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
+        })
+        .eq("user_id", authData.user.id);
+
+      if (approvalError) {
+        console.error("Error approving user:", approvalError);
+      }
+
+      toast.success("Team member added and approved successfully");
       setNewMemberEmail("");
       setNewMemberPassword("");
       fetchTeamMembers();
@@ -143,7 +157,7 @@ export default function TeamManagement() {
   }
 
   return (
-    <AuthGuard>
+    <ApprovalGuard>
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
@@ -242,6 +256,6 @@ export default function TeamManagement() {
           </Card>
         </div>
       </div>
-    </AuthGuard>
+    </ApprovalGuard>
   );
 }
