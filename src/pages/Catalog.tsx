@@ -104,8 +104,11 @@ const Catalog = () => {
   const predefinedCategories = [
     "DIAMOND PANDENT SET",
     "DIAMOND LADIES RING",
+    "DIAMOND BRACELET",
+    "DIAMOND PANDENT",
+    "DIAMOND SET",
     "DIAMOND TOPS",
-    "DIAMOND PANDENT"
+    "DIAMOND GENTS RING"
   ];
 
   // Extract unique filter values and merge with predefined
