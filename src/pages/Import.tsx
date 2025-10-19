@@ -5,15 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, FileSpreadsheet, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 const Import = () => {
-  const [spreadsheetId, setSpreadsheetId] = useState("");
-  const [range, setRange] = useState("Sheet1!A:L");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -140,47 +137,6 @@ const Import = () => {
     }
   };
 
-  const handleImport = async () => {
-    if (!spreadsheetId.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a Google Sheet ID",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("import-from-sheets", {
-        body: { spreadsheetId: spreadsheetId.trim(), range },
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      toast({
-        title: "Success!",
-        description: `Imported ${data.count} products from Google Sheets`,
-      });
-
-      navigate("/");
-    } catch (error: any) {
-      console.error("Import error:", error);
-      toast({
-        title: "Import Failed",
-        description: error.message || "Failed to import from Google Sheets",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background p-6">
@@ -197,130 +153,59 @@ const Import = () => {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <FileSpreadsheet className="h-8 w-8 text-primary" />
+                <Upload className="h-8 w-8 text-primary" />
                 <div>
                   <CardTitle>Import Products</CardTitle>
                   <CardDescription>
-                    Import your jewelry catalog from Excel or Google Sheets
+                    Upload your jewelry catalog from an Excel file
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="excel" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="excel">Excel File</TabsTrigger>
-                  <TabsTrigger value="sheets">Google Sheets</TabsTrigger>
-                </TabsList>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="file">Upload Excel File</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Upload your .xlsx or .xls file
+                  </p>
+                </div>
 
-                <TabsContent value="excel" className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="file">Upload Excel File</Label>
-                      <Input
-                        id="file"
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={(e) => setFile(e.target.files?.[0] || null)}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Upload your .xlsx or .xls file
-                      </p>
-                    </div>
+                <div className="rounded-lg bg-muted p-4 space-y-2">
+                  <h3 className="font-semibold text-sm">Supported Columns:</h3>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• PRODUCT, CERT (product name/SKU)</li>
+                    <li>• Diamond Color, CLARITY (gemstone details)</li>
+                    <li>• NET WT (weight in grams)</li>
+                    <li>• GOLD, MKG, TOTAL (pricing)</li>
+                    <li>• IMAGE_URL (product images)</li>
+                  </ul>
+                </div>
 
-                    <div className="rounded-lg bg-muted p-4 space-y-2">
-                      <h3 className="font-semibold text-sm">Supported Columns:</h3>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• PRODUCT, CERT (product name/SKU)</li>
-                        <li>• Diamond Color, CLARITY (gemstone details)</li>
-                        <li>• NET WT (weight in grams)</li>
-                        <li>• GOLD, MKG, TOTAL (pricing)</li>
-                        <li>• IMAGE_URL (product images)</li>
-                      </ul>
-                    </div>
-
-                    <Button
-                      onClick={handleFileUpload}
-                      disabled={loading || !file}
-                      className="w-full"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Importing...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="mr-2 h-4 w-4" />
-                          Import from Excel
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="sheets" className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="spreadsheetId">Google Sheet ID</Label>
-                      <Input
-                        id="spreadsheetId"
-                        placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-                        value={spreadsheetId}
-                        onChange={(e) => setSpreadsheetId(e.target.value)}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Found in your sheet URL: docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/edit
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="range">Sheet Range</Label>
-                      <Input
-                        id="range"
-                        placeholder="Sheet1!A:L"
-                        value={range}
-                        onChange={(e) => setRange(e.target.value)}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Format: SheetName!StartColumn:EndColumn (e.g., Sheet1!A:L)
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg bg-muted p-4 space-y-2">
-                      <h3 className="font-semibold text-sm">Required Columns:</h3>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Name (required)</li>
-                        <li>• Cost Price (required)</li>
-                        <li>• Retail Price (required)</li>
-                        <li>• Description, SKU, Category, Metal Type, Gemstone (optional)</li>
-                        <li>• Image URL, Weight (grams), Stock Quantity (optional)</li>
-                      </ul>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Note: Your sheet must be publicly accessible or shared with anyone with the link
-                      </p>
-                    </div>
-
-                    <Button
-                      onClick={handleImport}
-                      disabled={loading || !spreadsheetId.trim()}
-                      className="w-full"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Importing...
-                        </>
-                      ) : (
-                        <>
-                          <FileSpreadsheet className="mr-2 h-4 w-4" />
-                          Import from Google Sheets
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                <Button
+                  onClick={handleFileUpload}
+                  disabled={loading || !file}
+                  className="w-full"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Import from Excel
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
