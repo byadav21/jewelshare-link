@@ -3,18 +3,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usdRate, setUsdRate] = useState(87.67); // Default INR to USD rate
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
+    fetchUSDRate();
   }, []);
+
+  const fetchUSDRate = async () => {
+    try {
+      // Fetch live USD/INR rate from exchange rate API
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      if (data.rates?.INR) {
+        setUsdRate(data.rates.INR);
+      }
+    } catch (error) {
+      console.error("Failed to fetch USD rate:", error);
+      // Keep default rate if fetch fails
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -32,10 +49,30 @@ const Catalog = () => {
     }
   };
 
+  const handleDeleteAllProducts = async () => {
+    try {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all rows
+
+      if (error) throw error;
+      
+      toast.success("All products deleted successfully");
+      fetchProducts();
+    } catch (error: any) {
+      toast.error("Failed to delete products");
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
   };
+
+  // Calculate totals
+  const totalINR = products.reduce((sum, p) => sum + (p.retail_price || 0), 0);
+  const totalUSD = totalINR / usdRate;
 
   return (
     <AuthGuard>
@@ -43,8 +80,12 @@ const Catalog = () => {
         <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Gem className="h-8 w-8 text-primary" />
               <h1 className="text-2xl font-serif font-bold text-foreground">My Jewelry Catalog</h1>
+              {products.length > 0 && (
+                <div className="ml-4 text-sm text-muted-foreground">
+                  Total: ₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })} / ${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={() => navigate("/share")}>
@@ -59,6 +100,30 @@ const Catalog = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Product
               </Button>
+              {products.length > 0 && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete All
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete All Products?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all {products.length} products from your catalog. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAllProducts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete All Products
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               <Button variant="ghost" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -131,7 +196,7 @@ const Catalog = () => {
                       )}
                       {product.gemstone && (
                         <p className="text-foreground">
-                          <span className="text-muted-foreground">Gemstone:</span> {product.gemstone}
+                          <span className="text-muted-foreground">Diamond Color & Clarity:</span> {product.gemstone.replace(/ /g, ' / ')}
                         </p>
                       )}
                     </div>
@@ -139,7 +204,8 @@ const Catalog = () => {
                   <CardFooter className="flex justify-between border-t border-border pt-4">
                     <div>
                       <p className="text-xs text-muted-foreground">Retail Price</p>
-                      <p className="text-xl font-bold text-primary">${product.retail_price}</p>
+                      <p className="text-lg font-bold text-primary">₹{product.retail_price.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-muted-foreground">${(product.retail_price / usdRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">Stock</p>
