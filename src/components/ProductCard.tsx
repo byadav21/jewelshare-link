@@ -14,6 +14,9 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
   const images = [product.image_url, product.image_url_2].filter(Boolean);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Debug: Log image data
+  console.log(`Product ${product.sku}: image_url=${product.image_url}, image_url_2=${product.image_url_2}, total images=${images.length}`);
+
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
