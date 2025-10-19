@@ -136,8 +136,8 @@ const Catalog = () => {
   // Filter products
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
-      if (filters.category && product.category !== filters.category) return false;
-      if (filters.metalType && product.metal_type !== filters.metalType) return false;
+      if (filters.category && product.category?.toUpperCase().trim() !== filters.category.toUpperCase().trim()) return false;
+      if (filters.metalType && product.metal_type?.toUpperCase().trim() !== filters.metalType.toUpperCase().trim()) return false;
       
       if (filters.minPrice) {
         const minPrice = parseFloat(filters.minPrice);
@@ -151,12 +151,12 @@ const Catalog = () => {
 
       if (filters.diamondColor) {
         const color = product.gemstone?.split(' ')[0];
-        if (color !== filters.diamondColor) return false;
+        if (color?.toUpperCase().trim() !== filters.diamondColor.toUpperCase().trim()) return false;
       }
 
       if (filters.diamondClarity) {
         const clarity = product.gemstone?.split(' ')[1];
-        if (clarity !== filters.diamondClarity) return false;
+        if (clarity?.toUpperCase().trim() !== filters.diamondClarity.toUpperCase().trim()) return false;
       }
 
       return true;
