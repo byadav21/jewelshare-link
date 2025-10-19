@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2 } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Catalog = () => {
@@ -187,6 +187,15 @@ const Catalog = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => {
                 const images = [product.image_url, product.image_url_2].filter(Boolean);
+                const [currentImageIndex, setCurrentImageIndex] = useState(0);
+                
+                const nextImage = () => {
+                  setCurrentImageIndex((prev) => (prev + 1) % images.length);
+                };
+                
+                const prevImage = () => {
+                  setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+                };
                 
                 return (
                 <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow relative">
@@ -199,30 +208,47 @@ const Catalog = () => {
                   </div>
                   {images.length > 0 ? (
                     <div className="aspect-square overflow-hidden bg-muted relative group">
-                      <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-full">
-                        {images.map((imageUrl, idx) => (
-                          <div key={idx} className="min-w-full snap-center">
-                            <img
-                              src={imageUrl}
-                              alt={`${product.name} - Image ${idx + 1}`}
-                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                              onError={(e) => {
-                                console.error(`Failed to load image ${idx + 1} for ${product.sku}: ${imageUrl}`);
-                                e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
-                              }}
-                              onLoad={() => {
-                                console.log(`Successfully loaded image ${idx + 1} for ${product.sku}`);
-                              }}
-                            />
-                          </div>
-                        ))}
-                      </div>
+                      <img
+                        src={images[currentImageIndex]}
+                        alt={`${product.name} - Image ${currentImageIndex + 1}`}
+                        className="w-full h-full object-cover transition-all duration-300"
+                        onError={(e) => {
+                          console.error(`Failed to load image ${currentImageIndex + 1} for ${product.sku}: ${images[currentImageIndex]}`);
+                          e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
+                        }}
+                        onLoad={() => {
+                          console.log(`Successfully loaded image ${currentImageIndex + 1} for ${product.sku}`);
+                        }}
+                      />
                       {images.length > 1 && (
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {images.map((_, idx) => (
-                            <div key={idx} className="w-2 h-2 rounded-full bg-white/60 backdrop-blur-sm" />
-                          ))}
-                        </div>
+                        <>
+                          <button
+                            onClick={prevImage}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Previous image"
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={nextImage}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Next image"
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                            {images.map((_, idx) => (
+                              <div 
+                                key={idx} 
+                                className={`w-2 h-2 rounded-full transition-all ${
+                                  idx === currentImageIndex 
+                                    ? 'bg-primary w-4' 
+                                    : 'bg-white/60 backdrop-blur-sm'
+                                }`} 
+                              />
+                            ))}
+                          </div>
+                        </>
                       )}
                     </div>
                   ) : (
