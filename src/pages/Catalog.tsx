@@ -7,7 +7,8 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -176,30 +177,38 @@ const Catalog = () => {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-serif font-bold text-foreground">My Jewelry Catalog</h1>
+        <header className="border-b border-border bg-card backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+          <div className="container mx-auto px-4 py-4 space-y-4">
+            {/* Top row: Title and Inventory */}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <Gem className="h-7 w-7 text-primary" />
+                <h1 className="text-2xl md:text-3xl font-serif font-bold text-foreground">My Jewelry Catalog</h1>
+              </div>
               {products.length > 0 && (
-                <div className="flex flex-col items-end gap-1 px-6 py-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Inventory Value</div>
-                  <div className="text-2xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                  <div className="text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
+                <div className="flex flex-col items-end gap-1 px-4 md:px-6 py-2 md:py-3 bg-primary/10 rounded-lg border border-primary/30">
+                  <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
+                  <div className="text-xl md:text-2xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                  <div className="text-xs md:text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
                   {filteredProducts.length !== products.length && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      Showing {filteredProducts.length} of {products.length} products
+                      {filteredProducts.length} of {products.length} products
                     </div>
                   )}
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Action buttons row */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Delete selected (shown only when products are selected) */}
               {isAdmin && selectedProducts.size > 0 && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
+                    <Button variant="destructive" size="sm">
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Selected ({selectedProducts.size})
+                      <span className="hidden sm:inline">Delete Selected</span>
+                      <span className="sm:hidden">Delete</span> ({selectedProducts.size})
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -218,42 +227,97 @@ const Catalog = () => {
                   </AlertDialogContent>
                 </AlertDialog>
               )}
-              <Button variant="default" onClick={() => navigate("/custom-order")}>
+
+              {/* Primary CTA */}
+              <Button variant="default" size="sm" onClick={() => navigate("/custom-order")}>
                 <Gem className="h-4 w-4 mr-2" />
-                Build Your Jewelry
+                <span className="hidden sm:inline">Build Your Jewelry</span>
+                <span className="sm:hidden">Build</span>
               </Button>
-              <Button variant="outline" onClick={() => navigate("/interests")}>
-                <Heart className="h-4 w-4 mr-2" />
-                View Interests
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/share")}>
-                <Share2 className="h-4 w-4 mr-2" />
-                Share Catalog
-              </Button>
-              {isAdmin && (
-                <>
-                  <Button variant="default" onClick={() => navigate("/admin")}>
-                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Admin Dashboard
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate("/import")}>
-                    <FileSpreadsheet className="h-4 w-4 mr-2" />
-                    Import
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate("/add-product")}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Product
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate("/team")}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Team
-                  </Button>
-                </>
-              )}
-              <Button variant="ghost" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+
+              {/* Secondary actions - visible on desktop */}
+              <div className="hidden lg:flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => navigate("/interests")}>
+                  <Heart className="h-4 w-4 mr-2" />
+                  View Interests
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate("/share")}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Catalog
+                </Button>
+                {isAdmin && (
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      Admin Dashboard
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/add-product")}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Product
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/import")}>
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Import
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
+                      <Users className="h-4 w-4 mr-2" />
+                      Team
+                    </Button>
+                  </>
+                )}
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+
+              {/* Mobile menu */}
+              <div className="lg:hidden ml-auto">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Menu className="h-4 w-4 mr-2" />
+                      Menu
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
+                    <DropdownMenuItem onClick={() => navigate("/interests")}>
+                      <Heart className="h-4 w-4 mr-2" />
+                      View Interests
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/share")}>
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share Catalog
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate("/admin")}>
+                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          Admin Dashboard
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/add-product")}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Product
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/import")}>
+                          <FileSpreadsheet className="h-4 w-4 mr-2" />
+                          Import Data
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/team")}>
+                          <Users className="h-4 w-4 mr-2" />
+                          Manage Team
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </header>
