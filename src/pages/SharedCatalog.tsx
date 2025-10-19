@@ -157,12 +157,12 @@ const SharedCatalog = () => {
                 <CardFooter className="border-t border-border pt-4 flex-col gap-3">
                   <div className="w-full space-y-2">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Price (USD)</p>
-                      <p className="text-2xl font-bold text-primary">${product.displayed_price}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Price (INR)</p>
+                      <p className="text-2xl font-bold text-primary">₹{product.displayed_price.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Price (INR)</p>
-                      <p className="text-xl font-semibold text-foreground">₹{(product.displayed_price * usdToInr).toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Price (USD)</p>
+                      <p className="text-xl font-semibold text-foreground">${(product.displayed_price / usdToInr).toFixed(2)}</p>
                     </div>
                   </div>
                   {shareLinkId && (
