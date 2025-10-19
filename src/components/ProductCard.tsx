@@ -36,7 +36,7 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           <img
             src={images[currentImageIndex]}
             alt={`${product.name} - Image ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-all duration-300"
+            className="w-full h-full object-cover transition-all duration-500 animate-fade-in"
             onError={(e) => {
               console.error(`Failed to load image ${currentImageIndex + 1} for ${product.sku}: ${images[currentImageIndex]}`);
               e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
@@ -49,29 +49,35 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
             <>
               <button
                 onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full">
                 {images.map((_, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`w-2 h-2 rounded-full transition-all ${
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`transition-all duration-300 rounded-full ${
                       idx === currentImageIndex 
-                        ? 'bg-primary w-4' 
-                        : 'bg-white/60 backdrop-blur-sm'
-                    }`} 
+                        ? 'bg-primary w-6 h-2' 
+                        : 'bg-muted-foreground/40 w-2 h-2 hover:bg-muted-foreground/60'
+                    }`}
+                    aria-label={`Go to image ${idx + 1}`}
                   />
                 ))}
+              </div>
+              {/* Image counter badge */}
+              <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
+                {currentImageIndex + 1} / {images.length}
               </div>
             </>
           )}
