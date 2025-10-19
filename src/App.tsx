@@ -11,6 +11,7 @@ import Share from "./pages/Share";
 import SharedCatalog from "./pages/SharedCatalog";
 import Interests from "./pages/Interests";
 import TeamManagement from "./pages/TeamManagement";
+import SuperAdmin from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/" element={<Catalog />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/admin" element={<SuperAdmin />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/import" element={<Import />} />
           <Route path="/share" element={<Share />} />
