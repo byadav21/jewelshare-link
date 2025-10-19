@@ -7,8 +7,9 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -24,6 +25,7 @@ const Catalog = () => {
     diamondClarity: "",
   });
   const navigate = useNavigate();
+  const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
 
   useEffect(() => {
     fetchProducts();
@@ -192,7 +194,7 @@ const Catalog = () => {
               )}
             </div>
             <div className="flex items-center gap-2">
-              {selectedProducts.size > 0 && (
+              {isAdmin && selectedProducts.size > 0 && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive">
@@ -224,14 +226,22 @@ const Catalog = () => {
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Catalog
               </Button>
-              <Button variant="outline" onClick={() => navigate("/import")}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                Import
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/add-product")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
+              {isAdmin && (
+                <>
+                  <Button variant="outline" onClick={() => navigate("/import")}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Import
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate("/add-product")}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Product
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate("/team")}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Team
+                  </Button>
+                </>
+              )}
               <Button variant="ghost" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -265,7 +275,7 @@ const Catalog = () => {
                 diamondColors={diamondColors}
                 diamondClarities={diamondClarities}
               />
-              {filteredProducts.length > 0 && (
+              {isAdmin && filteredProducts.length > 0 && (
                 <div className="mb-4 flex items-center gap-3 pb-3 border-b border-border">
                   <Checkbox
                     id="select-all"
@@ -298,7 +308,7 @@ const Catalog = () => {
                   key={product.id}
                   product={product}
                   isSelected={selectedProducts.has(product.id)}
-                  onToggleSelection={toggleProductSelection}
+                  onToggleSelection={isAdmin ? toggleProductSelection : undefined}
                   usdRate={usdRate}
                 />
               ))}
