@@ -111,11 +111,36 @@ serve(async (req) => {
       );
     }
 
-    // Get products for this user
+    // Check if user is a team member and get admin's products instead
+    const { data: userRole } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", shareLink.user_id)
+      .eq("role", "team_member")
+      .single();
+
+    let productOwnerId = shareLink.user_id;
+
+    // If team member, find the admin user's products
+    if (userRole) {
+      const { data: adminUser } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin")
+        .limit(1)
+        .single();
+      
+      if (adminUser) {
+        productOwnerId = adminUser.user_id;
+        console.log(`Team member share link - using admin's products: ${productOwnerId}`);
+      }
+    }
+
+    // Get products for the product owner (either the share link creator or their admin)
     const { data: products, error: productsError } = await supabase
       .from("products")
       .select("*")
-      .eq("user_id", shareLink.user_id);
+      .eq("user_id", productOwnerId);
 
     if (productsError) {
       console.error("Error fetching products:", productsError);
