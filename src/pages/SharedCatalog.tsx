@@ -13,12 +13,26 @@ const SharedCatalog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [shareLinkId, setShareLinkId] = useState<string | null>(null);
+  const [usdToInr, setUsdToInr] = useState<number>(83); // Default fallback rate
 
   useEffect(() => {
+    fetchExchangeRate();
     if (token) {
       fetchSharedCatalog();
     }
   }, [token]);
+
+  const fetchExchangeRate = async () => {
+    try {
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      if (data.rates && data.rates.INR) {
+        setUsdToInr(data.rates.INR);
+      }
+    } catch (err) {
+      console.error('Failed to fetch exchange rate, using default');
+    }
+  };
 
   const fetchSharedCatalog = async () => {
     try {
@@ -67,14 +81,20 @@ const SharedCatalog = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2">
               <Gem className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-serif font-bold text-foreground">Jewelry Catalog</h1>
             </div>
-            {shareLinkId && (
-              <ContactOwnerDialog shareLinkId={shareLinkId} />
-            )}
+            <div className="flex items-center gap-4">
+              <div className="text-sm bg-muted px-4 py-2 rounded-lg">
+                <span className="text-muted-foreground">Exchange Rate:</span>{" "}
+                <span className="font-semibold text-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
+              </div>
+              {shareLinkId && (
+                <ContactOwnerDialog shareLinkId={shareLinkId} />
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -135,9 +155,15 @@ const SharedCatalog = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="border-t border-border pt-4 flex-col gap-3">
-                  <div className="w-full">
-                    <p className="text-xs text-muted-foreground mb-1">Price</p>
-                    <p className="text-2xl font-bold text-primary">${product.displayed_price}</p>
+                  <div className="w-full space-y-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Price (USD)</p>
+                      <p className="text-2xl font-bold text-primary">${product.displayed_price}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Price (INR)</p>
+                      <p className="text-xl font-semibold text-foreground">₹{(product.displayed_price * usdToInr).toFixed(2)}</p>
+                    </div>
                   </div>
                   {shareLinkId && (
                     <InterestDialog
