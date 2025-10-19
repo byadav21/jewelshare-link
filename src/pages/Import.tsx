@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import * as XLSX from 'xlsx';
+import { productImportSchema } from "@/lib/validations";
 
 const Import = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -29,31 +30,17 @@ const Import = () => {
     setLoading(true);
 
     try {
-      console.log("Starting file upload...", file.name);
-      
       const data = await file.arrayBuffer();
-      console.log("File read successfully");
-      
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];
-      console.log("Sheet name:", sheetName);
-      
       const worksheet = workbook.Sheets[sheetName];
       // Skip first row (the one with Base 24K rate info) and use row 2 as headers
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
-      console.log("Parsed rows:", jsonData.length);
-      
-      if (jsonData.length > 0) {
-        console.log("First row sample:", jsonData[0]);
-        console.log("Column names:", Object.keys(jsonData[0]));
-      }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error("No user found");
         throw new Error("Not authenticated");
       }
-      console.log("User authenticated:", user.id);
 
       const products = jsonData.map((row: any, index: number) => {
         // Parse numbers safely
@@ -83,7 +70,7 @@ const Import = () => {
           imageUrl2 = cleanUrls[1] || null;
         }
         
-        const product: any = {
+        const product = {
           user_id: user.id,
           name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
           description: `${row['Diamond Color'] || ''} ${row.CLARITY || ''} ${row['T DWT'] ? row['T DWT'] + ' ct' : ''}`.trim() || null,
@@ -99,26 +86,14 @@ const Import = () => {
           stock_quantity: 1,
         };
 
-        console.log(`Product ${index + 1}:`, {
-          name: product.name,
-          image: product.image_url,
-          image2: product.image_url_2,
-          cost: product.cost_price,
-          retail: product.retail_price,
-          valid: !!(product.name && product.cost_price > 0 && product.retail_price > 0)
-        });
-
-        return product;
-      }).filter((p: any) => {
-        const valid = p.name && p.cost_price > 0 && p.retail_price > 0;
-        if (!valid) {
-          console.log("Filtered out product:", p.name, "cost:", p.cost_price, "retail:", p.retail_price);
+        // Validate product data
+        const validation = productImportSchema.safeParse(product);
+        if (!validation.success) {
+          return null; // Skip invalid products
         }
-        return valid;
-      });
 
-      console.log(`Processed ${products.length} valid products`);
-      console.log("Sample product:", products[0]);
+        return product; // Return original product with all required fields
+      }).filter((p): p is NonNullable<typeof p> => p !== null);
 
       if (products.length === 0) {
         throw new Error("No valid products found in file. Please check your Excel format.");
@@ -135,8 +110,6 @@ const Import = () => {
       const productsToUpdate = products.filter(p => p.sku && existingSkuMap.has(p.sku));
       const productsToInsert = products.filter(p => !p.sku || !existingSkuMap.has(p.sku));
 
-      console.log(`Updating ${productsToUpdate.length} existing products, inserting ${productsToInsert.length} new products`);
-
       let updatedCount = 0;
       let insertedCount = 0;
 
@@ -149,9 +122,7 @@ const Import = () => {
             .update(product)
             .eq("id", productId);
 
-          if (updateError) {
-            console.error(`Error updating product ${product.sku}:`, updateError);
-          } else {
+          if (!updateError) {
             updatedCount++;
           }
         }
@@ -165,14 +136,11 @@ const Import = () => {
           .select();
 
         if (insertError) {
-          console.error("Insert error:", insertError);
           throw insertError;
         }
 
         insertedCount = insertedProducts?.length || 0;
       }
-
-      console.log(`Successfully updated ${updatedCount} products and inserted ${insertedCount} products`);
 
       toast({
         title: "Success!",
@@ -181,7 +149,6 @@ const Import = () => {
 
       navigate("/");
     } catch (error: any) {
-      console.error("Import error:", error);
       toast({
         title: "Import Failed",
         description: error.message || "Failed to import from Excel file",

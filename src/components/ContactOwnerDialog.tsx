@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { contactOwnerSchema } from "@/lib/validations";
 
 interface ContactOwnerDialogProps {
   shareLinkId: string;
@@ -25,8 +26,11 @@ export const ContactOwnerDialog = ({ shareLinkId }: ContactOwnerDialogProps) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Please fill in all required fields");
+    // Validate form data
+    const validation = contactOwnerSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -36,10 +40,10 @@ export const ContactOwnerDialog = ({ shareLinkId }: ContactOwnerDialogProps) => 
         .from("catalog_inquiries")
         .insert({
           share_link_id: shareLinkId,
-          customer_name: formData.name,
-          customer_email: formData.email,
-          customer_phone: formData.phone || null,
-          message: formData.message,
+          customer_name: validation.data.name,
+          customer_email: validation.data.email,
+          customer_phone: validation.data.phone || null,
+          message: validation.data.message,
         });
 
       if (error) throw error;
@@ -49,7 +53,6 @@ export const ContactOwnerDialog = ({ shareLinkId }: ContactOwnerDialogProps) => 
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error: any) {
       toast.error("Failed to send message. Please try again.");
-      console.error("Error sending inquiry:", error);
     } finally {
       setLoading(false);
     }

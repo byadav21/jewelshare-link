@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { productInterestSchema } from "@/lib/validations";
 
 interface InterestDialogProps {
   productId: string;
@@ -27,8 +28,11 @@ export const InterestDialog = ({ productId, productName, shareLinkId }: Interest
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email) {
-      toast.error("Please provide your name and email");
+    // Validate form data
+    const validation = productInterestSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -39,10 +43,10 @@ export const InterestDialog = ({ productId, productName, shareLinkId }: Interest
         .insert({
           product_id: productId,
           share_link_id: shareLinkId,
-          customer_name: formData.name,
-          customer_email: formData.email,
-          customer_phone: formData.phone || null,
-          notes: formData.notes || null,
+          customer_name: validation.data.name,
+          customer_email: validation.data.email,
+          customer_phone: validation.data.phone || null,
+          notes: validation.data.notes || null,
         });
 
       if (error) throw error;

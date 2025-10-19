@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { customOrderSchema } from "@/lib/validations";
 
 const CustomOrder = () => {
   const navigate = useNavigate();
@@ -31,10 +32,13 @@ const CustomOrder = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.customer_name || !formData.customer_email || !formData.design_description) {
+    // Validate form data
+    const validation = customOrderSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields",
+        title: "Validation Error",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -43,13 +47,13 @@ const CustomOrder = () => {
     setLoading(true);
 
     const { error } = await supabase.from("custom_orders").insert({
-      customer_name: formData.customer_name,
-      customer_email: formData.customer_email,
-      customer_phone: formData.customer_phone || null,
-      metal_type: formData.metal_type || null,
-      gemstone_preference: formData.gemstone_preference || null,
-      design_description: formData.design_description,
-      budget_range: formData.budget_range || null,
+      customer_name: validation.data.customer_name,
+      customer_email: validation.data.customer_email,
+      customer_phone: validation.data.customer_phone || null,
+      metal_type: validation.data.metal_type || null,
+      gemstone_preference: validation.data.gemstone_preference || null,
+      design_description: validation.data.design_description,
+      budget_range: validation.data.budget_range || null,
     });
 
     setLoading(false);
@@ -60,7 +64,6 @@ const CustomOrder = () => {
         description: "Failed to submit your request. Please try again.",
         variant: "destructive",
       });
-      console.error("Error submitting custom order:", error);
       return;
     }
 
