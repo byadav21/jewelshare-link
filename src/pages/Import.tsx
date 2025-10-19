@@ -124,43 +124,59 @@ const Import = () => {
         throw new Error("No valid products found in file. Please check your Excel format.");
       }
 
-      // Get existing SKUs to avoid duplicates
+      // Get existing SKUs to separate updates from inserts
       const skus = products.map(p => p.sku).filter(Boolean);
       const { data: existingProducts } = await supabase
         .from("products")
-        .select("sku")
+        .select("id, sku")
         .in("sku", skus);
 
-      const existingSkus = new Set(existingProducts?.map(p => p.sku) || []);
-      const newProducts = products.filter(p => !p.sku || !existingSkus.has(p.sku));
+      const existingSkuMap = new Map(existingProducts?.map(p => [p.sku, p.id]) || []);
+      const productsToUpdate = products.filter(p => p.sku && existingSkuMap.has(p.sku));
+      const productsToInsert = products.filter(p => !p.sku || !existingSkuMap.has(p.sku));
 
-      console.log(`Found ${existingSkus.size} existing products, importing ${newProducts.length} new products`);
+      console.log(`Updating ${productsToUpdate.length} existing products, inserting ${productsToInsert.length} new products`);
 
-      if (newProducts.length === 0) {
-        toast({
-          title: "No New Products",
-          description: "All products in this file already exist in your catalog",
-        });
-        setLoading(false);
-        return;
+      let updatedCount = 0;
+      let insertedCount = 0;
+
+      // Update existing products
+      if (productsToUpdate.length > 0) {
+        for (const product of productsToUpdate) {
+          const productId = existingSkuMap.get(product.sku);
+          const { error: updateError } = await supabase
+            .from("products")
+            .update(product)
+            .eq("id", productId);
+
+          if (updateError) {
+            console.error(`Error updating product ${product.sku}:`, updateError);
+          } else {
+            updatedCount++;
+          }
+        }
       }
 
-      const { data: insertedProducts, error: insertError } = await supabase
-        .from("products")
-        .insert(newProducts)
-        .select();
+      // Insert new products
+      if (productsToInsert.length > 0) {
+        const { data: insertedProducts, error: insertError } = await supabase
+          .from("products")
+          .insert(productsToInsert)
+          .select();
 
-      if (insertError) {
-        console.error("Insert error:", insertError);
-        throw insertError;
+        if (insertError) {
+          console.error("Insert error:", insertError);
+          throw insertError;
+        }
+
+        insertedCount = insertedProducts?.length || 0;
       }
 
-      console.log(`Successfully inserted ${insertedProducts?.length} products`);
+      console.log(`Successfully updated ${updatedCount} products and inserted ${insertedCount} products`);
 
-      const skipped = products.length - newProducts.length;
       toast({
         title: "Success!",
-        description: `Imported ${insertedProducts?.length || 0} products${skipped > 0 ? `, skipped ${skipped} duplicates` : ''}`,
+        description: `Updated ${updatedCount} products, imported ${insertedCount} new products`,
       });
 
       navigate("/");
