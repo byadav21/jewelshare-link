@@ -232,10 +232,12 @@ const Catalog = () => {
                           </div>
                         </>
                       )}
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground font-medium">T DWT:</span>
-                        <span className="text-foreground font-semibold">-</span>
-                      </div>
+                      {product.diamond_weight && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground font-medium">T DWT:</span>
+                          <span className="text-foreground font-semibold">{product.diamond_weight}g</span>
+                        </div>
+                      )}
                       {product.weight_grams && (
                         <>
                           <div className="flex justify-between">
@@ -244,7 +246,7 @@ const Catalog = () => {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground font-medium">NET WT:</span>
-                            <span className="text-foreground font-semibold">-</span>
+                            <span className="text-foreground font-semibold">{product.net_weight}g</span>
                           </div>
                         </>
                       )}

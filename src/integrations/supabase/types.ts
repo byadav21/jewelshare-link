@@ -20,11 +20,13 @@ export type Database = {
           cost_price: number
           created_at: string | null
           description: string | null
+          diamond_weight: number | null
           gemstone: string | null
           id: string
           image_url: string | null
           metal_type: string | null
           name: string
+          net_weight: number | null
           retail_price: number
           sku: string | null
           stock_quantity: number | null
@@ -37,11 +39,13 @@ export type Database = {
           cost_price: number
           created_at?: string | null
           description?: string | null
+          diamond_weight?: number | null
           gemstone?: string | null
           id?: string
           image_url?: string | null
           metal_type?: string | null
           name: string
+          net_weight?: number | null
           retail_price: number
           sku?: string | null
           stock_quantity?: number | null
@@ -54,11 +58,13 @@ export type Database = {
           cost_price?: number
           created_at?: string | null
           description?: string | null
+          diamond_weight?: number | null
           gemstone?: string | null
           id?: string
           image_url?: string | null
           metal_type?: string | null
           name?: string
+          net_weight?: number | null
           retail_price?: number
           sku?: string | null
           stock_quantity?: number | null
