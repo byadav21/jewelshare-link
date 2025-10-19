@@ -4,6 +4,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [usdRate, setUsdRate] = useState(87.67); // Default INR to USD rate
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,19 +51,38 @@ const Catalog = () => {
     }
   };
 
-  const handleDeleteAllProducts = async () => {
+  const handleDeleteSelected = async () => {
     try {
       const { error } = await supabase
         .from("products")
         .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all rows
+        .in("id", Array.from(selectedProducts));
 
       if (error) throw error;
       
-      toast.success("All products deleted successfully");
+      toast.success(`${selectedProducts.size} product(s) deleted successfully`);
+      setSelectedProducts(new Set());
       fetchProducts();
     } catch (error: any) {
       toast.error("Failed to delete products");
+    }
+  };
+
+  const toggleProductSelection = (productId: string) => {
+    const newSelected = new Set(selectedProducts);
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+    } else {
+      newSelected.add(productId);
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedProducts.size === products.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(products.map(p => p.id)));
     }
   };
 
@@ -90,6 +111,30 @@ const Catalog = () => {
               )}
             </div>
             <div className="flex items-center gap-2">
+              {selectedProducts.size > 0 && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected ({selectedProducts.size})
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Selected Products?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete {selectedProducts.size} selected product(s). This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete Selected
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               <Button variant="outline" onClick={() => navigate("/share")}>
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Catalog
@@ -102,30 +147,6 @@ const Catalog = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Product
               </Button>
-              {products.length > 0 && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" className="text-destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete All
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete All Products?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete all {products.length} products from your catalog. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAllProducts} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Delete All Products
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
               <Button variant="ghost" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -150,9 +171,29 @@ const Catalog = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <>
+              {products.length > 0 && (
+                <div className="mb-4 flex items-center gap-3 pb-3 border-b border-border">
+                  <Checkbox
+                    id="select-all"
+                    checked={selectedProducts.size === products.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                  <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
+                    Select All ({products.length})
+                  </label>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow relative">
+                  <div className="absolute top-3 left-3 z-10">
+                    <Checkbox
+                      checked={selectedProducts.has(product.id)}
+                      onCheckedChange={() => toggleProductSelection(product.id)}
+                      className="bg-background border-2"
+                    />
+                  </div>
                   {product.image_url ? (
                     <div className="aspect-square overflow-hidden bg-muted">
                       <img
@@ -192,7 +233,7 @@ const Catalog = () => {
                         </>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground font-medium">Total Diamond Weight:</span>
+                        <span className="text-muted-foreground font-medium">T DWT:</span>
                         <span className="text-foreground font-semibold">-</span>
                       </div>
                       {product.weight_grams && (
@@ -202,7 +243,7 @@ const Catalog = () => {
                             <span className="text-foreground font-semibold">{product.weight_grams}g</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground font-medium">Net Weight:</span>
+                            <span className="text-muted-foreground font-medium">NET WT:</span>
                             <span className="text-foreground font-semibold">-</span>
                           </div>
                         </>
@@ -241,6 +282,7 @@ const Catalog = () => {
                 </Card>
               ))}
             </div>
+            </>
           )}
         </main>
       </div>
