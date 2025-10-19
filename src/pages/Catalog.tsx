@@ -136,7 +136,11 @@ const Catalog = () => {
   // Filter products
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
-      if (filters.category && product.category?.toUpperCase().trim() !== filters.category.toUpperCase().trim()) return false;
+      if (filters.category) {
+        const categoryMatch = product.category?.toUpperCase().trim() === filters.category.toUpperCase().trim();
+        const nameMatch = product.name?.toUpperCase().trim().includes(filters.category.toUpperCase().trim());
+        if (!categoryMatch && !nameMatch) return false;
+      }
       if (filters.metalType && product.metal_type?.toUpperCase().trim() !== filters.metalType.toUpperCase().trim()) return false;
       
       if (filters.minPrice) {
