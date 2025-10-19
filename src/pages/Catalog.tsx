@@ -78,12 +78,14 @@ const Catalog = () => {
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
               <h1 className="text-2xl font-serif font-bold text-foreground">My Jewelry Catalog</h1>
               {products.length > 0 && (
-                <div className="ml-4 text-sm text-muted-foreground">
-                  Total: ₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })} / ${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                <div className="flex flex-col items-end gap-1 px-6 py-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total Inventory Value</div>
+                  <div className="text-2xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                  <div className="text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
                 </div>
               )}
             </div>
@@ -174,32 +176,56 @@ const Catalog = () => {
                   <CardHeader>
                     <h3 className="font-serif text-xl font-semibold text-foreground">{product.name}</h3>
                     {product.sku && (
-                      <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
+                      <p className="text-sm text-muted-foreground mb-3">SKU: {product.sku}</p>
                     )}
+                    <div className="space-y-1.5 text-xs border-t border-border pt-3">
+                      {product.gemstone && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground font-medium">Diamond Color:</span>
+                            <span className="text-foreground font-semibold">{product.gemstone.split(' ')[0] || '-'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground font-medium">Diamond Clarity:</span>
+                            <span className="text-foreground font-semibold">{product.gemstone.split(' ')[1] || '-'}</span>
+                          </div>
+                        </>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground font-medium">Total Diamond Weight:</span>
+                        <span className="text-foreground font-semibold">-</span>
+                      </div>
+                      {product.weight_grams && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground font-medium">Gross Weight:</span>
+                            <span className="text-foreground font-semibold">{product.weight_grams}g</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground font-medium">Net Weight:</span>
+                            <span className="text-foreground font-semibold">-</span>
+                          </div>
+                        </>
+                      )}
+                      {product.metal_type && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground font-medium">Metal Purity:</span>
+                          <span className="text-foreground font-semibold">{product.metal_type}</span>
+                        </div>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     {product.description && (
-                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                         {product.description}
                       </p>
                     )}
-                    <div className="space-y-1 text-sm">
-                      {product.category && (
-                        <p className="text-foreground">
-                          <span className="text-muted-foreground">Category:</span> {product.category}
-                        </p>
-                      )}
-                      {product.metal_type && (
-                        <p className="text-foreground">
-                          <span className="text-muted-foreground">Metal:</span> {product.metal_type}
-                        </p>
-                      )}
-                      {product.gemstone && (
-                        <p className="text-foreground">
-                          <span className="text-muted-foreground">Diamond Color & Clarity:</span> {product.gemstone.replace(/ /g, ' / ')}
-                        </p>
-                      )}
-                    </div>
+                    {product.category && (
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Category:</span> <span className="text-foreground font-medium">{product.category}</span>
+                      </div>
+                    )}
                   </CardContent>
                   <CardFooter className="flex justify-between border-t border-border pt-4">
                     <div>
