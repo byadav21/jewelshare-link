@@ -32,16 +32,26 @@ const Import = () => {
     setLoading(true);
 
     try {
+      console.log("Starting file upload...", file.name);
+      
       const data = await file.arrayBuffer();
+      console.log("File read successfully");
+      
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];
+      console.log("Sheet name:", sheetName);
+      
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-      console.log("Parsed Excel data:", jsonData);
+      console.log("Parsed rows:", jsonData.length);
+      console.log("First row sample:", jsonData[0]);
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        console.error("No user found");
+        throw new Error("Not authenticated");
+      }
+      console.log("User authenticated:", user.id);
 
       const products = jsonData.map((row: any) => {
         // Map your Excel columns to database fields
@@ -63,18 +73,28 @@ const Import = () => {
         return product;
       }).filter((p: any) => p.name && p.cost_price && p.retail_price);
 
-      console.log(`Importing ${products.length} products`);
+      console.log(`Processed ${products.length} valid products`);
+      console.log("Sample product:", products[0]);
+
+      if (products.length === 0) {
+        throw new Error("No valid products found in file. Please check your Excel format.");
+      }
 
       const { data: insertedProducts, error: insertError } = await supabase
         .from("products")
         .insert(products)
         .select();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        throw insertError;
+      }
+
+      console.log(`Successfully inserted ${insertedProducts?.length} products`);
 
       toast({
         title: "Success!",
-        description: `Imported ${insertedProducts.length} products from Excel file`,
+        description: `Imported ${insertedProducts?.length || 0} products from Excel file`,
       });
 
       navigate("/");
