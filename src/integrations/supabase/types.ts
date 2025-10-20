@@ -250,6 +250,7 @@ export type Database = {
       user_approval_status: {
         Row: {
           business_name: string | null
+          email: string | null
           id: string
           notes: string | null
           phone: string | null
@@ -262,6 +263,7 @@ export type Database = {
         }
         Insert: {
           business_name?: string | null
+          email?: string | null
           id?: string
           notes?: string | null
           phone?: string | null
@@ -274,6 +276,7 @@ export type Database = {
         }
         Update: {
           business_name?: string | null
+          email?: string | null
           id?: string
           notes?: string | null
           phone?: string | null
@@ -303,6 +306,36 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          device_info: string | null
+          id: string
+          ip_address: string | null
+          last_activity: string | null
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          last_activity?: string | null
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          last_activity?: string | null
+          session_id?: string
           user_id?: string
         }
         Relationships: []
@@ -369,6 +402,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

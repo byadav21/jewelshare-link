@@ -69,13 +69,14 @@ const Auth = () => {
         });
         if (error) throw error;
         
-        // Create approval status entry
+        // Create approval status entry with email
         if (data.user) {
           const { error: approvalError } = await supabase
             .from("user_approval_status")
             .insert({
               user_id: data.user.id,
               status: "pending",
+              email: email,
             });
           
           if (approvalError) {
@@ -91,13 +92,30 @@ const Auth = () => {
         });
         if (error) throw error;
         
+        // Register device session
+        if (data.session) {
+          try {
+            const deviceInfo = navigator.userAgent;
+            await supabase.functions.invoke("manage-session", {
+              body: {
+                action: "register",
+                sessionId: data.session.access_token,
+                deviceInfo,
+                ipAddress: "client",
+              },
+            });
+          } catch (sessionError) {
+            console.error("Session registration error:", sessionError);
+          }
+        }
+        
         // Check approval status
         if (data.user) {
           const { data: approvalData } = await supabase
             .from("user_approval_status")
             .select("status")
             .eq("user_id", data.user.id)
-            .single();
+            .maybeSingle();
           
           if (approvalData?.status === "approved") {
             toast.success("Welcome back!");

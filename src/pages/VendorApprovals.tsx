@@ -61,17 +61,13 @@ const VendorApprovals = () => {
         description: "Failed to fetch vendor approvals",
         variant: "destructive",
       });
+      setApprovals([]);
     } else {
-      // Fetch user emails
-      const approvalsWithEmails = await Promise.all(
-        (data || []).map(async (approval) => {
-          const { data: userData } = await supabase.auth.admin.getUserById(approval.user_id);
-          return {
-            ...approval,
-            user_email: userData?.user?.email || "N/A",
-          };
-        })
-      );
+      // Use email from the table instead of trying to fetch from auth
+      const approvalsWithEmails = (data || []).map(approval => ({
+        ...approval,
+        user_email: approval.email || "N/A",
+      }));
       setApprovals(approvalsWithEmails);
     }
     setLoading(false);
