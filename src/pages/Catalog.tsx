@@ -17,6 +17,7 @@ const Catalog = () => {
   const [loading, setLoading] = useState(true);
   const [usdRate, setUsdRate] = useState(87.67);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [filters, setFilters] = useState<FilterState>({
     category: "",
     metalType: "",
@@ -31,6 +32,7 @@ const Catalog = () => {
   useEffect(() => {
     fetchProducts();
     fetchUSDRate();
+    fetchVendorProfile();
   }, []);
 
   const fetchUSDRate = async () => {
@@ -44,6 +46,27 @@ const Catalog = () => {
     } catch (error) {
       console.error("Failed to fetch USD rate:", error);
       // Keep default rate if fetch fails
+    }
+  };
+
+  const fetchVendorProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("vendor_profiles" as any)
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error("Error fetching vendor profile:", error);
+      } else if (data) {
+        setVendorProfile(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch vendor profile:", error);
     }
   };
 
@@ -179,6 +202,91 @@ const Catalog = () => {
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card backdrop-blur-sm sticky top-0 z-50 shadow-sm">
           <div className="container mx-auto px-4 py-4 space-y-4">
+            {/* Vendor Profile Section */}
+            {vendorProfile && (
+              <div className="bg-muted/50 p-4 rounded-lg border border-border">
+                <div className="flex flex-wrap items-start gap-6">
+                  <div className="flex-1 min-w-[250px]">
+                    <h2 className="text-xl font-serif font-bold text-foreground mb-3">
+                      {vendorProfile.business_name || "My Jewelry Business"}
+                    </h2>
+                    <div className="space-y-2 text-sm">
+                      {vendorProfile.address_line1 && (
+                        <p className="text-foreground">
+                          {vendorProfile.address_line1}
+                          {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
+                        </p>
+                      )}
+                      {vendorProfile.city && (
+                        <p className="text-foreground">
+                          {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}
+                        </p>
+                      )}
+                      {vendorProfile.country && (
+                        <p className="text-foreground">{vendorProfile.country}</p>
+                      )}
+                      <div className="flex flex-wrap gap-4 pt-2">
+                        {vendorProfile.email && (
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">Email:</span>{" "}
+                            <a href={`mailto:${vendorProfile.email}`} className="text-primary hover:underline">
+                              {vendorProfile.email}
+                            </a>
+                          </p>
+                        )}
+                        {vendorProfile.phone && (
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">Phone:</span>{" "}
+                            <a href={`tel:${vendorProfile.phone}`} className="text-primary hover:underline">
+                              {vendorProfile.phone}
+                            </a>
+                          </p>
+                        )}
+                        {vendorProfile.whatsapp_number && (
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">WhatsApp:</span>{" "}
+                            <a 
+                              href={`https://wa.me/${vendorProfile.whatsapp_number.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline"
+                            >
+                              {vendorProfile.whatsapp_number}
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {(vendorProfile.instagram_qr_url || vendorProfile.whatsapp_qr_url) && (
+                    <div className="flex gap-4">
+                      {vendorProfile.instagram_qr_url && (
+                        <div className="text-center">
+                          <img 
+                            src={vendorProfile.instagram_qr_url} 
+                            alt="Instagram QR Code" 
+                            className="w-24 h-24 object-cover rounded border border-border"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Instagram</p>
+                        </div>
+                      )}
+                      {vendorProfile.whatsapp_qr_url && (
+                        <div className="text-center">
+                          <img 
+                            src={vendorProfile.whatsapp_qr_url} 
+                            alt="WhatsApp QR Code" 
+                            className="w-24 h-24 object-cover rounded border border-border"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">WhatsApp</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Top row: Title, Exchange Rate, and Inventory */}
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3 flex-wrap">
