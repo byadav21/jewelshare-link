@@ -7,7 +7,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2 } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -276,6 +276,10 @@ const Catalog = () => {
                     </Button>
                   </>
                 )}
+                <Button variant="outline" size="sm" onClick={() => navigate("/active-sessions")}>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Sessions
+                </Button>
                 <Button variant="ghost" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
@@ -326,6 +330,10 @@ const Catalog = () => {
                       </>
                     )}
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/active-sessions")}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Active Sessions
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out

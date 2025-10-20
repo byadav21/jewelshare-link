@@ -23,7 +23,7 @@ interface VendorApproval {
   business_name: string | null;
   phone: string | null;
   notes: string | null;
-  user_email?: string;
+  email: string | null;
 }
 
 const VendorApprovals = () => {
@@ -63,12 +63,7 @@ const VendorApprovals = () => {
       });
       setApprovals([]);
     } else {
-      // Use email from the table instead of trying to fetch from auth
-      const approvalsWithEmails = (data || []).map(approval => ({
-        ...approval,
-        user_email: approval.email || "N/A",
-      }));
-      setApprovals(approvalsWithEmails);
+      setApprovals(data || []);
     }
     setLoading(false);
   };
@@ -246,7 +241,7 @@ const VendorApprovals = () => {
                     <TableBody>
                       {filteredApprovals.map((approval) => (
                         <TableRow key={approval.id}>
-                          <TableCell className="font-medium">{approval.user_email}</TableCell>
+                          <TableCell className="font-medium">{approval.email || "N/A"}</TableCell>
                           <TableCell>{approval.business_name || "N/A"}</TableCell>
                           <TableCell>{approval.phone || "N/A"}</TableCell>
                           <TableCell>
