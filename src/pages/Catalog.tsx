@@ -285,24 +285,10 @@ const Catalog = () => {
                 </div>
               )}
 
-              {/* Center: Exchange Rate */}
+              {/* Right: Exchange Rate */}
               <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md border border-border whitespace-nowrap">
                 1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
               </div>
-
-              {/* Right: Total Inventory */}
-              {products.length > 0 && (
-                <div className="flex flex-col items-end gap-0.5 px-3 py-1.5 bg-primary/10 rounded-lg border border-primary/30">
-                  <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
-                  <div className="text-lg font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                  <div className="text-xs text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
-                  {filteredProducts.length !== products.length && (
-                    <div className="text-[10px] text-muted-foreground">
-                      {filteredProducts.length} of {products.length} products
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Action buttons row */}
@@ -461,6 +447,22 @@ const Catalog = () => {
             </div>
           ) : (
             <>
+              {/* Total Inventory Card */}
+              {products.length > 0 && (
+                <div className="mb-6 flex justify-end">
+                  <div className="inline-flex flex-col items-end gap-1 px-6 py-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border-2 border-primary/30 shadow-lg">
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Inventory Value</div>
+                    <div className="text-3xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                    <div className="text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
+                    {filteredProducts.length !== products.length && (
+                      <div className="text-xs text-muted-foreground mt-1 bg-muted/50 px-2 py-0.5 rounded">
+                        Showing {filteredProducts.length} of {products.length} products
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <CatalogFilters
                 filters={filters}
                 onFilterChange={setFilters}
