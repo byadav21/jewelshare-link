@@ -136,6 +136,13 @@ serve(async (req) => {
       }
     }
 
+    // Get vendor profile for the product owner
+    const { data: vendorProfile } = await supabase
+      .from("vendor_profiles")
+      .select("*")
+      .eq("user_id", productOwnerId)
+      .maybeSingle();
+
     // Get products for the product owner (either the share link creator or their admin)
     const { data: products, error: productsError } = await supabase
       .from("products")
@@ -183,7 +190,8 @@ serve(async (req) => {
       JSON.stringify({ 
         products: adjustedProducts, 
         shareLinkId: shareLink.id,
-        shareLink 
+        shareLink,
+        vendorProfile 
       }),
       {
         status: 200,

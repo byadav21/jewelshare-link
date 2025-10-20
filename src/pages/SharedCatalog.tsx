@@ -14,6 +14,7 @@ const SharedCatalog = () => {
   const [error, setError] = useState<string | null>(null);
   const [shareLinkId, setShareLinkId] = useState<string | null>(null);
   const [usdToInr, setUsdToInr] = useState<number>(83); // Default fallback rate
+  const [vendorProfile, setVendorProfile] = useState<any>(null);
 
   useEffect(() => {
     fetchExchangeRate();
@@ -47,6 +48,7 @@ const SharedCatalog = () => {
       } else {
         setProducts(data.products || []);
         setShareLinkId(data.shareLinkId || null);
+        setVendorProfile(data.vendorProfile || null);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load catalog");
@@ -81,20 +83,99 @@ const SharedCatalog = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <Gem className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-serif font-bold text-foreground">Jewelry Catalog</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm bg-muted px-4 py-2 rounded-lg">
-                <span className="text-muted-foreground">Exchange Rate:</span>{" "}
-                <span className="font-semibold text-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <Gem className="h-8 w-8 text-primary" />
+                <h1 className="text-3xl font-serif font-bold text-foreground">
+                  {vendorProfile?.business_name || "Jewelry Catalog"}
+                </h1>
               </div>
-              {shareLinkId && (
-                <ContactOwnerDialog shareLinkId={shareLinkId} />
-              )}
+              <div className="flex items-center gap-4">
+                <div className="text-sm bg-muted px-4 py-2 rounded-lg">
+                  <span className="text-muted-foreground">Exchange Rate:</span>{" "}
+                  <span className="font-semibold text-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
+                </div>
+                {shareLinkId && (
+                  <ContactOwnerDialog shareLinkId={shareLinkId} />
+                )}
+              </div>
             </div>
+            
+            {vendorProfile && (
+              <div className="flex flex-wrap items-start gap-6 bg-muted/50 p-4 rounded-lg">
+                <div className="flex-1 min-w-[250px]">
+                  <div className="space-y-2 text-sm">
+                    {vendorProfile.address_line1 && (
+                      <p className="text-foreground">
+                        {vendorProfile.address_line1}
+                        {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
+                      </p>
+                    )}
+                    {vendorProfile.city && (
+                      <p className="text-foreground">
+                        {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}
+                      </p>
+                    )}
+                    {vendorProfile.country && (
+                      <p className="text-foreground">{vendorProfile.country}</p>
+                    )}
+                    {vendorProfile.email && (
+                      <p className="text-foreground">
+                        <span className="text-muted-foreground">Email:</span>{" "}
+                        <a href={`mailto:${vendorProfile.email}`} className="text-primary hover:underline">
+                          {vendorProfile.email}
+                        </a>
+                      </p>
+                    )}
+                    {vendorProfile.phone && (
+                      <p className="text-foreground">
+                        <span className="text-muted-foreground">Phone:</span>{" "}
+                        <a href={`tel:${vendorProfile.phone}`} className="text-primary hover:underline">
+                          {vendorProfile.phone}
+                        </a>
+                      </p>
+                    )}
+                    {vendorProfile.whatsapp_number && (
+                      <p className="text-foreground">
+                        <span className="text-muted-foreground">WhatsApp:</span>{" "}
+                        <a 
+                          href={`https://wa.me/${vendorProfile.whatsapp_number.replace(/[^0-9]/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {vendorProfile.whatsapp_number}
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  {vendorProfile.instagram_qr_url && (
+                    <div className="text-center">
+                      <img 
+                        src={vendorProfile.instagram_qr_url} 
+                        alt="Instagram QR Code" 
+                        className="w-24 h-24 object-cover rounded border border-border"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Instagram</p>
+                    </div>
+                  )}
+                  {vendorProfile.whatsapp_qr_url && (
+                    <div className="text-center">
+                      <img 
+                        src={vendorProfile.whatsapp_qr_url} 
+                        alt="WhatsApp QR Code" 
+                        className="w-24 h-24 object-cover rounded border border-border"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">WhatsApp</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>

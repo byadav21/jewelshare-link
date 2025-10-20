@@ -16,6 +16,7 @@ import CustomOrder from "./pages/CustomOrder";
 import NotFound from "./pages/NotFound";
 import PendingApproval from "./pages/PendingApproval";
 import VendorApprovals from "./pages/VendorApprovals";
+import VendorProfile from "./pages/VendorProfile";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/custom-order" element={<CustomOrder />} />
           <Route path="/pending-approval" element={<PendingApproval />} />
           <Route path="/vendor-approvals" element={<VendorApprovals />} />
+          <Route path="/vendor-profile" element={<VendorProfile />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
