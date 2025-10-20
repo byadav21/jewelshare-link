@@ -82,100 +82,78 @@ const SharedCatalog = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <Gem className="h-8 w-8 text-primary" />
-                <h1 className="text-3xl font-serif font-bold text-foreground">
-                  {vendorProfile?.business_name || "Jewelry Catalog"}
-                </h1>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-sm bg-muted px-4 py-2 rounded-lg">
-                  <span className="text-muted-foreground">Exchange Rate:</span>{" "}
-                  <span className="font-semibold text-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
-                </div>
-                {shareLinkId && (
-                  <ContactOwnerDialog shareLinkId={shareLinkId} />
-                )}
-              </div>
-            </div>
-            
-            {vendorProfile && (
-              <div className="flex flex-wrap items-start gap-6 bg-muted/50 p-4 rounded-lg">
-                <div className="flex-1 min-w-[250px]">
-                  <div className="space-y-2 text-sm">
-                    {vendorProfile.address_line1 && (
-                      <p className="text-foreground">
-                        {vendorProfile.address_line1}
-                        {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
-                      </p>
-                    )}
-                    {vendorProfile.city && (
-                      <p className="text-foreground">
-                        {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}
-                      </p>
-                    )}
-                    {vendorProfile.country && (
-                      <p className="text-foreground">{vendorProfile.country}</p>
-                    )}
-                    {vendorProfile.email && (
-                      <p className="text-foreground">
-                        <span className="text-muted-foreground">Email:</span>{" "}
-                        <a href={`mailto:${vendorProfile.email}`} className="text-primary hover:underline">
-                          {vendorProfile.email}
-                        </a>
-                      </p>
-                    )}
-                    {vendorProfile.phone && (
-                      <p className="text-foreground">
-                        <span className="text-muted-foreground">Phone:</span>{" "}
-                        <a href={`tel:${vendorProfile.phone}`} className="text-primary hover:underline">
-                          {vendorProfile.phone}
-                        </a>
-                      </p>
-                    )}
-                    {vendorProfile.whatsapp_number && (
-                      <p className="text-foreground">
-                        <span className="text-muted-foreground">WhatsApp:</span>{" "}
-                        <a 
-                          href={`https://wa.me/${vendorProfile.whatsapp_number.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          {vendorProfile.whatsapp_number}
-                        </a>
-                      </p>
-                    )}
+        <div className="container mx-auto px-4 py-4">
+          {/* First Layer: Company Details */}
+          <div className="flex items-start justify-between gap-6 mb-4">
+            <div className="flex items-center gap-3">
+              <Gem className="h-8 w-8 text-primary flex-shrink-0" />
+              {vendorProfile && (
+                <div className="flex items-center gap-6 flex-1">
+                  <div className="flex-1">
+                    <h2 className="text-xl font-serif font-bold text-foreground leading-tight mb-1.5">
+                      {vendorProfile.business_name || "My Jewelry Business"}
+                    </h2>
+                    <div className="text-sm text-muted-foreground mb-1.5">
+                      {vendorProfile.address_line1 && (
+                        <span>
+                          {vendorProfile.address_line1}
+                          {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
+                        </span>
+                      )}
+                      {vendorProfile.city && (
+                        <span className="ml-1">• {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}</span>
+                      )}
+                    </div>
+                    <div className="flex gap-4 text-sm">
+                      {vendorProfile.email && (
+                        <span className="text-primary font-medium">Email: {vendorProfile.email}</span>
+                      )}
+                      {vendorProfile.phone && (
+                        <span className="text-primary font-medium">Phone: {vendorProfile.phone}</span>
+                      )}
+                      {vendorProfile.whatsapp_number && (
+                        <span className="text-primary font-medium">WhatsApp: {vendorProfile.whatsapp_number}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex gap-4">
-                  {vendorProfile.instagram_qr_url && (
-                    <div className="text-center">
-                      <img 
-                        src={vendorProfile.instagram_qr_url} 
-                        alt="Instagram QR Code" 
-                        className="w-24 h-24 object-cover rounded border border-border"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">Instagram</p>
-                    </div>
-                  )}
-                  {vendorProfile.whatsapp_qr_url && (
-                    <div className="text-center">
-                      <img 
-                        src={vendorProfile.whatsapp_qr_url} 
-                        alt="WhatsApp QR Code" 
-                        className="w-24 h-24 object-cover rounded border border-border"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">WhatsApp</p>
-                    </div>
-                  )}
+              )}
+            </div>
+
+            <div className="flex items-start gap-3">
+              {vendorProfile?.instagram_qr_url && (
+                <div className="text-center">
+                  <img 
+                    src={vendorProfile.instagram_qr_url} 
+                    alt="Instagram QR Code" 
+                    className="w-24 h-24 object-cover rounded border border-border"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Instagram</p>
                 </div>
-              </div>
-            )}
+              )}
+              {vendorProfile?.whatsapp_qr_url && (
+                <div className="text-center">
+                  <img 
+                    src={vendorProfile.whatsapp_qr_url} 
+                    alt="WhatsApp QR Code" 
+                    className="w-24 h-24 object-cover rounded border border-border"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">WhatsApp</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Second Layer: Exchange Rate and Contact Button */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="text-sm bg-muted px-4 py-2 rounded-lg">
+              <span className="text-muted-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
+            </div>
+            <div className="flex gap-2">
+              {shareLinkId && (
+                <ContactOwnerDialog shareLinkId={shareLinkId} />
+              )}
+            </div>
           </div>
         </div>
       </header>
