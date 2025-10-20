@@ -212,12 +212,11 @@ const Catalog = () => {
     <ApprovalGuard>
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-          <div className="container mx-auto px-4 py-2">
-            {/* Consolidated Header Row */}
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="container mx-auto px-6 py-3 max-w-[1600px]">
+            <div className="flex items-start justify-between gap-6">
               {/* Left: Vendor Profile */}
               {vendorProfile && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1">
                   <div className="flex-1 min-w-[200px]">
                     <h2 className="text-base font-serif font-bold text-foreground leading-tight">
                       {vendorProfile.business_name || "My Jewelry Business"}
@@ -285,71 +284,33 @@ const Catalog = () => {
                 </div>
               )}
 
-              {/* Right: Exchange Rate */}
-              <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md border border-border whitespace-nowrap">
-                1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </div>
-            </div>
-
-            {/* Action buttons row */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Delete selected (shown only when products are selected) */}
-              {isAdmin && selectedProducts.size > 0 && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">Delete Selected</span>
-                      <span className="sm:hidden">Delete</span> ({selectedProducts.size})
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Selected Products?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete {selectedProducts.size} selected product(s). This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Delete Selected
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-
-              {/* Primary CTA */}
-              <Button variant="default" size="sm" onClick={() => navigate("/custom-order")}>
-                <Gem className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Build Your Jewelry</span>
-                <span className="sm:hidden">Build</span>
-              </Button>
-
-              {/* Secondary actions - visible on desktop */}
-              <div className="hidden lg:flex items-center gap-2">
+              {/* Center: Action Buttons */}
+              <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+                <Button variant="default" size="sm" onClick={() => navigate("/custom-order")}>
+                  <Gem className="h-4 w-4 mr-2" />
+                  Build
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate("/interests")}>
                   <Heart className="h-4 w-4 mr-2" />
-                  View Interests
+                  Interests
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate("/vendor-profile")}>
                   <Building2 className="h-4 w-4 mr-2" />
-                  Vendor Profile
+                  Profile
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate("/share")}>
                   <Share2 className="h-4 w-4 mr-2" />
-                  Share Catalog
+                  Share
                 </Button>
                 {isAdmin && (
                   <>
                     <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
                       <LayoutDashboard className="h-4 w-4 mr-2" />
-                      Admin Dashboard
+                      Admin
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => navigate("/add-product")}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Product
+                      Add
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => navigate("/import")}>
                       <FileSpreadsheet className="h-4 w-4 mr-2" />
@@ -359,6 +320,30 @@ const Catalog = () => {
                       <Users className="h-4 w-4 mr-2" />
                       Team
                     </Button>
+                    {selectedProducts.size > 0 && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete ({selectedProducts.size})
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Selected Products?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete {selectedProducts.size} selected product(s). This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Delete Selected
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </>
                 )}
                 <Button variant="outline" size="sm" onClick={() => navigate("/active-sessions")}>
@@ -371,7 +356,7 @@ const Catalog = () => {
                 </Button>
               </div>
 
-              {/* Mobile menu */}
+              {/* Mobile Menu */}
               <div className="lg:hidden ml-auto">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -381,6 +366,10 @@ const Catalog = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
+                    <DropdownMenuItem onClick={() => navigate("/custom-order")}>
+                      <Gem className="h-4 w-4 mr-2" />
+                      Build Your Jewelry
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/interests")}>
                       <Heart className="h-4 w-4 mr-2" />
                       View Interests
@@ -426,13 +415,32 @@ const Catalog = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+
+              {/* Right: Exchange Rate & Inventory */}
+              <div className="flex flex-col items-end gap-2">
+                <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-md border border-border whitespace-nowrap">
+                  1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </div>
+                {products.length > 0 && (
+                  <div className="flex flex-col items-end gap-0.5 px-3 py-1.5 bg-primary/10 rounded-lg border border-primary/30">
+                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
+                    <div className="text-lg font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                    <div className="text-xs text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
+                    {filteredProducts.length !== products.length && (
+                      <div className="text-[10px] text-muted-foreground">
+                        {filteredProducts.length} of {products.length} products
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
 
         <main className="container mx-auto px-4 py-8">
           {loading ? (
-            <div className="text-center py-12">
+            <div className="flex justify-center items-center min-h-[50vh]">
               <div className="animate-pulse text-primary text-xl">Loading catalog...</div>
             </div>
           ) : products.length === 0 ? (
@@ -447,22 +455,6 @@ const Catalog = () => {
             </div>
           ) : (
             <>
-              {/* Total Inventory Card */}
-              {products.length > 0 && (
-                <div className="mb-6 flex justify-end">
-                  <div className="inline-flex flex-col items-end gap-1 px-6 py-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border-2 border-primary/30 shadow-lg">
-                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Inventory Value</div>
-                    <div className="text-3xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                    <div className="text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
-                    {filteredProducts.length !== products.length && (
-                      <div className="text-xs text-muted-foreground mt-1 bg-muted/50 px-2 py-0.5 rounded">
-                        Showing {filteredProducts.length} of {products.length} products
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
               <CatalogFilters
                 filters={filters}
                 onFilterChange={setFilters}
