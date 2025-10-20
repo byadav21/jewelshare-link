@@ -51,22 +51,33 @@ const Catalog = () => {
 
   const fetchVendorProfile = async () => {
     try {
+      console.log("🔍 Fetching vendor profile...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      console.log("👤 Current user:", user?.id);
+      
+      if (!user) {
+        console.log("❌ No user found");
+        return;
+      }
 
       const { data, error } = await supabase
-        .from("vendor_profiles" as any)
+        .from("vendor_profiles")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
 
+      console.log("📊 Vendor profile query result:", { data, error });
+
       if (error && error.code !== 'PGRST116') {
-        console.error("Error fetching vendor profile:", error);
+        console.error("❌ Error fetching vendor profile:", error);
       } else if (data) {
+        console.log("✅ Vendor profile loaded:", data);
         setVendorProfile(data);
+      } else {
+        console.log("ℹ️ No vendor profile found for this user");
       }
     } catch (error) {
-      console.error("Failed to fetch vendor profile:", error);
+      console.error("💥 Failed to fetch vendor profile:", error);
     }
   };
 
