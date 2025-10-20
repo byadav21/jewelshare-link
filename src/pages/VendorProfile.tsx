@@ -82,6 +82,8 @@ const VendorProfile = () => {
           user_id: user.id,
           ...formData,
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
