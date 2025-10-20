@@ -80,7 +80,7 @@ const Share = () => {
   };
 
   const copyToClipboard = (token: string) => {
-    const url = `${window.location.origin}/shared/${token}`;
+    const url = `${window.location.origin}/shared/${encodeURIComponent(token)}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard!");
   };
@@ -200,7 +200,7 @@ const Share = () => {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => window.open(`/shared/${link.share_token}`, "_blank")}
+                              onClick={() => window.open(`/shared/${encodeURIComponent(link.share_token)}`, "_blank")}
                             >
                               <ExternalLink className="h-4 w-4" />
                             </Button>

@@ -37,8 +37,9 @@ const SharedCatalog = () => {
 
   const fetchSharedCatalog = async () => {
     try {
+      const decodedToken = token ? decodeURIComponent(token) : '';
       const { data, error } = await supabase.functions.invoke("get-shared-catalog", {
-        body: { shareToken: token },
+        body: { shareToken: decodedToken },
       });
 
       if (error) throw error;
