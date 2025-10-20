@@ -307,6 +307,63 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_profiles: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          business_name: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          instagram_qr_url: string | null
+          phone: string | null
+          pincode: string | null
+          state: string | null
+          updated_at: string | null
+          user_id: string
+          whatsapp_number: string | null
+          whatsapp_qr_url: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          business_name?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          instagram_qr_url?: string | null
+          phone?: string | null
+          pincode?: string | null
+          state?: string | null
+          updated_at?: string | null
+          user_id: string
+          whatsapp_number?: string | null
+          whatsapp_qr_url?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          business_name?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          instagram_qr_url?: string | null
+          phone?: string | null
+          pincode?: string | null
+          state?: string | null
+          updated_at?: string | null
+          user_id?: string
+          whatsapp_number?: string | null
+          whatsapp_qr_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
