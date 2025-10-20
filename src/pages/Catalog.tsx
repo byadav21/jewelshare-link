@@ -219,10 +219,10 @@ const Catalog = () => {
               {vendorProfile && (
                 <div className="flex items-center gap-6 flex-1">
                   <div className="flex-1">
-                    <h2 className="text-lg font-serif font-bold text-foreground leading-tight mb-1">
+                    <h2 className="text-xl font-serif font-bold text-foreground leading-tight mb-1.5">
                       {vendorProfile.business_name || "My Jewelry Business"}
                     </h2>
-                    <div className="text-xs text-muted-foreground mb-1">
+                    <div className="text-sm text-muted-foreground mb-1.5">
                       {vendorProfile.address_line1 && (
                         <span>
                           {vendorProfile.address_line1}
@@ -233,7 +233,7 @@ const Catalog = () => {
                         <span className="ml-1">• {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}</span>
                       )}
                     </div>
-                    <div className="flex gap-4 text-xs">
+                    <div className="flex gap-4 text-sm">
                       {vendorProfile.email && (
                         <span className="text-primary font-medium">Email: {vendorProfile.email}</span>
                       )}
