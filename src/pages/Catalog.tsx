@@ -287,13 +287,9 @@ const Catalog = () => {
               </div>
             )}
 
-            {/* Top row: Title, Exchange Rate, and Inventory */}
+            {/* Top row: Exchange Rate and Inventory */}
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <Gem className="h-7 w-7 text-primary" />
-                  <h1 className="text-2xl md:text-3xl font-serif font-bold text-foreground">My Jewelry Catalog</h1>
-                </div>
                 <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md border border-border">
                   1 USD = ₹{usdRate.toFixed(2)} INR
                   <span className="mx-2">•</span>
