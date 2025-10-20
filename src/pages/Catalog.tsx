@@ -7,7 +7,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -248,6 +248,10 @@ const Catalog = () => {
                   <Heart className="h-4 w-4 mr-2" />
                   View Interests
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate("/vendor-profile")}>
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Vendor Profile
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate("/share")}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Share Catalog
@@ -291,6 +295,10 @@ const Catalog = () => {
                     <DropdownMenuItem onClick={() => navigate("/interests")}>
                       <Heart className="h-4 w-4 mr-2" />
                       View Interests
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/vendor-profile")}>
+                      <Building2 className="h-4 w-4 mr-2" />
+                      Vendor Profile
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/share")}>
                       <Share2 className="h-4 w-4 mr-2" />
