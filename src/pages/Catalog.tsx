@@ -212,16 +212,17 @@ const Catalog = () => {
     <ApprovalGuard>
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-          <div className="container mx-auto px-6 py-3 max-w-[1600px]">
-            <div className="flex items-start justify-between gap-6">
-              {/* Left: Vendor Profile */}
+          <div className="container mx-auto px-6 py-2.5 max-w-[1800px]">
+            {/* First Layer: Company Details */}
+            <div className="flex items-center justify-between gap-6">
+              {/* Left: Vendor Profile with more space */}
               {vendorProfile && (
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="flex-1 min-w-[200px]">
-                    <h2 className="text-base font-serif font-bold text-foreground leading-tight">
+                <div className="flex items-center gap-6 flex-1">
+                  <div className="flex-1">
+                    <h2 className="text-lg font-serif font-bold text-foreground leading-tight mb-1">
                       {vendorProfile.business_name || "My Jewelry Business"}
                     </h2>
-                    <div className="text-xs text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground mb-1">
                       {vendorProfile.address_line1 && (
                         <span>
                           {vendorProfile.address_line1}
@@ -232,41 +233,30 @@ const Catalog = () => {
                         <span className="ml-1">• {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}</span>
                       )}
                     </div>
-                    <div className="flex gap-3 text-xs mt-0.5">
+                    <div className="flex gap-4 text-xs">
                       {vendorProfile.email && (
-                        <a href={`mailto:${vendorProfile.email}`} className="text-primary hover:underline">
-                          Email: {vendorProfile.email}
-                        </a>
+                        <span className="text-primary font-medium">Email: {vendorProfile.email}</span>
                       )}
                       {vendorProfile.phone && (
-                        <a href={`tel:${vendorProfile.phone}`} className="text-primary hover:underline">
-                          Phone: {vendorProfile.phone}
-                        </a>
+                        <span className="text-primary font-medium">Phone: {vendorProfile.phone}</span>
                       )}
                       {vendorProfile.whatsapp_number && (
-                        <a 
-                          href={`https://wa.me/${vendorProfile.whatsapp_number.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          WhatsApp: {vendorProfile.whatsapp_number}
-                        </a>
+                        <span className="text-primary font-medium">WhatsApp: {vendorProfile.whatsapp_number}</span>
                       )}
                     </div>
                   </div>
                   
                   {/* QR Codes */}
                   {(vendorProfile.instagram_qr_url || vendorProfile.whatsapp_qr_url) && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       {vendorProfile.instagram_qr_url && (
                         <div className="text-center">
                           <img 
                             src={vendorProfile.instagram_qr_url} 
                             alt="Instagram" 
-                            className="w-16 h-16 object-cover rounded border border-border"
+                            className="w-20 h-20 object-cover rounded border border-border"
                           />
-                          <p className="text-[10px] text-muted-foreground mt-0.5">Instagram</p>
+                          <p className="text-[10px] text-muted-foreground mt-1">Instagram</p>
                         </div>
                       )}
                       {vendorProfile.whatsapp_qr_url && (
@@ -274,9 +264,9 @@ const Catalog = () => {
                           <img 
                             src={vendorProfile.whatsapp_qr_url} 
                             alt="WhatsApp" 
-                            className="w-16 h-16 object-cover rounded border border-border"
+                            className="w-20 h-20 object-cover rounded border border-border"
                           />
-                          <p className="text-[10px] text-muted-foreground mt-0.5">WhatsApp</p>
+                          <p className="text-[10px] text-muted-foreground mt-1">WhatsApp</p>
                         </div>
                       )}
                     </div>
@@ -284,8 +274,29 @@ const Catalog = () => {
                 </div>
               )}
 
-              {/* Center: Action Buttons */}
-              <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+              {/* Right: Exchange Rate & Total Inventory */}
+              <div className="flex flex-col items-end gap-2">
+                <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md border border-border whitespace-nowrap">
+                  1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </div>
+                {products.length > 0 && (
+                  <div className="flex flex-col items-end gap-0.5 px-4 py-2 bg-primary/10 rounded-lg border border-primary/30">
+                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
+                    <div className="text-xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                    <div className="text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
+                    {filteredProducts.length !== products.length && (
+                      <div className="text-[10px] text-muted-foreground">
+                        {filteredProducts.length} of {products.length} products
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Second Layer: Action Buttons */}
+            <div className="flex items-center justify-center gap-2 mt-2.5 pt-2.5 border-t border-border/50">
+              <div className="hidden lg:flex items-center gap-2">
                 <Button variant="default" size="sm" onClick={() => navigate("/custom-order")}>
                   <Gem className="h-4 w-4 mr-2" />
                   Build
@@ -357,7 +368,7 @@ const Catalog = () => {
               </div>
 
               {/* Mobile Menu */}
-              <div className="lg:hidden ml-auto">
+              <div className="lg:hidden">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
@@ -414,25 +425,6 @@ const Catalog = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-
-              {/* Right: Exchange Rate & Inventory */}
-              <div className="flex flex-col items-end gap-2">
-                <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-md border border-border whitespace-nowrap">
-                  1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </div>
-                {products.length > 0 && (
-                  <div className="flex flex-col items-end gap-0.5 px-3 py-1.5 bg-primary/10 rounded-lg border border-primary/30">
-                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
-                    <div className="text-lg font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                    <div className="text-xs text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
-                    {filteredProducts.length !== products.length && (
-                      <div className="text-[10px] text-muted-foreground">
-                        {filteredProducts.length} of {products.length} products
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
