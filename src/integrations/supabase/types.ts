@@ -363,13 +363,19 @@ export type Database = {
       vendor_permissions: {
         Row: {
           can_add_products: boolean | null
+          can_add_vendor_details: boolean | null
           can_delete_products: boolean | null
           can_edit_products: boolean | null
           can_edit_profile: boolean | null
           can_import_data: boolean | null
+          can_manage_custom_orders: boolean | null
+          can_manage_share_links: boolean | null
           can_manage_team: boolean | null
           can_share_catalog: boolean | null
+          can_view_catalog: boolean | null
+          can_view_custom_orders: boolean | null
           can_view_interests: boolean | null
+          can_view_share_links: boolean | null
           created_at: string | null
           id: string
           updated_at: string | null
@@ -377,13 +383,19 @@ export type Database = {
         }
         Insert: {
           can_add_products?: boolean | null
+          can_add_vendor_details?: boolean | null
           can_delete_products?: boolean | null
           can_edit_products?: boolean | null
           can_edit_profile?: boolean | null
           can_import_data?: boolean | null
+          can_manage_custom_orders?: boolean | null
+          can_manage_share_links?: boolean | null
           can_manage_team?: boolean | null
           can_share_catalog?: boolean | null
+          can_view_catalog?: boolean | null
+          can_view_custom_orders?: boolean | null
           can_view_interests?: boolean | null
+          can_view_share_links?: boolean | null
           created_at?: string | null
           id?: string
           updated_at?: string | null
@@ -391,13 +403,19 @@ export type Database = {
         }
         Update: {
           can_add_products?: boolean | null
+          can_add_vendor_details?: boolean | null
           can_delete_products?: boolean | null
           can_edit_products?: boolean | null
           can_edit_profile?: boolean | null
           can_import_data?: boolean | null
+          can_manage_custom_orders?: boolean | null
+          can_manage_share_links?: boolean | null
           can_manage_team?: boolean | null
           can_share_catalog?: boolean | null
+          can_view_catalog?: boolean | null
+          can_view_custom_orders?: boolean | null
           can_view_interests?: boolean | null
+          can_view_share_links?: boolean | null
           created_at?: string | null
           id?: string
           updated_at?: string | null

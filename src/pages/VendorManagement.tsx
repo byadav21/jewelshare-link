@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label";
 
 interface VendorPermissions {
+  can_view_catalog: boolean;
   can_add_products: boolean;
   can_import_data: boolean;
   can_share_catalog: boolean;
@@ -24,6 +25,11 @@ interface VendorPermissions {
   can_delete_products: boolean;
   can_edit_products: boolean;
   can_edit_profile: boolean;
+  can_add_vendor_details: boolean;
+  can_view_custom_orders: boolean;
+  can_manage_custom_orders: boolean;
+  can_view_share_links: boolean;
+  can_manage_share_links: boolean;
 }
 
 interface Vendor {
@@ -108,6 +114,7 @@ export default function VendorManagement() {
           product_count: userProducts.filter(p => !p.deleted_at).length,
           deleted_product_count: userProducts.filter(p => p.deleted_at).length,
           permissions: vendorPermissions ? {
+            can_view_catalog: vendorPermissions.can_view_catalog,
             can_add_products: vendorPermissions.can_add_products,
             can_import_data: vendorPermissions.can_import_data,
             can_share_catalog: vendorPermissions.can_share_catalog,
@@ -116,6 +123,11 @@ export default function VendorManagement() {
             can_delete_products: vendorPermissions.can_delete_products,
             can_edit_products: vendorPermissions.can_edit_products,
             can_edit_profile: vendorPermissions.can_edit_profile,
+            can_add_vendor_details: vendorPermissions.can_add_vendor_details,
+            can_view_custom_orders: vendorPermissions.can_view_custom_orders,
+            can_manage_custom_orders: vendorPermissions.can_manage_custom_orders,
+            can_view_share_links: vendorPermissions.can_view_share_links,
+            can_manage_share_links: vendorPermissions.can_manage_share_links,
           } : undefined,
         };
       });
@@ -171,6 +183,7 @@ export default function VendorManagement() {
           .from("vendor_permissions")
           .insert({
             user_id: vendor.id,
+            can_view_catalog: true,
             can_add_products: true,
             can_import_data: true,
             can_share_catalog: true,
@@ -179,6 +192,11 @@ export default function VendorManagement() {
             can_delete_products: true,
             can_edit_products: true,
             can_edit_profile: true,
+            can_add_vendor_details: true,
+            can_view_custom_orders: true,
+            can_manage_custom_orders: false,
+            can_view_share_links: true,
+            can_manage_share_links: true,
           });
 
         if (error) throw error;
@@ -336,6 +354,26 @@ export default function VendorManagement() {
               {selectedVendor && (
                 <div className="space-y-4 py-4">
                   <div className="flex items-center justify-between">
+                    <Label htmlFor="can_view_catalog">View Catalog</Label>
+                    <Switch
+                      id="can_view_catalog"
+                      checked={selectedVendor.permissions?.can_view_catalog ?? true}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_view_catalog: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_add_vendor_details">Add Vendor Details</Label>
+                    <Switch
+                      id="can_add_vendor_details"
+                      checked={selectedVendor.permissions?.can_add_vendor_details ?? true}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_add_vendor_details: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
                     <Label htmlFor="can_add_products">Add Products</Label>
                     <Switch
                       id="can_add_products"
@@ -352,6 +390,26 @@ export default function VendorManagement() {
                       checked={selectedVendor.permissions?.can_import_data ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_import_data: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_view_share_links">View Share Links</Label>
+                    <Switch
+                      id="can_view_share_links"
+                      checked={selectedVendor.permissions?.can_view_share_links ?? true}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_view_share_links: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_manage_share_links">Manage Share Links</Label>
+                    <Switch
+                      id="can_manage_share_links"
+                      checked={selectedVendor.permissions?.can_manage_share_links ?? true}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_manage_share_links: checked })
                       }
                     />
                   </div>
@@ -382,6 +440,26 @@ export default function VendorManagement() {
                       checked={selectedVendor.permissions?.can_view_interests ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_view_interests: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_view_custom_orders">View Custom Orders</Label>
+                    <Switch
+                      id="can_view_custom_orders"
+                      checked={selectedVendor.permissions?.can_view_custom_orders ?? true}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_view_custom_orders: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_manage_custom_orders">Manage Custom Orders</Label>
+                    <Switch
+                      id="can_manage_custom_orders"
+                      checked={selectedVendor.permissions?.can_manage_custom_orders ?? false}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_manage_custom_orders: checked })
                       }
                     />
                   </div>
