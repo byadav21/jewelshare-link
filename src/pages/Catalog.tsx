@@ -297,10 +297,6 @@ const Catalog = () => {
             {/* Second Layer: Action Buttons */}
             <div className="flex items-center justify-center gap-2 mt-2.5 pt-2.5 border-t border-border/50">
               <div className="hidden lg:flex items-center gap-2">
-                <Button variant="default" size="sm" onClick={() => navigate("/custom-order")}>
-                  <Gem className="h-4 w-4 mr-2" />
-                  Build
-                </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate("/interests")}>
                   <Heart className="h-4 w-4 mr-2" />
                   Interests
@@ -377,10 +373,6 @@ const Catalog = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
-                    <DropdownMenuItem onClick={() => navigate("/custom-order")}>
-                      <Gem className="h-4 w-4 mr-2" />
-                      Build Your Jewelry
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/interests")}>
                       <Heart className="h-4 w-4 mr-2" />
                       View Interests

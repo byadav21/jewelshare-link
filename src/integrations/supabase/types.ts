@@ -65,6 +65,7 @@ export type Database = {
           id: string
           metal_type: string | null
           reference_images: string[] | null
+          share_link_id: string | null
           status: string
           updated_at: string
         }
@@ -80,6 +81,7 @@ export type Database = {
           id?: string
           metal_type?: string | null
           reference_images?: string[] | null
+          share_link_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -95,10 +97,19 @@ export type Database = {
           id?: string
           metal_type?: string | null
           reference_images?: string[] | null
+          share_link_id?: string | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "custom_orders_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_interests: {
         Row: {
@@ -220,6 +231,7 @@ export type Database = {
           markdown_percentage: number | null
           markup_percentage: number | null
           share_token: string
+          show_vendor_details: boolean
           user_id: string
           view_count: number | null
         }
@@ -231,6 +243,7 @@ export type Database = {
           markdown_percentage?: number | null
           markup_percentage?: number | null
           share_token?: string
+          show_vendor_details?: boolean
           user_id: string
           view_count?: number | null
         }
@@ -242,6 +255,7 @@ export type Database = {
           markdown_percentage?: number | null
           markup_percentage?: number | null
           share_token?: string
+          show_vendor_details?: boolean
           user_id?: string
           view_count?: number | null
         }

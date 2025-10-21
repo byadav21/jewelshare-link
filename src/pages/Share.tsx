@@ -17,6 +17,7 @@ const Share = () => {
     markup_percentage: "",
     markdown_percentage: "",
     expires_at: "",
+    show_vendor_details: true,
   });
 
   useEffect(() => {
@@ -62,6 +63,7 @@ const Share = () => {
             markup_percentage: markup,
             markdown_percentage: markdown,
             expires_at: formData.expires_at,
+            show_vendor_details: formData.show_vendor_details,
           },
         ])
         .select()
@@ -70,7 +72,7 @@ const Share = () => {
       if (error) throw error;
 
       toast.success("Share link created!");
-      setFormData({ markup_percentage: "", markdown_percentage: "", expires_at: "" });
+      setFormData({ markup_percentage: "", markdown_percentage: "", expires_at: "", show_vendor_details: true });
       fetchShareLinks();
     } catch (error: any) {
       toast.error(error.message || "Failed to create share link");
@@ -161,6 +163,24 @@ const Share = () => {
                     onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="show_vendor_details"
+                      checked={formData.show_vendor_details}
+                      onChange={(e) => setFormData({ ...formData, show_vendor_details: e.target.checked })}
+                      className="h-4 w-4 rounded border-input"
+                    />
+                    <Label htmlFor="show_vendor_details" className="cursor-pointer">
+                      Show vendor details in shared catalog header
+                    </Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, your business name, contact info, and QR codes will be visible in the shared catalog
+                  </p>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>

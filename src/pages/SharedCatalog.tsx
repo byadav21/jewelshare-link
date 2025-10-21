@@ -4,8 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { InterestDialog } from "@/components/InterestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
-import { Gem, AlertCircle } from "lucide-react";
+import { Gem, AlertCircle, Building2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { customOrderSchema } from "@/lib/validations";
 
 const SharedCatalog = () => {
   const { token } = useParams<{ token: string }>();
@@ -15,6 +23,18 @@ const SharedCatalog = () => {
   const [shareLinkId, setShareLinkId] = useState<string | null>(null);
   const [usdToInr, setUsdToInr] = useState<number>(83); // Default fallback rate
   const [vendorProfile, setVendorProfile] = useState<any>(null);
+  const [showVendorDetails, setShowVendorDetails] = useState(true);
+  const [showCustomOrderForm, setShowCustomOrderForm] = useState(false);
+  const [customOrderLoading, setCustomOrderLoading] = useState(false);
+  const [customOrderData, setCustomOrderData] = useState({
+    customer_name: "",
+    customer_email: "",
+    customer_phone: "",
+    metal_type: "",
+    gemstone_preference: "",
+    design_description: "",
+    budget_range: "",
+  });
 
   useEffect(() => {
     fetchExchangeRate();
@@ -50,12 +70,60 @@ const SharedCatalog = () => {
         setProducts(data.products || []);
         setShareLinkId(data.shareLinkId || null);
         setVendorProfile(data.vendorProfile || null);
+        setShowVendorDetails(data.shareLink?.show_vendor_details ?? true);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load catalog");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCustomOrderChange = (field: string, value: string) => {
+    setCustomOrderData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCustomOrderSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const validation = customOrderSchema.safeParse(customOrderData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
+    setCustomOrderLoading(true);
+
+    const { error } = await supabase.from("custom_orders").insert({
+      customer_name: validation.data.customer_name,
+      customer_email: validation.data.customer_email,
+      customer_phone: validation.data.customer_phone || null,
+      metal_type: validation.data.metal_type || null,
+      gemstone_preference: validation.data.gemstone_preference || null,
+      design_description: validation.data.design_description,
+      budget_range: validation.data.budget_range || null,
+      share_link_id: shareLinkId,
+    });
+
+    setCustomOrderLoading(false);
+
+    if (error) {
+      toast.error("Failed to submit your request. Please try again.");
+      return;
+    }
+
+    toast.success("Your custom order request has been submitted!");
+    setShowCustomOrderForm(false);
+    setCustomOrderData({
+      customer_name: "",
+      customer_email: "",
+      customer_phone: "",
+      metal_type: "",
+      gemstone_preference: "",
+      design_description: "",
+      budget_range: "",
+    });
   };
 
   if (loading) {
@@ -85,10 +153,11 @@ const SharedCatalog = () => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           {/* First Layer: Company Details */}
-          <div className="flex items-start justify-between gap-6 mb-4">
-            <div className="flex items-center gap-3">
-              <Gem className="h-8 w-8 text-primary flex-shrink-0" />
-              {vendorProfile && (
+          {showVendorDetails && (
+            <div className="flex items-start justify-between gap-6 mb-4">
+              <div className="flex items-center gap-3">
+                <Gem className="h-8 w-8 text-primary flex-shrink-0" />
+                {vendorProfile && (
                 <div className="flex items-center gap-6 flex-1">
                   <div className="flex-1">
                     <h2 className="text-xl font-serif font-bold text-foreground leading-tight mb-1.5">
@@ -143,7 +212,8 @@ const SharedCatalog = () => {
                 </div>
               )}
             </div>
-          </div>
+            </div>
+          )}
 
           {/* Second Layer: Exchange Rate and Contact Button */}
           <div className="flex items-center justify-between gap-4">
@@ -152,7 +222,127 @@ const SharedCatalog = () => {
             </div>
             <div className="flex gap-2">
               {shareLinkId && (
-                <ContactOwnerDialog shareLinkId={shareLinkId} />
+                <>
+                  <Dialog open={showCustomOrderForm} onOpenChange={setShowCustomOrderForm}>
+                    <DialogTrigger asChild>
+                      <Button variant="default" size="sm">
+                        <Building2 className="h-4 w-4 mr-2" />
+                        Build Your Jewelry
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Build Your Custom Jewelry</DialogTitle>
+                        <DialogDescription>
+                          Tell us about your dream piece and we'll bring it to life
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleCustomOrderSubmit} className="space-y-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="customer_name">Your Name *</Label>
+                            <Input
+                              id="customer_name"
+                              value={customOrderData.customer_name}
+                              onChange={(e) => handleCustomOrderChange("customer_name", e.target.value)}
+                              placeholder="John Doe"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="customer_email">Email *</Label>
+                            <Input
+                              id="customer_email"
+                              type="email"
+                              value={customOrderData.customer_email}
+                              onChange={(e) => handleCustomOrderChange("customer_email", e.target.value)}
+                              placeholder="john@example.com"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="customer_phone">Phone Number (Optional)</Label>
+                          <Input
+                            id="customer_phone"
+                            type="tel"
+                            value={customOrderData.customer_phone}
+                            onChange={(e) => handleCustomOrderChange("customer_phone", e.target.value)}
+                            placeholder="+1 (555) 000-0000"
+                          />
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="metal_type">Preferred Metal Type</Label>
+                            <Select
+                              value={customOrderData.metal_type}
+                              onValueChange={(value) => handleCustomOrderChange("metal_type", value)}
+                            >
+                              <SelectTrigger id="metal_type">
+                                <SelectValue placeholder="Select metal type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Gold">Gold</SelectItem>
+                                <SelectItem value="White Gold">White Gold</SelectItem>
+                                <SelectItem value="Rose Gold">Rose Gold</SelectItem>
+                                <SelectItem value="Platinum">Platinum</SelectItem>
+                                <SelectItem value="Silver">Silver</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="gemstone_preference">Gemstone Preference</Label>
+                            <Input
+                              id="gemstone_preference"
+                              value={customOrderData.gemstone_preference}
+                              onChange={(e) => handleCustomOrderChange("gemstone_preference", e.target.value)}
+                              placeholder="e.g., Diamond, Sapphire, Ruby"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="budget_range">Budget Range</Label>
+                          <Select
+                            value={customOrderData.budget_range}
+                            onValueChange={(value) => handleCustomOrderChange("budget_range", value)}
+                          >
+                            <SelectTrigger id="budget_range">
+                              <SelectValue placeholder="Select your budget range" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Under ₹50,000">Under ₹50,000</SelectItem>
+                              <SelectItem value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</SelectItem>
+                              <SelectItem value="₹1,00,000 - ₹2,50,000">₹1,00,000 - ₹2,50,000</SelectItem>
+                              <SelectItem value="₹2,50,000 - ₹5,00,000">₹2,50,000 - ₹5,00,000</SelectItem>
+                              <SelectItem value="Above ₹5,00,000">Above ₹5,00,000</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="design_description">Design Description *</Label>
+                          <Textarea
+                            id="design_description"
+                            value={customOrderData.design_description}
+                            onChange={(e) => handleCustomOrderChange("design_description", e.target.value)}
+                            placeholder="Describe your ideal piece in detail..."
+                            rows={4}
+                            required
+                          />
+                        </div>
+
+                        <Button type="submit" className="w-full" disabled={customOrderLoading}>
+                          {customOrderLoading ? "Submitting..." : "Submit Custom Order Request"}
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                  <ContactOwnerDialog shareLinkId={shareLinkId} />
+                </>
               )}
             </div>
           </div>

@@ -190,7 +190,12 @@ serve(async (req) => {
       JSON.stringify({ 
         products: adjustedProducts, 
         shareLinkId: shareLink.id,
-        shareLink,
+        shareLink: {
+          id: shareLink.id,
+          show_vendor_details: shareLink.show_vendor_details,
+          markup_percentage: shareLink.markup_percentage,
+          markdown_percentage: shareLink.markdown_percentage,
+        },
         vendorProfile 
       }),
       {
