@@ -77,6 +77,19 @@ export default function VendorManagement() {
 
       if (approvalsError) throw approvalsError;
 
+      // Get admin users to exclude from vendor list
+      const { data: adminRoles, error: adminError } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+
+      if (adminError) throw adminError;
+
+      const adminUserIds = new Set(adminRoles?.map(r => r.user_id) || []);
+      
+      // Filter out admin users from vendors
+      const vendorApprovals = approvals?.filter(a => !adminUserIds.has(a.user_id)) || [];
+
       // Get vendor profiles which contain email
       const { data: profiles, error: profilesError } = await supabase
         .from("vendor_profiles")
@@ -99,7 +112,7 @@ export default function VendorManagement() {
       if (permissionsError) throw permissionsError;
 
       // Combine data
-      const vendorsData: Vendor[] = approvals.map(approval => {
+      const vendorsData: Vendor[] = vendorApprovals.map(approval => {
         const profile = profiles?.find(p => p.user_id === approval.user_id);
         const userProducts = productCounts?.filter(p => p.user_id === approval.user_id) || [];
         const vendorPermissions = permissionsData?.find(p => p.user_id === approval.user_id);
