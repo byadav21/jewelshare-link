@@ -30,6 +30,8 @@ interface VendorPermissions {
   can_manage_custom_orders: boolean;
   can_view_share_links: boolean;
   can_manage_share_links: boolean;
+  can_view_sessions: boolean;
+  can_manage_sessions: boolean;
 }
 
 interface Vendor {
@@ -141,6 +143,8 @@ export default function VendorManagement() {
             can_manage_custom_orders: vendorPermissions.can_manage_custom_orders,
             can_view_share_links: vendorPermissions.can_view_share_links,
             can_manage_share_links: vendorPermissions.can_manage_share_links,
+            can_view_sessions: vendorPermissions.can_view_sessions ?? true,
+            can_manage_sessions: vendorPermissions.can_manage_sessions ?? true,
           } : undefined,
         };
       });
@@ -254,11 +258,26 @@ export default function VendorManagement() {
 
       toast.success("Permissions updated successfully");
       fetchVendors();
-      setShowPermissionsDialog(false);
     } catch (error: any) {
       toast.error("Failed to update permissions");
       console.error(error);
     }
+  };
+
+  const handlePermissionToggle = (permission: keyof VendorPermissions, value: boolean) => {
+    if (!selectedVendor) return;
+    
+    // Update local state immediately
+    setSelectedVendor({
+      ...selectedVendor,
+      permissions: {
+        ...selectedVendor.permissions!,
+        [permission]: value
+      }
+    });
+
+    // Update database
+    updateVendorPermissions(selectedVendor.id, { [permission]: value });
   };
 
   if (roleLoading || loading) {
@@ -371,9 +390,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_view_catalog"
                       checked={selectedVendor.permissions?.can_view_catalog ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_view_catalog: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_view_catalog', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -381,9 +398,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_add_vendor_details"
                       checked={selectedVendor.permissions?.can_add_vendor_details ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_add_vendor_details: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_add_vendor_details', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -391,9 +406,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_add_products"
                       checked={selectedVendor.permissions?.can_add_products ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_add_products: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_add_products', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -401,9 +414,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_import_data"
                       checked={selectedVendor.permissions?.can_import_data ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_import_data: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_import_data', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -411,9 +422,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_view_share_links"
                       checked={selectedVendor.permissions?.can_view_share_links ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_view_share_links: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_view_share_links', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -421,9 +430,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_manage_share_links"
                       checked={selectedVendor.permissions?.can_manage_share_links ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_manage_share_links: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_manage_share_links', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -431,9 +438,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_share_catalog"
                       checked={selectedVendor.permissions?.can_share_catalog ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_share_catalog: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_share_catalog', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -441,9 +446,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_manage_team"
                       checked={selectedVendor.permissions?.can_manage_team ?? false}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_manage_team: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_manage_team', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -451,9 +454,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_view_interests"
                       checked={selectedVendor.permissions?.can_view_interests ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_view_interests: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_view_interests', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -461,9 +462,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_view_custom_orders"
                       checked={selectedVendor.permissions?.can_view_custom_orders ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_view_custom_orders: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_view_custom_orders', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -471,9 +470,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_manage_custom_orders"
                       checked={selectedVendor.permissions?.can_manage_custom_orders ?? false}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_manage_custom_orders: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_manage_custom_orders', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -481,9 +478,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_delete_products"
                       checked={selectedVendor.permissions?.can_delete_products ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_delete_products: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_delete_products', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -491,9 +486,7 @@ export default function VendorManagement() {
                     <Switch
                       id="can_edit_products"
                       checked={selectedVendor.permissions?.can_edit_products ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_edit_products: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_edit_products', checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -501,9 +494,23 @@ export default function VendorManagement() {
                     <Switch
                       id="can_edit_profile"
                       checked={selectedVendor.permissions?.can_edit_profile ?? true}
-                      onCheckedChange={(checked) => 
-                        updateVendorPermissions(selectedVendor.id, { can_edit_profile: checked })
-                      }
+                      onCheckedChange={(checked) => handlePermissionToggle('can_edit_profile', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_view_sessions">View Sessions</Label>
+                    <Switch
+                      id="can_view_sessions"
+                      checked={selectedVendor.permissions?.can_view_sessions ?? true}
+                      onCheckedChange={(checked) => handlePermissionToggle('can_view_sessions', checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_manage_sessions">Manage Sessions</Label>
+                    <Switch
+                      id="can_manage_sessions"
+                      checked={selectedVendor.permissions?.can_manage_sessions ?? true}
+                      onCheckedChange={(checked) => handlePermissionToggle('can_manage_sessions', checked)}
                     />
                   </div>
                 </div>

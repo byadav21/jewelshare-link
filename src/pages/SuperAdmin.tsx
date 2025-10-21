@@ -195,7 +195,7 @@ export default function SuperAdmin() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-                <p className="text-muted-foreground mt-1">Manage your jewelry business</p>
+                <p className="text-muted-foreground mt-1">Manage vendors and approvals</p>
               </div>
               <Button variant="outline" onClick={() => navigate("/catalog")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -206,145 +206,34 @@ export default function SuperAdmin() {
         </header>
 
         <main className="container mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Inventory</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalProducts}</div>
-                <p className="text-xs text-muted-foreground">products</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Inventory Value</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">₹{stats.totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                <p className="text-xs text-muted-foreground">total retail value</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.teamMembers}</div>
-                <p className="text-xs text-muted-foreground">active members</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Share Links</CardTitle>
-                <Share2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.activeShareLinks}</div>
-                <p className="text-xs text-muted-foreground">{stats.totalShares} total, {stats.totalViews} views</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Product Interests</CardTitle>
-                <Heart className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.productInterests}</div>
-                <p className="text-xs text-muted-foreground">customer interests</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Catalog Inquiries</CardTitle>
-                <Mail className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.catalogInquiries}</div>
-                <p className="text-xs text-muted-foreground">general inquiries</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.productInterests + stats.catalogInquiries}</div>
-                <p className="text-xs text-muted-foreground">customer interactions</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/vendor-approvals")}>
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Manage your business operations</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/vendor-approvals")}>
-                  <Users className="mr-2 h-4 w-4" />
+                <CardTitle className="flex items-center gap-3">
+                  <Users className="h-6 w-6 text-primary" />
                   Vendor Approvals
+                </CardTitle>
+                <CardDescription>Review and approve new vendor applications</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  Manage Approvals
                 </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/vendor-management")}>
-                  <Users className="mr-2 h-4 w-4" />
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/vendor-management")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Users className="h-6 w-6 text-primary" />
+                  Vendor Management
+                </CardTitle>
+                <CardDescription>Manage vendor accounts and permissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
                   Manage Vendors
                 </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/interests")}>
-                  <Heart className="mr-2 h-4 w-4" />
-                  View Customer Interests
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest customer interactions and shares</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No recent activity</p>
-                  ) : (
-                    recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
-                        <div className="mt-1">
-                          {activity.type === 'share' && <Share2 className="h-4 w-4 text-blue-500" />}
-                          {activity.type === 'interest' && <Heart className="h-4 w-4 text-pink-500" />}
-                          {activity.type === 'inquiry' && <Mail className="h-4 w-4 text-purple-500" />}
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {activity.type === 'share' && 'Share Link Created'}
-                              {activity.type === 'interest' && 'Product Interest'}
-                              {activity.type === 'inquiry' && 'Catalog Inquiry'}
-                            </Badge>
-                          </div>
-                          <p className="text-sm">
-                            {activity.type === 'share' && `Token: ${activity.data.share_token?.substring(0, 8)}...`}
-                            {activity.type === 'interest' && `${activity.data.customer_name}`}
-                            {activity.type === 'inquiry' && `${activity.data.customer_name} - ${activity.data.customer_email}`}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
               </CardContent>
             </Card>
           </div>
