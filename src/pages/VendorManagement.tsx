@@ -8,21 +8,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, Trash2, User, Check, X } from "lucide-react";
+import { ArrowLeft, Trash2, Settings } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+
+interface VendorPermissions {
+  can_add_products: boolean;
+  can_import_data: boolean;
+  can_share_catalog: boolean;
+  can_manage_team: boolean;
+  can_view_interests: boolean;
+  can_delete_products: boolean;
+  can_edit_products: boolean;
+  can_edit_profile: boolean;
+}
 
 interface Vendor {
   id: string;
   email: string;
   business_name?: string;
   is_enabled: boolean;
-  has_permission: boolean;
   status: string;
   created_at: string;
   product_count: number;
   deleted_product_count: number;
+  permissions?: VendorPermissions;
 }
 
 export default function VendorManagement() {
@@ -31,6 +44,8 @@ export default function VendorManagement() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletedProducts, setDeletedProducts] = useState<any[]>([]);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -70,21 +85,38 @@ export default function VendorManagement() {
 
       if (productError) throw productError;
 
+      // Get permissions for each vendor
+      const { data: permissionsData, error: permissionsError } = await supabase
+        .from("vendor_permissions")
+        .select("*");
+
+      if (permissionsError) throw permissionsError;
+
       // Combine data
       const vendorsData: Vendor[] = approvals.map(approval => {
         const profile = profiles?.find(p => p.user_id === approval.user_id);
         const userProducts = productCounts?.filter(p => p.user_id === approval.user_id) || [];
+        const vendorPermissions = permissionsData?.find(p => p.user_id === approval.user_id);
         
         return {
           id: approval.user_id,
           email: approval.email || "N/A",
           business_name: profile?.business_name,
           is_enabled: approval.is_enabled ?? true,
-          has_permission: approval.is_enabled ?? true,
           status: approval.status,
           created_at: approval.requested_at,
           product_count: userProducts.filter(p => !p.deleted_at).length,
           deleted_product_count: userProducts.filter(p => p.deleted_at).length,
+          permissions: vendorPermissions ? {
+            can_add_products: vendorPermissions.can_add_products,
+            can_import_data: vendorPermissions.can_import_data,
+            can_share_catalog: vendorPermissions.can_share_catalog,
+            can_manage_team: vendorPermissions.can_manage_team,
+            can_view_interests: vendorPermissions.can_view_interests,
+            can_delete_products: vendorPermissions.can_delete_products,
+            can_edit_products: vendorPermissions.can_edit_products,
+            can_edit_profile: vendorPermissions.can_edit_profile,
+          } : undefined,
         };
       });
 
@@ -146,6 +178,24 @@ export default function VendorManagement() {
     }
   };
 
+  const updateVendorPermissions = async (vendorId: string, permissions: Partial<VendorPermissions>) => {
+    try {
+      const { error } = await supabase
+        .from("vendor_permissions")
+        .update(permissions)
+        .eq("user_id", vendorId);
+
+      if (error) throw error;
+
+      toast.success("Permissions updated successfully");
+      fetchVendors();
+      setShowPermissionsDialog(false);
+    } catch (error: any) {
+      toast.error("Failed to update permissions");
+      console.error(error);
+    }
+  };
+
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -187,26 +237,18 @@ export default function VendorManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Permission</TableHead>
                     <TableHead>Business Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Products</TableHead>
                     <TableHead>Deleted</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Enabled</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {vendors.map((vendor) => (
                     <TableRow key={vendor.id}>
-                      <TableCell>
-                        <div className="flex items-center justify-center">
-                          <Checkbox
-                            checked={vendor.has_permission}
-                            onCheckedChange={() => toggleVendorStatus(vendor.id, vendor.is_enabled)}
-                          />
-                        </div>
-                      </TableCell>
                       <TableCell className="font-medium">
                         {vendor.business_name || "No business name"}
                       </TableCell>
@@ -219,17 +261,23 @@ export default function VendorManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          {vendor.is_enabled ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <X className="h-4 w-4 text-red-500" />
-                          )}
-                          <Switch
-                            checked={vendor.is_enabled}
-                            onCheckedChange={() => toggleVendorStatus(vendor.id, vendor.is_enabled)}
-                          />
-                        </div>
+                        <Switch
+                          checked={vendor.is_enabled}
+                          onCheckedChange={() => toggleVendorStatus(vendor.id, vendor.is_enabled)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedVendor(vendor);
+                            setShowPermissionsDialog(true);
+                          }}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Permissions
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -244,6 +292,102 @@ export default function VendorManagement() {
               </Table>
             </CardContent>
           </Card>
+
+          {/* Permissions Dialog */}
+          <Dialog open={showPermissionsDialog} onOpenChange={setShowPermissionsDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Vendor Permissions</DialogTitle>
+                <DialogDescription>
+                  Configure what {selectedVendor?.business_name || selectedVendor?.email} can do
+                </DialogDescription>
+              </DialogHeader>
+              {selectedVendor?.permissions && (
+                <div className="space-y-4 py-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_add_products">Add Products</Label>
+                    <Switch
+                      id="can_add_products"
+                      checked={selectedVendor.permissions.can_add_products}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_add_products: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_import_data">Import Data</Label>
+                    <Switch
+                      id="can_import_data"
+                      checked={selectedVendor.permissions.can_import_data}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_import_data: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_share_catalog">Share Catalog</Label>
+                    <Switch
+                      id="can_share_catalog"
+                      checked={selectedVendor.permissions.can_share_catalog}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_share_catalog: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_manage_team">Manage Team</Label>
+                    <Switch
+                      id="can_manage_team"
+                      checked={selectedVendor.permissions.can_manage_team}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_manage_team: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_view_interests">View Interests</Label>
+                    <Switch
+                      id="can_view_interests"
+                      checked={selectedVendor.permissions.can_view_interests}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_view_interests: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_delete_products">Delete Products</Label>
+                    <Switch
+                      id="can_delete_products"
+                      checked={selectedVendor.permissions.can_delete_products}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_delete_products: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_edit_products">Edit Products</Label>
+                    <Switch
+                      id="can_edit_products"
+                      checked={selectedVendor.permissions.can_edit_products}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_edit_products: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="can_edit_profile">Edit Profile</Label>
+                    <Switch
+                      id="can_edit_profile"
+                      checked={selectedVendor.permissions.can_edit_profile}
+                      onCheckedChange={(checked) => 
+                        updateVendorPermissions(selectedVendor.id, { can_edit_profile: checked })
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
 
           {/* Deleted Products */}
           <Card>

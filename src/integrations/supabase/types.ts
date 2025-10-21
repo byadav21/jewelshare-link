@@ -360,6 +360,51 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_permissions: {
+        Row: {
+          can_add_products: boolean | null
+          can_delete_products: boolean | null
+          can_edit_products: boolean | null
+          can_edit_profile: boolean | null
+          can_import_data: boolean | null
+          can_manage_team: boolean | null
+          can_share_catalog: boolean | null
+          can_view_interests: boolean | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          can_add_products?: boolean | null
+          can_delete_products?: boolean | null
+          can_edit_products?: boolean | null
+          can_edit_profile?: boolean | null
+          can_import_data?: boolean | null
+          can_manage_team?: boolean | null
+          can_share_catalog?: boolean | null
+          can_view_interests?: boolean | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          can_add_products?: boolean | null
+          can_delete_products?: boolean | null
+          can_edit_products?: boolean | null
+          can_edit_profile?: boolean | null
+          can_import_data?: boolean | null
+          can_manage_team?: boolean | null
+          can_share_catalog?: boolean | null
+          can_view_interests?: boolean | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       vendor_profiles: {
         Row: {
           address_line1: string | null
