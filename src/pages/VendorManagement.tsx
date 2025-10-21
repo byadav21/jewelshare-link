@@ -161,6 +161,40 @@ export default function VendorManagement() {
     }
   };
 
+  const openPermissionsDialog = async (vendor: Vendor) => {
+    setSelectedVendor(vendor);
+    
+    // If vendor doesn't have permissions yet, create default ones
+    if (!vendor.permissions) {
+      try {
+        const { error } = await supabase
+          .from("vendor_permissions")
+          .insert({
+            user_id: vendor.id,
+            can_add_products: true,
+            can_import_data: true,
+            can_share_catalog: true,
+            can_manage_team: false,
+            can_view_interests: true,
+            can_delete_products: true,
+            can_edit_products: true,
+            can_edit_profile: true,
+          });
+
+        if (error) throw error;
+        
+        // Refresh vendors to get the new permissions
+        await fetchVendors();
+      } catch (error: any) {
+        console.error("Failed to create default permissions:", error);
+        toast.error("Failed to initialize permissions");
+        return;
+      }
+    }
+    
+    setShowPermissionsDialog(true);
+  };
+
   const handleHardDelete = async (productIds: string[]) => {
     try {
       const { error } = await supabase.rpc("hard_delete_products", {
@@ -270,10 +304,7 @@ export default function VendorManagement() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => {
-                            setSelectedVendor(vendor);
-                            setShowPermissionsDialog(true);
-                          }}
+                          onClick={() => openPermissionsDialog(vendor)}
                         >
                           <Settings className="h-4 w-4 mr-2" />
                           Permissions
@@ -302,13 +333,13 @@ export default function VendorManagement() {
                   Configure what {selectedVendor?.business_name || selectedVendor?.email} can do
                 </DialogDescription>
               </DialogHeader>
-              {selectedVendor?.permissions && (
+              {selectedVendor && (
                 <div className="space-y-4 py-4">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="can_add_products">Add Products</Label>
                     <Switch
                       id="can_add_products"
-                      checked={selectedVendor.permissions.can_add_products}
+                      checked={selectedVendor.permissions?.can_add_products ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_add_products: checked })
                       }
@@ -318,7 +349,7 @@ export default function VendorManagement() {
                     <Label htmlFor="can_import_data">Import Data</Label>
                     <Switch
                       id="can_import_data"
-                      checked={selectedVendor.permissions.can_import_data}
+                      checked={selectedVendor.permissions?.can_import_data ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_import_data: checked })
                       }
@@ -328,7 +359,7 @@ export default function VendorManagement() {
                     <Label htmlFor="can_share_catalog">Share Catalog</Label>
                     <Switch
                       id="can_share_catalog"
-                      checked={selectedVendor.permissions.can_share_catalog}
+                      checked={selectedVendor.permissions?.can_share_catalog ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_share_catalog: checked })
                       }
@@ -338,7 +369,7 @@ export default function VendorManagement() {
                     <Label htmlFor="can_manage_team">Manage Team</Label>
                     <Switch
                       id="can_manage_team"
-                      checked={selectedVendor.permissions.can_manage_team}
+                      checked={selectedVendor.permissions?.can_manage_team ?? false}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_manage_team: checked })
                       }
@@ -348,7 +379,7 @@ export default function VendorManagement() {
                     <Label htmlFor="can_view_interests">View Interests</Label>
                     <Switch
                       id="can_view_interests"
-                      checked={selectedVendor.permissions.can_view_interests}
+                      checked={selectedVendor.permissions?.can_view_interests ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_view_interests: checked })
                       }
@@ -358,7 +389,7 @@ export default function VendorManagement() {
                     <Label htmlFor="can_delete_products">Delete Products</Label>
                     <Switch
                       id="can_delete_products"
-                      checked={selectedVendor.permissions.can_delete_products}
+                      checked={selectedVendor.permissions?.can_delete_products ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_delete_products: checked })
                       }
@@ -368,7 +399,7 @@ export default function VendorManagement() {
                     <Label htmlFor="can_edit_products">Edit Products</Label>
                     <Switch
                       id="can_edit_products"
-                      checked={selectedVendor.permissions.can_edit_products}
+                      checked={selectedVendor.permissions?.can_edit_products ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_edit_products: checked })
                       }
@@ -378,7 +409,7 @@ export default function VendorManagement() {
                     <Label htmlFor="can_edit_profile">Edit Profile</Label>
                     <Switch
                       id="can_edit_profile"
-                      checked={selectedVendor.permissions.can_edit_profile}
+                      checked={selectedVendor.permissions?.can_edit_profile ?? true}
                       onCheckedChange={(checked) => 
                         updateVendorPermissions(selectedVendor.id, { can_edit_profile: checked })
                       }
