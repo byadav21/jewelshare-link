@@ -453,7 +453,7 @@ export type Database = {
           country: string | null
           created_at: string | null
           email: string | null
-          gold_rate_per_10g: number | null
+          gold_rate_24k_per_gram: number | null
           gold_rate_updated_at: string | null
           id: string
           instagram_qr_url: string | null
@@ -473,7 +473,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           email?: string | null
-          gold_rate_per_10g?: number | null
+          gold_rate_24k_per_gram?: number | null
           gold_rate_updated_at?: string | null
           id?: string
           instagram_qr_url?: string | null
@@ -493,7 +493,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           email?: string | null
-          gold_rate_per_10g?: number | null
+          gold_rate_24k_per_gram?: number | null
           gold_rate_updated_at?: string | null
           id?: string
           instagram_qr_url?: string | null

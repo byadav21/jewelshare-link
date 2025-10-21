@@ -93,8 +93,8 @@ const Catalog = () => {
       } else if (data) {
         console.log("✅ Vendor profile loaded:", data);
         setVendorProfile(data);
-        if (data.gold_rate_per_10g) {
-          setGoldRate(data.gold_rate_per_10g);
+        if (data.gold_rate_24k_per_gram) {
+          setGoldRate(data.gold_rate_24k_per_gram);
         }
       } else {
         console.log("ℹ️ No vendor profile found for this user");
@@ -118,41 +118,46 @@ const Catalog = () => {
       console.log("🔄 Updating gold rate from", goldRate, "to", newRate);
       console.log("📦 Total products to update:", products.length);
 
-      // Update vendor profile with new gold rate
+      // Update vendor profile with new gold rate (24K per gram)
       const { error: profileError } = await supabase
         .from("vendor_profiles")
         .update({ 
-          gold_rate_per_10g: newRate,
+          gold_rate_24k_per_gram: newRate,
           gold_rate_updated_at: new Date().toISOString()
         })
         .eq("user_id", user.id);
 
       if (profileError) throw profileError;
 
-      // Recalculate and update all product prices based on new gold rate
+      // Recalculate all product prices based on new 24K gold rate
+      // Using the formula from Excel: NET_WT × 0.76 (purity) × 24K_rate
+      // Then adjust total price proportionally
       const updatedProducts = products.map(product => {
         if (!product.weight_grams) {
           console.log("⚠️ Skipping product without weight:", product.name);
           return null;
         }
         
-        // Get the old gold rate to calculate the ratio
-        const oldGoldValue = (product.weight_grams / 10) * goldRate;
-        const newGoldValue = (product.weight_grams / 10) * newRate;
+        // Assuming 76% purity (18K gold) as per your Excel data
+        const purity = 0.76;
         
-        // Calculate price change ratio
-        const priceRatio = newGoldValue / oldGoldValue;
+        // Calculate old and new gold values using 24K rate per gram
+        const oldGoldValue = product.weight_grams * purity * goldRate;
+        const newGoldValue = product.weight_grams * purity * newRate;
         
-        // Apply the ratio to existing prices to maintain any markup/additional costs
-        const newRetailPrice = product.retail_price * priceRatio;
-        const newCostPrice = product.cost_price * priceRatio;
+        // Calculate the change in gold value
+        const goldValueDifference = newGoldValue - oldGoldValue;
         
-        console.log(`💰 ${product.name}: weight=${product.weight_grams}g, old_retail=₹${product.retail_price.toFixed(2)}, new_retail=₹${newRetailPrice.toFixed(2)} (ratio: ${priceRatio.toFixed(4)})`);
+        // Add the difference to existing prices to maintain making charges, diamond value, etc.
+        const newRetailPrice = product.retail_price + goldValueDifference;
+        const newCostPrice = product.cost_price + goldValueDifference;
+        
+        console.log(`💰 ${product.name}: weight=${product.weight_grams}g, old_gold=₹${oldGoldValue.toFixed(2)}, new_gold=₹${newGoldValue.toFixed(2)}, diff=₹${goldValueDifference.toFixed(2)}, new_retail=₹${newRetailPrice.toFixed(2)}`);
         
         return {
           id: product.id,
-          cost_price: newCostPrice,
-          retail_price: newRetailPrice
+          cost_price: Math.max(0, newCostPrice), // Ensure non-negative
+          retail_price: Math.max(0, newRetailPrice)
         };
       }).filter(p => p !== null);
 
@@ -185,7 +190,7 @@ const Catalog = () => {
       // Refresh products to show new prices
       await fetchProducts();
       
-      toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/10g and ${successCount} product prices recalculated`);
+      toast.success(`24K Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated`);
     } catch (error) {
       console.error("Failed to update gold rate:", error);
       toast.error("Failed to update gold rate");
@@ -512,7 +517,7 @@ const Catalog = () => {
                         setTempGoldRate(goldRate.toString());
                       }}
                     >
-                      <span className="font-semibold text-amber-700 dark:text-amber-400">Gold: ₹{goldRate.toLocaleString('en-IN')}/10g</span>
+                      <span className="font-semibold text-amber-700 dark:text-amber-400">24K Gold: ₹{goldRate.toLocaleString('en-IN')}/g</span>
                       <Edit className="h-3 w-3 text-amber-600" />
                     </div>
                   )}
