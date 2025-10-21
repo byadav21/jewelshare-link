@@ -31,6 +31,12 @@ const Catalog = () => {
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🔐 Catalog Permissions:', permissions);
+    console.log('👤 Is Admin:', isAdmin);
+  }, [permissions, isAdmin]);
+
   useEffect(() => {
     fetchProducts();
     fetchUSDRate();
