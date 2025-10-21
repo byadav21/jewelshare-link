@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Users, Package, Share2, Heart, Mail, TrendingUp, DollarSign } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 
 interface Stats {
   totalProducts: number;
@@ -46,7 +46,7 @@ export default function SuperAdmin() {
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
       toast.error("Access denied. Admin only.");
-      navigate("/catalog");
+      navigate("/auth");
     }
   }, [isAdmin, roleLoading, navigate]);
 
@@ -192,15 +192,9 @@ export default function SuperAdmin() {
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-                <p className="text-muted-foreground mt-1">Manage vendors and approvals</p>
-              </div>
-              <Button variant="outline" onClick={() => navigate("/catalog")}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Catalog
-              </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
+              <p className="text-muted-foreground mt-1">Manage vendors and approvals</p>
             </div>
           </div>
         </header>
