@@ -77,7 +77,7 @@ export default function VendorManagement() {
 
       if (approvalsError) throw approvalsError;
 
-      // Get vendor profiles
+      // Get vendor profiles which contain email
       const { data: profiles, error: profilesError } = await supabase
         .from("vendor_profiles")
         .select("*");
@@ -106,7 +106,7 @@ export default function VendorManagement() {
         
         return {
           id: approval.user_id,
-          email: approval.email || "N/A",
+          email: profile?.email || approval.email || "N/A",
           business_name: profile?.business_name,
           is_enabled: approval.is_enabled ?? true,
           status: approval.status,
