@@ -485,8 +485,8 @@ const Catalog = () => {
                 diamondColors={diamondColors}
                 diamondClarities={diamondClarities}
               />
-              {isAdmin && filteredProducts.length > 0 && (
-                <div className="mb-4 flex items-center gap-3 pb-3 border-b border-border">
+              {(permissions.can_delete_products || isAdmin) && filteredProducts.length > 0 && (
+                <div className="mb-4 flex items-center gap-3 pb-3 border-border">
                   <Checkbox
                     id="select-all"
                     checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
@@ -518,7 +518,7 @@ const Catalog = () => {
                   key={product.id}
                   product={product}
                   isSelected={selectedProducts.has(product.id)}
-                  onToggleSelection={isAdmin ? toggleProductSelection : undefined}
+                  onToggleSelection={(permissions.can_delete_products || isAdmin) ? toggleProductSelection : () => {}}
                   usdRate={usdRate}
                 />
               ))}
