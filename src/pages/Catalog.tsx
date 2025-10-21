@@ -258,9 +258,9 @@ const Catalog = () => {
         }
       }
       
-      // Add date and exchange rate
+      // Add date, exchange rate, and gold rate
       doc.setFontSize(9);
-      doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)}`, pageWidth / 2, 45, { align: "center" });
+      doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)} | Gold Rate (24K): ₹${goldRate.toLocaleString('en-IN')}/g`, pageWidth / 2, 45, { align: "center" });
       
       // Prepare table data with ALL fields from the Excel bulk upload
       const tableData = filteredProducts.map((product, index) => [
@@ -317,22 +317,24 @@ const Catalog = () => {
         body: tableData,
         startY: 50,
         styles: { 
-          fontSize: 6, 
-          cellPadding: 2, 
-          lineColor: [200, 200, 200], 
-          lineWidth: 0.1,
+          fontSize: 7, 
+          cellPadding: 2.5, 
+          lineColor: [220, 220, 220], 
+          lineWidth: 0.15,
           overflow: 'linebreak',
           halign: 'left',
-          valign: 'middle'
+          valign: 'middle',
+          textColor: [50, 50, 50]
         },
         headStyles: { 
-          fillColor: [52, 73, 94], // Professional dark blue-gray
-          textColor: 255, 
+          fillColor: [41, 128, 185], // Professional blue color (NOT yellow)
+          textColor: [255, 255, 255], 
           fontStyle: 'bold', 
           halign: 'center',
-          fontSize: 6,
-          minCellHeight: 12,
-          valign: 'middle'
+          fontSize: 7,
+          minCellHeight: 14,
+          valign: 'middle',
+          cellPadding: 3
         },
         alternateRowStyles: { fillColor: [248, 249, 250] },
         columnStyles: {
