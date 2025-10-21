@@ -115,7 +115,8 @@ const Catalog = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
+      // Update vendor profile with new gold rate
+      const { error: profileError } = await supabase
         .from("vendor_profiles")
         .update({ 
           gold_rate_per_10g: newRate,
@@ -123,12 +124,49 @@ const Catalog = () => {
         })
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Recalculate and update all product prices based on new gold rate
+      const updatedProducts = products.map(product => {
+        if (!product.weight_grams) return null;
+        
+        // Calculate gold value: (weight_grams / 10) * gold_rate_per_10g
+        const goldValue = (product.weight_grams / 10) * newRate;
+        
+        // Add diamond/gemstone value if per_carat_price exists
+        const diamondValue = product.diamond_weight && product.per_carat_price 
+          ? product.diamond_weight * product.per_carat_price 
+          : 0;
+        
+        // Calculate new retail price
+        const newRetailPrice = goldValue + diamondValue;
+        
+        return {
+          id: product.id,
+          cost_price: newRetailPrice * 0.85, // Assuming 15% margin
+          retail_price: newRetailPrice
+        };
+      }).filter(p => p !== null);
+
+      // Batch update all products
+      for (const update of updatedProducts) {
+        await supabase
+          .from("products")
+          .update({ 
+            cost_price: update.cost_price,
+            retail_price: update.retail_price 
+          })
+          .eq("id", update.id);
+      }
 
       setGoldRate(newRate);
       setEditingGoldRate(false);
       setTempGoldRate("");
-      toast.success("Gold rate updated successfully");
+      
+      // Refresh products to show new prices
+      await fetchProducts();
+      
+      toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/10g and ${updatedProducts.length} product prices recalculated`);
     } catch (error) {
       console.error("Failed to update gold rate:", error);
       toast.error("Failed to update gold rate");
