@@ -223,7 +223,8 @@ const Catalog = () => {
 
   const exportToPDF = async () => {
     try {
-      const doc = new jsPDF();
+      // Use landscape orientation for better column fit
+      const doc = new jsPDF('landscape', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
       
       // Add vendor header
@@ -287,26 +288,27 @@ const Catalog = () => {
         product.product_type || product.metal_type || '-'
       ]);
       
-      // Add table matching reference spreadsheet format
+      // Add table with proper formatting matching Excel layout
       autoTable(doc, {
         head: [[
           'CERT', 
           'PRODUCT', 
-          'Diamond Co',
+          'Diamond Color',
           'CLARITY', 
-          'D WT 1', 
-          'D WT 2', 
+          'D.WT 1', 
+          'D.WT 2', 
           'T DWT', 
           'G WT', 
           'CS TYPE', 
           'NET WT', 
-          'PURITY_PRAC D RATE 1', 
+          'PURITY_FRACTION_USED', 
+          'D RATE 1', 
           'Pointer diamond', 
           'D VALUE',
-          'GEMSTONE',
-          'MFG',
+          'GEMSTONE TYPE',
+          'MKG',
           'GOLD',
-          'Certification',
+          'Certification cost',
           'Gemstone cost',
           'TOTAL',
           'TOTAL_USD',
@@ -315,44 +317,48 @@ const Catalog = () => {
         body: tableData,
         startY: 50,
         styles: { 
-          fontSize: 6, 
-          cellPadding: 1.5, 
+          fontSize: 7, 
+          cellPadding: 2, 
           lineColor: [200, 200, 200], 
           lineWidth: 0.1,
-          overflow: 'linebreak'
+          overflow: 'linebreak',
+          halign: 'left'
         },
         headStyles: { 
           fillColor: [255, 255, 0], 
           textColor: 0, 
           fontStyle: 'bold', 
           halign: 'center',
-          fontSize: 6
+          fontSize: 7,
+          minCellHeight: 8
         },
-        alternateRowStyles: { fillColor: [245, 247, 250] },
+        alternateRowStyles: { fillColor: [252, 252, 252] },
         columnStyles: {
-          0: { cellWidth: 10 }, // CERT
-          1: { cellWidth: 18 }, // PRODUCT
-          2: { cellWidth: 8 }, // Diamond Co
-          3: { cellWidth: 8 }, // CLARITY
-          4: { cellWidth: 8 }, // D WT 1
-          5: { cellWidth: 8 }, // D WT 2
-          6: { cellWidth: 8 }, // T DWT
-          7: { cellWidth: 8 }, // G WT
-          8: { cellWidth: 12 }, // CS TYPE
-          9: { cellWidth: 8 }, // NET WT
-          10: { cellWidth: 15, halign: 'right' }, // PURITY_PRAC D RATE 1
-          11: { cellWidth: 8 }, // Pointer diamond
-          12: { cellWidth: 8 }, // D VALUE
-          13: { cellWidth: 10 }, // GEMSTONE
-          14: { cellWidth: 8 }, // MFG
-          15: { cellWidth: 10, halign: 'right' }, // GOLD
-          16: { cellWidth: 10 }, // Certification
-          17: { cellWidth: 10 }, // Gemstone cost
-          18: { cellWidth: 12, halign: 'right' }, // TOTAL
-          19: { cellWidth: 12, halign: 'right' }, // TOTAL_USD
-          20: { cellWidth: 15 } // Product Type
+          0: { cellWidth: 15, halign: 'left' }, // CERT
+          1: { cellWidth: 25, halign: 'left' }, // PRODUCT
+          2: { cellWidth: 12, halign: 'center' }, // Diamond Color
+          3: { cellWidth: 12, halign: 'center' }, // CLARITY
+          4: { cellWidth: 10, halign: 'right' }, // D.WT 1
+          5: { cellWidth: 10, halign: 'right' }, // D.WT 2
+          6: { cellWidth: 10, halign: 'right' }, // T DWT
+          7: { cellWidth: 10, halign: 'right' }, // G WT
+          8: { cellWidth: 15, halign: 'center' }, // CS TYPE
+          9: { cellWidth: 10, halign: 'right' }, // NET WT
+          10: { cellWidth: 12, halign: 'right' }, // PURITY_FRACTION_USED
+          11: { cellWidth: 15, halign: 'right' }, // D RATE 1
+          12: { cellWidth: 15, halign: 'right' }, // Pointer diamond
+          13: { cellWidth: 15, halign: 'right' }, // D VALUE
+          14: { cellWidth: 15, halign: 'center' }, // GEMSTONE TYPE
+          15: { cellWidth: 15, halign: 'right' }, // MKG
+          16: { cellWidth: 15, halign: 'right' }, // GOLD
+          17: { cellWidth: 15, halign: 'right' }, // Certification cost
+          18: { cellWidth: 15, halign: 'right' }, // Gemstone cost
+          19: { cellWidth: 18, halign: 'right' }, // TOTAL
+          20: { cellWidth: 15, halign: 'right' }, // TOTAL_USD
+          21: { cellWidth: 30, halign: 'left' } // Product Type
         },
         margin: { top: 50, left: 5, right: 5 },
+        tableWidth: 'wrap'
       });
       
       // Add totals at the bottom
