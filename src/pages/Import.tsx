@@ -56,9 +56,10 @@ const Import = () => {
         const costPrice = parseNumber(row.GOLD) || parseNumber(row.MKG) || parseNumber(row['COST PRICE']);
         const retailPrice = parseNumber(row.TOTAL) || parseNumber(row['RETAIL PRICE']) || costPrice;
         
-        // Parse image URLs - handle backslash escaping and pipe separators
+        // Parse image URLs - handle backslash escaping and pipe separators  
         let imageUrl = null;
         let imageUrl2 = null;
+        let imageUrl3 = null;
         if (row.IMAGE_URL) {
           const cleanUrls = String(row.IMAGE_URL)
             .replace(/\\/g, '') // Remove backslashes
@@ -68,21 +69,28 @@ const Import = () => {
           
           imageUrl = cleanUrls[0] || null;
           imageUrl2 = cleanUrls[1] || null;
+          imageUrl3 = cleanUrls[2] || null;
+        }
+        
+        // Check if Thumbnail column exists and use it for image_url_3 if available
+        if (row.Thumbnail && String(row.Thumbnail).startsWith('http')) {
+          imageUrl3 = row.Thumbnail;
         }
         
         const product = {
           user_id: user.id,
           name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
-          description: `${row['Diamond Color'] || ''} ${row.CLARITY || ''} ${row['T DWT'] ? row['T DWT'] + ' ct' : ''}`.trim() || null,
+          description: `${row['Diamond Color'] || row['Diamond Co'] || ''} ${row.CLARITY || ''} ${row['T DWT'] ? row['T DWT'] + ' ct' : ''}`.trim() || null,
           sku: row.CERT || null,
-          category: row['Prodcut Type'] || row['Product Type'] || "Diamond Jewelry",
+          category: row['CS TYPE'] || row['Prodcut Type'] || row['Product Type'] || "Diamond Jewelry",
           metal_type: row.PURITY_FRACTION_USED ? `${Math.round(parseFloat(row.PURITY_FRACTION_USED) * 100)}% Gold` : null,
-          gemstone: row['Diamond Color'] && row.CLARITY ? `${row['Diamond Color']} ${row.CLARITY}` : null,
-          color: row['Diamond Color'] || null,
+          gemstone: row['GEMSTONE TYPE'] || row.GEMSTONE || (row['Diamond Color'] && row.CLARITY ? `${row['Diamond Color']} ${row.CLARITY}` : null),
+          color: row['Diamond Color'] || row['Diamond Co'] || null,
           clarity: row.CLARITY || null,
           image_url: imageUrl,
           image_url_2: imageUrl2,
-          weight_grams: parseNumber(row['GROSS WT']) || parseNumber(row['Gross WT']) || null,
+          image_url_3: imageUrl3,
+          weight_grams: parseNumber(row['G WT']) || parseNumber(row['GROSS WT']) || parseNumber(row['Gross WT']) || null,
           net_weight: parseNumber(row['NET WT']) || parseNumber(row['Net WT']) || null,
           diamond_weight: parseNumber(row['T DWT']) || parseNumber(row['Diamond Wt']) || null,
           cost_price: costPrice,
@@ -90,6 +98,19 @@ const Import = () => {
           per_carat_price: parseNumber(row['Per Carat Price']) || parseNumber(row['PER CARAT PRICE']) || null,
           gold_per_gram_price: parseNumber(row['Gold/g Price']) || parseNumber(row['GOLD PER GRAM PRICE']) || null,
           stock_quantity: 1,
+          // New fields from Excel
+          diamond_color: row['Diamond Color'] || row['Diamond Co'] || null,
+          d_wt_1: parseNumber(row['D.WT 1']) || parseNumber(row['D WT 1']) || null,
+          d_wt_2: parseNumber(row['D.WT 2']) || parseNumber(row['D WT 2']) || null,
+          purity_fraction_used: parseNumber(row.PURITY_FRACTION_USED) ? parseNumber(row.PURITY_FRACTION_USED) * 100 : null,
+          d_rate_1: parseNumber(row['D RATE 1']) || null,
+          pointer_diamond: parseNumber(row['Pointer diamond']) || null,
+          d_value: parseNumber(row['D VALUE']) || null,
+          mkg: parseNumber(row.MKG) || null,
+          certification_cost: parseNumber(row['Certification cost']) || null,
+          gemstone_cost: parseNumber(row['Gemstone cost']) || null,
+          total_usd: parseNumber(row.TOTAL_USD) || null,
+          product_type: row['Prodcut Type'] || row['Product Type'] || null,
         };
 
         // Validate product data
@@ -207,14 +228,30 @@ const Import = () => {
 
                 <div className="rounded-lg bg-muted p-4 space-y-2">
                   <h3 className="font-semibold text-sm">Supported Columns:</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• PRODUCT, CERT (product name/SKU)</li>
-                    <li>• Diamond Color, CLARITY (color & clarity)</li>
-                    <li>• GROSS WT, NET WT (weights in grams)</li>
-                    <li>• T DWT, Diamond Wt (diamond weight in carats)</li>
-                    <li>• GOLD, MKG, TOTAL (pricing)</li>
-                    <li>• Per Carat Price, Gold/g Price (detailed pricing)</li>
-                    <li>• IMAGE_URL (product images - use pipe | to separate multiple: url1|url2)</li>
+                  <ul className="text-sm text-muted-foreground space-y-1 grid grid-cols-1 md:grid-cols-2 gap-1">
+                    <li>• CERT (SKU)</li>
+                    <li>• PRODUCT (name)</li>
+                    <li>• Diamond Color/Co</li>
+                    <li>• CLARITY</li>
+                    <li>• D.WT 1, D.WT 2 (diamond weights)</li>
+                    <li>• T DWT (total diamond weight)</li>
+                    <li>• G WT (gross weight)</li>
+                    <li>• NET WT (net weight)</li>
+                    <li>• CS TYPE (category)</li>
+                    <li>• PURITY_FRACTION_USED</li>
+                    <li>• D RATE 1 (diamond rate)</li>
+                    <li>• Pointer diamond</li>
+                    <li>• D VALUE (diamond value)</li>
+                    <li>• GEMSTONE TYPE</li>
+                    <li>• MKG (making charges)</li>
+                    <li>• GOLD (gold cost)</li>
+                    <li>• Certification cost</li>
+                    <li>• Gemstone cost</li>
+                    <li>• TOTAL (retail price)</li>
+                    <li>• TOTAL_USD</li>
+                    <li>• Product Type</li>
+                    <li>• IMAGE_URL (images - use | separator)</li>
+                    <li>• Thumbnail (3rd image)</li>
                   </ul>
                 </div>
 

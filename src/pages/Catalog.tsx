@@ -261,29 +261,30 @@ const Catalog = () => {
       doc.setFontSize(9);
       doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)}`, pageWidth / 2, 45, { align: "center" });
       
-      // Prepare table data matching the reference spreadsheet headers
+      // Prepare table data with ALL fields from the Excel bulk upload
       const tableData = filteredProducts.map((product, index) => [
         product.sku || `${index + 1}`,
         product.name,
-        product.diamond_weight ? `${product.diamond_weight}` : '-',
+        product.diamond_color || '-',
         product.clarity || '-',
-        '-', // D WT 1
-        '-', // D WT 2
-        product.diamond_weight ? `${product.diamond_weight}` : '-', // T DWT
+        product.d_wt_1 ? `${product.d_wt_1}` : '-',
+        product.d_wt_2 ? `${product.d_wt_2}` : '-',
+        product.diamond_weight ? `${product.diamond_weight}` : '-',
         product.weight_grams ? `${product.weight_grams}` : '-',
         product.category || '-',
         product.net_weight ? `${product.net_weight}` : '-',
-        product.per_carat_price ? `${product.per_carat_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '-',
-        '-', // Pointer diamond
-        '-', // D VALUE
+        product.purity_fraction_used ? `${product.purity_fraction_used}%` : '-',
+        product.d_rate_1 ? `${product.d_rate_1.toLocaleString('en-IN')}` : '-',
+        product.pointer_diamond ? `${product.pointer_diamond.toLocaleString('en-IN')}` : '-',
+        product.d_value ? `${product.d_value.toLocaleString('en-IN')}` : '-',
         product.gemstone || 'NONE',
-        '-', // MFG
-        product.gold_per_gram_price ? `${product.gold_per_gram_price.toFixed(2)}` : '-',
-        '-', // Certification
-        '-', // Gemstone cost
+        product.mkg ? `${product.mkg.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-',
+        product.gold_per_gram_price ? `${product.gold_per_gram_price.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-',
+        product.certification_cost ? `${product.certification_cost.toLocaleString('en-IN')}` : '-',
+        product.gemstone_cost ? `${product.gemstone_cost.toLocaleString('en-IN')}` : '-',
         `₹${product.retail_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-        `$${(product.retail_price / usdRate).toFixed(2)}`,
-        product.metal_type || '-'
+        product.total_usd ? `$${product.total_usd.toFixed(2)}` : `$${(product.retail_price / usdRate).toFixed(2)}`,
+        product.product_type || product.metal_type || '-'
       ]);
       
       // Add table matching reference spreadsheet format

@@ -162,75 +162,114 @@ export type Database = {
       products: {
         Row: {
           category: string | null
+          certification_cost: number | null
           clarity: string | null
           color: string | null
           cost_price: number
           created_at: string | null
+          d_rate_1: number | null
+          d_value: number | null
+          d_wt_1: number | null
+          d_wt_2: number | null
           deleted_at: string | null
           description: string | null
+          diamond_color: string | null
           diamond_weight: number | null
           gemstone: string | null
+          gemstone_cost: number | null
           gold_per_gram_price: number | null
           id: string
           image_url: string | null
           image_url_2: string | null
+          image_url_3: string | null
           metal_type: string | null
+          mkg: number | null
           name: string
           net_weight: number | null
           per_carat_price: number | null
+          pointer_diamond: number | null
+          product_type: string | null
+          purity_fraction_used: number | null
           retail_price: number
           sku: string | null
           stock_quantity: number | null
+          total_usd: number | null
           updated_at: string | null
           user_id: string
           weight_grams: number | null
         }
         Insert: {
           category?: string | null
+          certification_cost?: number | null
           clarity?: string | null
           color?: string | null
           cost_price: number
           created_at?: string | null
+          d_rate_1?: number | null
+          d_value?: number | null
+          d_wt_1?: number | null
+          d_wt_2?: number | null
           deleted_at?: string | null
           description?: string | null
+          diamond_color?: string | null
           diamond_weight?: number | null
           gemstone?: string | null
+          gemstone_cost?: number | null
           gold_per_gram_price?: number | null
           id?: string
           image_url?: string | null
           image_url_2?: string | null
+          image_url_3?: string | null
           metal_type?: string | null
+          mkg?: number | null
           name: string
           net_weight?: number | null
           per_carat_price?: number | null
+          pointer_diamond?: number | null
+          product_type?: string | null
+          purity_fraction_used?: number | null
           retail_price: number
           sku?: string | null
           stock_quantity?: number | null
+          total_usd?: number | null
           updated_at?: string | null
           user_id: string
           weight_grams?: number | null
         }
         Update: {
           category?: string | null
+          certification_cost?: number | null
           clarity?: string | null
           color?: string | null
           cost_price?: number
           created_at?: string | null
+          d_rate_1?: number | null
+          d_value?: number | null
+          d_wt_1?: number | null
+          d_wt_2?: number | null
           deleted_at?: string | null
           description?: string | null
+          diamond_color?: string | null
           diamond_weight?: number | null
           gemstone?: string | null
+          gemstone_cost?: number | null
           gold_per_gram_price?: number | null
           id?: string
           image_url?: string | null
           image_url_2?: string | null
+          image_url_3?: string | null
           metal_type?: string | null
+          mkg?: number | null
           name?: string
           net_weight?: number | null
           per_carat_price?: number | null
+          pointer_diamond?: number | null
+          product_type?: string | null
+          purity_fraction_used?: number | null
           retail_price?: number
           sku?: string | null
           stock_quantity?: number | null
+          total_usd?: number | null
           updated_at?: string | null
           user_id?: string
           weight_grams?: number | null
