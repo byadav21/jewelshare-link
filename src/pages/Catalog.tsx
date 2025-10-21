@@ -311,48 +311,46 @@ const Catalog = () => {
                   Share
                 </Button>
                 {isAdmin && (
-                  <>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
-                      <LayoutDashboard className="h-4 w-4 mr-2" />
-                      Admin
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/add-product")}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/import")}>
-                      <FileSpreadsheet className="h-4 w-4 mr-2" />
-                      Import
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
-                      <Users className="h-4 w-4 mr-2" />
-                      Team
-                    </Button>
-                    {selectedProducts.size > 0 && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete ({selectedProducts.size})
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Selected Products?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete {selectedProducts.size} selected product(s). This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              Delete Selected
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
-                  </>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Admin
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => navigate("/add-product")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate("/import")}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Import
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Team
+                </Button>
+                {selectedProducts.size > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete ({selectedProducts.size})
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Products?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete {selectedProducts.size} selected product(s). This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete Selected
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
                 <Button variant="outline" size="sm" onClick={() => navigate("/active-sessions")}>
                   <Shield className="h-4 w-4 mr-2" />
@@ -393,20 +391,21 @@ const Catalog = () => {
                           <LayoutDashboard className="h-4 w-4 mr-2" />
                           Admin Dashboard
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/add-product")}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Product
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/import")}>
-                          <FileSpreadsheet className="h-4 w-4 mr-2" />
-                          Import Data
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate("/team")}>
-                          <Users className="h-4 w-4 mr-2" />
-                          Manage Team
-                        </DropdownMenuItem>
                       </>
                     )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/add-product")}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Product
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/import")}>
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Import Data
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/team")}>
+                      <Users className="h-4 w-4 mr-2" />
+                      Manage Team
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate("/active-sessions")}>
                       <Shield className="h-4 w-4 mr-2" />
