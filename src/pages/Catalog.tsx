@@ -1,6 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
@@ -14,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useVendorPermissions } from "@/hooks/useVendorPermissions";
+import { exportCatalogToPDF } from "@/utils/pdfExport";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -37,18 +36,11 @@ const Catalog = () => {
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
 
-  // Redirect admins to admin dashboard
   useEffect(() => {
     if (!roleLoading && isAdmin) {
       navigate("/admin");
     }
   }, [isAdmin, roleLoading, navigate]);
-
-  // Debug logging
-  useEffect(() => {
-    console.log('🔐 Catalog Permissions:', permissions);
-    console.log('👤 Is Admin:', isAdmin);
-  }, [permissions, isAdmin]);
 
   useEffect(() => {
     fetchProducts();
@@ -58,7 +50,6 @@ const Catalog = () => {
 
   const fetchUSDRate = async () => {
     try {
-      // Fetch live USD/INR rate from exchange rate API
       const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
       const data = await response.json();
       if (data.rates?.INR) {
@@ -66,20 +57,13 @@ const Catalog = () => {
       }
     } catch (error) {
       console.error("Failed to fetch USD rate:", error);
-      // Keep default rate if fetch fails
     }
   };
 
   const fetchVendorProfile = async () => {
     try {
-      console.log("🔍 Fetching vendor profile...");
       const { data: { user } } = await supabase.auth.getUser();
-      console.log("👤 Current user:", user?.id);
-      
-      if (!user) {
-        console.log("❌ No user found");
-        return;
-      }
+      if (!user) return;
 
       const { data, error } = await supabase
         .from("vendor_profiles")
@@ -87,21 +71,16 @@ const Catalog = () => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      console.log("📊 Vendor profile query result:", { data, error });
-
       if (error && error.code !== 'PGRST116') {
-        console.error("❌ Error fetching vendor profile:", error);
+        console.error("Error fetching vendor profile:", error);
       } else if (data) {
-        console.log("✅ Vendor profile loaded:", data);
         setVendorProfile(data);
         if (data.gold_rate_24k_per_gram) {
           setGoldRate(data.gold_rate_24k_per_gram);
         }
-      } else {
-        console.log("ℹ️ No vendor profile found for this user");
       }
     } catch (error) {
-      console.error("💥 Failed to fetch vendor profile:", error);
+      console.error("Failed to fetch vendor profile:", error);
     }
   };
 
@@ -132,10 +111,6 @@ const Catalog = () => {
         return;
       }
 
-      console.log("🔄 Updating gold rate from", goldRate, "to", newRate);
-      console.log("📦 Total products to update:", products.length);
-
-      // Update vendor profile with new gold rate (24K per gram)
       const { error: profileError } = await supabase
         .from("vendor_profiles")
         .update({ 
@@ -146,41 +121,21 @@ const Catalog = () => {
 
       if (profileError) throw profileError;
 
-      // Recalculate all product prices based on new 24K gold rate
-      // Using the formula from Excel: NET_WT × 0.76 (purity) × 24K_rate
-      // Then adjust total price proportionally
-      const updatedProducts = products.map(product => {
-        if (!product.weight_grams) {
-          console.log("⚠️ Skipping product without weight:", product.name);
-          return null;
-        }
-        
-        // Assuming 76% purity (18K gold) as per your Excel data
-        const purity = 0.76;
-        
-        // Calculate old and new gold values using 24K rate per gram
-        const oldGoldValue = product.weight_grams * purity * goldRate;
-        const newGoldValue = product.weight_grams * purity * newRate;
-        
-        // Calculate the change in gold value
-        const goldValueDifference = newGoldValue - oldGoldValue;
-        
-        // Add the difference to existing prices to maintain making charges, diamond value, etc.
-        const newRetailPrice = product.retail_price + goldValueDifference;
-        const newCostPrice = product.cost_price + goldValueDifference;
-        
-        console.log(`💰 ${product.name}: weight=${product.weight_grams}g, old_gold=₹${oldGoldValue.toFixed(2)}, new_gold=₹${newGoldValue.toFixed(2)}, diff=₹${goldValueDifference.toFixed(2)}, new_retail=₹${newRetailPrice.toFixed(2)}`);
-        
-        return {
-          id: product.id,
-          cost_price: Math.max(0, newCostPrice), // Ensure non-negative
-          retail_price: Math.max(0, newRetailPrice)
-        };
-      }).filter(p => p !== null);
+      const purity = 0.76;
+      const updatedProducts = products
+        .filter(p => p.weight_grams)
+        .map(product => {
+          const oldGoldValue = product.weight_grams * purity * goldRate;
+          const newGoldValue = product.weight_grams * purity * newRate;
+          const goldValueDifference = newGoldValue - oldGoldValue;
+          
+          return {
+            id: product.id,
+            cost_price: Math.max(0, product.cost_price + goldValueDifference),
+            retail_price: Math.max(0, product.retail_price + goldValueDifference)
+          };
+        });
 
-      console.log("✅ Products to update:", updatedProducts.length);
-
-      // Batch update all products
       let successCount = 0;
       for (const update of updatedProducts) {
         const { error } = await supabase
@@ -191,25 +146,16 @@ const Catalog = () => {
           })
           .eq("id", update.id);
         
-        if (!error) {
-          successCount++;
-        } else {
-          console.error("❌ Failed to update product:", update.id, error);
-        }
+        if (!error) successCount++;
       }
-
-      console.log(`✅ Successfully updated ${successCount}/${updatedProducts.length} products`);
 
       setGoldRate(newRate);
       setEditingGoldRate(false);
       setTempGoldRate("");
-      
-      // Refresh products to show new prices
       await fetchProducts();
       
       toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated!`);
       
-      // Force page reload to ensure UI shows updated totals
       setTimeout(() => {
         setUpdatingGoldRate(false);
         window.location.reload();
@@ -221,169 +167,17 @@ const Catalog = () => {
     }
   };
 
-  const exportToPDF = async () => {
+  const exportToPDF = useCallback(async () => {
     try {
-      // Use landscape orientation for better column fit
-      const doc = new jsPDF('landscape', 'mm', 'a4');
-      const pageWidth = doc.internal.pageSize.getWidth();
-      
-      // Add vendor header
-      doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      doc.text(vendorProfile?.business_name || "Product Catalog", pageWidth / 2, 20, { align: "center" });
-      
-      // Add vendor details
-      if (vendorProfile) {
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        let yPos = 30;
-        
-        if (vendorProfile.address_line1) {
-          doc.text(`${vendorProfile.address_line1}${vendorProfile.address_line2 ? ', ' + vendorProfile.address_line2 : ''}`, pageWidth / 2, yPos, { align: "center" });
-          yPos += 5;
-        }
-        
-        if (vendorProfile.city) {
-          doc.text(`${vendorProfile.city}, ${vendorProfile.state} ${vendorProfile.pincode}`, pageWidth / 2, yPos, { align: "center" });
-          yPos += 5;
-        }
-        
-        const contactInfo = [];
-        if (vendorProfile.email) contactInfo.push(`Email: ${vendorProfile.email}`);
-        if (vendorProfile.phone) contactInfo.push(`Phone: ${vendorProfile.phone}`);
-        if (vendorProfile.whatsapp_number) contactInfo.push(`WhatsApp: ${vendorProfile.whatsapp_number}`);
-        
-        if (contactInfo.length > 0) {
-          doc.text(contactInfo.join(' | '), pageWidth / 2, yPos, { align: "center" });
-        }
-      }
-      
-      // Add date, exchange rate, and gold rate
-      doc.setFontSize(9);
-      doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)} | Gold Rate (24K): ₹${goldRate.toLocaleString('en-IN')}/g`, pageWidth / 2, 45, { align: "center" });
-      
-      // Prepare table data with ALL fields from the Excel bulk upload (CATEGORY, PRODUCT TYPE, and GOLD RATE removed for better spacing)
-      const tableData = filteredProducts.map((product, index) => [
-        product.sku || `${index + 1}`,
-        product.name,
-        product.diamond_color || '-',
-        product.clarity || '-',
-        product.d_wt_1 ? `${product.d_wt_1}` : '-',
-        product.d_wt_2 ? `${product.d_wt_2}` : '-',
-        product.diamond_weight ? `${product.diamond_weight}` : '-',
-        product.weight_grams ? `${product.weight_grams}` : '-',
-        product.net_weight ? `${product.net_weight}` : '-',
-        product.purity_fraction_used ? `${product.purity_fraction_used}%` : '-',
-        product.d_rate_1 ? `${product.d_rate_1.toLocaleString('en-IN')}` : '-',
-        product.pointer_diamond ? `${product.pointer_diamond.toLocaleString('en-IN')}` : '-',
-        product.d_value ? `${product.d_value.toLocaleString('en-IN')}` : '-',
-        product.gemstone || 'NONE',
-        product.mkg ? `${product.mkg.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-',
-        product.certification_cost ? `${product.certification_cost.toLocaleString('en-IN')}` : '-',
-        product.gemstone_cost ? `${product.gemstone_cost.toLocaleString('en-IN')}` : '-',
-        product.retail_price.toLocaleString('en-IN', { maximumFractionDigits: 0 }),
-        product.total_usd ? product.total_usd.toFixed(2) : (product.retail_price / usdRate).toFixed(2)
-      ]);
-      
-      // Add table with proper formatting - optimized for landscape A4
-      autoTable(doc, {
-        head: [[
-          'SKU', 
-          'PRODUCT NAME', 
-          'DIAMOND\nCOLOR',
-          'CLARITY', 
-          'D.WT 1\n(ct)', 
-          'D.WT 2\n(ct)', 
-          'TOTAL\nD.WT (ct)', 
-          'GROSS\nWT (g)', 
-          'NET\nWT (g)', 
-          'PURITY\n%', 
-          'D RATE 1\n(₹/ct)', 
-          'POINTER\nDIAMOND', 
-          'D VALUE\n(₹)',
-          'GEMSTONE\nTYPE',
-          'MKG\n(₹)',
-          'CERT\nCOST (₹)',
-          'GEM\nCOST (₹)',
-          'TOTAL\n(₹)',
-          'TOTAL\n(USD)'
-        ]],
-        body: tableData,
-        startY: 50,
-        styles: { 
-          fontSize: 8, 
-          cellPadding: 3, 
-          lineColor: [220, 220, 220], 
-          lineWidth: 0.15,
-          overflow: 'linebreak',
-          halign: 'left',
-          valign: 'middle',
-          textColor: [50, 50, 50]
-        },
-        headStyles: { 
-          fillColor: [41, 128, 185], // Professional blue color
-          textColor: [255, 255, 255], 
-          fontStyle: 'bold', 
-          halign: 'center',
-          fontSize: 7.5,
-          minCellHeight: 14,
-          valign: 'middle',
-          cellPadding: 3
-        },
-        alternateRowStyles: { fillColor: [248, 249, 250] },
-        columnStyles: {
-          0: { cellWidth: 15, halign: 'left' }, // SKU
-          1: { cellWidth: 32, halign: 'left' }, // PRODUCT NAME
-          2: { cellWidth: 12, halign: 'center' }, // DIAMOND COLOR
-          3: { cellWidth: 12, halign: 'center' }, // CLARITY
-          4: { cellWidth: 12, halign: 'right' }, // D.WT 1
-          5: { cellWidth: 12, halign: 'right' }, // D.WT 2
-          6: { cellWidth: 14, halign: 'right' }, // TOTAL D.WT
-          7: { cellWidth: 12, halign: 'right' }, // GROSS WT
-          8: { cellWidth: 12, halign: 'right' }, // NET WT
-          9: { cellWidth: 12, halign: 'right' }, // PURITY %
-          10: { cellWidth: 14, halign: 'right' }, // D RATE 1
-          11: { cellWidth: 14, halign: 'right' }, // POINTER DIAMOND
-          12: { cellWidth: 14, halign: 'right' }, // D VALUE
-          13: { cellWidth: 16, halign: 'center' }, // GEMSTONE TYPE
-          14: { cellWidth: 14, halign: 'right' }, // MKG
-          15: { cellWidth: 13, halign: 'right' }, // CERT COST
-          16: { cellWidth: 13, halign: 'right' }, // GEM COST
-          17: { cellWidth: 22, halign: 'right', fontStyle: 'bold' }, // TOTAL (₹) - wider and bold
-          18: { cellWidth: 18, halign: 'right', fontStyle: 'bold' } // TOTAL (USD) - wider and bold
-        },
-        margin: { top: 50, left: 5, right: 5 },
-        tableWidth: 'auto',
-        didParseCell: function(data: any) {
-          // Add ₹ symbol to column 17 (TOTAL ₹) and $ to column 18 (TOTAL USD)
-          if (data.column.index === 17 && data.section === 'body') {
-            data.cell.text = [`₹ ${data.cell.text[0]}`];
-          }
-          if (data.column.index === 18 && data.section === 'body') {
-            data.cell.text = [`$ ${data.cell.text[0]}`];
-          }
-        }
-      });
-      
-      // Add totals at the bottom
-      const finalY = (doc as any).lastAutoTable.finalY || 50;
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Total: ₹${totalINR.toLocaleString('en-IN')} | $${totalUSD.toFixed(2)} USD`, pageWidth / 2, finalY + 10, { align: "center" });
-      doc.text(`Total Products: ${filteredProducts.length}`, pageWidth / 2, finalY + 16, { align: "center" });
-      
-      // Save PDF
-      const fileName = `catalog_${vendorProfile?.business_name?.replace(/\s+/g, '_') || 'products'}_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.pdf`;
-      doc.save(fileName);
-      
+      exportCatalogToPDF(filteredProducts, vendorProfile, usdRate, goldRate, totalINR, totalUSD);
       toast.success("Catalog exported to PDF successfully!");
     } catch (error) {
       console.error("Error exporting to PDF:", error);
       toast.error("Failed to export catalog to PDF");
     }
-  };
+  }, [filteredProducts, vendorProfile, usdRate, goldRate]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("products")
@@ -398,11 +192,10 @@ const Catalog = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = useCallback(async () => {
     try {
-      // Soft delete: set deleted_at timestamp
       const { error } = await supabase
         .from("products")
         .update({ deleted_at: new Date().toISOString() })
@@ -416,30 +209,30 @@ const Catalog = () => {
     } catch (error: any) {
       toast.error("Failed to delete products");
     }
-  };
+  }, [selectedProducts, fetchProducts]);
 
-  const toggleProductSelection = (productId: string) => {
-    const newSelected = new Set(selectedProducts);
-    if (newSelected.has(productId)) {
-      newSelected.delete(productId);
-    } else {
-      newSelected.add(productId);
-    }
-    setSelectedProducts(newSelected);
-  };
+  const toggleProductSelection = useCallback((productId: string) => {
+    setSelectedProducts(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(productId)) {
+        newSelected.delete(productId);
+      } else {
+        newSelected.add(productId);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const toggleSelectAll = () => {
-    if (selectedProducts.size === products.length) {
-      setSelectedProducts(new Set());
-    } else {
-      setSelectedProducts(new Set(products.map(p => p.id)));
-    }
-  };
+  const toggleSelectAll = useCallback(() => {
+    setSelectedProducts(prev => 
+      prev.size === products.length ? new Set() : new Set(products.map(p => p.id))
+    );
+  }, [products]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await supabase.auth.signOut();
     navigate("/auth");
-  };
+  }, [navigate]);
 
   // Predefined categories
   const predefinedCategories = [
