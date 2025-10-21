@@ -115,6 +115,9 @@ const Catalog = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      console.log("🔄 Updating gold rate from", goldRate, "to", newRate);
+      console.log("📦 Total products to update:", products.length);
+
       // Update vendor profile with new gold rate
       const { error: profileError } = await supabase
         .from("vendor_profiles")
@@ -128,7 +131,10 @@ const Catalog = () => {
 
       // Recalculate and update all product prices based on new gold rate
       const updatedProducts = products.map(product => {
-        if (!product.weight_grams) return null;
+        if (!product.weight_grams) {
+          console.log("⚠️ Skipping product without weight:", product.name);
+          return null;
+        }
         
         // Calculate gold value: (weight_grams / 10) * gold_rate_per_10g
         const goldValue = (product.weight_grams / 10) * newRate;
@@ -140,24 +146,38 @@ const Catalog = () => {
         
         // Calculate new retail price
         const newRetailPrice = goldValue + diamondValue;
+        const newCostPrice = newRetailPrice * 0.85; // Assuming 15% margin
+        
+        console.log(`💰 ${product.name}: weight=${product.weight_grams}g, old_price=₹${product.retail_price}, new_price=₹${newRetailPrice.toFixed(2)}`);
         
         return {
           id: product.id,
-          cost_price: newRetailPrice * 0.85, // Assuming 15% margin
+          cost_price: newCostPrice,
           retail_price: newRetailPrice
         };
       }).filter(p => p !== null);
 
+      console.log("✅ Products to update:", updatedProducts.length);
+
       // Batch update all products
+      let successCount = 0;
       for (const update of updatedProducts) {
-        await supabase
+        const { error } = await supabase
           .from("products")
           .update({ 
             cost_price: update.cost_price,
             retail_price: update.retail_price 
           })
           .eq("id", update.id);
+        
+        if (!error) {
+          successCount++;
+        } else {
+          console.error("❌ Failed to update product:", update.id, error);
+        }
       }
+
+      console.log(`✅ Successfully updated ${successCount}/${updatedProducts.length} products`);
 
       setGoldRate(newRate);
       setEditingGoldRate(false);
@@ -166,7 +186,7 @@ const Catalog = () => {
       // Refresh products to show new prices
       await fetchProducts();
       
-      toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/10g and ${updatedProducts.length} product prices recalculated`);
+      toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/10g and ${successCount} product prices recalculated`);
     } catch (error) {
       console.error("Failed to update gold rate:", error);
       toast.error("Failed to update gold rate");
