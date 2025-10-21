@@ -18,19 +18,33 @@ const AddProduct = () => {
     description: "",
     sku: "",
     category: "",
+    product_type: "",
     metal_type: "",
     gemstone: "",
     color: "",
+    diamond_color: "",
     clarity: "",
     weight_grams: "",
     net_weight: "",
     diamond_weight: "",
+    d_wt_1: "",
+    d_wt_2: "",
+    purity_fraction_used: "",
+    d_rate_1: "",
+    pointer_diamond: "",
+    d_value: "",
+    mkg: "",
     per_carat_price: "",
     gold_per_gram_price: "",
+    certification_cost: "",
+    gemstone_cost: "",
     cost_price: "",
     retail_price: "",
+    total_usd: "",
     stock_quantity: "0",
     image_url: "",
+    image_url_2: "",
+    image_url_3: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,19 +62,33 @@ const AddProduct = () => {
           description: formData.description || null,
           sku: formData.sku || null,
           category: formData.category || null,
+          product_type: formData.product_type || null,
           metal_type: formData.metal_type || null,
           gemstone: formData.gemstone || null,
           color: formData.color || null,
+          diamond_color: formData.diamond_color || null,
           clarity: formData.clarity || null,
           weight_grams: formData.weight_grams ? parseFloat(formData.weight_grams) : null,
           net_weight: formData.net_weight ? parseFloat(formData.net_weight) : null,
           diamond_weight: formData.diamond_weight ? parseFloat(formData.diamond_weight) : null,
+          d_wt_1: formData.d_wt_1 ? parseFloat(formData.d_wt_1) : null,
+          d_wt_2: formData.d_wt_2 ? parseFloat(formData.d_wt_2) : null,
+          purity_fraction_used: formData.purity_fraction_used ? parseFloat(formData.purity_fraction_used) : null,
+          d_rate_1: formData.d_rate_1 ? parseFloat(formData.d_rate_1) : null,
+          pointer_diamond: formData.pointer_diamond ? parseFloat(formData.pointer_diamond) : null,
+          d_value: formData.d_value ? parseFloat(formData.d_value) : null,
+          mkg: formData.mkg ? parseFloat(formData.mkg) : null,
           per_carat_price: formData.per_carat_price ? parseFloat(formData.per_carat_price) : null,
           gold_per_gram_price: formData.gold_per_gram_price ? parseFloat(formData.gold_per_gram_price) : null,
+          certification_cost: formData.certification_cost ? parseFloat(formData.certification_cost) : null,
+          gemstone_cost: formData.gemstone_cost ? parseFloat(formData.gemstone_cost) : null,
           cost_price: parseFloat(formData.cost_price),
           retail_price: parseFloat(formData.retail_price),
+          total_usd: formData.total_usd ? parseFloat(formData.total_usd) : null,
           stock_quantity: parseInt(formData.stock_quantity),
           image_url: formData.image_url || null,
+          image_url_2: formData.image_url_2 || null,
+          image_url_3: formData.image_url_3 || null,
         },
       ]);
 
@@ -130,7 +158,7 @@ const AddProduct = () => {
                       name="sku"
                       value={formData.sku}
                       onChange={handleChange}
-                      placeholder="JW-001"
+                      placeholder="DPS19"
                     />
                   </div>
 
@@ -141,12 +169,23 @@ const AddProduct = () => {
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
-                      placeholder="Ring, Necklace, Bracelet..."
+                      placeholder="DIAMOND PANDENT SET"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="product_type">Product Type</Label>
+                    <Input
+                      id="product_type"
+                      name="product_type"
+                      value={formData.product_type}
+                      onChange={handleChange}
+                      placeholder="Necklace, Earrings, etc."
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="metal_type">Metal Type</Label>
                     <Input
@@ -154,10 +193,12 @@ const AddProduct = () => {
                       name="metal_type"
                       value={formData.metal_type}
                       onChange={handleChange}
-                      placeholder="18k Gold, Platinum..."
+                      placeholder="18k Gold"
                     />
                   </div>
+                </div>
 
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="gemstone">Gemstone</Label>
                     <Input
@@ -165,7 +206,18 @@ const AddProduct = () => {
                       name="gemstone"
                       value={formData.gemstone}
                       onChange={handleChange}
-                      placeholder="Diamond, Ruby, Sapphire..."
+                      placeholder="GH VS (Color Clarity)"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="diamond_color">Diamond Color</Label>
+                    <Input
+                      id="diamond_color"
+                      name="diamond_color"
+                      value={formData.diamond_color}
+                      onChange={handleChange}
+                      placeholder="GH"
                     />
                   </div>
                 </div>
@@ -178,7 +230,7 @@ const AddProduct = () => {
                       name="color"
                       value={formData.color}
                       onChange={handleChange}
-                      placeholder="D, E, F..."
+                      placeholder="Yellow, White, Rose..."
                     />
                   </div>
 
@@ -189,42 +241,68 @@ const AddProduct = () => {
                       name="clarity"
                       value={formData.clarity}
                       onChange={handleChange}
-                      placeholder="VVS1, VS1, SI1..."
+                      placeholder="VS"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="weight_grams">Gross Weight (grams)</Label>
+                    <Label htmlFor="weight_grams">Gross Weight (g)</Label>
                     <Input
                       id="weight_grams"
                       name="weight_grams"
                       type="number"
-                      step="0.01"
+                      step="0.001"
                       value={formData.weight_grams}
                       onChange={handleChange}
-                      placeholder="5.50"
+                      placeholder="4.37"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="net_weight">Net Weight (grams)</Label>
+                    <Label htmlFor="net_weight">Net Weight (g)</Label>
                     <Input
                       id="net_weight"
                       name="net_weight"
                       type="number"
-                      step="0.01"
+                      step="0.001"
                       value={formData.net_weight}
                       onChange={handleChange}
-                      placeholder="5.00"
+                      placeholder="4.252"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="diamond_weight">Diamond Weight (carats)</Label>
+                    <Label htmlFor="d_wt_1">D.WT 1 (ct)</Label>
+                    <Input
+                      id="d_wt_1"
+                      name="d_wt_1"
+                      type="number"
+                      step="0.01"
+                      value={formData.d_wt_1}
+                      onChange={handleChange}
+                      placeholder="0.23"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="d_wt_2">D.WT 2 (ct)</Label>
+                    <Input
+                      id="d_wt_2"
+                      name="d_wt_2"
+                      type="number"
+                      step="0.01"
+                      value={formData.d_wt_2}
+                      onChange={handleChange}
+                      placeholder="0.36"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="diamond_weight">Total D.WT (ct)</Label>
                     <Input
                       id="diamond_weight"
                       name="diamond_weight"
@@ -232,10 +310,109 @@ const AddProduct = () => {
                       step="0.01"
                       value={formData.diamond_weight}
                       onChange={handleChange}
-                      placeholder="1.25"
+                      placeholder="0.59"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="purity_fraction_used">Purity (%)</Label>
+                    <Input
+                      id="purity_fraction_used"
+                      name="purity_fraction_used"
+                      type="number"
+                      step="0.01"
+                      value={formData.purity_fraction_used}
+                      onChange={handleChange}
+                      placeholder="76"
                     />
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="d_rate_1">D Rate 1 (₹/ct)</Label>
+                    <Input
+                      id="d_rate_1"
+                      name="d_rate_1"
+                      type="number"
+                      step="0.01"
+                      value={formData.d_rate_1}
+                      onChange={handleChange}
+                      placeholder="65000"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pointer_diamond">Pointer Diamond</Label>
+                    <Input
+                      id="pointer_diamond"
+                      name="pointer_diamond"
+                      type="number"
+                      step="0.01"
+                      value={formData.pointer_diamond}
+                      onChange={handleChange}
+                      placeholder="65000"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="d_value">D Value (₹)</Label>
+                    <Input
+                      id="d_value"
+                      name="d_value"
+                      type="number"
+                      step="0.01"
+                      value={formData.d_value}
+                      onChange={handleChange}
+                      placeholder="38350"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="mkg">MKG (₹)</Label>
+                    <Input
+                      id="mkg"
+                      name="mkg"
+                      type="number"
+                      step="0.01"
+                      value={formData.mkg}
+                      onChange={handleChange}
+                      placeholder="4039.40"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="certification_cost">Cert Cost (₹)</Label>
+                    <Input
+                      id="certification_cost"
+                      name="certification_cost"
+                      type="number"
+                      step="0.01"
+                      value={formData.certification_cost}
+                      onChange={handleChange}
+                      placeholder="2000"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="gemstone_cost">Gem Cost (₹)</Label>
+                    <Input
+                      id="gemstone_cost"
+                      name="gemstone_cost"
+                      type="number"
+                      step="0.01"
+                      value={formData.gemstone_cost}
+                      onChange={handleChange}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="per_carat_price">Per Carat Price</Label>
                     <Input
@@ -248,22 +425,22 @@ const AddProduct = () => {
                       placeholder="50000.00"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="gold_per_gram_price">Gold/Gram (₹)</Label>
+                    <Input
+                      id="gold_per_gram_price"
+                      name="gold_per_gram_price"
+                      type="number"
+                      step="0.01"
+                      value={formData.gold_per_gram_price}
+                      onChange={handleChange}
+                      placeholder="6500.00"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="gold_per_gram_price">Gold Per Gram Price</Label>
-                  <Input
-                    id="gold_per_gram_price"
-                    name="gold_per_gram_price"
-                    type="number"
-                    step="0.01"
-                    value={formData.gold_per_gram_price}
-                    onChange={handleChange}
-                    placeholder="6500.00"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cost_price">Cost Price *</Label>
                     <Input
@@ -274,12 +451,12 @@ const AddProduct = () => {
                       value={formData.cost_price}
                       onChange={handleChange}
                       required
-                      placeholder="500.00"
+                      placeholder="75000.00"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="retail_price">Retail Price *</Label>
+                    <Label htmlFor="retail_price">Retail Price (₹) *</Label>
                     <Input
                       id="retail_price"
                       name="retail_price"
@@ -288,7 +465,20 @@ const AddProduct = () => {
                       value={formData.retail_price}
                       onChange={handleChange}
                       required
-                      placeholder="1000.00"
+                      placeholder="86328.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="total_usd">Total USD</Label>
+                    <Input
+                      id="total_usd"
+                      name="total_usd"
+                      type="number"
+                      step="0.01"
+                      value={formData.total_usd}
+                      onChange={handleChange}
+                      placeholder="984.00"
                     />
                   </div>
                 </div>
@@ -307,15 +497,41 @@ const AddProduct = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="image_url">Image URL</Label>
+                  <Label htmlFor="image_url">Image URL 1</Label>
                   <Input
                     id="image_url"
                     name="image_url"
                     type="url"
                     value={formData.image_url}
                     onChange={handleChange}
-                    placeholder="https://example.com/image.jpg"
+                    placeholder="https://example.com/image1.jpg"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="image_url_2">Image URL 2</Label>
+                    <Input
+                      id="image_url_2"
+                      name="image_url_2"
+                      type="url"
+                      value={formData.image_url_2}
+                      onChange={handleChange}
+                      placeholder="https://example.com/image2.jpg"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="image_url_3">Image URL 3</Label>
+                    <Input
+                      id="image_url_3"
+                      name="image_url_3"
+                      type="url"
+                      value={formData.image_url_3}
+                      onChange={handleChange}
+                      placeholder="https://example.com/image3.jpg"
+                    />
+                  </div>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>
