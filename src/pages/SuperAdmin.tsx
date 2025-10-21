@@ -296,29 +296,13 @@ export default function SuperAdmin() {
                   <Users className="mr-2 h-4 w-4" />
                   Vendor Approvals
                 </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/team")}>
+                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/vendor-management")}>
                   <Users className="mr-2 h-4 w-4" />
-                  Manage Team Members
-                </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/catalog")}>
-                  <Package className="mr-2 h-4 w-4" />
-                  View Inventory
+                  Manage Vendors
                 </Button>
                 <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/interests")}>
                   <Heart className="mr-2 h-4 w-4" />
                   View Customer Interests
-                </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/share")}>
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Manage Share Links
-                </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/add-product")}>
-                  <Package className="mr-2 h-4 w-4" />
-                  Add New Product
-                </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/import")}>
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  Import Products
                 </Button>
               </CardContent>
             </Card>

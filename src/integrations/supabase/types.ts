@@ -164,6 +164,7 @@ export type Database = {
           category: string | null
           cost_price: number
           created_at: string | null
+          deleted_at: string | null
           description: string | null
           diamond_weight: number | null
           gemstone: string | null
@@ -184,6 +185,7 @@ export type Database = {
           category?: string | null
           cost_price: number
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           diamond_weight?: number | null
           gemstone?: string | null
@@ -204,6 +206,7 @@ export type Database = {
           category?: string | null
           cost_price?: number
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           diamond_weight?: number | null
           gemstone?: string | null
@@ -266,6 +269,7 @@ export type Database = {
           business_name: string | null
           email: string | null
           id: string
+          is_enabled: boolean | null
           notes: string | null
           phone: string | null
           rejection_reason: string | null
@@ -279,6 +283,7 @@ export type Database = {
           business_name?: string | null
           email?: string | null
           id?: string
+          is_enabled?: boolean | null
           notes?: string | null
           phone?: string | null
           rejection_reason?: string | null
@@ -292,6 +297,7 @@ export type Database = {
           business_name?: string | null
           email?: string | null
           id?: string
+          is_enabled?: boolean | null
           notes?: string | null
           phone?: string | null
           rejection_reason?: string | null
@@ -418,6 +424,10 @@ export type Database = {
     Functions: {
       cleanup_old_sessions: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      hard_delete_products: {
+        Args: { product_ids: string[] }
         Returns: undefined
       }
       has_role: {

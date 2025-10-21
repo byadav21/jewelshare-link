@@ -99,9 +99,10 @@ const Catalog = () => {
 
   const handleDeleteSelected = async () => {
     try {
+      // Soft delete: set deleted_at timestamp
       const { error } = await supabase
         .from("products")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .in("id", Array.from(selectedProducts));
 
       if (error) throw error;
