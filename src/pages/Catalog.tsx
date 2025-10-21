@@ -167,73 +167,6 @@ const Catalog = () => {
     }
   };
 
-  const exportToPDF = useCallback(async () => {
-    try {
-      exportCatalogToPDF(filteredProducts, vendorProfile, usdRate, goldRate, totalINR, totalUSD);
-      toast.success("Catalog exported to PDF successfully!");
-    } catch (error) {
-      console.error("Error exporting to PDF:", error);
-      toast.error("Failed to export catalog to PDF");
-    }
-  }, [filteredProducts, vendorProfile, usdRate, goldRate]);
-
-  const fetchProducts = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error: any) {
-      toast.error("Failed to load products");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const handleDeleteSelected = useCallback(async () => {
-    try {
-      const { error } = await supabase
-        .from("products")
-        .update({ deleted_at: new Date().toISOString() })
-        .in("id", Array.from(selectedProducts));
-
-      if (error) throw error;
-      
-      toast.success(`${selectedProducts.size} product(s) deleted successfully`);
-      setSelectedProducts(new Set());
-      fetchProducts();
-    } catch (error: any) {
-      toast.error("Failed to delete products");
-    }
-  }, [selectedProducts, fetchProducts]);
-
-  const toggleProductSelection = useCallback((productId: string) => {
-    setSelectedProducts(prev => {
-      const newSelected = new Set(prev);
-      if (newSelected.has(productId)) {
-        newSelected.delete(productId);
-      } else {
-        newSelected.add(productId);
-      }
-      return newSelected;
-    });
-  }, []);
-
-  const toggleSelectAll = useCallback(() => {
-    setSelectedProducts(prev => 
-      prev.size === products.length ? new Set() : new Set(products.map(p => p.id))
-    );
-  }, [products]);
-
-  const handleSignOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  }, [navigate]);
-
   // Predefined categories
   const predefinedCategories = [
     "DIAMOND PANDENT SET",
@@ -304,6 +237,73 @@ const Catalog = () => {
   // Calculate totals based on filtered products
   const totalINR = filteredProducts.reduce((sum, p) => sum + (p.retail_price || 0), 0);
   const totalUSD = totalINR / usdRate;
+
+  const exportToPDF = useCallback(async () => {
+    try {
+      exportCatalogToPDF(filteredProducts, vendorProfile, usdRate, goldRate, totalINR, totalUSD);
+      toast.success("Catalog exported to PDF successfully!");
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      toast.error("Failed to export catalog to PDF");
+    }
+  }, [filteredProducts, vendorProfile, usdRate, goldRate, totalINR, totalUSD]);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error: any) {
+      toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleDeleteSelected = useCallback(async () => {
+    try {
+      const { error } = await supabase
+        .from("products")
+        .update({ deleted_at: new Date().toISOString() })
+        .in("id", Array.from(selectedProducts));
+
+      if (error) throw error;
+      
+      toast.success(`${selectedProducts.size} product(s) deleted successfully`);
+      setSelectedProducts(new Set());
+      fetchProducts();
+    } catch (error: any) {
+      toast.error("Failed to delete products");
+    }
+  }, [selectedProducts, fetchProducts]);
+
+  const toggleProductSelection = useCallback((productId: string) => {
+    setSelectedProducts(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(productId)) {
+        newSelected.delete(productId);
+      } else {
+        newSelected.add(productId);
+      }
+      return newSelected;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedProducts(prev => 
+      prev.size === products.length ? new Set() : new Set(products.map(p => p.id))
+    );
+  }, [products]);
+
+  const handleSignOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  }, [navigate]);
 
   return (
     <ApprovalGuard>
