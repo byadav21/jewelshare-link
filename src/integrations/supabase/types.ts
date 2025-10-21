@@ -162,18 +162,22 @@ export type Database = {
       products: {
         Row: {
           category: string | null
+          clarity: string | null
+          color: string | null
           cost_price: number
           created_at: string | null
           deleted_at: string | null
           description: string | null
           diamond_weight: number | null
           gemstone: string | null
+          gold_per_gram_price: number | null
           id: string
           image_url: string | null
           image_url_2: string | null
           metal_type: string | null
           name: string
           net_weight: number | null
+          per_carat_price: number | null
           retail_price: number
           sku: string | null
           stock_quantity: number | null
@@ -183,18 +187,22 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          clarity?: string | null
+          color?: string | null
           cost_price: number
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
           diamond_weight?: number | null
           gemstone?: string | null
+          gold_per_gram_price?: number | null
           id?: string
           image_url?: string | null
           image_url_2?: string | null
           metal_type?: string | null
           name: string
           net_weight?: number | null
+          per_carat_price?: number | null
           retail_price: number
           sku?: string | null
           stock_quantity?: number | null
@@ -204,18 +212,22 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          clarity?: string | null
+          color?: string | null
           cost_price?: number
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
           diamond_weight?: number | null
           gemstone?: string | null
+          gold_per_gram_price?: number | null
           id?: string
           image_url?: string | null
           image_url_2?: string | null
           metal_type?: string | null
           name?: string
           net_weight?: number | null
+          per_carat_price?: number | null
           retail_price?: number
           sku?: string | null
           stock_quantity?: number | null

@@ -20,7 +20,13 @@ const AddProduct = () => {
     category: "",
     metal_type: "",
     gemstone: "",
+    color: "",
+    clarity: "",
     weight_grams: "",
+    net_weight: "",
+    diamond_weight: "",
+    per_carat_price: "",
+    gold_per_gram_price: "",
     cost_price: "",
     retail_price: "",
     stock_quantity: "0",
@@ -44,7 +50,13 @@ const AddProduct = () => {
           category: formData.category || null,
           metal_type: formData.metal_type || null,
           gemstone: formData.gemstone || null,
+          color: formData.color || null,
+          clarity: formData.clarity || null,
           weight_grams: formData.weight_grams ? parseFloat(formData.weight_grams) : null,
+          net_weight: formData.net_weight ? parseFloat(formData.net_weight) : null,
+          diamond_weight: formData.diamond_weight ? parseFloat(formData.diamond_weight) : null,
+          per_carat_price: formData.per_carat_price ? parseFloat(formData.per_carat_price) : null,
+          gold_per_gram_price: formData.gold_per_gram_price ? parseFloat(formData.gold_per_gram_price) : null,
           cost_price: parseFloat(formData.cost_price),
           retail_price: parseFloat(formData.retail_price),
           stock_quantity: parseInt(formData.stock_quantity),
@@ -158,16 +170,96 @@ const AddProduct = () => {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="color">Color</Label>
+                    <Input
+                      id="color"
+                      name="color"
+                      value={formData.color}
+                      onChange={handleChange}
+                      placeholder="D, E, F..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="clarity">Clarity</Label>
+                    <Input
+                      id="clarity"
+                      name="clarity"
+                      value={formData.clarity}
+                      onChange={handleChange}
+                      placeholder="VVS1, VS1, SI1..."
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="weight_grams">Gross Weight (grams)</Label>
+                    <Input
+                      id="weight_grams"
+                      name="weight_grams"
+                      type="number"
+                      step="0.01"
+                      value={formData.weight_grams}
+                      onChange={handleChange}
+                      placeholder="5.50"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="net_weight">Net Weight (grams)</Label>
+                    <Input
+                      id="net_weight"
+                      name="net_weight"
+                      type="number"
+                      step="0.01"
+                      value={formData.net_weight}
+                      onChange={handleChange}
+                      placeholder="5.00"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="diamond_weight">Diamond Weight (carats)</Label>
+                    <Input
+                      id="diamond_weight"
+                      name="diamond_weight"
+                      type="number"
+                      step="0.01"
+                      value={formData.diamond_weight}
+                      onChange={handleChange}
+                      placeholder="1.25"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="per_carat_price">Per Carat Price</Label>
+                    <Input
+                      id="per_carat_price"
+                      name="per_carat_price"
+                      type="number"
+                      step="0.01"
+                      value={formData.per_carat_price}
+                      onChange={handleChange}
+                      placeholder="50000.00"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="weight_grams">Weight (grams)</Label>
+                  <Label htmlFor="gold_per_gram_price">Gold Per Gram Price</Label>
                   <Input
-                    id="weight_grams"
-                    name="weight_grams"
+                    id="gold_per_gram_price"
+                    name="gold_per_gram_price"
                     type="number"
                     step="0.01"
-                    value={formData.weight_grams}
+                    value={formData.gold_per_gram_price}
                     onChange={handleChange}
-                    placeholder="5.50"
+                    placeholder="6500.00"
                   />
                 </div>
 

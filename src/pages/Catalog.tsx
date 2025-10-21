@@ -138,7 +138,7 @@ const Catalog = () => {
       doc.setFontSize(9);
       doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)}`, pageWidth / 2, 45, { align: "center" });
       
-      // Prepare table data
+      // Prepare table data with all details
       const tableData = filteredProducts.map((product, index) => [
         index + 1,
         product.sku || '-',
@@ -146,17 +146,23 @@ const Catalog = () => {
         product.category || '-',
         product.metal_type || '-',
         product.gemstone || '-',
+        product.color || '-',
+        product.clarity || '-',
         product.weight_grams ? `${product.weight_grams}g` : '-',
+        product.net_weight ? `${product.net_weight}g` : '-',
+        product.diamond_weight ? `${product.diamond_weight}ct` : '-',
+        product.per_carat_price ? `₹${product.per_carat_price.toLocaleString('en-IN')}` : '-',
+        product.gold_per_gram_price ? `₹${product.gold_per_gram_price.toLocaleString('en-IN')}` : '-',
         `₹${product.retail_price.toLocaleString('en-IN')}`,
         `$${(product.retail_price / usdRate).toFixed(2)}`
       ]);
       
-      // Add table
+      // Add table with all columns
       autoTable(doc, {
-        head: [['#', 'SKU', 'Name', 'Category', 'Metal', 'Gemstone', 'Weight', 'Price (INR)', 'Price (USD)']],
+        head: [['#', 'SKU', 'Name', 'Category', 'Metal', 'Gemstone', 'Color', 'Clarity', 'Gross Wt', 'Net Wt', 'Diamond Wt', 'Per Carat', 'Gold/g', 'Price (INR)', 'Price (USD)']],
         body: tableData,
         startY: 50,
-        styles: { fontSize: 8, cellPadding: 2 },
+        styles: { fontSize: 6.5, cellPadding: 1.5 },
         headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [245, 247, 250] },
         margin: { top: 50, left: 10, right: 10 },
