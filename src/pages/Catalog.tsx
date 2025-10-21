@@ -191,6 +191,9 @@ const Catalog = () => {
       await fetchProducts();
       
       toast.success(`24K Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated`);
+      
+      // Force page reload to ensure UI shows updated totals
+      window.location.reload();
     } catch (error) {
       console.error("Failed to update gold rate:", error);
       toast.error("Failed to update gold rate");
