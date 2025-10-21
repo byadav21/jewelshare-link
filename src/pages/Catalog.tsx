@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
@@ -7,7 +9,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -93,6 +95,88 @@ const Catalog = () => {
       }
     } catch (error) {
       console.error("💥 Failed to fetch vendor profile:", error);
+    }
+  };
+
+  const exportToPDF = async () => {
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      
+      // Add vendor header
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.text(vendorProfile?.business_name || "Product Catalog", pageWidth / 2, 20, { align: "center" });
+      
+      // Add vendor details
+      if (vendorProfile) {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        let yPos = 30;
+        
+        if (vendorProfile.address_line1) {
+          doc.text(`${vendorProfile.address_line1}${vendorProfile.address_line2 ? ', ' + vendorProfile.address_line2 : ''}`, pageWidth / 2, yPos, { align: "center" });
+          yPos += 5;
+        }
+        
+        if (vendorProfile.city) {
+          doc.text(`${vendorProfile.city}, ${vendorProfile.state} ${vendorProfile.pincode}`, pageWidth / 2, yPos, { align: "center" });
+          yPos += 5;
+        }
+        
+        const contactInfo = [];
+        if (vendorProfile.email) contactInfo.push(`Email: ${vendorProfile.email}`);
+        if (vendorProfile.phone) contactInfo.push(`Phone: ${vendorProfile.phone}`);
+        if (vendorProfile.whatsapp_number) contactInfo.push(`WhatsApp: ${vendorProfile.whatsapp_number}`);
+        
+        if (contactInfo.length > 0) {
+          doc.text(contactInfo.join(' | '), pageWidth / 2, yPos, { align: "center" });
+        }
+      }
+      
+      // Add date and exchange rate
+      doc.setFontSize(9);
+      doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)}`, pageWidth / 2, 45, { align: "center" });
+      
+      // Prepare table data
+      const tableData = filteredProducts.map((product, index) => [
+        index + 1,
+        product.sku || '-',
+        product.name,
+        product.category || '-',
+        product.metal_type || '-',
+        product.gemstone || '-',
+        product.weight_grams ? `${product.weight_grams}g` : '-',
+        `₹${product.retail_price.toLocaleString('en-IN')}`,
+        `$${(product.retail_price / usdRate).toFixed(2)}`
+      ]);
+      
+      // Add table
+      autoTable(doc, {
+        head: [['#', 'SKU', 'Name', 'Category', 'Metal', 'Gemstone', 'Weight', 'Price (INR)', 'Price (USD)']],
+        body: tableData,
+        startY: 50,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        margin: { top: 50, left: 10, right: 10 },
+      });
+      
+      // Add totals at the bottom
+      const finalY = (doc as any).lastAutoTable.finalY || 50;
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Total: ₹${totalINR.toLocaleString('en-IN')} | $${totalUSD.toFixed(2)} USD`, pageWidth / 2, finalY + 10, { align: "center" });
+      doc.text(`Total Products: ${filteredProducts.length}`, pageWidth / 2, finalY + 16, { align: "center" });
+      
+      // Save PDF
+      const fileName = `catalog_${vendorProfile?.business_name?.replace(/\s+/g, '_') || 'products'}_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.pdf`;
+      doc.save(fileName);
+      
+      toast.success("Catalog exported to PDF successfully!");
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      toast.error("Failed to export catalog to PDF");
     }
   };
 
@@ -350,6 +434,10 @@ const Catalog = () => {
                     Import
                   </Button>
                 )}
+                <Button variant="outline" size="sm" onClick={exportToPDF}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export PDF
+                </Button>
                 {(permissions.can_manage_team || isAdmin) && (
                   <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
                     <Users className="h-4 w-4 mr-2" />
