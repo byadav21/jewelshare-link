@@ -9,7 +9,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -21,6 +21,7 @@ const Catalog = () => {
   const [usdRate, setUsdRate] = useState(87.67);
   const [goldRate, setGoldRate] = useState(85000);
   const [editingGoldRate, setEditingGoldRate] = useState(false);
+  const [updatingGoldRate, setUpdatingGoldRate] = useState(false);
   const [tempGoldRate, setTempGoldRate] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [vendorProfile, setVendorProfile] = useState<any>(null);
@@ -122,12 +123,14 @@ const Catalog = () => {
       return;
     }
 
-    // Show loading state
-    toast.loading("Updating gold rate and recalculating prices...", { id: "gold-rate-update" });
+    setUpdatingGoldRate(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setUpdatingGoldRate(false);
+        return;
+      }
 
       console.log("🔄 Updating gold rate from", goldRate, "to", newRate);
       console.log("📦 Total products to update:", products.length);
@@ -204,13 +207,17 @@ const Catalog = () => {
       // Refresh products to show new prices
       await fetchProducts();
       
-      toast.success(`24K Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated`, { id: "gold-rate-update" });
+      toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated!`);
       
       // Force page reload to ensure UI shows updated totals
-      setTimeout(() => window.location.reload(), 1000);
+      setTimeout(() => {
+        setUpdatingGoldRate(false);
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       console.error("Failed to update gold rate:", error);
-      toast.error("Failed to update gold rate. Please try again.", { id: "gold-rate-update" });
+      toast.error("Failed to update gold rate. Please try again.");
+      setUpdatingGoldRate(false);
     }
   };
 
@@ -513,9 +520,9 @@ const Catalog = () => {
                         value={tempGoldRate}
                         onChange={(e) => setTempGoldRate(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === 'Enter' && !updatingGoldRate) {
                             handleUpdateGoldRate();
-                          } else if (e.key === 'Escape') {
+                          } else if (e.key === 'Escape' && !updatingGoldRate) {
                             setEditingGoldRate(false);
                             setTempGoldRate("");
                           }
@@ -524,20 +531,35 @@ const Catalog = () => {
                         min="1000"
                         max="200000"
                         step="100"
-                        className="w-28 px-2 py-1 text-xs bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                        disabled={updatingGoldRate}
+                        className="w-28 px-2 py-1 text-xs bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         autoFocus
                       />
                       <Button 
                         size="sm" 
-                        onClick={handleUpdateGoldRate} 
-                        className="h-7 px-3 text-xs bg-primary hover:bg-primary/90"
+                        onClick={handleUpdateGoldRate}
+                        disabled={updatingGoldRate}
+                        className="h-7 px-3 text-xs bg-primary hover:bg-primary/90 disabled:opacity-50"
                       >
-                        Save
+                        {updatingGoldRate ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            Updating...
+                          </>
+                        ) : (
+                          'Save'
+                        )}
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => {
-                        setEditingGoldRate(false);
-                        setTempGoldRate("");
-                      }} className="h-7 px-3 text-xs">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => {
+                          setEditingGoldRate(false);
+                          setTempGoldRate("");
+                        }} 
+                        disabled={updatingGoldRate}
+                        className="h-7 px-3 text-xs disabled:opacity-50"
+                      >
                         Cancel
                       </Button>
                     </div>
