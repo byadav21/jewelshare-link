@@ -369,12 +369,14 @@ export type Database = {
           can_edit_profile: boolean | null
           can_import_data: boolean | null
           can_manage_custom_orders: boolean | null
+          can_manage_sessions: boolean | null
           can_manage_share_links: boolean | null
           can_manage_team: boolean | null
           can_share_catalog: boolean | null
           can_view_catalog: boolean | null
           can_view_custom_orders: boolean | null
           can_view_interests: boolean | null
+          can_view_sessions: boolean | null
           can_view_share_links: boolean | null
           created_at: string | null
           id: string
@@ -389,12 +391,14 @@ export type Database = {
           can_edit_profile?: boolean | null
           can_import_data?: boolean | null
           can_manage_custom_orders?: boolean | null
+          can_manage_sessions?: boolean | null
           can_manage_share_links?: boolean | null
           can_manage_team?: boolean | null
           can_share_catalog?: boolean | null
           can_view_catalog?: boolean | null
           can_view_custom_orders?: boolean | null
           can_view_interests?: boolean | null
+          can_view_sessions?: boolean | null
           can_view_share_links?: boolean | null
           created_at?: string | null
           id?: string
@@ -409,12 +413,14 @@ export type Database = {
           can_edit_profile?: boolean | null
           can_import_data?: boolean | null
           can_manage_custom_orders?: boolean | null
+          can_manage_sessions?: boolean | null
           can_manage_share_links?: boolean | null
           can_manage_team?: boolean | null
           can_share_catalog?: boolean | null
           can_view_catalog?: boolean | null
           can_view_custom_orders?: boolean | null
           can_view_interests?: boolean | null
+          can_view_sessions?: boolean | null
           can_view_share_links?: boolean | null
           created_at?: string | null
           id?: string

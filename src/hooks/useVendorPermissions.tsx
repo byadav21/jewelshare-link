@@ -16,6 +16,8 @@ export interface VendorPermissions {
   can_manage_custom_orders: boolean;
   can_view_share_links: boolean;
   can_manage_share_links: boolean;
+  can_view_sessions: boolean;
+  can_manage_sessions: boolean;
 }
 
 export const useVendorPermissions = () => {
@@ -34,6 +36,8 @@ export const useVendorPermissions = () => {
     can_manage_custom_orders: false,
     can_view_share_links: true,
     can_manage_share_links: true,
+    can_view_sessions: true,
+    can_manage_sessions: true,
   });
   const [loading, setLoading] = useState(true);
 
@@ -70,6 +74,8 @@ export const useVendorPermissions = () => {
           can_manage_custom_orders: data.can_manage_custom_orders,
           can_view_share_links: data.can_view_share_links,
           can_manage_share_links: data.can_manage_share_links,
+          can_view_sessions: data.can_view_sessions ?? true,
+          can_manage_sessions: data.can_manage_sessions ?? true,
         });
       }
       

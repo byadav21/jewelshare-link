@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Monitor, Smartphone, Tablet, Trash2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 
 interface Session {
   id: string;
@@ -20,8 +22,14 @@ interface Session {
 
 const ActiveSessions = () => {
   const navigate = useNavigate();
+  const { role, loading: roleLoading } = useUserRole();
+  const { permissions, loading: permissionsLoading } = useVendorPermissions();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Check permissions
+  const canView = role === "admin" || role === "team_member" || permissions.can_view_sessions;
+  const canManage = role === "admin" || permissions.can_manage_sessions;
 
   const fetchSessions = async () => {
     try {
@@ -44,6 +52,11 @@ const ActiveSessions = () => {
   }, []);
 
   const removeSession = async (sessionId: string) => {
+    if (!canManage) {
+      toast.error("You don't have permission to manage sessions");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("user_sessions" as any)
@@ -85,6 +98,34 @@ const ActiveSessions = () => {
     // This would need to be enhanced with actual current session detection
     return false;
   };
+
+  if (roleLoading || permissionsLoading) {
+    return (
+      <ApprovalGuard>
+        <div className="container mx-auto p-6 max-w-6xl">
+          <div className="text-center py-12">
+            <div className="animate-pulse text-primary">Loading...</div>
+          </div>
+        </div>
+      </ApprovalGuard>
+    );
+  }
+
+  if (!canView) {
+    return (
+      <ApprovalGuard>
+        <div className="container mx-auto p-6 max-w-6xl">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">You don't have permission to view active sessions</p>
+            <Button variant="outline" onClick={() => navigate("/")} className="mt-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Catalog
+            </Button>
+          </div>
+        </div>
+      </ApprovalGuard>
+    );
+  }
 
   return (
     <ApprovalGuard>
@@ -162,13 +203,17 @@ const ActiveSessions = () => {
                           {new Date(session.created_at).toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removeSession(session.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          {canManage ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeSession(session.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">View only</span>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
