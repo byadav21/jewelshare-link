@@ -262,7 +262,7 @@ const Catalog = () => {
       doc.setFontSize(9);
       doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)} | Gold Rate (24K): ₹${goldRate.toLocaleString('en-IN')}/g`, pageWidth / 2, 45, { align: "center" });
       
-      // Prepare table data with ALL fields from the Excel bulk upload (CATEGORY & PRODUCT TYPE removed for better spacing)
+      // Prepare table data with ALL fields from the Excel bulk upload (CATEGORY, PRODUCT TYPE, and GOLD RATE removed for better spacing)
       const tableData = filteredProducts.map((product, index) => [
         product.sku || `${index + 1}`,
         product.name,
@@ -279,7 +279,6 @@ const Catalog = () => {
         product.d_value ? `${product.d_value.toLocaleString('en-IN')}` : '-',
         product.gemstone || 'NONE',
         product.mkg ? `${product.mkg.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-',
-        product.gold_per_gram_price ? `${product.gold_per_gram_price.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-',
         product.certification_cost ? `${product.certification_cost.toLocaleString('en-IN')}` : '-',
         product.gemstone_cost ? `${product.gemstone_cost.toLocaleString('en-IN')}` : '-',
         `₹${product.retail_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
@@ -304,11 +303,10 @@ const Catalog = () => {
           'D VALUE\n(₹)',
           'GEMSTONE\nTYPE',
           'MKG\n(₹)',
-          'GOLD RATE\n(₹/g)',
           'CERT\nCOST (₹)',
           'GEM\nCOST (₹)',
           'TOTAL (₹)',
-          'TOTAL\n(USD)'
+          'TOTAL (USD)'
         ]],
         body: tableData,
         startY: 50,
@@ -334,26 +332,25 @@ const Catalog = () => {
         },
         alternateRowStyles: { fillColor: [248, 249, 250] },
         columnStyles: {
-          0: { cellWidth: 14, halign: 'left' }, // SKU
-          1: { cellWidth: 30, halign: 'left' }, // PRODUCT NAME
-          2: { cellWidth: 12, halign: 'center' }, // DIAMOND COLOR
-          3: { cellWidth: 12, halign: 'center' }, // CLARITY
-          4: { cellWidth: 12, halign: 'right' }, // D.WT 1
-          5: { cellWidth: 12, halign: 'right' }, // D.WT 2
-          6: { cellWidth: 14, halign: 'right' }, // TOTAL D.WT
-          7: { cellWidth: 12, halign: 'right' }, // GROSS WT
-          8: { cellWidth: 12, halign: 'right' }, // NET WT
-          9: { cellWidth: 12, halign: 'right' }, // PURITY %
-          10: { cellWidth: 14, halign: 'right' }, // D RATE 1
-          11: { cellWidth: 14, halign: 'right' }, // POINTER DIAMOND
-          12: { cellWidth: 14, halign: 'right' }, // D VALUE
-          13: { cellWidth: 16, halign: 'center' }, // GEMSTONE TYPE
-          14: { cellWidth: 14, halign: 'right' }, // MKG
-          15: { cellWidth: 16, halign: 'right' }, // GOLD RATE
-          16: { cellWidth: 13, halign: 'right' }, // CERT COST
-          17: { cellWidth: 13, halign: 'right' }, // GEM COST
-          18: { cellWidth: 18, halign: 'right' }, // TOTAL (₹)
-          19: { cellWidth: 14, halign: 'right' } // TOTAL (USD)
+          0: { cellWidth: 16, halign: 'left' }, // SKU
+          1: { cellWidth: 35, halign: 'left' }, // PRODUCT NAME
+          2: { cellWidth: 13, halign: 'center' }, // DIAMOND COLOR
+          3: { cellWidth: 13, halign: 'center' }, // CLARITY
+          4: { cellWidth: 13, halign: 'right' }, // D.WT 1
+          5: { cellWidth: 13, halign: 'right' }, // D.WT 2
+          6: { cellWidth: 15, halign: 'right' }, // TOTAL D.WT
+          7: { cellWidth: 13, halign: 'right' }, // GROSS WT
+          8: { cellWidth: 13, halign: 'right' }, // NET WT
+          9: { cellWidth: 13, halign: 'right' }, // PURITY %
+          10: { cellWidth: 15, halign: 'right' }, // D RATE 1
+          11: { cellWidth: 15, halign: 'right' }, // POINTER DIAMOND
+          12: { cellWidth: 15, halign: 'right' }, // D VALUE
+          13: { cellWidth: 18, halign: 'center' }, // GEMSTONE TYPE
+          14: { cellWidth: 15, halign: 'right' }, // MKG
+          15: { cellWidth: 14, halign: 'right' }, // CERT COST
+          16: { cellWidth: 14, halign: 'right' }, // GEM COST
+          17: { cellWidth: 20, halign: 'right' }, // TOTAL (₹)
+          18: { cellWidth: 16, halign: 'right' } // TOTAL (USD)
         },
         margin: { top: 50, left: 5, right: 5 },
         tableWidth: 'auto'
