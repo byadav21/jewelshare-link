@@ -136,19 +136,18 @@ const Catalog = () => {
           return null;
         }
         
-        // Calculate gold value: (weight_grams / 10) * gold_rate_per_10g
-        const goldValue = (product.weight_grams / 10) * newRate;
+        // Get the old gold rate to calculate the ratio
+        const oldGoldValue = (product.weight_grams / 10) * goldRate;
+        const newGoldValue = (product.weight_grams / 10) * newRate;
         
-        // Add diamond/gemstone value if per_carat_price exists
-        const diamondValue = product.diamond_weight && product.per_carat_price 
-          ? product.diamond_weight * product.per_carat_price 
-          : 0;
+        // Calculate price change ratio
+        const priceRatio = newGoldValue / oldGoldValue;
         
-        // Calculate new retail price
-        const newRetailPrice = goldValue + diamondValue;
-        const newCostPrice = newRetailPrice * 0.85; // Assuming 15% margin
+        // Apply the ratio to existing prices to maintain any markup/additional costs
+        const newRetailPrice = product.retail_price * priceRatio;
+        const newCostPrice = product.cost_price * priceRatio;
         
-        console.log(`💰 ${product.name}: weight=${product.weight_grams}g, old_price=₹${product.retail_price}, new_price=₹${newRetailPrice.toFixed(2)}`);
+        console.log(`💰 ${product.name}: weight=${product.weight_grams}g, old_retail=₹${product.retail_price.toFixed(2)}, new_retail=₹${newRetailPrice.toFixed(2)} (ratio: ${priceRatio.toFixed(4)})`);
         
         return {
           id: product.id,
