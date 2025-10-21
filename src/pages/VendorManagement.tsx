@@ -112,12 +112,20 @@ export default function VendorManagement() {
         .select("*");
 
       if (permissionsError) throw permissionsError;
+      
+      console.log("🔐 Fetched permissions data:", permissionsData);
 
       // Combine data
       const vendorsData: Vendor[] = vendorApprovals.map(approval => {
         const profile = profiles?.find(p => p.user_id === approval.user_id);
         const userProducts = productCounts?.filter(p => p.user_id === approval.user_id) || [];
         const vendorPermissions = permissionsData?.find(p => p.user_id === approval.user_id);
+        
+        console.log(`📋 Processing vendor ${approval.user_id}:`, {
+          hasProfile: !!profile,
+          hasPermissions: !!vendorPermissions,
+          permissions: vendorPermissions
+        });
         
         return {
           id: approval.user_id,
