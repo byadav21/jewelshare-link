@@ -261,86 +261,95 @@ const Catalog = () => {
       doc.setFontSize(9);
       doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)}`, pageWidth / 2, 45, { align: "center" });
       
-      // Prepare comprehensive table data with ALL database fields
+      // Prepare table data matching the reference spreadsheet headers
       const tableData = filteredProducts.map((product, index) => [
-        product.sku || index + 1,
+        product.sku || `${index + 1}`,
         product.name,
-        product.description || '-',
-        product.category || '-',
-        product.metal_type || '-',
-        product.gemstone || '-',
-        product.color || '-',
+        product.diamond_weight ? `${product.diamond_weight}` : '-',
         product.clarity || '-',
-        product.weight_grams ? `${product.weight_grams}g` : '-',
-        product.net_weight ? `${product.net_weight}g` : '-',
-        product.diamond_weight ? `${product.diamond_weight} ct` : '-',
-        product.per_carat_price ? `₹${product.per_carat_price.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-',
-        product.gold_per_gram_price ? `$${product.gold_per_gram_price.toFixed(2)}` : '-',
-        `₹${product.cost_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        '-', // D WT 1
+        '-', // D WT 2
+        product.diamond_weight ? `${product.diamond_weight}` : '-', // T DWT
+        product.weight_grams ? `${product.weight_grams}` : '-',
+        product.category || '-',
+        product.net_weight ? `${product.net_weight}` : '-',
+        product.per_carat_price ? `${product.per_carat_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '-',
+        '-', // Pointer diamond
+        '-', // D VALUE
+        product.gemstone || 'NONE',
+        '-', // MFG
+        product.gold_per_gram_price ? `${product.gold_per_gram_price.toFixed(2)}` : '-',
+        '-', // Certification
+        '-', // Gemstone cost
         `₹${product.retail_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-        `$${(product.cost_price / usdRate).toFixed(2)}`,
         `$${(product.retail_price / usdRate).toFixed(2)}`,
-        product.stock_quantity || 0
+        product.metal_type || '-'
       ]);
       
-      // Add comprehensive table with ALL database columns
+      // Add table matching reference spreadsheet format
       autoTable(doc, {
         head: [[
-          'SKU', 
-          'Name', 
-          'Description',
-          'Category', 
-          'Metal', 
-          'Gemstone', 
-          'Color', 
-          'Clarity', 
-          'Gross Wt', 
-          'Net Wt', 
-          'Diamond Wt', 
-          'Per Carat (INR)', 
-          'Gold/g (USD)',
-          'Cost (INR)',
-          'Retail (INR)',
-          'Cost (USD)',
-          'Retail (USD)',
-          'Stock'
+          'CERT', 
+          'PRODUCT', 
+          'Diamond Co',
+          'CLARITY', 
+          'D WT 1', 
+          'D WT 2', 
+          'T DWT', 
+          'G WT', 
+          'CS TYPE', 
+          'NET WT', 
+          'PURITY_PRAC D RATE 1', 
+          'Pointer diamond', 
+          'D VALUE',
+          'GEMSTONE',
+          'MFG',
+          'GOLD',
+          'Certification',
+          'Gemstone cost',
+          'TOTAL',
+          'TOTAL_USD',
+          'Product Type'
         ]],
         body: tableData,
         startY: 50,
         styles: { 
-          fontSize: 5.5, 
-          cellPadding: 1, 
+          fontSize: 6, 
+          cellPadding: 1.5, 
           lineColor: [200, 200, 200], 
           lineWidth: 0.1,
           overflow: 'linebreak'
         },
         headStyles: { 
-          fillColor: [41, 128, 185], 
-          textColor: 255, 
+          fillColor: [255, 255, 0], 
+          textColor: 0, 
           fontStyle: 'bold', 
           halign: 'center',
           fontSize: 6
         },
         alternateRowStyles: { fillColor: [245, 247, 250] },
         columnStyles: {
-          0: { cellWidth: 12 }, // SKU
-          1: { cellWidth: 20 }, // Name
-          2: { cellWidth: 18 }, // Description
-          3: { cellWidth: 15 }, // Category
-          4: { cellWidth: 10 }, // Metal
-          5: { cellWidth: 12 }, // Gemstone
-          6: { cellWidth: 8 }, // Color
-          7: { cellWidth: 8 }, // Clarity
-          8: { cellWidth: 10 }, // Gross Wt
-          9: { cellWidth: 10 }, // Net Wt
-          10: { cellWidth: 10 }, // Diamond Wt
-          11: { cellWidth: 12, halign: 'right' }, // Per Carat
-          12: { cellWidth: 10, halign: 'right' }, // Gold/g
-          13: { cellWidth: 15, halign: 'right' }, // Cost INR
-          14: { cellWidth: 15, halign: 'right' }, // Retail INR
-          15: { cellWidth: 12, halign: 'right' }, // Cost USD
-          16: { cellWidth: 12, halign: 'right' }, // Retail USD
-          17: { cellWidth: 8, halign: 'center' }  // Stock
+          0: { cellWidth: 10 }, // CERT
+          1: { cellWidth: 18 }, // PRODUCT
+          2: { cellWidth: 8 }, // Diamond Co
+          3: { cellWidth: 8 }, // CLARITY
+          4: { cellWidth: 8 }, // D WT 1
+          5: { cellWidth: 8 }, // D WT 2
+          6: { cellWidth: 8 }, // T DWT
+          7: { cellWidth: 8 }, // G WT
+          8: { cellWidth: 12 }, // CS TYPE
+          9: { cellWidth: 8 }, // NET WT
+          10: { cellWidth: 15, halign: 'right' }, // PURITY_PRAC D RATE 1
+          11: { cellWidth: 8 }, // Pointer diamond
+          12: { cellWidth: 8 }, // D VALUE
+          13: { cellWidth: 10 }, // GEMSTONE
+          14: { cellWidth: 8 }, // MFG
+          15: { cellWidth: 10, halign: 'right' }, // GOLD
+          16: { cellWidth: 10 }, // Certification
+          17: { cellWidth: 10 }, // Gemstone cost
+          18: { cellWidth: 12, halign: 'right' }, // TOTAL
+          19: { cellWidth: 12, halign: 'right' }, // TOTAL_USD
+          20: { cellWidth: 15 } // Product Type
         },
         margin: { top: 50, left: 5, right: 5 },
       });
