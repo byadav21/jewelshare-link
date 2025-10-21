@@ -106,10 +106,24 @@ const Catalog = () => {
 
   const handleUpdateGoldRate = async () => {
     const newRate = parseFloat(tempGoldRate);
-    if (isNaN(newRate) || newRate <= 0) {
-      toast.error("Please enter a valid gold rate");
+    
+    if (!tempGoldRate || tempGoldRate.trim() === "") {
+      toast.error("Please enter a gold rate");
       return;
     }
+    
+    if (isNaN(newRate) || newRate <= 0) {
+      toast.error("Please enter a valid positive number for gold rate");
+      return;
+    }
+
+    if (newRate < 1000 || newRate > 200000) {
+      toast.error("Gold rate must be between ₹1,000 and ₹2,00,000 per gram");
+      return;
+    }
+
+    // Show loading state
+    toast.loading("Updating gold rate and recalculating prices...", { id: "gold-rate-update" });
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -190,13 +204,13 @@ const Catalog = () => {
       // Refresh products to show new prices
       await fetchProducts();
       
-      toast.success(`24K Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated`);
+      toast.success(`24K Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated`, { id: "gold-rate-update" });
       
       // Force page reload to ensure UI shows updated totals
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Failed to update gold rate:", error);
-      toast.error("Failed to update gold rate");
+      toast.error("Failed to update gold rate. Please try again.", { id: "gold-rate-update" });
     }
   };
 
@@ -498,17 +512,32 @@ const Catalog = () => {
                         type="number"
                         value={tempGoldRate}
                         onChange={(e) => setTempGoldRate(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleUpdateGoldRate();
+                          } else if (e.key === 'Escape') {
+                            setEditingGoldRate(false);
+                            setTempGoldRate("");
+                          }
+                        }}
                         placeholder={goldRate.toString()}
-                        className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
+                        min="1000"
+                        max="200000"
+                        step="100"
+                        className="w-28 px-2 py-1 text-xs bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         autoFocus
                       />
-                      <Button size="sm" variant="ghost" onClick={handleUpdateGoldRate} className="h-6 px-2 text-xs">
+                      <Button 
+                        size="sm" 
+                        onClick={handleUpdateGoldRate} 
+                        className="h-7 px-3 text-xs bg-primary hover:bg-primary/90"
+                      >
                         Save
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => {
                         setEditingGoldRate(false);
                         setTempGoldRate("");
-                      }} className="h-6 px-2 text-xs">
+                      }} className="h-7 px-3 text-xs">
                         Cancel
                       </Button>
                     </div>
