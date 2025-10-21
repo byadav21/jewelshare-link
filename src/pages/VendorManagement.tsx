@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface VendorPermissions {
   can_view_catalog: boolean;
@@ -32,6 +33,7 @@ interface VendorPermissions {
   can_manage_share_links: boolean;
   can_view_sessions: boolean;
   can_manage_sessions: boolean;
+  max_active_sessions: number;
 }
 
 interface Vendor {
@@ -153,6 +155,7 @@ export default function VendorManagement() {
             can_manage_share_links: vendorPermissions.can_manage_share_links,
             can_view_sessions: vendorPermissions.can_view_sessions ?? true,
             can_manage_sessions: vendorPermissions.can_manage_sessions ?? true,
+            max_active_sessions: vendorPermissions.max_active_sessions ?? 3,
           } : undefined,
         };
       });
@@ -520,6 +523,33 @@ export default function VendorManagement() {
                       checked={selectedVendor.permissions?.can_manage_sessions ?? true}
                       onCheckedChange={(checked) => handlePermissionToggle('can_manage_sessions', checked)}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="max_active_sessions">Max Active Sessions</Label>
+                    <Input
+                      id="max_active_sessions"
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={selectedVendor.permissions?.max_active_sessions ?? 3}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 3;
+                        if (value >= 1 && value <= 10) {
+                          updateVendorPermissions(selectedVendor.id, { max_active_sessions: value });
+                          setSelectedVendor({
+                            ...selectedVendor,
+                            permissions: {
+                              ...selectedVendor.permissions!,
+                              max_active_sessions: value
+                            }
+                          });
+                        }
+                      }}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Number of devices that can be logged in simultaneously (1-10)
+                    </p>
                   </div>
                 </div>
               )}

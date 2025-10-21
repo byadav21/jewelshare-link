@@ -380,6 +380,7 @@ export type Database = {
           can_view_share_links: boolean | null
           created_at: string | null
           id: string
+          max_active_sessions: number
           updated_at: string | null
           user_id: string
         }
@@ -402,6 +403,7 @@ export type Database = {
           can_view_share_links?: boolean | null
           created_at?: string | null
           id?: string
+          max_active_sessions?: number
           updated_at?: string | null
           user_id: string
         }
@@ -424,6 +426,7 @@ export type Database = {
           can_view_share_links?: boolean | null
           created_at?: string | null
           id?: string
+          max_active_sessions?: number
           updated_at?: string | null
           user_id?: string
         }

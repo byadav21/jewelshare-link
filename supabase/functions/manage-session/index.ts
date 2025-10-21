@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const MAX_DEVICES = 5;
+const DEFAULT_MAX_DEVICES = 3; // Default maximum if not configured
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -41,6 +41,15 @@ serve(async (req) => {
     }
 
     if (action === "register") {
+      // Get user's max session limit from vendor_permissions
+      const { data: permissions } = await supabase
+        .from("vendor_permissions")
+        .select("max_active_sessions")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const maxDevices = permissions?.max_active_sessions || DEFAULT_MAX_DEVICES;
+
       // Check current active sessions
       const { data: existingSessions, error: fetchError } = await supabase
         .from("user_sessions")
@@ -82,7 +91,7 @@ serve(async (req) => {
       }
 
       // Check device limit for new sessions
-      if (existingSessions && existingSessions.length >= MAX_DEVICES) {
+      if (existingSessions && existingSessions.length >= maxDevices) {
         // Remove oldest session
         const oldestSession = existingSessions[existingSessions.length - 1];
         await supabase
@@ -90,7 +99,7 @@ serve(async (req) => {
           .delete()
           .eq("id", oldestSession.id);
 
-        console.log(`Removed oldest session for user ${user.id} due to device limit`);
+        console.log(`Removed oldest session for user ${user.id} due to device limit (max: ${maxDevices})`);
       }
 
       // Register new session
@@ -112,7 +121,8 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           message: "Session registered successfully",
-          activeDevices: Math.min((existingSessions?.length || 0) + 1, MAX_DEVICES)
+          activeDevices: Math.min((existingSessions?.length || 0) + 1, maxDevices),
+          maxDevices
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -161,6 +171,15 @@ serve(async (req) => {
         }
       );
     } else if (action === "list") {
+      // Get user's max session limit from vendor_permissions
+      const { data: permissions } = await supabase
+        .from("vendor_permissions")
+        .select("max_active_sessions")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const maxDevices = permissions?.max_active_sessions || DEFAULT_MAX_DEVICES;
+
       // List active sessions
       const { data: sessions, error: listError } = await supabase
         .from("user_sessions")
@@ -178,7 +197,7 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           sessions: sessions || [],
-          maxDevices: MAX_DEVICES
+          maxDevices
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
