@@ -8,13 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
 import { customOrderSchema } from "@/lib/validations";
 
 const CustomOrder = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     customer_name: "",
     customer_email: "",
@@ -27,6 +29,92 @@ const CustomOrder = () => {
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Limit to 5 images
+    if (uploadedImages.length + files.length > 5) {
+      toast({
+        title: "Too many images",
+        description: "You can upload up to 5 reference images",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    const newImageUrls: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            title: "File too large",
+            description: `${file.name} is larger than 5MB`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: "Invalid file type",
+            description: `${file.name} is not an image`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        // Upload to Supabase storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        const filePath = `custom-orders/${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('vendor-qr-codes')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('vendor-qr-codes')
+          .getPublicUrl(filePath);
+
+        newImageUrls.push(publicUrl);
+      }
+
+      setUploadedImages([...uploadedImages, ...newImageUrls]);
+      toast({
+        title: "Success",
+        description: `${newImageUrls.length} image(s) uploaded successfully`,
+      });
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      // Reset input
+      e.target.value = '';
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setUploadedImages(uploadedImages.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +142,7 @@ const CustomOrder = () => {
       gemstone_preference: validation.data.gemstone_preference || null,
       design_description: validation.data.design_description,
       budget_range: validation.data.budget_range || null,
+      reference_images: uploadedImages.length > 0 ? uploadedImages : null,
     });
 
     setLoading(false);
@@ -81,6 +170,7 @@ const CustomOrder = () => {
       design_description: "",
       budget_range: "",
     });
+    setUploadedImages([]);
   };
 
   return (
@@ -208,7 +298,60 @@ const CustomOrder = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              {/* Reference Images Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="reference_images">
+                  Reference Images (Optional)
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Upload up to 5 images for design inspiration (max 5MB each)
+                </p>
+                
+                {/* Upload Button */}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('reference_images')?.click()}
+                    disabled={uploading || uploadedImages.length >= 5}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {uploading ? "Uploading..." : "Upload Images"}
+                  </Button>
+                  <Input
+                    id="reference_images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Uploaded Images Preview */}
+                {uploadedImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    {uploadedImages.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Reference ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading || uploading}>
                 {loading ? "Submitting..." : "Submit Custom Order Request"}
               </Button>
             </form>
