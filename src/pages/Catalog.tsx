@@ -9,7 +9,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -19,6 +19,9 @@ const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [usdRate, setUsdRate] = useState(87.67);
+  const [goldRate, setGoldRate] = useState(85000);
+  const [editingGoldRate, setEditingGoldRate] = useState(false);
+  const [tempGoldRate, setTempGoldRate] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [filters, setFilters] = useState<FilterState>({
@@ -90,11 +93,45 @@ const Catalog = () => {
       } else if (data) {
         console.log("✅ Vendor profile loaded:", data);
         setVendorProfile(data);
+        if (data.gold_rate_per_10g) {
+          setGoldRate(data.gold_rate_per_10g);
+        }
       } else {
         console.log("ℹ️ No vendor profile found for this user");
       }
     } catch (error) {
       console.error("💥 Failed to fetch vendor profile:", error);
+    }
+  };
+
+  const handleUpdateGoldRate = async () => {
+    const newRate = parseFloat(tempGoldRate);
+    if (isNaN(newRate) || newRate <= 0) {
+      toast.error("Please enter a valid gold rate");
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("vendor_profiles")
+        .update({ 
+          gold_rate_per_10g: newRate,
+          gold_rate_updated_at: new Date().toISOString()
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setGoldRate(newRate);
+      setEditingGoldRate(false);
+      setTempGoldRate("");
+      toast.success("Gold rate updated successfully");
+    } catch (error) {
+      console.error("Failed to update gold rate:", error);
+      toast.error("Failed to update gold rate");
     }
   };
 
@@ -383,10 +420,45 @@ const Catalog = () => {
                 </div>
               )}
 
-              {/* Right: Exchange Rate & Total Inventory */}
+              {/* Right: Exchange Rate & Gold Rate & Total Inventory */}
               <div className="flex flex-col items-end gap-2">
-                <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md border border-border whitespace-nowrap">
-                  1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md border border-border whitespace-nowrap">
+                    1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </div>
+                  
+                  {editingGoldRate ? (
+                    <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-md border border-border">
+                      <input
+                        type="number"
+                        value={tempGoldRate}
+                        onChange={(e) => setTempGoldRate(e.target.value)}
+                        placeholder={goldRate.toString()}
+                        className="w-24 px-2 py-1 text-xs bg-background border border-border rounded"
+                        autoFocus
+                      />
+                      <Button size="sm" variant="ghost" onClick={handleUpdateGoldRate} className="h-6 px-2 text-xs">
+                        Save
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        setEditingGoldRate(false);
+                        setTempGoldRate("");
+                      }} className="h-6 px-2 text-xs">
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="text-xs text-muted-foreground bg-amber-500/10 px-3 py-1.5 rounded-md border border-amber-500/30 whitespace-nowrap cursor-pointer hover:bg-amber-500/20 transition-colors flex items-center gap-2"
+                      onClick={() => {
+                        setEditingGoldRate(true);
+                        setTempGoldRate(goldRate.toString());
+                      }}
+                    >
+                      <span className="font-semibold text-amber-700 dark:text-amber-400">Gold: ₹{goldRate.toLocaleString('en-IN')}/10g</span>
+                      <Edit className="h-3 w-3 text-amber-600" />
+                    </div>
+                  )}
                 </div>
                 {products.length > 0 && (
                   <div className="flex flex-col items-end gap-0.5 px-4 py-2 bg-primary/10 rounded-lg border border-primary/30">
