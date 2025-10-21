@@ -42,6 +42,8 @@ export const useVendorPermissions = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let channel: any;
+
     const fetchPermissions = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -80,9 +82,51 @@ export const useVendorPermissions = () => {
       }
       
       setLoading(false);
+
+      // Subscribe to realtime changes for this user's permissions
+      channel = supabase
+        .channel(`vendor_permissions_${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'vendor_permissions',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Permissions updated in realtime:', payload);
+            const newData = payload.new as any;
+            setPermissions({
+              can_view_catalog: newData.can_view_catalog,
+              can_add_products: newData.can_add_products,
+              can_import_data: newData.can_import_data,
+              can_share_catalog: newData.can_share_catalog,
+              can_manage_team: newData.can_manage_team,
+              can_view_interests: newData.can_view_interests,
+              can_delete_products: newData.can_delete_products,
+              can_edit_products: newData.can_edit_products,
+              can_edit_profile: newData.can_edit_profile,
+              can_add_vendor_details: newData.can_add_vendor_details,
+              can_view_custom_orders: newData.can_view_custom_orders,
+              can_manage_custom_orders: newData.can_manage_custom_orders,
+              can_view_share_links: newData.can_view_share_links,
+              can_manage_share_links: newData.can_manage_share_links,
+              can_view_sessions: newData.can_view_sessions ?? true,
+              can_manage_sessions: newData.can_manage_sessions ?? true,
+            });
+          }
+        )
+        .subscribe();
     };
 
     fetchPermissions();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   return { permissions, loading };
