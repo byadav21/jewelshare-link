@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Users, LogOut } from "lucide-react";
+import { ArrowLeft, Users, LogOut, Monitor } from "lucide-react";
 
 interface Stats {
   totalProducts: number;
@@ -211,7 +211,7 @@ export default function SuperAdmin() {
         </header>
 
         <main className="container mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/vendor-approvals")}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
@@ -238,6 +238,21 @@ export default function SuperAdmin() {
               <CardContent>
                 <Button className="w-full" variant="default">
                   Manage Vendors
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/active-sessions")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Monitor className="h-6 w-6 text-primary" />
+                  Active Sessions
+                </CardTitle>
+                <CardDescription>Monitor all active user sessions and devices</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  View Sessions
                 </Button>
               </CardContent>
             </Card>
