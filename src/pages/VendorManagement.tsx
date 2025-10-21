@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ArrowLeft, Trash2, User } from "lucide-react";
+import { ArrowLeft, Trash2, User, Check, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -17,6 +18,7 @@ interface Vendor {
   email: string;
   business_name?: string;
   is_enabled: boolean;
+  has_permission: boolean;
   status: string;
   created_at: string;
   product_count: number;
@@ -78,6 +80,7 @@ export default function VendorManagement() {
           email: approval.email || "N/A",
           business_name: profile?.business_name,
           is_enabled: approval.is_enabled ?? true,
+          has_permission: approval.is_enabled ?? true,
           status: approval.status,
           created_at: approval.requested_at,
           product_count: userProducts.filter(p => !p.deleted_at).length,
@@ -184,6 +187,7 @@ export default function VendorManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Permission</TableHead>
                     <TableHead>Business Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Products</TableHead>
@@ -195,6 +199,14 @@ export default function VendorManagement() {
                 <TableBody>
                   {vendors.map((vendor) => (
                     <TableRow key={vendor.id}>
+                      <TableCell>
+                        <div className="flex items-center justify-center">
+                          <Checkbox
+                            checked={vendor.has_permission}
+                            onCheckedChange={() => toggleVendorStatus(vendor.id, vendor.is_enabled)}
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">
                         {vendor.business_name || "No business name"}
                       </TableCell>
@@ -207,16 +219,23 @@ export default function VendorManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Switch
-                          checked={vendor.is_enabled}
-                          onCheckedChange={() => toggleVendorStatus(vendor.id, vendor.is_enabled)}
-                        />
+                        <div className="flex items-center gap-2">
+                          {vendor.is_enabled ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <X className="h-4 w-4 text-red-500" />
+                          )}
+                          <Switch
+                            checked={vendor.is_enabled}
+                            onCheckedChange={() => toggleVendorStatus(vendor.id, vendor.is_enabled)}
+                          />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                   {vendors.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
                         No vendors found
                       </TableCell>
                     </TableRow>
