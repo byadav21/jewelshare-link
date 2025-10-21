@@ -31,6 +31,13 @@ const Catalog = () => {
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
 
+  // Redirect admins to admin dashboard
+  useEffect(() => {
+    if (!roleLoading && isAdmin) {
+      navigate("/admin");
+    }
+  }, [isAdmin, roleLoading, navigate]);
+
   // Debug logging
   useEffect(() => {
     console.log('🔐 Catalog Permissions:', permissions);
