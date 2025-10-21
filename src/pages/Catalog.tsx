@@ -261,10 +261,11 @@ const Catalog = () => {
       doc.setFontSize(9);
       doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)}`, pageWidth / 2, 45, { align: "center" });
       
-      // Prepare table data with all details matching the uploaded PDF format
+      // Prepare comprehensive table data with ALL database fields
       const tableData = filteredProducts.map((product, index) => [
-        index + 1,
+        product.sku || index + 1,
         product.name,
+        product.description || '-',
         product.category || '-',
         product.metal_type || '-',
         product.gemstone || '-',
@@ -273,24 +274,75 @@ const Catalog = () => {
         product.weight_grams ? `${product.weight_grams}g` : '-',
         product.net_weight ? `${product.net_weight}g` : '-',
         product.diamond_weight ? `${product.diamond_weight} ct` : '-',
-        product.per_carat_price ? `₹ ${product.per_carat_price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-',
-        product.gold_per_gram_price ? `$${product.gold_per_gram_price.toFixed(2)}` : '-'
+        product.per_carat_price ? `₹${product.per_carat_price.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '-',
+        product.gold_per_gram_price ? `$${product.gold_per_gram_price.toFixed(2)}` : '-',
+        `₹${product.cost_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        `₹${product.retail_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        `$${(product.cost_price / usdRate).toFixed(2)}`,
+        `$${(product.retail_price / usdRate).toFixed(2)}`,
+        product.stock_quantity || 0
       ]);
       
-      // Add table with all columns matching the uploaded PDF format
+      // Add comprehensive table with ALL database columns
       autoTable(doc, {
-        head: [['SKU', 'Name', 'Category', 'Metal', 'Gemstone', 'Color', 'Clarity', 'Gross Wt', 'Net Wt', 'Diamond Wt', 'Per Carat Price (INR)', 'Gold/g Price (USD)']],
+        head: [[
+          'SKU', 
+          'Name', 
+          'Description',
+          'Category', 
+          'Metal', 
+          'Gemstone', 
+          'Color', 
+          'Clarity', 
+          'Gross Wt', 
+          'Net Wt', 
+          'Diamond Wt', 
+          'Per Carat (INR)', 
+          'Gold/g (USD)',
+          'Cost (INR)',
+          'Retail (INR)',
+          'Cost (USD)',
+          'Retail (USD)',
+          'Stock'
+        ]],
         body: tableData,
         startY: 50,
-        styles: { fontSize: 7, cellPadding: 2, lineColor: [200, 200, 200], lineWidth: 0.1 },
-        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold', halign: 'center' },
+        styles: { 
+          fontSize: 5.5, 
+          cellPadding: 1, 
+          lineColor: [200, 200, 200], 
+          lineWidth: 0.1,
+          overflow: 'linebreak'
+        },
+        headStyles: { 
+          fillColor: [41, 128, 185], 
+          textColor: 255, 
+          fontStyle: 'bold', 
+          halign: 'center',
+          fontSize: 6
+        },
         alternateRowStyles: { fillColor: [245, 247, 250] },
         columnStyles: {
-          0: { halign: 'center' },
-          10: { halign: 'right' },
-          11: { halign: 'right' }
+          0: { cellWidth: 12 }, // SKU
+          1: { cellWidth: 20 }, // Name
+          2: { cellWidth: 18 }, // Description
+          3: { cellWidth: 15 }, // Category
+          4: { cellWidth: 10 }, // Metal
+          5: { cellWidth: 12 }, // Gemstone
+          6: { cellWidth: 8 }, // Color
+          7: { cellWidth: 8 }, // Clarity
+          8: { cellWidth: 10 }, // Gross Wt
+          9: { cellWidth: 10 }, // Net Wt
+          10: { cellWidth: 10 }, // Diamond Wt
+          11: { cellWidth: 12, halign: 'right' }, // Per Carat
+          12: { cellWidth: 10, halign: 'right' }, // Gold/g
+          13: { cellWidth: 15, halign: 'right' }, // Cost INR
+          14: { cellWidth: 15, halign: 'right' }, // Retail INR
+          15: { cellWidth: 12, halign: 'right' }, // Cost USD
+          16: { cellWidth: 12, halign: 'right' }, // Retail USD
+          17: { cellWidth: 8, halign: 'center' }  // Stock
         },
-        margin: { top: 50, left: 10, right: 10 },
+        margin: { top: 50, left: 5, right: 5 },
       });
       
       // Add totals at the bottom
