@@ -138,10 +138,9 @@ const Catalog = () => {
       doc.setFontSize(9);
       doc.text(`Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)}`, pageWidth / 2, 45, { align: "center" });
       
-      // Prepare table data with all details
+      // Prepare table data with all details matching the uploaded PDF format
       const tableData = filteredProducts.map((product, index) => [
         index + 1,
-        product.sku || '-',
         product.name,
         product.category || '-',
         product.metal_type || '-',
@@ -150,21 +149,24 @@ const Catalog = () => {
         product.clarity || '-',
         product.weight_grams ? `${product.weight_grams}g` : '-',
         product.net_weight ? `${product.net_weight}g` : '-',
-        product.diamond_weight ? `${product.diamond_weight}ct` : '-',
-        product.per_carat_price ? `₹${product.per_carat_price.toLocaleString('en-IN')}` : '-',
-        product.gold_per_gram_price ? `₹${product.gold_per_gram_price.toLocaleString('en-IN')}` : '-',
-        `₹${product.retail_price.toLocaleString('en-IN')}`,
-        `$${(product.retail_price / usdRate).toFixed(2)}`
+        product.diamond_weight ? `${product.diamond_weight} ct` : '-',
+        product.per_carat_price ? `₹ ${product.per_carat_price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-',
+        product.gold_per_gram_price ? `$${product.gold_per_gram_price.toFixed(2)}` : '-'
       ]);
       
-      // Add table with all columns
+      // Add table with all columns matching the uploaded PDF format
       autoTable(doc, {
-        head: [['#', 'SKU', 'Name', 'Category', 'Metal', 'Gemstone', 'Color', 'Clarity', 'Gross Wt', 'Net Wt', 'Diamond Wt', 'Per Carat', 'Gold/g', 'Price (INR)', 'Price (USD)']],
+        head: [['SKU', 'Name', 'Category', 'Metal', 'Gemstone', 'Color', 'Clarity', 'Gross Wt', 'Net Wt', 'Diamond Wt', 'Per Carat Price (INR)', 'Gold/g Price (USD)']],
         body: tableData,
         startY: 50,
-        styles: { fontSize: 6.5, cellPadding: 1.5 },
-        headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 7, cellPadding: 2, lineColor: [200, 200, 200], lineWidth: 0.1 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold', halign: 'center' },
         alternateRowStyles: { fillColor: [245, 247, 250] },
+        columnStyles: {
+          0: { halign: 'center' },
+          10: { halign: 'right' },
+          11: { halign: 'right' }
+        },
         margin: { top: 50, left: 10, right: 10 },
       });
       
