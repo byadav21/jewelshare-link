@@ -11,6 +11,7 @@ import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, Layou
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -28,6 +29,7 @@ const Catalog = () => {
   });
   const navigate = useNavigate();
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
+  const { permissions, loading: permissionsLoading } = useVendorPermissions();
 
   useEffect(() => {
     fetchProducts();
@@ -299,37 +301,49 @@ const Catalog = () => {
             {/* Second Layer: Action Buttons */}
             <div className="flex items-center justify-center gap-2 mt-2.5 pt-2.5 border-t border-border/50">
               <div className="hidden lg:flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => navigate("/interests")}>
-                  <Heart className="h-4 w-4 mr-2" />
-                  Interests
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate("/vendor-profile")}>
-                  <Building2 className="h-4 w-4 mr-2" />
-                  Profile
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate("/share")}>
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
+                {(permissions.can_view_interests || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/interests")}>
+                    <Heart className="h-4 w-4 mr-2" />
+                    Interests
+                  </Button>
+                )}
+                {(permissions.can_edit_profile || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/vendor-profile")}>
+                    <Building2 className="h-4 w-4 mr-2" />
+                    Profile
+                  </Button>
+                )}
+                {(permissions.can_share_catalog || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/share")}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                )}
                 {isAdmin && (
                   <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
                     <LayoutDashboard className="h-4 w-4 mr-2" />
                     Admin
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => navigate("/add-product")}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate("/import")}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Import
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Team
-                </Button>
-                {selectedProducts.size > 0 && (
+                {(permissions.can_add_products || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/add-product")}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add
+                  </Button>
+                )}
+                {(permissions.can_import_data || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/import")}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Import
+                  </Button>
+                )}
+                {(permissions.can_manage_team || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Team
+                  </Button>
+                )}
+                {(permissions.can_delete_products || isAdmin) && selectedProducts.size > 0 && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm">
@@ -353,15 +367,18 @@ const Catalog = () => {
                     </AlertDialogContent>
                   </AlertDialog>
                 )}
-                <Button variant="outline" size="sm" onClick={() => navigate("/active-sessions")}>
-                  <Shield className="h-4 w-4 mr-2" />
-                  Sessions
-                </Button>
+                {(permissions.can_view_sessions || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/active-sessions")}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Sessions
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
               </div>
+
 
               {/* Mobile Menu */}
               <div className="lg:hidden">
@@ -373,18 +390,24 @@ const Catalog = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
-                    <DropdownMenuItem onClick={() => navigate("/interests")}>
-                      <Heart className="h-4 w-4 mr-2" />
-                      View Interests
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/vendor-profile")}>
-                      <Building2 className="h-4 w-4 mr-2" />
-                      Vendor Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/share")}>
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Share Catalog
-                    </DropdownMenuItem>
+                    {(permissions.can_view_interests || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/interests")}>
+                        <Heart className="h-4 w-4 mr-2" />
+                        View Interests
+                      </DropdownMenuItem>
+                    )}
+                    {(permissions.can_edit_profile || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/vendor-profile")}>
+                        <Building2 className="h-4 w-4 mr-2" />
+                        Vendor Profile
+                      </DropdownMenuItem>
+                    )}
+                    {(permissions.can_share_catalog || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/share")}>
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share Catalog
+                      </DropdownMenuItem>
+                    )}
                     {isAdmin && (
                       <>
                         <DropdownMenuSeparator />
@@ -395,23 +418,31 @@ const Catalog = () => {
                       </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate("/add-product")}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Product
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/import")}>
-                      <FileSpreadsheet className="h-4 w-4 mr-2" />
-                      Import Data
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/team")}>
-                      <Users className="h-4 w-4 mr-2" />
-                      Manage Team
-                    </DropdownMenuItem>
+                    {(permissions.can_add_products || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/add-product")}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Product
+                      </DropdownMenuItem>
+                    )}
+                    {(permissions.can_import_data || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/import")}>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                        Import Data
+                      </DropdownMenuItem>
+                    )}
+                    {(permissions.can_manage_team || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/team")}>
+                        <Users className="h-4 w-4 mr-2" />
+                        Manage Team
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate("/active-sessions")}>
-                      <Shield className="h-4 w-4 mr-2" />
-                      Active Sessions
-                    </DropdownMenuItem>
+                    {(permissions.can_view_sessions || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/active-sessions")}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Active Sessions
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
