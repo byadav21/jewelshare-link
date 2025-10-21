@@ -111,30 +111,8 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is a team member and get admin's products instead
-    const { data: userRole } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", shareLink.user_id)
-      .eq("role", "team_member")
-      .single();
-
-    let productOwnerId = shareLink.user_id;
-
-    // If team member, find the admin user's products
-    if (userRole) {
-      const { data: adminUser } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin")
-        .limit(1)
-        .single();
-      
-      if (adminUser) {
-        productOwnerId = adminUser.user_id;
-        console.log(`Team member share link - using admin's products: ${productOwnerId}`);
-      }
-    }
+    // Always use the share link creator's products
+    const productOwnerId = shareLink.user_id;
 
     // Get vendor profile for the product owner
     const { data: vendorProfile } = await supabase
