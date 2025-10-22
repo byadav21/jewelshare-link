@@ -22,6 +22,9 @@ import VendorManagement from "./pages/VendorManagement";
 import GlobalSearch from "./pages/GlobalSearch";
 import CustomerDatabase from "./pages/CustomerDatabase";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import AuditLogs from "./pages/AuditLogs";
+import ExportReports from "./pages/ExportReports";
+import LoginHistory from "./pages/LoginHistory";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +53,9 @@ const App = () => (
           <Route path="/global-search" element={<GlobalSearch />} />
           <Route path="/customer-database" element={<CustomerDatabase />} />
           <Route path="/analytics-dashboard" element={<AnalyticsDashboard />} />
+          <Route path="/audit-logs" element={<AuditLogs />} />
+          <Route path="/export-reports" element={<ExportReports />} />
+          <Route path="/login-history" element={<LoginHistory />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

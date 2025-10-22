@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Users, LogOut, Monitor, Search, TrendingUp, Database } from "lucide-react";
+import { ArrowLeft, Users, LogOut, Monitor, Search, TrendingUp, Database, Shield, FileDown, History } from "lucide-react";
 
 interface Stats {
   totalProducts: number;
@@ -298,6 +298,51 @@ export default function SuperAdmin() {
               <CardContent>
                 <Button className="w-full" variant="default">
                   View Analytics
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/audit-logs")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Shield className="h-6 w-6 text-primary" />
+                  Audit Logs
+                </CardTitle>
+                <CardDescription>Track all administrative actions and changes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  View Logs
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/export-reports")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <FileDown className="h-6 w-6 text-primary" />
+                  Export Reports
+                </CardTitle>
+                <CardDescription>Generate PDF and Excel reports for analysis</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  Export Data
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/login-history")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <History className="h-6 w-6 text-primary" />
+                  Login History
+                </CardTitle>
+                <CardDescription>View vendor login activity and detect suspicious behavior</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  View History
                 </Button>
               </CardContent>
             </Card>
