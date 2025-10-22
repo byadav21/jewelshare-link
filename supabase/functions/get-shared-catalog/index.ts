@@ -125,7 +125,7 @@ serve(async (req) => {
         .from("products")
         .select("*")
         .eq("user_id", productOwnerId)
-        .eq("deleted_at", null)
+        .is("deleted_at", null)
     ]);
 
     const { data: vendorProfile } = vendorProfileResult;
