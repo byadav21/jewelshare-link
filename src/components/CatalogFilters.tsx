@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 
 export interface FilterState {
   category: string;
@@ -11,6 +11,7 @@ export interface FilterState {
   maxPrice: string;
   diamondColor: string;
   diamondClarity: string;
+  searchQuery: string;
 }
 
 interface CatalogFiltersProps {
@@ -42,6 +43,7 @@ export const CatalogFilters = ({
       maxPrice: "",
       diamondColor: "",
       diamondClarity: "",
+      searchQuery: "",
     });
   };
 
@@ -57,6 +59,20 @@ export const CatalogFilters = ({
             Clear All
           </Button>
         )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search by product type, diamond color, weight, clarity, costs, USD, or any product field..."
+            value={filters.searchQuery}
+            onChange={(e) => updateFilter("searchQuery", e.target.value)}
+            className="pl-10 h-12 text-base"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">

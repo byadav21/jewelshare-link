@@ -31,6 +31,7 @@ const Catalog = () => {
     maxPrice: "",
     diamondColor: "",
     diamondClarity: "",
+    searchQuery: "",
   });
   const navigate = useNavigate();
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
@@ -203,6 +204,46 @@ const Catalog = () => {
   // Filter products
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
+      // Search query - searches across multiple fields
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase().trim();
+        const searchableFields = [
+          product.product_type,
+          product.diamond_color,
+          product.d_wt_1?.toString(),
+          product.d_wt_2?.toString(),
+          product.purity_fraction_used?.toString(),
+          product.d_rate_1?.toString(),
+          product.pointer_diamond?.toString(),
+          product.d_value?.toString(),
+          product.mkg?.toString(),
+          product.certification_cost?.toString(),
+          product.gemstone_cost?.toString(),
+          product.total_usd?.toString(),
+          product.name,
+          product.category,
+          product.sku,
+          product.description,
+          product.metal_type,
+          product.gemstone,
+          product.color,
+          product.clarity,
+          product.weight_grams?.toString(),
+          product.diamond_weight?.toString(),
+          product.net_weight?.toString(),
+          product.cost_price?.toString(),
+          product.retail_price?.toString(),
+          product.per_carat_price?.toString(),
+          product.gold_per_gram_price?.toString(),
+        ].filter(Boolean);
+
+        const matchFound = searchableFields.some(field => 
+          field?.toLowerCase().includes(query)
+        );
+        
+        if (!matchFound) return false;
+      }
+
       if (filters.category) {
         const categoryMatch = product.category?.toUpperCase().trim() === filters.category.toUpperCase().trim();
         const nameMatch = product.name?.toUpperCase().trim().includes(filters.category.toUpperCase().trim());
@@ -663,6 +704,7 @@ const Catalog = () => {
                     maxPrice: "",
                     diamondColor: "",
                     diamondClarity: "",
+                    searchQuery: "",
                   })} className="mt-4">
                     Clear Filters
                   </Button>
