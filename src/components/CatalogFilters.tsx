@@ -50,105 +50,107 @@ export const CatalogFilters = ({
   const hasActiveFilters = Object.values(filters).some(v => v !== "");
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">Filter Catalog</h3>
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground">Filter Catalog</h3>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            <X className="h-4 w-4 mr-1" />
-            Clear All
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm">
+            <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            Clear
           </Button>
         )}
       </div>
 
       {/* Search Bar */}
-      <div className="mb-4">
+      <div className="mb-3 sm:mb-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search by product type, diamond color, weight, clarity, costs, USD, or any product field..."
+            placeholder="Search products..."
             value={filters.searchQuery}
             onChange={(e) => updateFilter("searchQuery", e.target.value)}
-            className="pl-10 h-12 text-base"
+            className="pl-9 sm:pl-10 h-10 sm:h-12 text-sm sm:text-base"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-4">
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="category" className="text-xs sm:text-sm">Category</Label>
           <Select value={filters.category || undefined} onValueChange={(v) => updateFilter("category", v)}>
-            <SelectTrigger id="category">
-              <SelectValue placeholder="All Categories" />
+            <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
+              <SelectValue placeholder="All" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
               {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">{cat}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="metal">Metal Type</Label>
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="metal" className="text-xs sm:text-sm">Metal</Label>
           <Select value={filters.metalType || undefined} onValueChange={(v) => updateFilter("metalType", v)}>
-            <SelectTrigger id="metal">
-              <SelectValue placeholder="All Metals" />
+            <SelectTrigger id="metal" className="h-9 sm:h-10 text-xs sm:text-sm">
+              <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
               {metalTypes.map((metal) => (
-                <SelectItem key={metal} value={metal}>{metal}</SelectItem>
+                <SelectItem key={metal} value={metal} className="text-xs sm:text-sm">{metal}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="minPrice">Min Price (₹)</Label>
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="minPrice" className="text-xs sm:text-sm">Min (₹)</Label>
           <Input
             id="minPrice"
             type="number"
             placeholder="0"
             value={filters.minPrice}
             onChange={(e) => updateFilter("minPrice", e.target.value)}
+            className="h-9 sm:h-10 text-xs sm:text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="maxPrice">Max Price (₹)</Label>
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="maxPrice" className="text-xs sm:text-sm">Max (₹)</Label>
           <Input
             id="maxPrice"
             type="number"
             placeholder="No limit"
             value={filters.maxPrice}
             onChange={(e) => updateFilter("maxPrice", e.target.value)}
+            className="h-9 sm:h-10 text-xs sm:text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="diamondColor">Diamond Color</Label>
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="diamondColor" className="text-xs sm:text-sm">Color</Label>
           <Select value={filters.diamondColor || undefined} onValueChange={(v) => updateFilter("diamondColor", v)}>
-            <SelectTrigger id="diamondColor">
-              <SelectValue placeholder="All Colors" />
+            <SelectTrigger id="diamondColor" className="h-9 sm:h-10 text-xs sm:text-sm">
+              <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
               {diamondColors.map((color) => (
-                <SelectItem key={color} value={color}>{color}</SelectItem>
+                <SelectItem key={color} value={color} className="text-xs sm:text-sm">{color}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="diamondClarity">Diamond Clarity</Label>
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="diamondClarity" className="text-xs sm:text-sm">Clarity</Label>
           <Select value={filters.diamondClarity || undefined} onValueChange={(v) => updateFilter("diamondClarity", v)}>
-            <SelectTrigger id="diamondClarity">
-              <SelectValue placeholder="All Clarity" />
+            <SelectTrigger id="diamondClarity" className="h-9 sm:h-10 text-xs sm:text-sm">
+              <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
               {diamondClarities.map((clarity) => (
-                <SelectItem key={clarity} value={clarity}>{clarity}</SelectItem>
+                <SelectItem key={clarity} value={clarity} className="text-xs sm:text-sm">{clarity}</SelectItem>
               ))}
             </SelectContent>
           </Select>

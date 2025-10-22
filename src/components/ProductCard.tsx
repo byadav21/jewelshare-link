@@ -23,12 +23,12 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
-      <div className="absolute top-3 left-3 z-10">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow relative active:scale-[0.98] touch-manipulation">
+      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelection(product.id)}
-          className="bg-background border-2"
+          className="bg-background border-2 w-5 h-5 sm:w-4 sm:h-4"
         />
       </div>
       {images.length > 0 ? (
@@ -49,34 +49,34 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
             <>
               <button
                 onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
+                className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background p-1.5 sm:p-2 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 active:scale-95 shadow-lg touch-manipulation"
                 aria-label="Previous image"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <button
                 onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
+                className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background p-1.5 sm:p-2 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 active:scale-95 shadow-lg touch-manipulation"
                 aria-label="Next image"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full">
+              <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 bg-background/80 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
                 {images.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIndex(idx)}
-                    className={`transition-all duration-300 rounded-full ${
+                    className={`transition-all duration-300 rounded-full touch-manipulation ${
                       idx === currentImageIndex 
-                        ? 'bg-primary w-6 h-2' 
-                        : 'bg-muted-foreground/40 w-2 h-2 hover:bg-muted-foreground/60'
+                        ? 'bg-primary w-5 sm:w-6 h-1.5 sm:h-2' 
+                        : 'bg-muted-foreground/40 w-1.5 sm:w-2 h-1.5 sm:h-2 active:bg-muted-foreground/60'
                     }`}
                     aria-label={`Go to image ${idx + 1}`}
                   />
                 ))}
               </div>
               {/* Image counter badge */}
-              <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
+              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-background/90 backdrop-blur-sm px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium shadow-sm">
                 {currentImageIndex + 1} / {images.length}
               </div>
             </>
@@ -87,12 +87,12 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           <Gem className="h-24 w-24 text-muted-foreground/30" />
         </div>
       )}
-      <CardHeader>
-        <h3 className="font-serif text-xl font-semibold text-foreground">{product.name}</h3>
+      <CardHeader className="p-3 sm:p-6">
+        <h3 className="font-serif text-base sm:text-xl font-semibold text-foreground">{product.name}</h3>
         {product.sku && (
-          <p className="text-sm text-muted-foreground mb-3">SKU: {product.sku}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">SKU: {product.sku}</p>
         )}
-        <div className="space-y-1.5 text-xs border-t border-border pt-3">
+        <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs border-t border-border pt-2 sm:pt-3">
           {product.gemstone && (
             <>
               <div className="flex justify-between">
@@ -133,27 +133,27 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 sm:p-6">
         {product.description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
             {product.description}
           </p>
         )}
         {product.category && (
-          <div className="text-sm">
+          <div className="text-xs sm:text-sm">
             <span className="text-muted-foreground">Category:</span> <span className="text-foreground font-medium">{product.category}</span>
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between border-t border-border pt-4">
+      <CardFooter className="flex justify-between border-t border-border p-3 sm:p-6 pt-3 sm:pt-4">
         <div>
-          <p className="text-xs text-muted-foreground">Retail Price</p>
-          <p className="text-lg font-bold text-primary">₹{product.retail_price.toLocaleString('en-IN')}</p>
-          <p className="text-xs text-muted-foreground">${(product.retail_price / usdRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Retail Price</p>
+          <p className="text-base sm:text-lg font-bold text-primary">₹{product.retail_price.toLocaleString('en-IN')}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">${(product.retail_price / usdRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted-foreground">Stock</p>
-          <p className="text-lg font-semibold text-foreground">{product.stock_quantity}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Stock</p>
+          <p className="text-base sm:text-lg font-semibold text-foreground">{product.stock_quantity}</p>
         </div>
       </CardFooter>
     </Card>

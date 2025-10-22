@@ -196,13 +196,13 @@ export default function SuperAdmin() {
     <ApprovalGuard>
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-          <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
+          <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <div>
-                <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-                <p className="text-muted-foreground mt-1">Manage vendors and approvals</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Super Admin</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Manage vendors and approvals</p>
               </div>
-              <Button variant="outline" onClick={handleSignOut}>
+              <Button variant="outline" onClick={handleSignOut} size="sm" className="w-full sm:w-auto">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </Button>
@@ -210,139 +210,139 @@ export default function SuperAdmin() {
           </div>
         </header>
 
-        <main className="container mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/vendor-approvals")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Users className="h-6 w-6 text-primary" />
+        <main className="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 max-w-6xl mx-auto">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/vendor-approvals")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Vendor Approvals
                 </CardTitle>
-                <CardDescription>Review and approve new vendor applications</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Review and approve new vendor applications</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
                   Manage Approvals
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/vendor-management")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Users className="h-6 w-6 text-primary" />
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/vendor-management")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Vendor Management
                 </CardTitle>
-                <CardDescription>Manage vendor accounts and permissions</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Manage vendor accounts</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  Manage Vendors
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  Manage
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/active-sessions")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Monitor className="h-6 w-6 text-primary" />
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/active-sessions")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <Monitor className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Active Sessions
                 </CardTitle>
-                <CardDescription>Monitor all active user sessions and devices</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Monitor user sessions</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  View Sessions
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  View
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/global-search")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Search className="h-6 w-6 text-primary" />
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/global-search")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <Search className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Global Search
                 </CardTitle>
-                <CardDescription>Search across all products and vendors</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Search products & vendors</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
                   Search
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/customer-database")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Database className="h-6 w-6 text-primary" />
-                  Customer Database
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/customer-database")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <Database className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  Customers
                 </CardTitle>
-                <CardDescription>View all customer interests and inquiries</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Customer interests & inquiries</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  View Customers
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  View
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/analytics-dashboard")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <TrendingUp className="h-6 w-6 text-primary" />
-                  Activity Analytics
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/analytics-dashboard")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  Analytics
                 </CardTitle>
-                <CardDescription>Monitor vendor activity and engagement metrics</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Activity & engagement metrics</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  View Analytics
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  View
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/audit-logs")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Shield className="h-6 w-6 text-primary" />
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/audit-logs")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Audit Logs
                 </CardTitle>
-                <CardDescription>Track all administrative actions and changes</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Track admin actions</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  View Logs
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  View
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/export-reports")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <FileDown className="h-6 w-6 text-primary" />
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/export-reports")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <FileDown className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Export Reports
                 </CardTitle>
-                <CardDescription>Generate PDF and Excel reports for analysis</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Generate PDF & Excel reports</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  Export Data
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  Export
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/login-history")}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <History className="h-6 w-6 text-primary" />
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/login-history")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <History className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Login History
                 </CardTitle>
-                <CardDescription>View vendor login activity and detect suspicious behavior</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Vendor login activity</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  View History
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  View
                 </Button>
               </CardContent>
             </Card>

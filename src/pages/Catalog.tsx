@@ -7,7 +7,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2 } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -350,17 +350,17 @@ const Catalog = () => {
     <ApprovalGuard>
       <div className="min-h-screen bg-background">
         <header className="border-b border-border bg-card backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-          <div className="container mx-auto px-6 py-2.5 max-w-[1800px]">
+          <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-2.5 max-w-[1800px]">
             {/* First Layer: Company Details */}
-            <div className="flex items-center justify-between gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-6">
               {/* Left: Vendor Profile with more space */}
               {vendorProfile && (
-                <div className="flex items-center gap-6 flex-1">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-serif font-bold text-foreground leading-tight mb-1.5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 flex-1 w-full md:w-auto">
+                  <div className="flex-1 w-full">
+                    <h2 className="text-lg sm:text-xl font-serif font-bold text-foreground leading-tight mb-1">
                       {vendorProfile.business_name || "My Jewelry Business"}
                     </h2>
-                    <div className="text-sm text-muted-foreground mb-1.5">
+                    <div className="text-xs sm:text-sm text-muted-foreground mb-1">
                       {vendorProfile.address_line1 && (
                         <span>
                           {vendorProfile.address_line1}
@@ -371,9 +371,9 @@ const Catalog = () => {
                         <span className="ml-1">• {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}</span>
                       )}
                     </div>
-                    <div className="flex gap-4 text-sm">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs sm:text-sm">
                       {vendorProfile.email && (
-                        <span className="text-primary font-medium">Email: {vendorProfile.email}</span>
+                        <span className="text-primary font-medium truncate">Email: {vendorProfile.email}</span>
                       )}
                       {vendorProfile.phone && (
                         <span className="text-primary font-medium">Phone: {vendorProfile.phone}</span>
@@ -386,15 +386,15 @@ const Catalog = () => {
                   
                   {/* QR Codes */}
                   {(vendorProfile.instagram_qr_url || vendorProfile.whatsapp_qr_url) && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       {vendorProfile.instagram_qr_url && (
                         <div className="text-center">
                           <img 
                             src={vendorProfile.instagram_qr_url} 
                             alt="Instagram" 
-                            className="w-20 h-20 object-cover rounded border border-border"
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded border border-border"
                           />
-                          <p className="text-[10px] text-muted-foreground mt-1">Instagram</p>
+                          <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1">Instagram</p>
                         </div>
                       )}
                       {vendorProfile.whatsapp_qr_url && (
@@ -402,9 +402,9 @@ const Catalog = () => {
                           <img 
                             src={vendorProfile.whatsapp_qr_url} 
                             alt="WhatsApp" 
-                            className="w-20 h-20 object-cover rounded border border-border"
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded border border-border"
                           />
-                          <p className="text-[10px] text-muted-foreground mt-1">WhatsApp</p>
+                          <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1">WhatsApp</p>
                         </div>
                       )}
                     </div>
@@ -413,14 +413,14 @@ const Catalog = () => {
               )}
 
               {/* Right: Exchange Rate & Gold Rate & Total Inventory */}
-              <div className="flex flex-col items-end gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-md border border-border whitespace-nowrap">
-                    1 USD = ₹{usdRate.toFixed(2)} INR • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              <div className="flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+                  <div className="text-[10px] sm:text-xs text-muted-foreground bg-muted/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md border border-border whitespace-nowrap">
+                    1 USD = ₹{usdRate.toFixed(2)} • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                   </div>
                   
                   {editingGoldRate ? (
-                    <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-md border border-border">
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-muted/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md border border-border w-full sm:w-auto">
                       <input
                         type="number"
                         value={tempGoldRate}
@@ -438,19 +438,19 @@ const Catalog = () => {
                         max="200000"
                         step="100"
                         disabled={updatingGoldRate}
-                        className="w-28 px-2 py-1 text-xs bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-20 sm:w-28 px-2 py-1 text-xs bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         autoFocus
                       />
                       <Button 
                         size="sm" 
                         onClick={handleUpdateGoldRate}
                         disabled={updatingGoldRate}
-                        className="h-7 px-3 text-xs bg-primary hover:bg-primary/90 disabled:opacity-50"
+                        className="h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary hover:bg-primary/90 disabled:opacity-50"
                       >
                         {updatingGoldRate ? (
                           <>
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                            Updating...
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <span className="hidden sm:inline ml-1">Updating...</span>
                           </>
                         ) : (
                           'Save'
@@ -464,31 +464,31 @@ const Catalog = () => {
                           setTempGoldRate("");
                         }} 
                         disabled={updatingGoldRate}
-                        className="h-7 px-3 text-xs disabled:opacity-50"
+                        className="h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs disabled:opacity-50"
                       >
-                        Cancel
+                        <X className="h-3 w-3" />
                       </Button>
                     </div>
                   ) : (
                     <div 
-                      className="text-xs text-muted-foreground bg-amber-500/10 px-3 py-1.5 rounded-md border border-amber-500/30 whitespace-nowrap cursor-pointer hover:bg-amber-500/20 transition-colors flex items-center gap-2"
+                      className="text-[10px] sm:text-xs text-muted-foreground bg-amber-500/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md border border-amber-500/30 whitespace-nowrap cursor-pointer hover:bg-amber-500/20 transition-colors flex items-center gap-1.5 sm:gap-2 active:scale-95"
                       onClick={() => {
                         setEditingGoldRate(true);
                         setTempGoldRate(goldRate.toString());
                       }}
                     >
-                      <span className="font-semibold text-amber-700 dark:text-amber-400">24K Gold: ₹{goldRate.toLocaleString('en-IN')}/g</span>
+                      <span className="font-semibold text-amber-700 dark:text-amber-400">24K: ₹{goldRate.toLocaleString('en-IN')}/g</span>
                       <Edit className="h-3 w-3 text-amber-600" />
                     </div>
                   )}
                 </div>
                 {products.length > 0 && (
-                  <div className="flex flex-col items-end gap-0.5 px-4 py-2 bg-primary/10 rounded-lg border border-primary/30">
-                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
-                    <div className="text-xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                    <div className="text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD</div>
+                  <div className="flex flex-col items-start md:items-end gap-0.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 rounded-lg border border-primary/30 w-full md:w-auto">
+                    <div className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
+                    <div className="text-lg sm:text-xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
                     {filteredProducts.length !== products.length && (
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="text-[9px] sm:text-[10px] text-muted-foreground">
                         {filteredProducts.length} of {products.length} products
                       </div>
                     )}
@@ -498,8 +498,8 @@ const Catalog = () => {
             </div>
 
             {/* Second Layer: Action Buttons */}
-            <div className="flex items-center justify-center gap-2 mt-2.5 pt-2.5 border-t border-border/50">
-              <div className="hidden lg:flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2 mt-2 sm:mt-2.5 pt-2 sm:pt-2.5 border-t border-border/50">
+              <div className="hidden lg:flex items-center flex-wrap gap-2">
                 {(permissions.can_view_interests || isAdmin) && (
                   <Button variant="outline" size="sm" onClick={() => navigate("/interests")}>
                     <Heart className="h-4 w-4 mr-2" />
@@ -584,15 +584,15 @@ const Catalog = () => {
 
 
               {/* Mobile Menu */}
-              <div className="lg:hidden">
+              <div className="lg:hidden w-full">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
                       <Menu className="h-4 w-4 mr-2" />
                       Menu
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
+                  <DropdownMenuContent align="end" className="w-64 bg-popover z-50 max-h-[70vh] overflow-y-auto">
                     {(permissions.can_view_interests || isAdmin) && (
                       <DropdownMenuItem onClick={() => navigate("/interests")}>
                         <Heart className="h-4 w-4 mr-2" />
@@ -657,7 +657,7 @@ const Catalog = () => {
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           {loading ? (
             <div className="flex justify-center items-center min-h-[50vh]">
               <div className="animate-pulse text-primary text-xl">Loading catalog...</div>
@@ -710,7 +710,7 @@ const Catalog = () => {
                   </Button>
                 </div>
               ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
