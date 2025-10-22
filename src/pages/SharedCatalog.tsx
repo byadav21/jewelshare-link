@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { InterestDialog } from "@/components/InterestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
+import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { Gem, AlertCircle, Building2, Video } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,15 @@ const SharedCatalog = () => {
   const [customOrderLoading, setCustomOrderLoading] = useState(false);
   const [showVideoRequestForm, setShowVideoRequestForm] = useState(false);
   const [videoRequestLoading, setVideoRequestLoading] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    category: "",
+    metalType: "",
+    minPrice: "",
+    maxPrice: "",
+    diamondColor: "",
+    diamondClarity: "",
+    searchQuery: "",
+  });
   const [customOrderData, setCustomOrderData] = useState({
     customer_name: "",
     customer_email: "",
@@ -173,6 +183,38 @@ const SharedCatalog = () => {
     });
   };
 
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchesSearch = !filters.searchQuery || 
+        product.name?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        product.description?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        product.sku?.toLowerCase().includes(filters.searchQuery.toLowerCase());
+
+      const matchesCategory = !filters.category || product.category === filters.category;
+      const matchesMetal = !filters.metalType || product.metal_type === filters.metalType;
+      
+      const matchesMinPrice = !filters.minPrice || 
+        (product.retail_price >= parseFloat(filters.minPrice));
+      const matchesMaxPrice = !filters.maxPrice || 
+        (product.retail_price <= parseFloat(filters.maxPrice));
+
+      const matchesDiamondColor = !filters.diamondColor || 
+        product.diamond_color === filters.diamondColor;
+      const matchesDiamondClarity = !filters.diamondClarity || 
+        product.clarity === filters.diamondClarity;
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesMetal &&
+        matchesMinPrice &&
+        matchesMaxPrice &&
+        matchesDiamondColor &&
+        matchesDiamondClarity
+      );
+    });
+  }, [products, filters]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -262,12 +304,22 @@ const SharedCatalog = () => {
             </div>
           )}
 
-          {/* Second Layer: Exchange Rate and Contact Button */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="text-sm bg-muted px-4 py-2 rounded-lg">
-              <span className="text-muted-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
-            </div>
-            <div className="flex gap-2">
+          {/* Second Layer: Filters and Exchange Rate */}
+          <div className="space-y-4">
+            <CatalogFilters 
+              filters={filters}
+              onFilterChange={setFilters}
+              categories={Array.from(new Set(products.map(p => p.category).filter(Boolean)))}
+              metalTypes={Array.from(new Set(products.map(p => p.metal_type).filter(Boolean)))}
+              diamondColors={Array.from(new Set(products.map(p => p.diamond_color).filter(Boolean)))}
+              diamondClarities={Array.from(new Set(products.map(p => p.clarity).filter(Boolean)))}
+            />
+            
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-sm bg-muted px-4 py-2 rounded-lg">
+                <span className="text-muted-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
+              </div>
+              <div className="flex gap-2">
               {shareLinkId && (
                 <>
                   <Dialog open={showVideoRequestForm} onOpenChange={setShowVideoRequestForm}>
@@ -461,10 +513,31 @@ const SharedCatalog = () => {
             </div>
           </div>
         </div>
+        </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {products.length === 0 ? (
+        {filteredProducts.length === 0 && products.length > 0 ? (
+          <div className="text-center py-12">
+            <Gem className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-xl text-muted-foreground">No products match your filters</p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => setFilters({
+                category: "",
+                metalType: "",
+                minPrice: "",
+                maxPrice: "",
+                diamondColor: "",
+                diamondClarity: "",
+                searchQuery: "",
+              })}
+            >
+              Clear Filters
+            </Button>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <Gem className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-2xl font-serif mb-2 text-foreground">No products available</h2>
