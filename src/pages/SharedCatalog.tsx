@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { InterestDialog } from "@/components/InterestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
-import { Gem, AlertCircle, Building2 } from "lucide-react";
+import { Gem, AlertCircle, Building2, Video } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,8 @@ const SharedCatalog = () => {
   const [showVendorDetails, setShowVendorDetails] = useState(true);
   const [showCustomOrderForm, setShowCustomOrderForm] = useState(false);
   const [customOrderLoading, setCustomOrderLoading] = useState(false);
+  const [showVideoRequestForm, setShowVideoRequestForm] = useState(false);
+  const [videoRequestLoading, setVideoRequestLoading] = useState(false);
   const [customOrderData, setCustomOrderData] = useState({
     customer_name: "",
     customer_email: "",
@@ -34,6 +36,12 @@ const SharedCatalog = () => {
     gemstone_preference: "",
     design_description: "",
     budget_range: "",
+  });
+  const [videoRequestData, setVideoRequestData] = useState({
+    customer_name: "",
+    customer_email: "",
+    customer_phone: "",
+    message: "",
   });
 
   useEffect(() => {
@@ -123,6 +131,45 @@ const SharedCatalog = () => {
       gemstone_preference: "",
       design_description: "",
       budget_range: "",
+    });
+  };
+
+  const handleVideoRequestChange = (field: string, value: string) => {
+    setVideoRequestData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleVideoRequestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!videoRequestData.customer_name || !videoRequestData.customer_email || !videoRequestData.message) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setVideoRequestLoading(true);
+
+    const { error } = await supabase.from("catalog_inquiries").insert({
+      customer_name: videoRequestData.customer_name,
+      customer_email: videoRequestData.customer_email,
+      customer_phone: videoRequestData.customer_phone || null,
+      message: `[VIDEO REQUEST] ${videoRequestData.message}`,
+      share_link_id: shareLinkId,
+    });
+
+    setVideoRequestLoading(false);
+
+    if (error) {
+      toast.error("Failed to submit your video request. Please try again.");
+      return;
+    }
+
+    toast.success("Your video request has been submitted!");
+    setShowVideoRequestForm(false);
+    setVideoRequestData({
+      customer_name: "",
+      customer_email: "",
+      customer_phone: "",
+      message: "",
     });
   };
 
@@ -223,6 +270,73 @@ const SharedCatalog = () => {
             <div className="flex gap-2">
               {shareLinkId && (
                 <>
+                  <Dialog open={showVideoRequestForm} onOpenChange={setShowVideoRequestForm}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Video className="h-4 w-4 mr-2" />
+                        Request Video
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Request Product Video</DialogTitle>
+                        <DialogDescription>
+                          Request a video of specific products or the entire catalog
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleVideoRequestSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="video_customer_name">Your Name *</Label>
+                          <Input
+                            id="video_customer_name"
+                            value={videoRequestData.customer_name}
+                            onChange={(e) => handleVideoRequestChange("customer_name", e.target.value)}
+                            placeholder="John Doe"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="video_customer_email">Email *</Label>
+                          <Input
+                            id="video_customer_email"
+                            type="email"
+                            value={videoRequestData.customer_email}
+                            onChange={(e) => handleVideoRequestChange("customer_email", e.target.value)}
+                            placeholder="john@example.com"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="video_customer_phone">Phone Number (Optional)</Label>
+                          <Input
+                            id="video_customer_phone"
+                            type="tel"
+                            value={videoRequestData.customer_phone}
+                            onChange={(e) => handleVideoRequestChange("customer_phone", e.target.value)}
+                            placeholder="+1 (555) 000-0000"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="video_message">What would you like to see? *</Label>
+                          <Textarea
+                            id="video_message"
+                            value={videoRequestData.message}
+                            onChange={(e) => handleVideoRequestChange("message", e.target.value)}
+                            placeholder="Describe which products you'd like to see in video format..."
+                            rows={4}
+                            required
+                          />
+                        </div>
+
+                        <Button type="submit" className="w-full" disabled={videoRequestLoading}>
+                          {videoRequestLoading ? "Submitting..." : "Submit Video Request"}
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                   <Dialog open={showCustomOrderForm} onOpenChange={setShowCustomOrderForm}>
                     <DialogTrigger asChild>
                       <Button variant="default" size="sm">
