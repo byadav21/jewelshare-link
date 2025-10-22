@@ -239,8 +239,8 @@ const SharedCatalog = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Mobile-Optimized Sticky Header */}
-      <header className="border-b border-border/50 bg-card/90 backdrop-blur-md sticky top-0 z-50 shadow-xl">
+      {/* Mobile-Optimized Header */}
+      <header className="border-b border-border/50 bg-card/90 backdrop-blur-md shadow-xl">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
           {/* Vendor Details */}
           {showVendorDetails && vendorProfile && (
