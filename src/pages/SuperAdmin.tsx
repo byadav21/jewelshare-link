@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Users, LogOut, Monitor } from "lucide-react";
+import { ArrowLeft, Users, LogOut, Monitor, Search, TrendingUp, Database } from "lucide-react";
 
 interface Stats {
   totalProducts: number;
@@ -253,6 +253,51 @@ export default function SuperAdmin() {
               <CardContent>
                 <Button className="w-full" variant="default">
                   View Sessions
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/global-search")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Search className="h-6 w-6 text-primary" />
+                  Global Search
+                </CardTitle>
+                <CardDescription>Search across all products and vendors</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  Search
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/customer-database")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Database className="h-6 w-6 text-primary" />
+                  Customer Database
+                </CardTitle>
+                <CardDescription>View all customer interests and inquiries</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  View Customers
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/analytics-dashboard")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                  Activity Analytics
+                </CardTitle>
+                <CardDescription>Monitor vendor activity and engagement metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="default">
+                  View Analytics
                 </Button>
               </CardContent>
             </Card>

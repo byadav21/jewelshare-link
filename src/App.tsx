@@ -19,6 +19,9 @@ import VendorApprovals from "./pages/VendorApprovals";
 import VendorProfile from "./pages/VendorProfile";
 import ActiveSessions from "./pages/ActiveSessions";
 import VendorManagement from "./pages/VendorManagement";
+import GlobalSearch from "./pages/GlobalSearch";
+import CustomerDatabase from "./pages/CustomerDatabase";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +47,9 @@ const App = () => (
           <Route path="/vendor-profile" element={<VendorProfile />} />
           <Route path="/active-sessions" element={<ActiveSessions />} />
           <Route path="/vendor-management" element={<VendorManagement />} />
+          <Route path="/global-search" element={<GlobalSearch />} />
+          <Route path="/customer-database" element={<CustomerDatabase />} />
+          <Route path="/analytics-dashboard" element={<AnalyticsDashboard />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
