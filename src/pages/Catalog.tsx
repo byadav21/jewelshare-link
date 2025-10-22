@@ -348,158 +348,184 @@ const Catalog = () => {
 
   return (
     <ApprovalGuard>
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card backdrop-blur-sm shadow-sm">
-          <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-2.5 max-w-[1800px]">
-            {/* First Layer: Company Details */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-6">
-              {/* Left: Vendor Profile with more space */}
-              {vendorProfile && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 flex-1 w-full md:w-auto">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        {/* Mobile-Optimized Header */}
+        <header className="border-b border-border/50 bg-card/95 backdrop-blur-md shadow-lg">
+          <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 max-w-[1800px]">
+            {/* Vendor Details Section */}
+            {vendorProfile && (
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6 mb-4 pb-4 border-b border-border/30">
+                {/* Left: Business Info */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 flex-1 w-full lg:w-auto">
                   <div className="flex-1 w-full">
-                    <h2 className="text-lg sm:text-xl font-serif font-bold text-foreground leading-tight mb-1">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent leading-tight mb-2">
                       {vendorProfile.business_name || "My Jewelry Business"}
-                    </h2>
-                    <div className="text-xs sm:text-sm text-muted-foreground mb-1">
-                      {vendorProfile.address_line1 && (
-                        <span>
+                    </h1>
+                    {vendorProfile.address_line1 && (
+                      <div className="text-xs sm:text-sm text-muted-foreground mb-2 leading-relaxed">
+                        <span className="block sm:inline">
                           {vendorProfile.address_line1}
                           {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
                         </span>
-                      )}
-                      {vendorProfile.city && (
-                        <span className="ml-1">• {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}</span>
-                      )}
-                    </div>
+                        {vendorProfile.city && (
+                          <span className="block sm:inline sm:ml-2">
+                            <span className="hidden sm:inline">• </span>
+                            {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs sm:text-sm">
                       {vendorProfile.email && (
-                        <span className="text-primary font-medium truncate">Email: {vendorProfile.email}</span>
+                        <span className="text-primary/90 font-medium truncate flex items-center gap-1">
+                          <span className="opacity-70">Email:</span> {vendorProfile.email}
+                        </span>
                       )}
                       {vendorProfile.phone && (
-                        <span className="text-primary font-medium">Phone: {vendorProfile.phone}</span>
+                        <span className="text-primary/90 font-medium flex items-center gap-1">
+                          <span className="opacity-70">Phone:</span> {vendorProfile.phone}
+                        </span>
                       )}
                       {vendorProfile.whatsapp_number && (
-                        <span className="text-primary font-medium">WhatsApp: {vendorProfile.whatsapp_number}</span>
+                        <span className="text-primary/90 font-medium flex items-center gap-1">
+                          <span className="opacity-70">WhatsApp:</span> {vendorProfile.whatsapp_number}
+                        </span>
                       )}
                     </div>
                   </div>
                   
                   {/* QR Codes */}
                   {(vendorProfile.instagram_qr_url || vendorProfile.whatsapp_qr_url) && (
-                    <div className="flex gap-2 sm:gap-3">
+                    <div className="flex gap-3 sm:gap-4">
                       {vendorProfile.instagram_qr_url && (
-                        <div className="text-center">
-                          <img 
-                            src={vendorProfile.instagram_qr_url} 
-                            alt="Instagram" 
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded border border-border"
-                          />
-                          <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1">Instagram</p>
+                        <div className="group text-center">
+                          <div className="relative overflow-hidden rounded-lg border-2 border-border/50 group-hover:border-primary/50 transition-all duration-300 group-hover:shadow-lg">
+                            <img 
+                              src={vendorProfile.instagram_qr_url} 
+                              alt="Instagram QR" 
+                              className="w-20 h-20 sm:w-24 sm:h-24 object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">Instagram</p>
                         </div>
                       )}
                       {vendorProfile.whatsapp_qr_url && (
-                        <div className="text-center">
-                          <img 
-                            src={vendorProfile.whatsapp_qr_url} 
-                            alt="WhatsApp" 
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded border border-border"
-                          />
-                          <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1">WhatsApp</p>
+                        <div className="group text-center">
+                          <div className="relative overflow-hidden rounded-lg border-2 border-border/50 group-hover:border-primary/50 transition-all duration-300 group-hover:shadow-lg">
+                            <img 
+                              src={vendorProfile.whatsapp_qr_url} 
+                              alt="WhatsApp QR" 
+                              className="w-20 h-20 sm:w-24 sm:h-24 object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">WhatsApp</p>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
-              )}
 
-              {/* Right: Exchange Rate & Gold Rate & Total Inventory */}
-              <div className="flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
-                  <div className="text-[10px] sm:text-xs text-muted-foreground bg-muted/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md border border-border whitespace-nowrap">
-                    1 USD = ₹{usdRate.toFixed(2)} • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                  </div>
-                  
-                  {editingGoldRate ? (
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-muted/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md border border-border w-full sm:w-auto">
-                      <input
-                        type="number"
-                        value={tempGoldRate}
-                        onChange={(e) => setTempGoldRate(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !updatingGoldRate) {
-                            handleUpdateGoldRate();
-                          } else if (e.key === 'Escape' && !updatingGoldRate) {
+                {/* Right: Rates & Inventory */}
+                <div className="flex flex-col items-start lg:items-end gap-3 w-full lg:w-auto">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                    {/* USD Rate Badge */}
+                    <div className="group relative text-xs sm:text-sm bg-gradient-to-r from-muted/80 to-muted/60 px-3 sm:px-4 py-2 rounded-lg border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground">1 USD = ₹{usdRate.toFixed(2)}</span>
+                        <span className="text-muted-foreground text-xs">• {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Gold Rate Editor/Display */}
+                    {editingGoldRate ? (
+                      <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-2 rounded-lg border border-amber-500/30 shadow-sm w-full sm:w-auto">
+                        <input
+                          type="number"
+                          value={tempGoldRate}
+                          onChange={(e) => setTempGoldRate(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !updatingGoldRate) {
+                              handleUpdateGoldRate();
+                            } else if (e.key === 'Escape' && !updatingGoldRate) {
+                              setEditingGoldRate(false);
+                              setTempGoldRate("");
+                            }
+                          }}
+                          placeholder={goldRate.toString()}
+                          min="1000"
+                          max="200000"
+                          step="100"
+                          disabled={updatingGoldRate}
+                          className="w-24 sm:w-32 px-3 py-1.5 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          autoFocus
+                        />
+                        <Button 
+                          size="sm" 
+                          onClick={handleUpdateGoldRate}
+                          disabled={updatingGoldRate}
+                          className="h-8 px-3 text-xs bg-amber-600 hover:bg-amber-700 disabled:opacity-50"
+                        >
+                          {updatingGoldRate ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              <span className="hidden sm:inline">Updating...</span>
+                            </>
+                          ) : (
+                            'Save'
+                          )}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => {
                             setEditingGoldRate(false);
                             setTempGoldRate("");
-                          }
-                        }}
-                        placeholder={goldRate.toString()}
-                        min="1000"
-                        max="200000"
-                        step="100"
-                        disabled={updatingGoldRate}
-                        className="w-20 sm:w-28 px-2 py-1 text-xs bg-background border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                        autoFocus
-                      />
-                      <Button 
-                        size="sm" 
-                        onClick={handleUpdateGoldRate}
-                        disabled={updatingGoldRate}
-                        className="h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs bg-primary hover:bg-primary/90 disabled:opacity-50"
-                      >
-                        {updatingGoldRate ? (
-                          <>
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            <span className="hidden sm:inline ml-1">Updating...</span>
-                          </>
-                        ) : (
-                          'Save'
-                        )}
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
+                          }} 
+                          disabled={updatingGoldRate}
+                          className="h-8 px-2 text-xs disabled:opacity-50"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <button 
                         onClick={() => {
-                          setEditingGoldRate(false);
-                          setTempGoldRate("");
-                        }} 
-                        disabled={updatingGoldRate}
-                        className="h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs disabled:opacity-50"
+                          setEditingGoldRate(true);
+                          setTempGoldRate(goldRate.toString());
+                        }}
+                        className="group relative text-xs sm:text-sm bg-gradient-to-r from-amber-500/20 to-amber-600/20 px-3 sm:px-4 py-2 rounded-lg border border-amber-500/40 hover:border-amber-500/60 shadow-sm hover:shadow-md transition-all duration-300 active:scale-95"
                       >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div 
-                      className="text-[10px] sm:text-xs text-muted-foreground bg-amber-500/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md border border-amber-500/30 whitespace-nowrap cursor-pointer hover:bg-amber-500/20 transition-colors flex items-center gap-1.5 sm:gap-2 active:scale-95"
-                      onClick={() => {
-                        setEditingGoldRate(true);
-                        setTempGoldRate(goldRate.toString());
-                      }}
-                    >
-                      <span className="font-semibold text-amber-700 dark:text-amber-400">24K: ₹{goldRate.toLocaleString('en-IN')}/g</span>
-                      <Edit className="h-3 w-3 text-amber-600" />
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-amber-700 dark:text-amber-400">24K Gold: ₹{goldRate.toLocaleString('en-IN')}/g</span>
+                          <Edit className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500 group-hover:rotate-12 transition-transform" />
+                        </div>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Total Inventory Card */}
+                  {products.length > 0 && (
+                    <div className="flex flex-col items-start lg:items-end gap-1 px-4 sm:px-5 py-3 bg-gradient-to-br from-primary/15 to-primary/5 rounded-xl border border-primary/30 shadow-md hover:shadow-lg transition-all duration-300 w-full lg:w-auto">
+                      <div className="text-[10px] sm:text-xs text-muted-foreground font-semibold uppercase tracking-wider">Total Inventory Value</div>
+                      <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                        ₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      </div>
+                      <div className="text-sm sm:text-base text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                      {filteredProducts.length !== products.length && (
+                        <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                          Showing {filteredProducts.length} of {products.length} products
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-                {products.length > 0 && (
-                  <div className="flex flex-col items-start md:items-end gap-0.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 rounded-lg border border-primary/30 w-full md:w-auto">
-                    <div className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Total Inventory</div>
-                    <div className="text-lg sm:text-xl font-bold text-primary">₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                    <div className="text-xs sm:text-sm text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
-                    {filteredProducts.length !== products.length && (
-                      <div className="text-[9px] sm:text-[10px] text-muted-foreground">
-                        {filteredProducts.length} of {products.length} products
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
-            </div>
+            )}
 
-            {/* Second Layer: Action Buttons */}
-            <div className="flex items-center justify-center gap-2 mt-2 sm:mt-2.5 pt-2 sm:pt-2.5 border-t border-border/50">
-              <div className="hidden lg:flex items-center flex-wrap gap-2">
+            {/* Action Buttons Section */}
+            <div className="flex items-center justify-center gap-2 sm:gap-3">
+              {/* Desktop Menu */}
+              <div className="hidden lg:flex items-center flex-wrap gap-2 justify-center">
                 {(permissions.can_view_interests || isAdmin) && (
                   <Button variant="outline" size="sm" onClick={() => navigate("/interests")}>
                     <Heart className="h-4 w-4 mr-2" />
@@ -587,68 +613,72 @@ const Catalog = () => {
               <div className="lg:hidden w-full">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                      <Menu className="h-4 w-4 mr-2" />
-                      Menu
+                    <Button variant="outline" size="default" className="w-full touch-manipulation h-11 shadow-sm hover:shadow-md transition-shadow">
+                      <Menu className="h-5 w-5 mr-2" />
+                      <span className="font-medium">Menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64 bg-popover z-50 max-h-[70vh] overflow-y-auto">
+                  <DropdownMenuContent align="center" className="w-[calc(100vw-2rem)] sm:w-80 bg-card border-border/50 shadow-xl z-50 max-h-[70vh] overflow-y-auto">
                     {(permissions.can_view_interests || isAdmin) && (
-                      <DropdownMenuItem onClick={() => navigate("/interests")}>
-                        <Heart className="h-4 w-4 mr-2" />
-                        View Interests
+                      <DropdownMenuItem onClick={() => navigate("/interests")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <Heart className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">View Interests</span>
                       </DropdownMenuItem>
                     )}
                     {(permissions.can_edit_profile || isAdmin) && (
-                      <DropdownMenuItem onClick={() => navigate("/vendor-profile")}>
-                        <Building2 className="h-4 w-4 mr-2" />
-                        Vendor Profile
+                      <DropdownMenuItem onClick={() => navigate("/vendor-profile")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <Building2 className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">Vendor Profile</span>
                       </DropdownMenuItem>
                     )}
                     {(permissions.can_share_catalog || isAdmin) && (
-                      <DropdownMenuItem onClick={() => navigate("/share")}>
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share Catalog
+                      <DropdownMenuItem onClick={() => navigate("/share")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <Share2 className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">Share Catalog</span>
                       </DropdownMenuItem>
                     )}
                     {isAdmin && (
                       <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate("/admin")}>
-                          <LayoutDashboard className="h-4 w-4 mr-2" />
-                          Admin Dashboard
+                        <DropdownMenuSeparator className="my-2" />
+                        <DropdownMenuItem onClick={() => navigate("/admin")} className="py-3 cursor-pointer hover:bg-muted/50">
+                          <LayoutDashboard className="h-5 w-5 mr-3 text-primary" />
+                          <span className="font-medium">Admin Dashboard</span>
                         </DropdownMenuItem>
                       </>
                     )}
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="my-2" />
                     {(permissions.can_add_products || isAdmin) && (
-                      <DropdownMenuItem onClick={() => navigate("/add-product")}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Product
+                      <DropdownMenuItem onClick={() => navigate("/add-product")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <Plus className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">Add Product</span>
                       </DropdownMenuItem>
                     )}
                     {(permissions.can_import_data || isAdmin) && (
-                      <DropdownMenuItem onClick={() => navigate("/import")}>
-                        <FileSpreadsheet className="h-4 w-4 mr-2" />
-                        Import Data
+                      <DropdownMenuItem onClick={() => navigate("/import")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <FileSpreadsheet className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">Import Data</span>
                       </DropdownMenuItem>
                     )}
+                    <DropdownMenuItem onClick={exportToPDF} className="py-3 cursor-pointer hover:bg-muted/50">
+                      <FileDown className="h-5 w-5 mr-3 text-primary" />
+                      <span className="font-medium">Export PDF</span>
+                    </DropdownMenuItem>
                     {(permissions.can_manage_team || isAdmin) && (
-                      <DropdownMenuItem onClick={() => navigate("/team")}>
-                        <Users className="h-4 w-4 mr-2" />
-                        Manage Team
+                      <DropdownMenuItem onClick={() => navigate("/team")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <Users className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">Manage Team</span>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="my-2" />
                     {(permissions.can_view_sessions || isAdmin) && (
-                      <DropdownMenuItem onClick={() => navigate("/active-sessions")}>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Active Sessions
+                      <DropdownMenuItem onClick={() => navigate("/active-sessions")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <Shield className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">Active Sessions</span>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
+                    <DropdownMenuItem onClick={handleSignOut} className="py-3 cursor-pointer hover:bg-destructive/10 text-destructive">
+                      <LogOut className="h-5 w-5 mr-3" />
+                      <span className="font-medium">Sign Out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -657,70 +687,93 @@ const Catalog = () => {
           </div>
         </header>
 
-        <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-10 max-w-[1800px]">
           {loading ? (
-            <div className="flex justify-center items-center min-h-[50vh]">
-              <div className="animate-pulse text-primary text-xl">Loading catalog...</div>
+            <div className="flex flex-col justify-center items-center min-h-[60vh] gap-4">
+              <Loader2 className="h-12 w-12 text-primary animate-spin" />
+              <div className="text-primary text-xl font-medium">Loading catalog...</div>
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-12">
-              <Gem className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-2xl font-serif mb-2 text-foreground">No products yet</h2>
-              <p className="text-muted-foreground mb-6">Start building your jewelry catalog</p>
-              <Button onClick={() => navigate("/add-product")}>
-                <Plus className="h-4 w-4 mr-2" />
+            <div className="text-center py-16 sm:py-20">
+              <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 mb-6">
+                <Gem className="h-10 w-10 sm:h-12 sm:h-12 text-primary" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-3 text-foreground">No products yet</h2>
+              <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">Start building your stunning jewelry catalog and showcase your collection</p>
+              <Button 
+                onClick={() => navigate("/add-product")} 
+                size="lg"
+                className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8"
+              >
+                <Plus className="h-5 w-5 mr-2" />
                 Add Your First Product
               </Button>
             </div>
           ) : (
             <>
-              <CatalogFilters
-                filters={filters}
-                onFilterChange={setFilters}
-                categories={categories}
-                metalTypes={metalTypes}
-                diamondColors={diamondColors}
-                diamondClarities={diamondClarities}
-              />
+              {/* Filters */}
+              <div className="mb-6 sm:mb-8">
+                <CatalogFilters
+                  filters={filters}
+                  onFilterChange={setFilters}
+                  categories={categories}
+                  metalTypes={metalTypes}
+                  diamondColors={diamondColors}
+                  diamondClarities={diamondClarities}
+                />
+              </div>
+
+              {/* Select All Checkbox */}
               {(permissions.can_delete_products || isAdmin) && filteredProducts.length > 0 && (
-                <div className="mb-4 flex items-center gap-3 pb-3 border-border">
+                <div className="mb-6 flex items-center gap-3 pb-4 border-b border-border/30">
                   <Checkbox
                     id="select-all"
                     checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
                     onCheckedChange={toggleSelectAll}
+                    className="h-5 w-5"
                   />
-                  <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
-                    Select All ({filteredProducts.length})
+                  <label htmlFor="select-all" className="text-sm sm:text-base font-medium cursor-pointer select-none">
+                    Select All ({filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'})
                   </label>
                 </div>
               )}
+
+              {/* Products Grid or Empty State */}
               {filteredProducts.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No products match your filters</p>
-                  <Button variant="outline" onClick={() => setFilters({
-                    category: "",
-                    metalType: "",
-                    minPrice: "",
-                    maxPrice: "",
-                    diamondColor: "",
-                    diamondClarity: "",
-                    searchQuery: "",
-                  })} className="mt-4">
-                    Clear Filters
+                <div className="text-center py-16 sm:py-20">
+                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-muted/50 mb-6">
+                    <Gem className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-semibold mb-3 text-foreground">No products match your filters</h3>
+                  <p className="text-muted-foreground mb-6">Try adjusting your search criteria</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setFilters({
+                      category: "",
+                      metalType: "",
+                      minPrice: "",
+                      maxPrice: "",
+                      diamondColor: "",
+                      diamondClarity: "",
+                      searchQuery: "",
+                    })} 
+                    className="shadow-sm hover:shadow-md transition-all"
+                  >
+                    Clear All Filters
                   </Button>
                 </div>
               ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isSelected={selectedProducts.has(product.id)}
-                  onToggleSelection={(permissions.can_delete_products || isAdmin) ? toggleProductSelection : () => {}}
-                  usdRate={usdRate}
-                />
-              ))}
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
+                  {filteredProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isSelected={selectedProducts.has(product.id)}
+                      onToggleSelection={(permissions.can_delete_products || isAdmin) ? toggleProductSelection : () => {}}
+                      usdRate={usdRate}
+                    />
+                  ))}
+                </div>
               )}
             </>
           )}
