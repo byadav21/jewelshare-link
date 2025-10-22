@@ -22,7 +22,7 @@ const SharedCatalog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [shareLinkId, setShareLinkId] = useState<string | null>(null);
-  const [usdToInr, setUsdToInr] = useState<number>(83); // Default fallback rate
+  const [usdToInr, setUsdToInr] = useState<number>(83);
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [showVendorDetails, setShowVendorDetails] = useState(true);
   const [showCustomOrderForm, setShowCustomOrderForm] = useState(false);
@@ -238,74 +238,92 @@ const SharedCatalog = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          {/* First Layer: Company Details */}
-          {showVendorDetails && (
-            <div className="flex items-start justify-between gap-6 mb-4">
-              <div className="flex items-center gap-3">
-                <Gem className="h-8 w-8 text-primary flex-shrink-0" />
-                {vendorProfile && (
-                <div className="flex items-center gap-6 flex-1">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-serif font-bold text-foreground leading-tight mb-1.5">
-                      {vendorProfile.business_name || "My Jewelry Business"}
-                    </h2>
-                    <div className="text-sm text-muted-foreground mb-1.5">
-                      {vendorProfile.address_line1 && (
-                        <span>
-                          {vendorProfile.address_line1}
-                          {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
-                        </span>
-                      )}
-                      {vendorProfile.city && (
-                        <span className="ml-1">• {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}</span>
-                      )}
-                    </div>
-                    <div className="flex gap-4 text-sm">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Mobile-Optimized Sticky Header */}
+      <header className="border-b border-border/50 bg-card/90 backdrop-blur-md sticky top-0 z-50 shadow-xl">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+          {/* Vendor Details */}
+          {showVendorDetails && vendorProfile && (
+            <div className="mb-4 pb-4 border-b border-border/30">
+              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                {/* Logo & Business Info */}
+                <div className="flex items-start gap-3 flex-1 min-w-0 w-full">
+                  <Gem className="h-8 w-8 sm:h-10 sm:w-10 text-primary flex-shrink-0 drop-shadow-lg" />
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-foreground leading-tight mb-2 break-words">
+                      {vendorProfile.business_name || "Jewelry Catalog"}
+                    </h1>
+                    
+                    {/* Address */}
+                    {vendorProfile.address_line1 && (
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 break-words leading-relaxed">
+                        {vendorProfile.address_line1}
+                        {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
+                        {vendorProfile.city && (
+                          <span className="block sm:inline sm:ml-1">
+                            <span className="sm:hidden">•</span> {vendorProfile.city}, {vendorProfile.state} {vendorProfile.pincode}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    
+                    {/* Contact Links - Mobile Optimized */}
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                       {vendorProfile.email && (
-                        <span className="text-primary font-medium">Email: {vendorProfile.email}</span>
+                        <a href={`mailto:${vendorProfile.email}`} className="text-xs sm:text-sm text-primary font-medium hover:underline truncate max-w-full">
+                          ✉️ {vendorProfile.email}
+                        </a>
                       )}
                       {vendorProfile.phone && (
-                        <span className="text-primary font-medium">Phone: {vendorProfile.phone}</span>
+                        <a href={`tel:${vendorProfile.phone}`} className="text-xs sm:text-sm text-primary font-medium hover:underline whitespace-nowrap">
+                          📞 {vendorProfile.phone}
+                        </a>
                       )}
                       {vendorProfile.whatsapp_number && (
-                        <span className="text-primary font-medium">WhatsApp: {vendorProfile.whatsapp_number}</span>
+                        <a 
+                          href={`https://wa.me/${vendorProfile.whatsapp_number.replace(/\D/g, '')}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs sm:text-sm text-primary font-medium hover:underline whitespace-nowrap"
+                        >
+                          💬 WhatsApp
+                        </a>
                       )}
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
 
-            <div className="flex items-start gap-3">
-              {vendorProfile?.instagram_qr_url && (
-                <div className="text-center">
-                  <img 
-                    src={vendorProfile.instagram_qr_url} 
-                    alt="Instagram QR Code" 
-                    className="w-24 h-24 object-cover rounded border border-border"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Instagram</p>
-                </div>
-              )}
-              {vendorProfile?.whatsapp_qr_url && (
-                <div className="text-center">
-                  <img 
-                    src={vendorProfile.whatsapp_qr_url} 
-                    alt="WhatsApp QR Code" 
-                    className="w-24 h-24 object-cover rounded border border-border"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">WhatsApp</p>
-                </div>
-              )}
-            </div>
+                {/* QR Codes */}
+                {(vendorProfile.instagram_qr_url || vendorProfile.whatsapp_qr_url) && (
+                  <div className="flex gap-2 sm:gap-3 self-center sm:self-start">
+                    {vendorProfile.instagram_qr_url && (
+                      <div className="text-center">
+                        <img 
+                          src={vendorProfile.instagram_qr_url} 
+                          alt="Instagram" 
+                          className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-primary/30 shadow-lg hover:scale-105 transition-transform"
+                        />
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">Instagram</p>
+                      </div>
+                    )}
+                    {vendorProfile.whatsapp_qr_url && (
+                      <div className="text-center">
+                        <img 
+                          src={vendorProfile.whatsapp_qr_url} 
+                          alt="WhatsApp" 
+                          className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-primary/30 shadow-lg hover:scale-105 transition-transform"
+                        />
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">WhatsApp</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Second Layer: Filters and Exchange Rate */}
-          <div className="space-y-4">
+          {/* Filters Section */}
+          <div className="mb-3">
             <CatalogFilters 
               filters={filters}
               onFilterChange={setFilters}
@@ -314,216 +332,227 @@ const SharedCatalog = () => {
               diamondColors={Array.from(new Set(products.map(p => p.diamond_color).filter(Boolean)))}
               diamondClarities={Array.from(new Set(products.map(p => p.clarity).filter(Boolean)))}
             />
+          </div>
+          
+          {/* Bottom Action Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-4 pt-3 border-t border-border/30">
+            {/* Exchange Rate */}
+            <div className="bg-gradient-to-r from-primary/15 to-primary/5 border border-primary/30 px-4 py-2.5 rounded-xl shadow-md">
+              <span className="text-xs sm:text-sm font-semibold text-foreground">
+                1 USD = <span className="text-primary text-base sm:text-lg">₹{usdToInr.toFixed(2)}</span>
+              </span>
+            </div>
             
-            <div className="flex items-center justify-between gap-4">
-              <div className="text-sm bg-muted px-4 py-2 rounded-lg">
-                <span className="text-muted-foreground">1 USD = ₹{usdToInr.toFixed(2)}</span>
-              </div>
+            {/* Action Buttons */}
+            {shareLinkId && (
               <div className="flex gap-2">
-              {shareLinkId && (
-                <>
-                  <Dialog open={showVideoRequestForm} onOpenChange={setShowVideoRequestForm}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Video className="h-4 w-4 mr-2" />
-                        Request Video
+                <Dialog open={showVideoRequestForm} onOpenChange={setShowVideoRequestForm}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 text-xs sm:text-sm font-medium">
+                      <Video className="h-4 w-4 mr-1.5" />
+                      <span className="hidden xs:inline">Request Video</span>
+                      <span className="xs:hidden">Video</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="w-[95vw] max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Request Product Video</DialogTitle>
+                      <DialogDescription className="text-xs sm:text-sm">
+                        Request a video of specific products or the entire catalog
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleVideoRequestSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="video_customer_name" className="text-sm">Your Name *</Label>
+                        <Input
+                          id="video_customer_name"
+                          value={videoRequestData.customer_name}
+                          onChange={(e) => handleVideoRequestChange("customer_name", e.target.value)}
+                          placeholder="John Doe"
+                          className="h-10"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="video_customer_email" className="text-sm">Email *</Label>
+                        <Input
+                          id="video_customer_email"
+                          type="email"
+                          value={videoRequestData.customer_email}
+                          onChange={(e) => handleVideoRequestChange("customer_email", e.target.value)}
+                          placeholder="john@example.com"
+                          className="h-10"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="video_customer_phone" className="text-sm">Phone (Optional)</Label>
+                        <Input
+                          id="video_customer_phone"
+                          type="tel"
+                          value={videoRequestData.customer_phone}
+                          onChange={(e) => handleVideoRequestChange("customer_phone", e.target.value)}
+                          placeholder="+1 (555) 000-0000"
+                          className="h-10"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="video_message" className="text-sm">What would you like to see? *</Label>
+                        <Textarea
+                          id="video_message"
+                          value={videoRequestData.message}
+                          onChange={(e) => handleVideoRequestChange("message", e.target.value)}
+                          placeholder="Describe which products you'd like to see..."
+                          rows={4}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full h-11" disabled={videoRequestLoading}>
+                        {videoRequestLoading ? "Submitting..." : "Submit Video Request"}
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-lg">
-                      <DialogHeader>
-                        <DialogTitle>Request Product Video</DialogTitle>
-                        <DialogDescription>
-                          Request a video of specific products or the entire catalog
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleVideoRequestSubmit} className="space-y-4">
+                    </form>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={showCustomOrderForm} onOpenChange={setShowCustomOrderForm}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="flex-1 sm:flex-none h-10 text-xs sm:text-sm font-medium shadow-lg">
+                      <Building2 className="h-4 w-4 mr-1.5" />
+                      <span className="hidden xs:inline">Build Jewelry</span>
+                      <span className="xs:hidden">Custom</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Build Your Custom Jewelry</DialogTitle>
+                      <DialogDescription className="text-xs sm:text-sm">
+                        Tell us about your dream piece
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleCustomOrderSubmit} className="space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="video_customer_name">Your Name *</Label>
+                          <Label htmlFor="customer_name" className="text-sm">Your Name *</Label>
                           <Input
-                            id="video_customer_name"
-                            value={videoRequestData.customer_name}
-                            onChange={(e) => handleVideoRequestChange("customer_name", e.target.value)}
+                            id="customer_name"
+                            value={customOrderData.customer_name}
+                            onChange={(e) => handleCustomOrderChange("customer_name", e.target.value)}
                             placeholder="John Doe"
+                            className="h-10"
                             required
                           />
                         </div>
-
                         <div className="space-y-2">
-                          <Label htmlFor="video_customer_email">Email *</Label>
+                          <Label htmlFor="customer_email" className="text-sm">Email *</Label>
                           <Input
-                            id="video_customer_email"
+                            id="customer_email"
                             type="email"
-                            value={videoRequestData.customer_email}
-                            onChange={(e) => handleVideoRequestChange("customer_email", e.target.value)}
+                            value={customOrderData.customer_email}
+                            onChange={(e) => handleCustomOrderChange("customer_email", e.target.value)}
                             placeholder="john@example.com"
+                            className="h-10"
                             required
                           />
                         </div>
+                      </div>
 
+                      <div className="space-y-2">
+                        <Label htmlFor="customer_phone" className="text-sm">Phone (Optional)</Label>
+                        <Input
+                          id="customer_phone"
+                          type="tel"
+                          value={customOrderData.customer_phone}
+                          onChange={(e) => handleCustomOrderChange("customer_phone", e.target.value)}
+                          placeholder="+1 (555) 000-0000"
+                          className="h-10"
+                        />
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="video_customer_phone">Phone Number (Optional)</Label>
-                          <Input
-                            id="video_customer_phone"
-                            type="tel"
-                            value={videoRequestData.customer_phone}
-                            onChange={(e) => handleVideoRequestChange("customer_phone", e.target.value)}
-                            placeholder="+1 (555) 000-0000"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="video_message">What would you like to see? *</Label>
-                          <Textarea
-                            id="video_message"
-                            value={videoRequestData.message}
-                            onChange={(e) => handleVideoRequestChange("message", e.target.value)}
-                            placeholder="Describe which products you'd like to see in video format..."
-                            rows={4}
-                            required
-                          />
-                        </div>
-
-                        <Button type="submit" className="w-full" disabled={videoRequestLoading}>
-                          {videoRequestLoading ? "Submitting..." : "Submit Video Request"}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                  <Dialog open={showCustomOrderForm} onOpenChange={setShowCustomOrderForm}>
-                    <DialogTrigger asChild>
-                      <Button variant="default" size="sm">
-                        <Building2 className="h-4 w-4 mr-2" />
-                        Build Your Jewelry
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Build Your Custom Jewelry</DialogTitle>
-                        <DialogDescription>
-                          Tell us about your dream piece and we'll bring it to life
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleCustomOrderSubmit} className="space-y-4">
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label htmlFor="customer_name">Your Name *</Label>
-                            <Input
-                              id="customer_name"
-                              value={customOrderData.customer_name}
-                              onChange={(e) => handleCustomOrderChange("customer_name", e.target.value)}
-                              placeholder="John Doe"
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="customer_email">Email *</Label>
-                            <Input
-                              id="customer_email"
-                              type="email"
-                              value={customOrderData.customer_email}
-                              onChange={(e) => handleCustomOrderChange("customer_email", e.target.value)}
-                              placeholder="john@example.com"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="customer_phone">Phone Number (Optional)</Label>
-                          <Input
-                            id="customer_phone"
-                            type="tel"
-                            value={customOrderData.customer_phone}
-                            onChange={(e) => handleCustomOrderChange("customer_phone", e.target.value)}
-                            placeholder="+1 (555) 000-0000"
-                          />
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label htmlFor="metal_type">Preferred Metal Type</Label>
-                            <Select
-                              value={customOrderData.metal_type}
-                              onValueChange={(value) => handleCustomOrderChange("metal_type", value)}
-                            >
-                              <SelectTrigger id="metal_type">
-                                <SelectValue placeholder="Select metal type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Gold">Gold</SelectItem>
-                                <SelectItem value="White Gold">White Gold</SelectItem>
-                                <SelectItem value="Rose Gold">Rose Gold</SelectItem>
-                                <SelectItem value="Platinum">Platinum</SelectItem>
-                                <SelectItem value="Silver">Silver</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="gemstone_preference">Gemstone Preference</Label>
-                            <Input
-                              id="gemstone_preference"
-                              value={customOrderData.gemstone_preference}
-                              onChange={(e) => handleCustomOrderChange("gemstone_preference", e.target.value)}
-                              placeholder="e.g., Diamond, Sapphire, Ruby"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="budget_range">Budget Range</Label>
+                          <Label htmlFor="metal_type" className="text-sm">Preferred Metal</Label>
                           <Select
-                            value={customOrderData.budget_range}
-                            onValueChange={(value) => handleCustomOrderChange("budget_range", value)}
+                            value={customOrderData.metal_type}
+                            onValueChange={(value) => handleCustomOrderChange("metal_type", value)}
                           >
-                            <SelectTrigger id="budget_range">
-                              <SelectValue placeholder="Select your budget range" />
+                            <SelectTrigger id="metal_type" className="h-10">
+                              <SelectValue placeholder="Select metal" />
                             </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Under ₹50,000">Under ₹50,000</SelectItem>
-                              <SelectItem value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</SelectItem>
-                              <SelectItem value="₹1,00,000 - ₹2,50,000">₹1,00,000 - ₹2,50,000</SelectItem>
-                              <SelectItem value="₹2,50,000 - ₹5,00,000">₹2,50,000 - ₹5,00,000</SelectItem>
-                              <SelectItem value="Above ₹5,00,000">Above ₹5,00,000</SelectItem>
+                            <SelectContent className="bg-popover z-50">
+                              <SelectItem value="Gold">Gold</SelectItem>
+                              <SelectItem value="White Gold">White Gold</SelectItem>
+                              <SelectItem value="Rose Gold">Rose Gold</SelectItem>
+                              <SelectItem value="Platinum">Platinum</SelectItem>
+                              <SelectItem value="Silver">Silver</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="design_description">Design Description *</Label>
-                          <Textarea
-                            id="design_description"
-                            value={customOrderData.design_description}
-                            onChange={(e) => handleCustomOrderChange("design_description", e.target.value)}
-                            placeholder="Describe your ideal piece in detail..."
-                            rows={4}
-                            required
+                          <Label htmlFor="gemstone_preference" className="text-sm">Gemstone</Label>
+                          <Input
+                            id="gemstone_preference"
+                            value={customOrderData.gemstone_preference}
+                            onChange={(e) => handleCustomOrderChange("gemstone_preference", e.target.value)}
+                            placeholder="Diamond, Sapphire..."
+                            className="h-10"
                           />
                         </div>
+                      </div>
 
-                        <Button type="submit" className="w-full" disabled={customOrderLoading}>
-                          {customOrderLoading ? "Submitting..." : "Submit Custom Order Request"}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                  <ContactOwnerDialog shareLinkId={shareLinkId} />
-                </>
-              )}
-            </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="budget_range" className="text-sm">Budget Range</Label>
+                        <Select
+                          value={customOrderData.budget_range}
+                          onValueChange={(value) => handleCustomOrderChange("budget_range", value)}
+                        >
+                          <SelectTrigger id="budget_range" className="h-10">
+                            <SelectValue placeholder="Select budget" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover z-50">
+                            <SelectItem value="Under ₹50,000">Under ₹50,000</SelectItem>
+                            <SelectItem value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</SelectItem>
+                            <SelectItem value="₹1,00,000 - ₹2,50,000">₹1,00,000 - ₹2,50,000</SelectItem>
+                            <SelectItem value="₹2,50,000 - ₹5,00,000">₹2,50,000 - ₹5,00,000</SelectItem>
+                            <SelectItem value="Above ₹5,00,000">Above ₹5,00,000</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="design_description" className="text-sm">Design Description *</Label>
+                        <Textarea
+                          id="design_description"
+                          value={customOrderData.design_description}
+                          onChange={(e) => handleCustomOrderChange("design_description", e.target.value)}
+                          placeholder="Describe your ideal piece in detail..."
+                          rows={4}
+                          required
+                        />
+                      </div>
+
+                      <Button type="submit" className="w-full h-11" disabled={customOrderLoading}>
+                        {customOrderLoading ? "Submitting..." : "Submit Custom Order"}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+                
+                <ContactOwnerDialog shareLinkId={shareLinkId} />
+              </div>
+            )}
           </div>
-        </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      {/* Product Grid */}
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
         {filteredProducts.length === 0 && products.length > 0 ? (
-          <div className="text-center py-12">
-            <Gem className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-xl text-muted-foreground">No products match your filters</p>
+          <div className="text-center py-16 sm:py-20">
+            <Gem className="h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <p className="text-lg sm:text-xl text-muted-foreground mb-4">No products match your filters</p>
             <Button 
               variant="outline" 
-              className="mt-4"
               onClick={() => setFilters({
                 category: "",
                 metalType: "",
@@ -533,73 +562,77 @@ const SharedCatalog = () => {
                 diamondClarity: "",
                 searchQuery: "",
               })}
+              className="h-10 sm:h-11"
             >
-              Clear Filters
+              Clear All Filters
             </Button>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <Gem className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-serif mb-2 text-foreground">No products available</h2>
-            <p className="text-muted-foreground">This catalog is currently empty</p>
+          <div className="text-center py-16 sm:py-20">
+            <Gem className="h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h2 className="text-xl sm:text-2xl font-serif font-bold mb-2 text-foreground">No Products Available</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">This catalog is currently empty</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-all duration-300">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+            {filteredProducts.map((product) => (
+              <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-border/50 hover:border-primary/30 bg-card/80 backdrop-blur-sm">
                 {product.image_url && (
-                  <div className="aspect-square overflow-hidden bg-muted">
+                  <div className="aspect-square overflow-hidden bg-muted/30 relative">
                     <img
                       src={product.image_url}
                       alt={product.name}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 )}
-                <CardHeader>
-                  <h3 className="font-serif text-xl font-semibold text-foreground">{product.name}</h3>
+                <CardHeader className="pb-3">
+                  <h3 className="font-serif text-base sm:text-lg font-bold text-foreground line-clamp-2 leading-tight">
+                    {product.name}
+                  </h3>
                   {product.sku && (
-                    <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
+                    <p className="text-xs text-muted-foreground font-mono">SKU: {product.sku}</p>
                   )}
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pb-3">
                   {product.description && (
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
                       {product.description}
                     </p>
                   )}
-                  <div className="space-y-1 text-sm">
+                  <div className="space-y-1 text-xs sm:text-sm">
                     {product.category && (
-                      <p className="text-foreground">
-                        <span className="text-muted-foreground">Category:</span> {product.category}
+                      <p className="text-foreground truncate">
+                        <span className="text-muted-foreground">Category:</span> <span className="font-medium">{product.category}</span>
                       </p>
                     )}
                     {product.metal_type && (
-                      <p className="text-foreground">
-                        <span className="text-muted-foreground">Metal:</span> {product.metal_type}
-                      </p>
-                    )}
-                    {product.gemstone && (
-                      <p className="text-foreground">
-                        <span className="text-muted-foreground">Gemstone:</span> {product.gemstone}
+                      <p className="text-foreground truncate">
+                        <span className="text-muted-foreground">Metal:</span> <span className="font-medium">{product.metal_type}</span>
                       </p>
                     )}
                     {product.weight_grams && (
                       <p className="text-foreground">
-                        <span className="text-muted-foreground">Weight:</span> {product.weight_grams}g
+                        <span className="text-muted-foreground">Weight:</span> <span className="font-medium">{product.weight_grams}g</span>
                       </p>
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="border-t border-border pt-4 flex-col gap-3">
+                <CardFooter className="border-t border-border/30 pt-4 flex-col gap-3 bg-muted/10">
                   <div className="w-full space-y-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Price (INR)</p>
-                      <p className="text-2xl font-bold text-primary">₹{product.displayed_price.toFixed(2)}</p>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">INR</span>
+                      <p className="text-xl sm:text-2xl font-bold text-primary">
+                        ₹{product.displayed_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      </p>
                     </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Price (USD)</p>
-                      <p className="text-xl font-semibold text-foreground">${(product.displayed_price / usdToInr).toFixed(2)}</p>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">USD</span>
+                      <p className="text-base sm:text-lg font-semibold text-foreground">
+                        ${(product.displayed_price / usdToInr).toFixed(2)}
+                      </p>
                     </div>
                   </div>
                   {shareLinkId && (
