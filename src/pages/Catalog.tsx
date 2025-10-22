@@ -349,7 +349,7 @@ const Catalog = () => {
   return (
     <ApprovalGuard>
       <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <header className="border-b border-border bg-card backdrop-blur-sm shadow-sm">
           <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-2.5 max-w-[1800px]">
             {/* First Layer: Company Details */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-6">
