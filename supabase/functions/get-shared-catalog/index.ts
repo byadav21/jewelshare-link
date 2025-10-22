@@ -114,18 +114,22 @@ serve(async (req) => {
     // Always use the share link creator's products
     const productOwnerId = shareLink.user_id;
 
-    // Get vendor profile for the product owner
-    const { data: vendorProfile } = await supabase
-      .from("vendor_profiles")
-      .select("*")
-      .eq("user_id", productOwnerId)
-      .maybeSingle();
+    // Fetch vendor profile and products in parallel for better performance
+    const [vendorProfileResult, productsResult] = await Promise.all([
+      supabase
+        .from("vendor_profiles")
+        .select("*")
+        .eq("user_id", productOwnerId)
+        .maybeSingle(),
+      supabase
+        .from("products")
+        .select("*")
+        .eq("user_id", productOwnerId)
+        .eq("deleted_at", null)
+    ]);
 
-    // Get products for the product owner (either the share link creator or their admin)
-    const { data: products, error: productsError } = await supabase
-      .from("products")
-      .select("*")
-      .eq("user_id", productOwnerId);
+    const { data: vendorProfile } = vendorProfileResult;
+    const { data: products, error: productsError } = productsResult;
 
     if (productsError) {
       console.error("Error fetching products:", productsError);
@@ -156,11 +160,15 @@ serve(async (req) => {
       };
     });
 
-    // Increment view count
-    await supabase
+    // Increment view count asynchronously (fire and forget for better performance)
+    supabase
       .from("share_links")
       .update({ view_count: shareLink.view_count + 1 })
-      .eq("id", shareLink.id);
+      .eq("id", shareLink.id)
+      .then(({ error }) => {
+        if (error) console.error("Failed to update view count:", error);
+        else console.log("View count updated");
+      });
 
     console.log(`Returning catalog with ${adjustedProducts.length} products to ${clientIP}`);
 
