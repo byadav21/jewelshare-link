@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
@@ -45,6 +46,8 @@ const AddProduct = () => {
     image_url: "",
     image_url_2: "",
     image_url_3: "",
+    delivery_type: "immediate",
+    delivery_date: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,6 +92,8 @@ const AddProduct = () => {
           image_url: formData.image_url || null,
           image_url_2: formData.image_url_2 || null,
           image_url_3: formData.image_url_3 || null,
+          delivery_type: formData.delivery_type,
+          delivery_date: formData.delivery_type === 'scheduled' && formData.delivery_date ? formData.delivery_date : null,
         },
       ]);
 
@@ -494,6 +499,41 @@ const AddProduct = () => {
                     required
                     placeholder="10"
                   />
+                </div>
+
+                <div className="space-y-3 border-t pt-4">
+                  <Label>Delivery Information</Label>
+                  <RadioGroup
+                    value={formData.delivery_type}
+                    onValueChange={(value) => setFormData({ ...formData, delivery_type: value })}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="immediate" id="immediate" />
+                      <Label htmlFor="immediate" className="font-normal cursor-pointer">
+                        Immediate Delivery
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="scheduled" id="scheduled" />
+                      <Label htmlFor="scheduled" className="font-normal cursor-pointer">
+                        Scheduled Delivery
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  {formData.delivery_type === 'scheduled' && (
+                    <div className="space-y-2 ml-6">
+                      <Label htmlFor="delivery_date">Delivery Date</Label>
+                      <Input
+                        id="delivery_date"
+                        name="delivery_date"
+                        type="date"
+                        value={formData.delivery_date}
+                        onChange={handleChange}
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

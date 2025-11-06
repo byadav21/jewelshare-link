@@ -208,6 +208,8 @@ export type Database = {
           d_wt_1: number | null
           d_wt_2: number | null
           deleted_at: string | null
+          delivery_date: string | null
+          delivery_type: string | null
           description: string | null
           diamond_color: string | null
           diamond_weight: number | null
@@ -246,6 +248,8 @@ export type Database = {
           d_wt_1?: number | null
           d_wt_2?: number | null
           deleted_at?: string | null
+          delivery_date?: string | null
+          delivery_type?: string | null
           description?: string | null
           diamond_color?: string | null
           diamond_weight?: number | null
@@ -284,6 +288,8 @@ export type Database = {
           d_wt_1?: number | null
           d_wt_2?: number | null
           deleted_at?: string | null
+          delivery_date?: string | null
+          delivery_type?: string | null
           description?: string | null
           diamond_color?: string | null
           diamond_weight?: number | null
@@ -587,10 +593,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_old_sessions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_old_sessions: { Args: never; Returns: undefined }
       hard_delete_products: {
         Args: { product_ids: string[] }
         Returns: undefined
@@ -602,10 +605,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_user_approved: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_user_approved: { Args: { _user_id: string }; Returns: boolean }
       log_audit: {
         Args: {
           p_action: string

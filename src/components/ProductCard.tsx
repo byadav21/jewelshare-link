@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Gem, ChevronLeft, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Gem, ChevronLeft, ChevronRight, Zap, Calendar } from "lucide-react";
+import { format } from "date-fns";
 
 interface ProductCardProps {
   product: any;
@@ -145,15 +147,35 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between border-t border-border p-3 sm:p-6 pt-3 sm:pt-4">
-        <div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Retail Price</p>
-          <p className="text-base sm:text-lg font-bold text-primary">₹{product.retail_price.toLocaleString('en-IN')}</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">${(product.retail_price / usdRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Stock</p>
-          <p className="text-base sm:text-lg font-semibold text-foreground">{product.stock_quantity}</p>
+      <CardFooter className="flex flex-col gap-3 border-t border-border p-3 sm:p-6 pt-3 sm:pt-4">
+        {/* Delivery Badge */}
+        {product.delivery_type && (
+          <div className="w-full">
+            {product.delivery_type === 'immediate' ? (
+              <Badge variant="secondary" className="w-full justify-center gap-1.5 py-1.5 bg-gradient-to-r from-emerald-500/15 to-green-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/20 hover:to-green-500/20">
+                <Zap className="h-3 w-3" />
+                <span className="text-xs font-medium">Immediate Delivery</span>
+              </Badge>
+            ) : product.delivery_date && (
+              <Badge variant="outline" className="w-full justify-center gap-1.5 py-1.5 border-primary/30 text-primary hover:bg-primary/5">
+                <Calendar className="h-3 w-3" />
+                <span className="text-xs font-medium">Delivery by {format(new Date(product.delivery_date), 'MMM dd, yyyy')}</span>
+              </Badge>
+            )}
+          </div>
+        )}
+        
+        {/* Price and Stock */}
+        <div className="flex justify-between w-full">
+          <div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Retail Price</p>
+            <p className="text-base sm:text-lg font-bold text-primary">₹{product.retail_price.toLocaleString('en-IN')}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">${(product.retail_price / usdRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Stock</p>
+            <p className="text-base sm:text-lg font-semibold text-foreground">{product.stock_quantity}</p>
+          </div>
         </div>
       </CardFooter>
     </Card>
