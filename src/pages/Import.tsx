@@ -77,6 +77,26 @@ const Import = () => {
           imageUrl3 = row.Thumbnail;
         }
         
+        
+        // Parse delivery information
+        const deliveryType = row['DELIVERY TYPE'] || row['Delivery Type'] || 'immediate';
+        let deliveryDate = null;
+        if ((deliveryType === 'scheduled' || deliveryType === 'Scheduled') && row['DELIVERY DATE']) {
+          try {
+            // Handle Excel date serial numbers or formatted dates
+            const rawDate = row['DELIVERY DATE'];
+            if (typeof rawDate === 'number') {
+              // Excel serial date conversion
+              const excelDate = new Date((rawDate - 25569) * 86400 * 1000);
+              deliveryDate = excelDate.toISOString();
+            } else if (typeof rawDate === 'string') {
+              deliveryDate = new Date(rawDate).toISOString();
+            }
+          } catch (e) {
+            console.warn('Could not parse delivery date:', row['DELIVERY DATE']);
+          }
+        }
+        
         const product = {
           user_id: user.id,
           name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
@@ -111,6 +131,8 @@ const Import = () => {
           gemstone_cost: parseNumber(row['Gemstone cost']) || null,
           total_usd: parseNumber(row.TOTAL_USD) || null,
           product_type: row['Prodcut Type'] || row['Product Type'] || null,
+          delivery_type: deliveryType === 'scheduled' || deliveryType === 'Scheduled' ? 'scheduled' : 'immediate',
+          delivery_date: deliveryDate,
         };
 
         // Validate product data
@@ -252,7 +274,15 @@ const Import = () => {
                     <li>• Product Type</li>
                     <li>• IMAGE_URL (images - use | separator)</li>
                     <li>• Thumbnail (3rd image)</li>
+                    <li className="font-semibold text-primary">• DELIVERY TYPE (immediate/scheduled)</li>
+                    <li className="font-semibold text-primary">• DELIVERY DATE (for scheduled)</li>
                   </ul>
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-semibold">Delivery:</span> Set DELIVERY TYPE to "immediate" or "scheduled". 
+                      If scheduled, add DELIVERY DATE in YYYY-MM-DD format.
+                    </p>
+                  </div>
                 </div>
 
                 <Button
