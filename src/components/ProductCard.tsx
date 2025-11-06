@@ -154,7 +154,7 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
             {product.delivery_type === 'immediate' ? (
               <Badge variant="secondary" className="w-full justify-center gap-1.5 py-1.5 bg-gradient-to-r from-emerald-500/15 to-green-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/20 hover:to-green-500/20">
                 <Zap className="h-3 w-3" />
-                <span className="text-xs font-medium">Immediate Delivery</span>
+                <span className="text-xs font-medium">Immediate Dispatch</span>
               </Badge>
             ) : product.delivery_date && (
               <Badge variant="outline" className="w-full justify-center gap-1.5 py-1.5 border-primary/30 text-primary hover:bg-primary/5">

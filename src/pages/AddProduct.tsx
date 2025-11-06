@@ -510,7 +510,7 @@ const AddProduct = () => {
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="immediate" id="immediate" />
                       <Label htmlFor="immediate" className="font-normal cursor-pointer">
-                        Immediate Delivery
+                        Immediate Dispatch
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
