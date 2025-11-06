@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { InterestDialog } from "@/components/InterestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
-import { Gem, AlertCircle, Building2, Video } from "lucide-react";
+import { Gem, AlertCircle, Building2, Video, Zap, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { customOrderSchema } from "@/lib/validations";
+import { format } from "date-fns";
 
 const SharedCatalog = () => {
   const { token } = useParams<{ token: string }>();
@@ -621,6 +623,23 @@ const SharedCatalog = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="border-t border-border/30 pt-4 flex-col gap-3 bg-muted/10">
+                  {/* Delivery Badge */}
+                  {product.delivery_type && (
+                    <div className="w-full">
+                      {product.delivery_type === 'immediate' ? (
+                        <Badge variant="secondary" className="w-full justify-center gap-1.5 py-1.5 bg-gradient-to-r from-emerald-500/15 to-green-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/20 hover:to-green-500/20">
+                          <Zap className="h-3 w-3" />
+                          <span className="text-xs font-medium">Immediate Dispatch</span>
+                        </Badge>
+                      ) : product.delivery_date && (
+                        <Badge variant="outline" className="w-full justify-center gap-1.5 py-1.5 border-primary/30 text-primary hover:bg-primary/5">
+                          <Calendar className="h-3 w-3" />
+                          <span className="text-xs font-medium">Delivery by {format(new Date(product.delivery_date), 'MMM dd, yyyy')}</span>
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  
                   <div className="w-full space-y-2">
                     <div className="flex items-baseline justify-between">
                       <span className="text-xs text-muted-foreground">INR</span>
