@@ -25,6 +25,7 @@ import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import AuditLogs from "./pages/AuditLogs";
 import ExportReports from "./pages/ExportReports";
 import LoginHistory from "./pages/LoginHistory";
+import MigrateImages from "./pages/MigrateImages";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/audit-logs" element={<AuditLogs />} />
           <Route path="/export-reports" element={<ExportReports />} />
           <Route path="/login-history" element={<LoginHistory />} />
+          <Route path="/migrate-images" element={<MigrateImages />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

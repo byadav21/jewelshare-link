@@ -7,7 +7,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X, Upload } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -570,16 +570,20 @@ const Catalog = () => {
                     Import
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={exportToPDF}>
-                  <FileDown className="h-4 w-4 mr-2" />
-                  Export PDF
-                </Button>
-                {(permissions.can_manage_team || isAdmin) && (
-                  <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Team
+                  <Button variant="outline" size="sm" onClick={exportToPDF}>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Export PDF
                   </Button>
-                )}
+                  <Button variant="outline" size="sm" onClick={() => navigate("/migrate-images")}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Migrate Images
+                  </Button>
+                  {(permissions.can_manage_team || isAdmin) && (
+                    <Button variant="outline" size="sm" onClick={() => navigate("/team")}>
+                      <Users className="h-4 w-4 mr-2" />
+                      Team
+                    </Button>
+                  )}
                 {(permissions.can_delete_products || isAdmin) && selectedProducts.size > 0 && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -670,6 +674,10 @@ const Catalog = () => {
                     <DropdownMenuItem onClick={exportToPDF} className="py-3 cursor-pointer hover:bg-muted/50">
                       <FileDown className="h-5 w-5 mr-3 text-primary" />
                       <span className="font-medium">Export PDF</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/migrate-images")} className="py-3 cursor-pointer hover:bg-muted/50">
+                      <Upload className="h-5 w-5 mr-3 text-primary" />
+                      <span className="font-medium">Migrate Images</span>
                     </DropdownMenuItem>
                     {(permissions.can_manage_team || isAdmin) && (
                       <DropdownMenuItem onClick={() => navigate("/team")} className="py-3 cursor-pointer hover:bg-muted/50">
