@@ -13,8 +13,9 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }: ProductCardProps) => {
-  const images = [product.image_url, product.image_url_2].filter(Boolean);
+  const images = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -22,6 +23,18 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+    if (images.length > 1) {
+      nextImage();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    setCurrentImageIndex(0);
   };
 
   return (
@@ -34,17 +47,18 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
         />
       </div>
       {images.length > 0 ? (
-        <div className="aspect-square overflow-hidden bg-muted relative group">
+        <div 
+          className="aspect-square overflow-hidden bg-muted relative group"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           <img
             src={images[currentImageIndex]}
             alt={`${product.name} - Image ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-all duration-500 animate-fade-in"
+            className="w-full h-full object-cover transition-all duration-300 animate-fade-in"
             onError={(e) => {
               console.error(`Failed to load image ${currentImageIndex + 1} for ${product.sku}: ${images[currentImageIndex]}`);
               e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
-            }}
-            onLoad={() => {
-              console.log(`Successfully loaded image ${currentImageIndex + 1} for ${product.sku}`);
             }}
           />
           {images.length > 1 && (
