@@ -39,6 +39,7 @@ const SharedCatalog = () => {
     diamondColor: "",
     diamondClarity: "",
     searchQuery: "",
+    deliveryType: "",
   });
   const [customOrderData, setCustomOrderData] = useState({
     customer_name: "",
@@ -204,6 +205,9 @@ const SharedCatalog = () => {
         product.diamond_color === filters.diamondColor;
       const matchesDiamondClarity = !filters.diamondClarity || 
         product.clarity === filters.diamondClarity;
+      
+      const matchesDeliveryType = !filters.deliveryType || 
+        product.delivery_type === filters.deliveryType;
 
       return (
         matchesSearch &&
@@ -212,7 +216,8 @@ const SharedCatalog = () => {
         matchesMinPrice &&
         matchesMaxPrice &&
         matchesDiamondColor &&
-        matchesDiamondClarity
+        matchesDiamondClarity &&
+        matchesDeliveryType
       );
     });
   }, [products, filters]);
@@ -333,6 +338,7 @@ const SharedCatalog = () => {
               metalTypes={Array.from(new Set(products.map(p => p.metal_type).filter(Boolean)))}
               diamondColors={Array.from(new Set(products.map(p => p.diamond_color).filter(Boolean)))}
               diamondClarities={Array.from(new Set(products.map(p => p.clarity).filter(Boolean)))}
+              deliveryTypes={Array.from(new Set(products.map(p => p.delivery_type).filter(Boolean)))}
             />
           </div>
           
@@ -563,6 +569,7 @@ const SharedCatalog = () => {
                 diamondColor: "",
                 diamondClarity: "",
                 searchQuery: "",
+                deliveryType: "",
               })}
               className="h-10 sm:h-11"
             >

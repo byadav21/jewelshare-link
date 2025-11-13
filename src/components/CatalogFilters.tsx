@@ -12,6 +12,7 @@ export interface FilterState {
   diamondColor: string;
   diamondClarity: string;
   searchQuery: string;
+  deliveryType: string;
 }
 
 interface CatalogFiltersProps {
@@ -21,6 +22,7 @@ interface CatalogFiltersProps {
   metalTypes: string[];
   diamondColors: string[];
   diamondClarities: string[];
+  deliveryTypes: string[];
 }
 
 export const CatalogFilters = ({
@@ -30,6 +32,7 @@ export const CatalogFilters = ({
   metalTypes,
   diamondColors,
   diamondClarities,
+  deliveryTypes,
 }: CatalogFiltersProps) => {
   const updateFilter = (key: keyof FilterState, value: string) => {
     onFilterChange({ ...filters, [key]: value });
@@ -44,6 +47,7 @@ export const CatalogFilters = ({
       diamondColor: "",
       diamondClarity: "",
       searchQuery: "",
+      deliveryType: "",
     });
   };
 
@@ -75,7 +79,7 @@ export const CatalogFilters = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2 sm:gap-4">
         <div className="space-y-1.5 sm:space-y-2">
           <Label htmlFor="category" className="text-xs sm:text-sm">Category</Label>
           <Select value={filters.category || "all"} onValueChange={(v) => updateFilter("category", v === "all" ? "" : v)}>
@@ -155,6 +159,23 @@ export const CatalogFilters = ({
               <SelectItem value="all" className="text-xs sm:text-sm">All Clarities</SelectItem>
               {diamondClarities.map((clarity) => (
                 <SelectItem key={clarity} value={clarity} className="text-xs sm:text-sm">{clarity}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="deliveryType" className="text-xs sm:text-sm">Delivery</Label>
+          <Select value={filters.deliveryType || "all"} onValueChange={(v) => updateFilter("deliveryType", v === "all" ? "" : v)}>
+            <SelectTrigger id="deliveryType" className="h-9 sm:h-10 text-xs sm:text-sm">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              <SelectItem value="all" className="text-xs sm:text-sm">All Types</SelectItem>
+              {deliveryTypes.map((type) => (
+                <SelectItem key={type} value={type} className="text-xs sm:text-sm">
+                  {type === 'immediate' ? 'Immediate Dispatch' : 'Scheduled Delivery'}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

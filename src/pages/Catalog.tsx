@@ -32,6 +32,7 @@ const Catalog = () => {
     diamondColor: "",
     diamondClarity: "",
     searchQuery: "",
+    deliveryType: "",
   });
   const navigate = useNavigate();
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
@@ -201,6 +202,11 @@ const Catalog = () => {
     [products]
   );
 
+  const deliveryTypes = useMemo(() => 
+    [...new Set(products.map(p => p.delivery_type).filter(Boolean))].sort(),
+    [products]
+  );
+
   // Filter products
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
@@ -270,6 +276,8 @@ const Catalog = () => {
         const clarity = product.gemstone?.split(' ')[1];
         if (clarity?.toUpperCase().trim() !== filters.diamondClarity.toUpperCase().trim()) return false;
       }
+
+      if (filters.deliveryType && product.delivery_type !== filters.deliveryType) return false;
 
       return true;
     });
@@ -720,6 +728,7 @@ const Catalog = () => {
                   metalTypes={metalTypes}
                   diamondColors={diamondColors}
                   diamondClarities={diamondClarities}
+                  deliveryTypes={deliveryTypes}
                 />
               </div>
 
@@ -756,7 +765,8 @@ const Catalog = () => {
                       diamondColor: "",
                       diamondClarity: "",
                       searchQuery: "",
-                    })} 
+                      deliveryType: "",
+                    })}
                     className="shadow-sm hover:shadow-md transition-all"
                   >
                     Clear All Filters
