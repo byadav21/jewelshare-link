@@ -54,8 +54,8 @@ const Import = () => {
           return 0;
         };
 
-        const costPrice = parseNumber(row.GOLD) || parseNumber(row.MKG) || parseNumber(row['COST PRICE']);
-        const retailPrice = parseNumber(row.TOTAL) || parseNumber(row['RETAIL PRICE']) || costPrice;
+        const costPrice = parseNumber(row['COST PRICE']) || 0;
+        const retailPrice = parseNumber(row['RETAIL PRICE']) || parseNumber(row.TOTAL) || costPrice;
         
         // Parse image URLs - handle backslash escaping and pipe separators  
         let imageUrl = null;
@@ -101,37 +101,36 @@ const Import = () => {
         const product = {
           user_id: user.id,
           name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
-          description: `${row['Diamond Color'] || row['Diamond Co'] || ''} ${row.CLARITY || ''} ${row['T DWT'] ? row['T DWT'] + ' ct' : ''}`.trim() || null,
+          description: row.DESCRIPTION || null,
           sku: row.CERT || null,
-          category: row['CS TYPE'] || row['Prodcut Type'] || row['Product Type'] || "Diamond Jewelry",
-          metal_type: row.PURITY_FRACTION_USED ? `${Math.round(parseFloat(row.PURITY_FRACTION_USED) * 100)}% Gold` : null,
-          gemstone: row['GEMSTONE TYPE'] || row.GEMSTONE || (row['Diamond Color'] && row.CLARITY ? `${row['Diamond Color']} ${row.CLARITY}` : null),
-          color: row['Diamond Color'] || row['Diamond Co'] || null,
+          category: row.CATEGORY || row['PRODUCT TYPE'] || null,
+          metal_type: row['METAL TYPE'] || null,
+          gemstone: row.GEMSTONE || null,
+          color: row.COLOR || null,
+          diamond_color: row['DIAMOND COLOR'] || null,
           clarity: row.CLARITY || null,
           image_url: imageUrl,
           image_url_2: imageUrl2,
           image_url_3: imageUrl3,
-          weight_grams: parseNumber(row['G WT']) || parseNumber(row['GROSS WT']) || parseNumber(row['Gross WT']) || null,
-          net_weight: parseNumber(row['NET WT']) || parseNumber(row['Net WT']) || null,
-          diamond_weight: parseNumber(row['T DWT']) || parseNumber(row['Diamond Wt']) || null,
-          cost_price: costPrice,
-          retail_price: retailPrice,
-          per_carat_price: parseNumber(row['Per Carat Price']) || parseNumber(row['PER CARAT PRICE']) || null,
-          gold_per_gram_price: parseNumber(row['Gold/g Price']) || parseNumber(row['GOLD PER GRAM PRICE']) || null,
-          stock_quantity: 1,
-          // New fields from Excel
-          diamond_color: row['Diamond Color'] || row['Diamond Co'] || null,
-          d_wt_1: parseNumber(row['D.WT 1']) || parseNumber(row['D WT 1']) || null,
-          d_wt_2: parseNumber(row['D.WT 2']) || parseNumber(row['D WT 2']) || null,
-          purity_fraction_used: parseNumber(row.PURITY_FRACTION_USED) ? parseNumber(row.PURITY_FRACTION_USED) * 100 : null,
+          weight_grams: parseNumber(row['WEIGHT (grams)']) || null,
+          net_weight: parseNumber(row['NET WEIGHT']) || null,
+          diamond_weight: parseNumber(row['DIAMOND WEIGHT']) || null,
+          d_wt_1: parseNumber(row['D WT 1']) || null,
+          d_wt_2: parseNumber(row['D WT 2']) || null,
+          pointer_diamond: parseNumber(row['POINTER DIAMOND']) || null,
+          per_carat_price: parseNumber(row['PER CARAT PRICE']) || null,
           d_rate_1: parseNumber(row['D RATE 1']) || null,
-          pointer_diamond: parseNumber(row['Pointer diamond']) || null,
           d_value: parseNumber(row['D VALUE']) || null,
+          gold_per_gram_price: parseNumber(row['GOLD PER GRAM PRICE']) || null,
+          purity_fraction_used: parseNumber(row['PURITY FRACTION USED']) || null,
           mkg: parseNumber(row.MKG) || null,
-          certification_cost: parseNumber(row['Certification cost']) || null,
-          gemstone_cost: parseNumber(row['Gemstone cost']) || null,
-          total_usd: parseNumber(row.TOTAL_USD) || null,
-          product_type: row['Prodcut Type'] || row['Product Type'] || null,
+          certification_cost: parseNumber(row['CERTIFICATION COST']) || null,
+          gemstone_cost: parseNumber(row['GEMSTONE COST']) || null,
+          cost_price: parseNumber(row['COST PRICE']) || costPrice,
+          retail_price: parseNumber(row['RETAIL PRICE']) || parseNumber(row.TOTAL) || retailPrice,
+          total_usd: parseNumber(row['TOTAL USD']) || null,
+          stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
+          product_type: row['PRODUCT TYPE'] || null,
           delivery_type: deliveryType,
           dispatches_in_days: dispatchesInDays,
         };
