@@ -46,8 +46,8 @@ const AddProduct = () => {
     image_url: "",
     image_url_2: "",
     image_url_3: "",
-    delivery_type: "immediate",
-    delivery_date: "",
+    delivery_type: "immediate delivery",
+    dispatches_in_days: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,7 +93,7 @@ const AddProduct = () => {
           image_url_2: formData.image_url_2 || null,
           image_url_3: formData.image_url_3 || null,
           delivery_type: formData.delivery_type,
-          delivery_date: formData.delivery_type === 'scheduled' && formData.delivery_date ? formData.delivery_date : null,
+          dispatches_in_days: formData.dispatches_in_days ? parseInt(formData.dispatches_in_days) : null,
         },
       ]);
 
@@ -521,16 +521,17 @@ const AddProduct = () => {
                     </div>
                   </RadioGroup>
 
-                  {formData.delivery_type === 'scheduled' && (
+                  {formData.delivery_type && formData.delivery_type !== 'immediate delivery' && (
                     <div className="space-y-2 ml-6">
-                      <Label htmlFor="delivery_date">Delivery Date</Label>
+                      <Label htmlFor="dispatches_in_days">Dispatches in Days</Label>
                       <Input
-                        id="delivery_date"
-                        name="delivery_date"
-                        type="date"
-                        value={formData.delivery_date}
+                        id="dispatches_in_days"
+                        name="dispatches_in_days"
+                        type="number"
+                        min="1"
+                        value={formData.dispatches_in_days}
                         onChange={handleChange}
-                        min={new Date().toISOString().split('T')[0]}
+                        placeholder="Number of working days"
                       />
                     </div>
                   )}

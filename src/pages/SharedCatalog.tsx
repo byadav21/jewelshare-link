@@ -16,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { customOrderSchema } from "@/lib/validations";
-import { format } from "date-fns";
 
 const SharedCatalog = () => {
   const { token } = useParams<{ token: string }>();
@@ -633,15 +632,15 @@ const SharedCatalog = () => {
                   {/* Delivery Badge */}
                   {product.delivery_type && (
                     <div className="w-full">
-                      {product.delivery_type === 'immediate' ? (
+                      {product.delivery_type === 'immediate delivery' ? (
                         <Badge variant="secondary" className="w-full justify-center gap-1.5 py-1.5 bg-gradient-to-r from-emerald-500/15 to-green-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/20 hover:to-green-500/20">
                           <Zap className="h-3 w-3" />
                           <span className="text-xs font-medium">Immediate Dispatch</span>
                         </Badge>
-                      ) : product.delivery_date && (
+                      ) : (
                         <Badge variant="outline" className="w-full justify-center gap-1.5 py-1.5 border-primary/30 text-primary hover:bg-primary/5">
                           <Calendar className="h-3 w-3" />
-                          <span className="text-xs font-medium">Delivery by {format(new Date(product.delivery_date), 'MMM dd, yyyy')}</span>
+                          <span className="text-xs font-medium">{product.delivery_type}</span>
                         </Badge>
                       )}
                     </div>

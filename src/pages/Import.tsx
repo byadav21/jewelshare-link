@@ -80,21 +80,21 @@ const Import = () => {
         
         
         // Parse delivery information
-        const deliveryType = row['DELIVERY TYPE'] || row['Delivery Type'] || 'immediate';
-        let deliveryDate = null;
-        if ((deliveryType === 'scheduled' || deliveryType === 'Scheduled') && row['DELIVERY DATE']) {
-          try {
-            // Handle Excel date serial numbers or formatted dates
-            const rawDate = row['DELIVERY DATE'];
-            if (typeof rawDate === 'number') {
-              // Excel serial date conversion
-              const excelDate = new Date((rawDate - 25569) * 86400 * 1000);
-              deliveryDate = excelDate.toISOString();
-            } else if (typeof rawDate === 'string') {
-              deliveryDate = new Date(rawDate).toISOString();
-            }
-          } catch (e) {
-            console.warn('Could not parse delivery date:', row['DELIVERY DATE']);
+        const deliveryType = row['DELIVERY TYPE'] || row['Delivery Type'] || 'immediate delivery';
+        let dispatchesInDays = null;
+        
+        // Check for DISPATCHES IN DAYS column
+        if (row['DISPATCHES IN DAYS'] || row['Dispatches In Days']) {
+          const days = parseNumber(row['DISPATCHES IN DAYS'] || row['Dispatches In Days']);
+          if (days > 0) {
+            dispatchesInDays = Math.floor(days);
+          }
+        }
+        // Or extract from delivery type text (e.g., "Despatches in 5 working days")
+        else if (deliveryType && deliveryType.toLowerCase().includes('despatches')) {
+          const match = deliveryType.match(/(\d+)/);
+          if (match) {
+            dispatchesInDays = parseInt(match[1], 10);
           }
         }
         
@@ -132,8 +132,8 @@ const Import = () => {
           gemstone_cost: parseNumber(row['Gemstone cost']) || null,
           total_usd: parseNumber(row.TOTAL_USD) || null,
           product_type: row['Prodcut Type'] || row['Product Type'] || null,
-          delivery_type: deliveryType === 'scheduled' || deliveryType === 'Scheduled' ? 'scheduled' : 'immediate',
-          delivery_date: deliveryDate,
+          delivery_type: deliveryType,
+          dispatches_in_days: dispatchesInDays,
         };
 
         // Validate product data
