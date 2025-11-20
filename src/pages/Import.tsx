@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Upload, Loader2 } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { productImportSchema } from "@/lib/validations";
+import { generateProductTemplate } from "@/utils/generateTemplate";
 
 const Import = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -235,8 +236,26 @@ const Import = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Get the Excel template with all required columns
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={generateProductTemplate}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Template
+                  </Button>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="file">Upload Excel File</Label>
+                  <h3 className="text-lg font-semibold">Step 2: Upload Filled Template</h3>
+                  <Label htmlFor="file">Select Excel File</Label>
                   <Input
                     id="file"
                     type="file"
@@ -244,7 +263,7 @@ const Import = () => {
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
                   />
                   <p className="text-sm text-muted-foreground">
-                    Upload your .xlsx or .xls file
+                    Upload your filled .xlsx or .xls file
                   </p>
                 </div>
 
