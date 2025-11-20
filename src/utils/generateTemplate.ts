@@ -35,8 +35,8 @@ export const generateProductTemplate = () => {
       'PRODUCT TYPE': 'Jewelry',
       'IMAGE_URL': 'https://example.com/image1.jpg|https://example.com/image2.jpg',
       'THUMBNAIL': 'https://example.com/thumbnail.jpg',
-      'DELIVERY TYPE': 'immediate',
-      'DELIVERY DATE': ''
+      'DELIVERY TYPE': 'immediate delivery',
+      'DISPATCHES IN DAYS': ''
     },
     {
       'PRODUCT': 'Sample Necklace',
@@ -70,8 +70,8 @@ export const generateProductTemplate = () => {
       'PRODUCT TYPE': 'Jewelry',
       'IMAGE_URL': 'https://example.com/necklace1.jpg',
       'THUMBNAIL': 'https://example.com/necklace-thumb.jpg',
-      'DELIVERY TYPE': 'scheduled',
-      'DELIVERY DATE': '2025-12-31'
+      'DELIVERY TYPE': 'Despatches in 5 working days',
+      'DISPATCHES IN DAYS': 5
     }
   ];
 
@@ -117,9 +117,10 @@ export const generateProductTemplate = () => {
     ['- All image URLs must start with http:// or https://'],
     [''],
     ['DELIVERY INFORMATION:'],
-    ['- DELIVERY TYPE: Either "immediate" or "scheduled"'],
-    ['- DELIVERY DATE: Required only if DELIVERY TYPE is "scheduled"'],
-    ['  Format: YYYY-MM-DD (e.g., 2025-12-31)'],
+    ['- DELIVERY TYPE: Either "immediate delivery" or "Despatches in X working days"'],
+    ['  Examples: "immediate delivery", "Despatches in 3 working days", "Despatches in 10 working days"'],
+    ['- DISPATCHES IN DAYS: Number of working days (leave empty for immediate delivery)'],
+    ['  Examples: Leave empty for immediate, or enter 3, 5, 7, 10, etc.'],
     [''],
     ['NOTES:'],
     ['- Delete these instruction rows before importing'],

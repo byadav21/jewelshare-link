@@ -208,11 +208,11 @@ export type Database = {
           d_wt_1: number | null
           d_wt_2: number | null
           deleted_at: string | null
-          delivery_date: string | null
           delivery_type: string | null
           description: string | null
           diamond_color: string | null
           diamond_weight: number | null
+          dispatches_in_days: number | null
           gemstone: string | null
           gemstone_cost: number | null
           gold_per_gram_price: number | null
@@ -248,11 +248,11 @@ export type Database = {
           d_wt_1?: number | null
           d_wt_2?: number | null
           deleted_at?: string | null
-          delivery_date?: string | null
           delivery_type?: string | null
           description?: string | null
           diamond_color?: string | null
           diamond_weight?: number | null
+          dispatches_in_days?: number | null
           gemstone?: string | null
           gemstone_cost?: number | null
           gold_per_gram_price?: number | null
@@ -288,11 +288,11 @@ export type Database = {
           d_wt_1?: number | null
           d_wt_2?: number | null
           deleted_at?: string | null
-          delivery_date?: string | null
           delivery_type?: string | null
           description?: string | null
           diamond_color?: string | null
           diamond_weight?: number | null
+          dispatches_in_days?: number | null
           gemstone?: string | null
           gemstone_cost?: number | null
           gold_per_gram_price?: number | null
