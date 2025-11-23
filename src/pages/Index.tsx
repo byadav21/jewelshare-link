@@ -6,6 +6,7 @@ import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ParallaxImage } from "@/components/ParallaxImage";
 import { JewelryViewer3D } from "@/components/JewelryViewer3D";
+import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import heroBanner from "@/assets/hero-banner.jpg";
 import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -410,34 +411,9 @@ const Index = () => {
             <p className="text-xl text-muted-foreground">See what our customers say about their experience</p>
           </div>
         </ScrollReveal>
-        <div className="grid gap-6 md:grid-cols-2">
-          {testimonials.map((testimonial, index) => (
-            <ScrollReveal key={index} delay={0.1 * index} direction="up">
-              <Card className="relative overflow-hidden border-2 transition-all hover:shadow-lg">
-                <div className={`absolute right-0 top-0 h-32 w-32 bg-gradient-to-br ${testimonial.gradient} opacity-5`} />
-                <CardHeader>
-                  <div className="mb-4 flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="mb-1 text-lg">{testimonial.name}</CardTitle>
-                      <CardDescription className="text-sm">
-                        {testimonial.role} at <span className="font-medium text-foreground">{testimonial.business}</span>
-                      </CardDescription>
-                    </div>
-                    <Quote className={`h-8 w-8 text-${testimonial.gradient.split('-')[1]}`} />
-                  </div>
-                  <div className="flex gap-1">
-                    {Array.from({ length: testimonial.rating }).map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-jewellery-from text-jewellery-from" />
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">{testimonial.content}</p>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-          ))}
-        </div>
+        <ScrollReveal delay={0.2}>
+          <TestimonialsCarousel />
+        </ScrollReveal>
       </section>
 
       {/* How It Works */}
