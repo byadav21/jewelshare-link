@@ -84,7 +84,11 @@ const AppContent = () => {
         path={ROUTES.CUSTOM_ORDER} 
         element={<RouteSuspense><Pages.CustomOrder /></RouteSuspense>} 
       />
-      
+      <Route 
+        path={ROUTES.IMAGE_DEMO} 
+        element={<RouteSuspense><Pages.ImageOptimizationDemo /></RouteSuspense>} 
+      />
+
       {/* Auth-only route (requires login but not approval) */}
       <Route 
         path={ROUTES.PENDING_APPROVAL} 

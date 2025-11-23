@@ -11,10 +11,12 @@ export const ROUTES = {
   BLOG_POST: "/blog/:id",
   PRESS: "/press",
   DEMO: "/demo",
+  IMAGE_DEMO: "/image-optimization-demo",
   ABOUT: "/about",
   CONTACT: "/contact",
   AUTH: "/auth",
   RESET_PASSWORD: "/reset-password",
+
   SHARED_CATALOG: "/shared/:token",
   CUSTOM_ORDER: "/custom-order",
 
