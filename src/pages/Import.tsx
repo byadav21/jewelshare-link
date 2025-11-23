@@ -15,6 +15,7 @@ import { generateProductTemplate } from "@/utils/generateTemplate";
 const Import = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [importErrors, setImportErrors] = useState<Array<{row: number, product: string, errors: string[]}>>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -29,6 +30,7 @@ const Import = () => {
     }
 
     setLoading(true);
+    setImportErrors([]);
 
     try {
       const data = await file.arrayBuffer();
@@ -43,6 +45,7 @@ const Import = () => {
         throw new Error("Not authenticated");
       }
 
+      const errors: Array<{row: number, product: string, errors: string[]}> = [];
       const products = jsonData.map((row: any, index: number) => {
         // Parse numbers safely
         const parseNumber = (val: any): number => {
@@ -138,6 +141,14 @@ const Import = () => {
         // Validate product data
         const validation = productImportSchema.safeParse(product);
         if (!validation.success) {
+          const errorMessages = validation.error.errors.map(err => 
+            `${err.path.join('.')}: ${err.message}`
+          );
+          errors.push({
+            row: index + 2, // +2 because row 1 is header info, row 2 is column headers
+            product: product.name || product.sku || `Row ${index + 2}`,
+            errors: errorMessages
+          });
           return null; // Skip invalid products
         }
 
@@ -191,12 +202,16 @@ const Import = () => {
         insertedCount = insertedProducts?.length || 0;
       }
 
+      setImportErrors(errors);
+      
       toast({
         title: "Success!",
-        description: `Updated ${updatedCount} products, imported ${insertedCount} new products`,
+        description: `Updated ${updatedCount} products, imported ${insertedCount} new products${errors.length > 0 ? `. ${errors.length} products failed.` : ''}`,
       });
 
-      navigate("/");
+      if (errors.length === 0) {
+        navigate("/");
+      }
     } catch (error: any) {
       toast({
         title: "Import Failed",
@@ -206,6 +221,19 @@ const Import = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const downloadErrorLog = () => {
+    const workbook = XLSX.utils.book_new();
+    const errorData = importErrors.map(error => ({
+      'Row Number': error.row,
+      'Product Name/SKU': error.product,
+      'Errors': error.errors.join('; ')
+    }));
+    
+    const worksheet = XLSX.utils.json_to_sheet(errorData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Import Errors");
+    XLSX.writeFile(workbook, `import-errors-${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   return (
@@ -320,6 +348,26 @@ const Import = () => {
                     </>
                   )}
                 </Button>
+
+                {importErrors.length > 0 && (
+                  <div className="mt-6 p-4 border border-destructive rounded-lg bg-destructive/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-destructive">Import Errors ({importErrors.length})</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={downloadErrorLog}
+                        className="gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download Error Log
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Some products failed to import. Download the error log to see details.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
