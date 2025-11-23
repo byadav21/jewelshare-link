@@ -14,11 +14,13 @@ import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 import { JewelleryForm } from "@/components/forms/JewelleryForm";
 import { GemstonesForm } from "@/components/forms/GemstonesForm";
 import { LooseDiamondsForm } from "@/components/forms/LooseDiamondsForm";
+import { Upload, X, Loader2 } from "lucide-react";
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState<{ [key: string]: boolean }>({});
   const [approvedCategories, setApprovedCategories] = useState<string[]>(["Jewellery"]);
   
   const [formData, setFormData] = useState({
@@ -177,6 +179,61 @@ const AddProduct = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = async (file: File, fieldName: string) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    setUploadingImages(prev => ({ ...prev, [fieldName]: true }));
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Create unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(data.path);
+
+      // Update form data
+      setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
+      toast.success("Image uploaded successfully!");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload image");
+    } finally {
+      setUploadingImages(prev => ({ ...prev, [fieldName]: false }));
+    }
+  };
+
+  const removeImage = (fieldName: string) => {
+    setFormData(prev => ({ ...prev, [fieldName]: "" }));
   };
 
   if (permissionsLoading) {
@@ -427,38 +484,169 @@ const AddProduct = () => {
                     <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
                   </h3>
 
+                  {/* Primary Image */}
                   <div className="space-y-2">
-                    <Label htmlFor="image_url">Primary Image URL</Label>
-                    <Input
-                      id="image_url"
-                      name="image_url"
-                      value={formData.image_url}
-                      onChange={handleChange}
-                      placeholder="https://..."
-                    />
+                    <Label>Primary Image *</Label>
+                    {formData.image_url ? (
+                      <div className="relative group">
+                        <img
+                          src={formData.image_url}
+                          alt="Primary product"
+                          className="w-full h-64 object-cover rounded-lg border-2 border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage('image_url')}
+                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          id="image_upload"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageUpload(file, 'image_url');
+                          }}
+                          disabled={uploadingImages.image_url}
+                        />
+                        <label
+                          htmlFor="image_upload"
+                          className={`
+                            flex flex-col items-center justify-center w-full h-64 
+                            border-2 border-dashed rounded-lg cursor-pointer
+                            bg-muted/50 hover:bg-muted transition-colors
+                            ${uploadingImages.image_url ? 'opacity-50 cursor-wait' : 'border-border hover:border-primary'}
+                          `}
+                        >
+                          {uploadingImages.image_url ? (
+                            <div className="flex flex-col items-center gap-2">
+                              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                              <span className="text-sm text-muted-foreground">Uploading...</span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-2">
+                              <Upload className="h-10 w-10 text-muted-foreground" />
+                              <span className="text-sm font-medium">Click to upload primary image</span>
+                              <span className="text-xs text-muted-foreground">PNG, JPG up to 5MB</span>
+                            </div>
+                          )}
+                        </label>
+                      </div>
+                    )}
                   </div>
 
+                  {/* Additional Images */}
                   <div className="grid grid-cols-2 gap-4">
+                    {/* Image 2 */}
                     <div className="space-y-2">
-                      <Label htmlFor="image_url_2">Image URL 2</Label>
-                      <Input
-                        id="image_url_2"
-                        name="image_url_2"
-                        value={formData.image_url_2}
-                        onChange={handleChange}
-                        placeholder="https://..."
-                      />
+                      <Label>Image 2</Label>
+                      {formData.image_url_2 ? (
+                        <div className="relative group">
+                          <img
+                            src={formData.image_url_2}
+                            alt="Product image 2"
+                            className="w-full h-48 object-cover rounded-lg border-2 border-border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage('image_url_2')}
+                            className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <input
+                            type="file"
+                            id="image_upload_2"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageUpload(file, 'image_url_2');
+                            }}
+                            disabled={uploadingImages.image_url_2}
+                          />
+                          <label
+                            htmlFor="image_upload_2"
+                            className={`
+                              flex flex-col items-center justify-center w-full h-48 
+                              border-2 border-dashed rounded-lg cursor-pointer
+                              bg-muted/50 hover:bg-muted transition-colors
+                              ${uploadingImages.image_url_2 ? 'opacity-50 cursor-wait' : 'border-border hover:border-primary'}
+                            `}
+                          >
+                            {uploadingImages.image_url_2 ? (
+                              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                            ) : (
+                              <div className="flex flex-col items-center gap-1">
+                                <Upload className="h-8 w-8 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">Upload image</span>
+                              </div>
+                            )}
+                          </label>
+                        </div>
+                      )}
                     </div>
 
+                    {/* Image 3 */}
                     <div className="space-y-2">
-                      <Label htmlFor="image_url_3">Image URL 3</Label>
-                      <Input
-                        id="image_url_3"
-                        name="image_url_3"
-                        value={formData.image_url_3}
-                        onChange={handleChange}
-                        placeholder="https://..."
-                      />
+                      <Label>Image 3</Label>
+                      {formData.image_url_3 ? (
+                        <div className="relative group">
+                          <img
+                            src={formData.image_url_3}
+                            alt="Product image 3"
+                            className="w-full h-48 object-cover rounded-lg border-2 border-border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage('image_url_3')}
+                            className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <input
+                            type="file"
+                            id="image_upload_3"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageUpload(file, 'image_url_3');
+                            }}
+                            disabled={uploadingImages.image_url_3}
+                          />
+                          <label
+                            htmlFor="image_upload_3"
+                            className={`
+                              flex flex-col items-center justify-center w-full h-48 
+                              border-2 border-dashed rounded-lg cursor-pointer
+                              bg-muted/50 hover:bg-muted transition-colors
+                              ${uploadingImages.image_url_3 ? 'opacity-50 cursor-wait' : 'border-border hover:border-primary'}
+                            `}
+                          >
+                            {uploadingImages.image_url_3 ? (
+                              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                            ) : (
+                              <div className="flex flex-col items-center gap-1">
+                                <Upload className="h-8 w-8 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">Upload image</span>
+                              </div>
+                            )}
+                          </label>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
