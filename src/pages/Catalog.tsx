@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -753,9 +754,19 @@ const Catalog = () => {
 
         <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-10 max-w-[1800px]">
           {loading ? (
-            <div className="flex flex-col justify-center items-center min-h-[60vh] gap-4">
-              <Loader2 className="h-12 w-12 text-primary animate-spin" />
-              <div className="text-primary text-xl font-medium">Loading catalog...</div>
+            <div className="space-y-8">
+              {/* Loading Skeletons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <ProductCardSkeleton />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-16 sm:py-20">
@@ -792,7 +803,10 @@ const Catalog = () => {
               )}
 
               {/* Filters */}
-              <div className="mb-6 sm:mb-8">
+              <div 
+                key={`filters-${selectedProductType}`}
+                className="mb-6 sm:mb-8 animate-slide-in-right"
+              >
                 <CatalogFilters
                   filters={filters}
                   onFilterChange={setFilters}
