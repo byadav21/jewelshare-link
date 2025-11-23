@@ -359,6 +359,7 @@ export type Database = {
       }
       user_approval_status: {
         Row: {
+          approved_categories: string[] | null
           business_name: string | null
           email: string | null
           id: string
@@ -373,6 +374,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          approved_categories?: string[] | null
           business_name?: string | null
           email?: string | null
           id?: string
@@ -387,6 +389,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          approved_categories?: string[] | null
           business_name?: string | null
           email?: string | null
           id?: string
@@ -540,6 +543,7 @@ export type Database = {
           instagram_qr_url: string | null
           phone: string | null
           pincode: string | null
+          seller_categories: string[] | null
           state: string | null
           updated_at: string | null
           user_id: string
@@ -560,6 +564,7 @@ export type Database = {
           instagram_qr_url?: string | null
           phone?: string | null
           pincode?: string | null
+          seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null
           user_id: string
@@ -580,6 +585,7 @@ export type Database = {
           instagram_qr_url?: string | null
           phone?: string | null
           pincode?: string | null
+          seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null
           user_id?: string

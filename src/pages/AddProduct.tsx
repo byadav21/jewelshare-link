@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
@@ -8,12 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 
 const AddProduct = () => {
   const navigate = useNavigate();
+  const { permissions, loading: permissionsLoading } = useVendorPermissions();
   const [loading, setLoading] = useState(false);
+  const [approvedCategories, setApprovedCategories] = useState<string[]>(["Jewellery"]);
+  
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -49,6 +54,38 @@ const AddProduct = () => {
     delivery_type: "immediate delivery",
     dispatches_in_days: "",
   });
+
+  useEffect(() => {
+    fetchApprovedCategories();
+  }, []);
+
+  const fetchApprovedCategories = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("user_approval_status")
+        .select("approved_categories")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+      
+      const approved = data?.approved_categories || ["Jewellery"];
+      setApprovedCategories(approved);
+      setFormData(prev => ({ ...prev, product_type: approved[0] }));
+    } catch (error) {
+      console.error("Failed to fetch approved categories:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!permissionsLoading && !permissions.can_add_products) {
+      toast.error("You don't have permission to add products");
+      navigate("/");
+    }
+  }, [permissions, permissionsLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,6 +148,10 @@ const AddProduct = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  if (permissionsLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <ApprovalGuard>
@@ -181,14 +222,24 @@ const AddProduct = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="product_type">Product Type</Label>
-                    <Input
-                      id="product_type"
-                      name="product_type"
+                    <Label htmlFor="product_type">Product Type *</Label>
+                    <Select
                       value={formData.product_type}
-                      onChange={handleChange}
-                      placeholder="Necklace, Earrings, etc."
-                    />
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, product_type: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select product type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {approvedCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -203,6 +254,7 @@ const AddProduct = () => {
                   </div>
                 </div>
 
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="gemstone">Gemstone</Label>
@@ -470,7 +522,7 @@ const AddProduct = () => {
                       value={formData.retail_price}
                       onChange={handleChange}
                       required
-                      placeholder="86328.00"
+                      placeholder="95000.00"
                     />
                   </div>
 
@@ -483,100 +535,98 @@ const AddProduct = () => {
                       step="0.01"
                       value={formData.total_usd}
                       onChange={handleChange}
-                      placeholder="984.00"
+                      placeholder="1000.00"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="stock_quantity">Stock Quantity *</Label>
+                  <Label htmlFor="stock_quantity">Stock Quantity</Label>
                   <Input
                     id="stock_quantity"
                     name="stock_quantity"
                     type="number"
                     value={formData.stock_quantity}
                     onChange={handleChange}
-                    required
-                    placeholder="10"
+                    placeholder="1"
                   />
                 </div>
 
-                <div className="space-y-3 border-t pt-4">
-                  <Label>Delivery Information</Label>
-                  <RadioGroup
-                    value={formData.delivery_type}
-                    onValueChange={(value) => setFormData({ ...formData, delivery_type: value })}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="immediate" id="immediate" />
-                      <Label htmlFor="immediate" className="font-normal cursor-pointer">
-                        Immediate Dispatch
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="scheduled" id="scheduled" />
-                      <Label htmlFor="scheduled" className="font-normal cursor-pointer">
-                        Scheduled Delivery
-                      </Label>
-                    </div>
-                  </RadioGroup>
-
-                  {formData.delivery_type && formData.delivery_type !== 'immediate delivery' && (
-                    <div className="space-y-2 ml-6">
-                      <Label htmlFor="dispatches_in_days">Dispatches in Days</Label>
-                      <Input
-                        id="dispatches_in_days"
-                        name="dispatches_in_days"
-                        type="number"
-                        min="1"
-                        value={formData.dispatches_in_days}
-                        onChange={handleChange}
-                        placeholder="Number of working days"
-                      />
-                    </div>
-                  )}
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="image_url">Image URL 1</Label>
+                  <Label htmlFor="image_url">Image URL</Label>
                   <Input
                     id="image_url"
                     name="image_url"
                     type="url"
                     value={formData.image_url}
                     onChange={handleChange}
-                    placeholder="https://example.com/image1.jpg"
+                    placeholder="https://example.com/image.jpg"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="image_url_2">Image URL 2</Label>
-                    <Input
-                      id="image_url_2"
-                      name="image_url_2"
-                      type="url"
-                      value={formData.image_url_2}
-                      onChange={handleChange}
-                      placeholder="https://example.com/image2.jpg"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="image_url_3">Image URL 3</Label>
-                    <Input
-                      id="image_url_3"
-                      name="image_url_3"
-                      type="url"
-                      value={formData.image_url_3}
-                      onChange={handleChange}
-                      placeholder="https://example.com/image3.jpg"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="image_url_2">Image URL 2</Label>
+                  <Input
+                    id="image_url_2"
+                    name="image_url_2"
+                    type="url"
+                    value={formData.image_url_2}
+                    onChange={handleChange}
+                    placeholder="https://example.com/image2.jpg"
+                  />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="image_url_3">Image URL 3</Label>
+                  <Input
+                    id="image_url_3"
+                    name="image_url_3"
+                    type="url"
+                    value={formData.image_url_3}
+                    onChange={handleChange}
+                    placeholder="https://example.com/image3.jpg"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Delivery Type</Label>
+                  <RadioGroup
+                    value={formData.delivery_type}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, delivery_type: value })
+                    }
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="immediate delivery" id="immediate" />
+                      <Label htmlFor="immediate" className="font-normal">
+                        Immediate Delivery
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="order based" id="order" />
+                      <Label htmlFor="order" className="font-normal">
+                        Order Based
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {formData.delivery_type === "order based" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="dispatches_in_days">Dispatches in Days</Label>
+                    <Input
+                      id="dispatches_in_days"
+                      name="dispatches_in_days"
+                      type="number"
+                      value={formData.dispatches_in_days}
+                      onChange={handleChange}
+                      placeholder="7"
+                    />
+                  </div>
+                )}
+
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Adding Product..." : "Add Product"}
+                  {loading ? "Adding..." : "Add Product"}
                 </Button>
               </form>
             </CardContent>

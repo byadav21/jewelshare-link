@@ -24,6 +24,8 @@ const Catalog = () => {
   const [tempGoldRate, setTempGoldRate] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [vendorProfile, setVendorProfile] = useState<any>(null);
+  const [selectedProductType, setSelectedProductType] = useState<string>("Jewellery");
+  const [approvedCategories, setApprovedCategories] = useState<string[]>(["Jewellery"]);
   const [filters, setFilters] = useState<FilterState>({
     category: "",
     metalType: "",
@@ -48,7 +50,29 @@ const Catalog = () => {
     fetchProducts();
     fetchUSDRate();
     fetchVendorProfile();
+    fetchApprovedCategories();
   }, []);
+
+  const fetchApprovedCategories = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("user_approval_status")
+        .select("approved_categories")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+      
+      const approved = data?.approved_categories || ["Jewellery"];
+      setApprovedCategories(approved);
+      setSelectedProductType(approved[0]);
+    } catch (error) {
+      console.error("Failed to fetch approved categories:", error);
+    }
+  };
 
   const fetchUSDRate = async () => {
     try {
@@ -299,9 +323,14 @@ const Catalog = () => {
 
   const fetchProducts = useCallback(async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .eq("user_id", user.id)
+        .eq("product_type", selectedProductType)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
@@ -312,7 +341,7 @@ const Catalog = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedProductType]);
 
   const handleDeleteSelected = useCallback(async () => {
     try {
@@ -727,6 +756,37 @@ const Catalog = () => {
             </div>
           ) : (
             <>
+              {/* Category Selector */}
+              {approvedCategories.length > 1 && (
+                <div className="mb-6 flex gap-2 flex-wrap">
+                  {approvedCategories.map((category) => (
+                    <Button
+                      key={category}
+                      variant={selectedProductType === category ? "default" : "outline"}
+                      onClick={() => setSelectedProductType(category)}
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
+              {/* Filters */}
+              {/* Category Selector */}
+              {approvedCategories.length > 1 && (
+                <div className="mb-6 flex gap-2 flex-wrap">
+                  {approvedCategories.map((category) => (
+                    <Button
+                      key={category}
+                      variant={selectedProductType === category ? "default" : "outline"}
+                      onClick={() => setSelectedProductType(category)}
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
               {/* Filters */}
               <div className="mb-6 sm:mb-8">
                 <CatalogFilters

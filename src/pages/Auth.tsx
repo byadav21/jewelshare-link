@@ -13,6 +13,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Jewellery"]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -103,6 +104,18 @@ const Auth = () => {
           
           if (approvalError) {
             console.error("Error creating approval status:", approvalError);
+          }
+
+          // Create vendor profile with selected categories
+          const { error: profileError } = await supabase
+            .from("vendor_profiles")
+            .insert({
+              user_id: data.user.id,
+              seller_categories: selectedCategories
+            });
+
+          if (profileError) {
+            console.error("Error creating vendor profile:", profileError);
           }
         }
         
@@ -230,7 +243,43 @@ const Auth = () => {
                   />
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={loading}>
+
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label>Select Product Categories</Label>
+                  <div className="space-y-2">
+                    {["Jewellery", "Gemstones", "Loose Diamonds"].map((category) => (
+                      <div key={category} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={category}
+                          checked={selectedCategories.includes(category)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedCategories([...selectedCategories, category]);
+                            } else {
+                              setSelectedCategories(selectedCategories.filter(c => c !== category));
+                            }
+                          }}
+                          className="w-4 h-4"
+                        />
+                        <Label htmlFor={category} className="font-normal cursor-pointer">
+                          {category}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedCategories.length === 0 && (
+                    <p className="text-sm text-red-500">Please select at least one category</p>
+                  )}
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading || (isSignUp && selectedCategories.length === 0)}
+              >
                 {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
               </Button>
             </form>
