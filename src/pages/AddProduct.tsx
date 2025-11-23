@@ -15,6 +15,7 @@ import { JewelleryForm } from "@/components/forms/JewelleryForm";
 import { GemstonesForm } from "@/components/forms/GemstonesForm";
 import { LooseDiamondsForm } from "@/components/forms/LooseDiamondsForm";
 import { Upload, X, Loader2 } from "lucide-react";
+import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -261,6 +262,10 @@ const AddProduct = () => {
               <p className="text-muted-foreground text-sm mt-2">Select a category and fill in the product details</p>
             </CardHeader>
             <CardContent className="pt-6">
+              {/* Plan Limit Warning */}
+              <div className="mb-6">
+                <PlanLimitWarning />
+              </div>
               {/* Category Selector */}
               {approvedCategories.length > 1 && (
                 <div className="mb-8 pb-6 border-b border-border/30">
