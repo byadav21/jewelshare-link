@@ -16,10 +16,14 @@ const Import = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [importErrors, setImportErrors] = useState<Array<{row: number, product: string, errors: string[]}>>([]);
+  const [previewData, setPreviewData] = useState<{
+    valid: any[];
+    invalid: Array<{row: number, product: string, errors: string[]}>;
+  } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleFileUpload = async () => {
+  const handlePreview = async () => {
     if (!file) {
       toast({
         title: "Error",
@@ -31,6 +35,7 @@ const Import = () => {
 
     setLoading(true);
     setImportErrors([]);
+    setPreviewData(null);
 
     try {
       const data = await file.arrayBuffer();
@@ -46,7 +51,9 @@ const Import = () => {
       }
 
       const errors: Array<{row: number, product: string, errors: string[]}> = [];
-      const products = jsonData.map((row: any, index: number) => {
+      const validProducts: any[] = [];
+      
+      jsonData.forEach((row: any, index: number) => {
         // Parse numbers safely
         const parseNumber = (val: any): number => {
           if (typeof val === 'number') return val;
@@ -145,19 +152,41 @@ const Import = () => {
             `${err.path.join('.')}: ${err.message}`
           );
           errors.push({
-            row: index + 2, // +2 because row 1 is header info, row 2 is column headers
+            row: index + 2,
             product: product.name || product.sku || `Row ${index + 2}`,
             errors: errorMessages
           });
-          return null; // Skip invalid products
+        } else {
+          validProducts.push(product);
         }
+      });
 
-        return product; // Return original product with all required fields
-      }).filter((p): p is NonNullable<typeof p> => p !== null);
+      setPreviewData({
+        valid: validProducts,
+        invalid: errors
+      });
 
-      if (products.length === 0) {
-        throw new Error("No valid products found in file. Please check your Excel format.");
-      }
+      toast({
+        title: "Preview Ready",
+        description: `${validProducts.length} products will be imported, ${errors.length} have errors`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Preview Failed",
+        description: error.message || "Failed to preview Excel file",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!previewData || previewData.valid.length === 0) return;
+
+    setLoading(true);
+    try {
+      const products = previewData.valid;
 
       // Get existing SKUs to separate updates from inserts
       const skus = products.map(p => p.sku).filter(Boolean);
@@ -202,20 +231,18 @@ const Import = () => {
         insertedCount = insertedProducts?.length || 0;
       }
 
-      setImportErrors(errors);
+      setImportErrors(previewData.invalid);
       
       toast({
         title: "Success!",
-        description: `Updated ${updatedCount} products, imported ${insertedCount} new products${errors.length > 0 ? `. ${errors.length} products failed.` : ''}`,
+        description: `Updated ${updatedCount} products, imported ${insertedCount} new products`,
       });
 
-      if (errors.length === 0) {
-        navigate("/");
-      }
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Import Failed",
-        description: error.message || "Failed to import from Excel file",
+        description: error.message || "Failed to import products",
         variant: "destructive",
       });
     } finally {
@@ -332,22 +359,82 @@ const Import = () => {
                 </div>
 
                 <Button
-                  onClick={handleFileUpload}
+                  onClick={handlePreview}
                   disabled={loading || !file}
                   className="w-full"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Importing...
+                      Loading Preview...
                     </>
                   ) : (
                     <>
                       <Upload className="mr-2 h-4 w-4" />
-                      Import from Excel
+                      Preview Import
                     </>
                   )}
                 </Button>
+
+                {previewData && (
+                  <div className="mt-6 space-y-4">
+                    <div className="p-4 border rounded-lg bg-muted/50">
+                      <h3 className="font-semibold mb-3">Import Preview</h3>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded">
+                          <p className="text-sm text-muted-foreground">Valid Products</p>
+                          <p className="text-2xl font-bold text-green-600">{previewData.valid.length}</p>
+                        </div>
+                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded">
+                          <p className="text-sm text-muted-foreground">Invalid Products</p>
+                          <p className="text-2xl font-bold text-destructive">{previewData.invalid.length}</p>
+                        </div>
+                      </div>
+                      
+                      {previewData.invalid.length > 0 && (
+                        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded">
+                          <p className="text-sm font-semibold text-destructive mb-2">Products with errors:</p>
+                          <div className="max-h-40 overflow-y-auto space-y-1">
+                            {previewData.invalid.slice(0, 5).map((err, idx) => (
+                              <p key={idx} className="text-xs text-muted-foreground">
+                                Row {err.row}: {err.product} - {err.errors[0]}
+                              </p>
+                            ))}
+                            {previewData.invalid.length > 5 && (
+                              <p className="text-xs text-muted-foreground italic">
+                                ...and {previewData.invalid.length - 5} more errors
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleConfirmImport}
+                          disabled={loading || previewData.valid.length === 0}
+                          className="flex-1"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Importing...
+                            </>
+                          ) : (
+                            `Confirm Import (${previewData.valid.length} products)`
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setPreviewData(null)}
+                          disabled={loading}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {importErrors.length > 0 && (
                   <div className="mt-6 p-4 border border-destructive rounded-lg bg-destructive/10">
