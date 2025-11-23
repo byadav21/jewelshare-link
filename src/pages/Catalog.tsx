@@ -363,6 +363,14 @@ const Catalog = () => {
     }
   }, [selectedProductType]);
 
+  // Re-fetch products when category changes
+  useEffect(() => {
+    if (selectedProductType) {
+      setLoading(true);
+      fetchProducts();
+    }
+  }, [selectedProductType, fetchProducts]);
+
   const handleDeleteSelected = useCallback(async () => {
     try {
       const { error } = await supabase
