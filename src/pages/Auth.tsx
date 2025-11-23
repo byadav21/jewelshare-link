@@ -37,19 +37,22 @@ const Auth = () => {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Don't make async calls inside onAuthStateChange - defer them with setTimeout
       if (session) {
-        const { data: approvalData } = await supabase
-          .from("user_approval_status")
-          .select("status")
-          .eq("user_id", session.user.id)
-          .single();
-        
-        if (approvalData?.status === "approved") {
-          navigate("/");
-        } else {
-          navigate("/pending-approval");
-        }
+        setTimeout(async () => {
+          const { data: approvalData } = await supabase
+            .from("user_approval_status")
+            .select("status")
+            .eq("user_id", session.user.id)
+            .single();
+          
+          if (approvalData?.status === "approved") {
+            navigate("/");
+          } else {
+            navigate("/pending-approval");
+          }
+        }, 0);
       }
     });
 
