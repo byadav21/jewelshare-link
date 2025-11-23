@@ -754,13 +754,13 @@ const Catalog = () => {
 
         <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-10 max-w-[1800px]">
           {loading ? (
-            <div className="space-y-8">
+            <div className="space-y-8 animate-fade-in">
               {/* Loading Skeletons */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
                 {Array.from({ length: 10 }).map((_, index) => (
                   <div
                     key={index}
-                    className="animate-fade-in"
+                    className="animate-scale-in"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <ProductCardSkeleton />
@@ -768,24 +768,26 @@ const Catalog = () => {
                 ))}
               </div>
             </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-16 sm:py-20">
-              <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 mb-6">
-                <Gem className="h-10 w-10 sm:h-12 sm:h-12 text-primary" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-3 text-foreground">No products yet</h2>
-              <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">Start building your stunning jewelry catalog and showcase your collection</p>
-              <Button 
-                onClick={() => navigate("/add-product")} 
-                size="lg"
-                className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Add Your First Product
-              </Button>
-            </div>
           ) : (
-            <>
+            <div className="animate-fade-in">
+              {products.length === 0 ? (
+                <div className="text-center py-16 sm:py-20">
+                  <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 mb-6">
+                    <Gem className="h-10 w-10 sm:h-12 sm:h-12 text-primary" />
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-3 text-foreground">No products yet</h2>
+                  <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">Start building your stunning jewelry catalog and showcase your collection</p>
+                  <Button 
+                    onClick={() => navigate("/add-product")} 
+                    size="lg"
+                    className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Your First Product
+                  </Button>
+                </div>
+              ) : (
+                <>
               {/* Category Selector */}
               {approvedCategories.length > 1 && (
                 <div className="mb-6 flex gap-2 flex-wrap">
@@ -903,7 +905,9 @@ const Catalog = () => {
               )}
             </>
           )}
-        </main>
+        </div>
+      )}
+    </main>
       </div>
     </ApprovalGuard>
   );
