@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthGuard } from "@/components/AuthGuard";
+import { ApprovalGuard } from "@/components/ApprovalGuard";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import Blog from "./pages/Blog";
@@ -48,44 +50,49 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Index />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/press" element={<Press />} />
           <Route path="/demo" element={<Demo />} />
-          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/catalog" element={<Catalog />} />
-          <Route path="/catalog" element={<Catalog />} />
-          <Route path="/catalog" element={<Catalog />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/catalog" element={<Catalog />} />
-          <Route path="/admin" element={<SuperAdmin />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/import" element={<Import />} />
-          <Route path="/share" element={<Share />} />
-          <Route path="/interests" element={<Interests />} />
-          <Route path="/team" element={<TeamManagement />} />
-          <Route path="/custom-order" element={<CustomOrder />} />
-          <Route path="/pending-approval" element={<PendingApproval />} />
-          <Route path="/vendor-approvals" element={<VendorApprovals />} />
-          <Route path="/vendor-profile" element={<VendorProfile />} />
-          <Route path="/active-sessions" element={<ActiveSessions />} />
-          <Route path="/vendor-management" element={<VendorManagement />} />
-          <Route path="/global-search" element={<GlobalSearch />} />
-          <Route path="/customer-database" element={<CustomerDatabase />} />
-          <Route path="/analytics-dashboard" element={<AnalyticsDashboard />} />
-          <Route path="/audit-logs" element={<AuditLogs />} />
-          <Route path="/export-reports" element={<ExportReports />} />
-          <Route path="/login-history" element={<LoginHistory />} />
-          <Route path="/migrate-images" element={<MigrateImages />} />
-          <Route path="/video-requests" element={<VideoRequests />} />
-          <Route path="/vendor-analytics" element={<VendorAnalytics />} />
           <Route path="/shared/:token" element={<SharedCatalog />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/custom-order" element={<CustomOrder />} />
+          
+          {/* Auth-only route (requires login but not approval) */}
+          <Route path="/pending-approval" element={<AuthGuard><PendingApproval /></AuthGuard>} />
+          
+          {/* Protected routes (requires login + approval) */}
+          <Route path="/catalog" element={<ApprovalGuard><Catalog /></ApprovalGuard>} />
+          <Route path="/add-product" element={<ApprovalGuard><AddProduct /></ApprovalGuard>} />
+          <Route path="/import" element={<ApprovalGuard><Import /></ApprovalGuard>} />
+          <Route path="/share" element={<ApprovalGuard><Share /></ApprovalGuard>} />
+          <Route path="/interests" element={<ApprovalGuard><Interests /></ApprovalGuard>} />
+          <Route path="/team" element={<ApprovalGuard><TeamManagement /></ApprovalGuard>} />
+          <Route path="/vendor-profile" element={<ApprovalGuard><VendorProfile /></ApprovalGuard>} />
+          <Route path="/active-sessions" element={<ApprovalGuard><ActiveSessions /></ApprovalGuard>} />
+          <Route path="/global-search" element={<ApprovalGuard><GlobalSearch /></ApprovalGuard>} />
+          <Route path="/video-requests" element={<ApprovalGuard><VideoRequests /></ApprovalGuard>} />
+          <Route path="/vendor-analytics" element={<ApprovalGuard><VendorAnalytics /></ApprovalGuard>} />
+          
+          {/* Admin routes (requires admin role) */}
+          <Route path="/admin" element={<ApprovalGuard><AdminDashboard /></ApprovalGuard>} />
+          <Route path="/super-admin" element={<ApprovalGuard><SuperAdmin /></ApprovalGuard>} />
+          <Route path="/vendor-approvals" element={<ApprovalGuard><VendorApprovals /></ApprovalGuard>} />
+          <Route path="/vendor-management" element={<ApprovalGuard><VendorManagement /></ApprovalGuard>} />
+          <Route path="/customer-database" element={<ApprovalGuard><CustomerDatabase /></ApprovalGuard>} />
+          <Route path="/analytics-dashboard" element={<ApprovalGuard><AnalyticsDashboard /></ApprovalGuard>} />
+          <Route path="/audit-logs" element={<ApprovalGuard><AuditLogs /></ApprovalGuard>} />
+          <Route path="/export-reports" element={<ApprovalGuard><ExportReports /></ApprovalGuard>} />
+          <Route path="/login-history" element={<ApprovalGuard><LoginHistory /></ApprovalGuard>} />
+          <Route path="/migrate-images" element={<ApprovalGuard><MigrateImages /></ApprovalGuard>} />
+          
+          {/* 404 - must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
