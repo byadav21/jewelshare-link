@@ -27,7 +27,7 @@ export const GemstoneFilters = ({
           <SelectTrigger id="gemstoneType" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="max-h-[200px] overflow-y-auto bg-popover z-50">
+          <SelectContent className="max-h-[200px] overflow-y-auto bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Types</SelectItem>
             {gemstoneTypes.map((type) => (
               <SelectItem key={type} value={type} className="text-xs sm:text-sm">{type}</SelectItem>
@@ -42,7 +42,7 @@ export const GemstoneFilters = ({
           <SelectTrigger id="color" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Colors</SelectItem>
             {colors.map((color) => (
               <SelectItem key={color} value={color} className="text-xs sm:text-sm">{color}</SelectItem>
@@ -57,7 +57,7 @@ export const GemstoneFilters = ({
           <SelectTrigger id="clarity" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Clarities</SelectItem>
             {clarities.map((clarity) => (
               <SelectItem key={clarity} value={clarity} className="text-xs sm:text-sm">{clarity}</SelectItem>
@@ -72,7 +72,7 @@ export const GemstoneFilters = ({
           <SelectTrigger id="cut" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Cuts</SelectItem>
             {cuts.map((cut) => (
               <SelectItem key={cut} value={cut} className="text-xs sm:text-sm">{cut}</SelectItem>
