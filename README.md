@@ -1,51 +1,117 @@
+# Jewelry Management Platform
 
-**Use your preferred IDE**
+A comprehensive web application for managing jewelry inventory, vendor relationships, and customer interactions.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏗️ Project Structure
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```
+src/
+├── assets/              # Static assets (images, logos)
+├── components/          # Reusable React components
+│   ├── admin/          # Admin-specific components
+│   ├── filters/        # Product filter components
+│   ├── forms/          # Form components
+│   └── ui/             # shadcn/ui components
+├── config/             # Configuration files
+│   └── admin-navigation.tsx  # Admin navigation structure
+├── constants/          # Application constants
+│   └── routes.ts       # Centralized route definitions
+├── hooks/              # Custom React hooks
+├── integrations/       # Third-party integrations
+│   └── supabase/       # Supabase client and types
+├── lib/                # Utility libraries
+├── pages/              # Page components (routes)
+├── types/              # TypeScript type definitions
+├── utils/              # Utility functions
+├── App.tsx             # Main application component
+├── index.css           # Global styles and design tokens
+└── main.tsx            # Application entry point
+```
 
-Follow these steps:
+## 🚀 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### Prerequisites
+
+- Node.js 18+ 
+- npm or bun
+- Supabase account (via Lovable Cloud)
+
+### Installation
+
+```bash
+# Step 1: Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Step 2: Navigate to the project directory
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# Step 3: Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Environment variables are automatically managed by Lovable Cloud.
 
-**Use GitHub Codespaces**
+## 🎨 Design System
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+All colors are HSL values in CSS variables defined in `src/index.css`:
 
-## What technologies are used for this project?
+```tsx
+// ✅ CORRECT - Use semantic tokens
+<div className="bg-primary text-primary-foreground" />
 
-This project is built with:
+// ❌ WRONG - Don't use direct colors
+<div className="bg-yellow-500 text-white" />
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔐 Security
 
+- **Client-side checks** (guards) are for UI only
+- **Server-side security** via RLS policies and edge functions
+- Roles: `admin` (full access), `team_member` (limited access)
 
-Yes, you can!
+## 📦 Building
 
+```bash
+npm run build
+npm run preview
+```
 
+## 🚢 Deployment
+
+Via Lovable's integrated deployment:
+1. Frontend changes: Click "Update"
+2. Backend changes: Deploy automatically
+
+## 🛠️ Tech Stack
+
+- React 18 + TypeScript + Vite
+- Tailwind CSS + shadcn/ui
+- Supabase (Lovable Cloud)
+- TanStack Query
+- React Router v6
+
+## 📝 Code Guidelines
+
+- Components: `PascalCase.tsx`
+- Hooks: `camelCase.ts`
+- Use TypeScript
+- Use semantic tokens
+- Write JSDoc comments
+
+## 📚 Resources
+
+- [Lovable Docs](https://docs.lovable.dev/)
+- [Supabase Docs](https://supabase.com/docs)
+- [shadcn/ui](https://ui.shadcn.com/)
+
+---
+
+**Edit files**:
+- Directly in GitHub
+- GitHub Codespaces
+- Your preferred IDE
