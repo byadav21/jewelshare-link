@@ -1,8 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,8 +22,14 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { blogPostTitle, blogPostExcerpt, blogPostSlug, blogPostImage }: NewsletterEmailRequest = await req.json();
 
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
     // Get all active subscribers
-    const { data: subscribers, error: fetchError } = await (globalThis as any).supabase
+    const { data: subscribers, error: fetchError } = await supabaseClient
       .from("newsletter_subscribers")
       .select("email")
       .eq("is_active", true);
@@ -48,87 +51,106 @@ const handler = async (req: Request): Promise<Response> => {
     const emails = subscribers.map((sub: { email: string }) => sub.email);
     const blogUrl = `${Deno.env.get("SUPABASE_URL")}/blog/${blogPostSlug}`;
 
-    // Send email to all subscribers
-    const emailResponse = await resend.emails.send({
-      from: "JewelCatalog Pro <onboarding@resend.dev>",
-      to: emails,
-      subject: `New Article: ${blogPostTitle}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .header {
-                background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
-                color: white;
-                padding: 30px 20px;
-                text-align: center;
-                border-radius: 8px 8px 0 0;
-              }
-              .content {
-                background: #fff;
-                padding: 30px 20px;
-                border: 1px solid #e0e0e0;
-                border-top: none;
-              }
-              .blog-image {
-                width: 100%;
-                height: auto;
-                border-radius: 8px;
-                margin: 20px 0;
-              }
-              .button {
-                display: inline-block;
-                padding: 12px 30px;
-                background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                margin: 20px 0;
-                font-weight: 600;
-              }
-              .footer {
-                background: #f5f5f5;
-                padding: 20px;
-                text-align: center;
-                font-size: 12px;
-                color: #666;
-                border-radius: 0 0 8px 8px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1 style="margin: 0;">📰 New Blog Post</h1>
-            </div>
-            <div class="content">
-              <h2>${blogPostTitle}</h2>
-              ${blogPostImage ? `<img src="${blogPostImage}" alt="${blogPostTitle}" class="blog-image" />` : ''}
-              <p>${blogPostExcerpt}</p>
-              <a href="${blogUrl}" class="button">Read Full Article →</a>
-            </div>
-            <div class="footer">
-              <p>You're receiving this email because you subscribed to JewelCatalog Pro updates.</p>
-              <p>
-                <a href="${Deno.env.get("SUPABASE_URL")}" style="color: #666;">Visit Website</a> | 
-                <a href="#" style="color: #666;">Unsubscribe</a>
-              </p>
-            </div>
-          </body>
-        </html>
-      `,
+    // Get Resend API key
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
+    // Send email to all subscribers using Resend API
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: "JewelCatalog Pro <onboarding@resend.dev>",
+        to: emails,
+        subject: `New Article: ${blogPostTitle}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+                }
+                .header {
+                  background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
+                  color: white;
+                  padding: 30px 20px;
+                  text-align: center;
+                  border-radius: 8px 8px 0 0;
+                }
+                .content {
+                  background: #fff;
+                  padding: 30px 20px;
+                  border: 1px solid #e0e0e0;
+                  border-top: none;
+                }
+                .blog-image {
+                  width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                  margin: 20px 0;
+                }
+                .button {
+                  display: inline-block;
+                  padding: 12px 30px;
+                  background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  margin: 20px 0;
+                  font-weight: 600;
+                }
+                .footer {
+                  background: #f5f5f5;
+                  padding: 20px;
+                  text-align: center;
+                  font-size: 12px;
+                  color: #666;
+                  border-radius: 0 0 8px 8px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1 style="margin: 0;">📰 New Blog Post</h1>
+              </div>
+              <div class="content">
+                <h2>${blogPostTitle}</h2>
+                ${blogPostImage ? `<img src="${blogPostImage}" alt="${blogPostTitle}" class="blog-image" />` : ''}
+                <p>${blogPostExcerpt}</p>
+                <a href="${blogUrl}" class="button">Read Full Article →</a>
+              </div>
+              <div class="footer">
+                <p>You're receiving this email because you subscribed to JewelCatalog Pro updates.</p>
+                <p>
+                  <a href="${Deno.env.get("SUPABASE_URL")}" style="color: #666;">Visit Website</a> | 
+                  <a href="#" style="color: #666;">Unsubscribe</a>
+                </p>
+              </div>
+            </body>
+          </html>
+        `,
+      }),
     });
 
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Resend API error: ${JSON.stringify(error)}`);
+    }
+
+    const emailResponse = await response.json();
     console.log("Newsletter sent successfully:", emailResponse);
 
     return new Response(
