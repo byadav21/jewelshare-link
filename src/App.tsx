@@ -1,11 +1,20 @@
+/**
+ * Main application component
+ * Sets up routing, providers, and global components
+ */
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { AdminGuard } from "@/components/AdminGuard";
+import { ROUTES } from "@/constants/routes";
+
+// Page imports
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import Blog from "./pages/Blog";
@@ -44,65 +53,77 @@ import MigrateImages from "./pages/MigrateImages";
 import VideoRequests from "./pages/VideoRequests";
 import VendorAnalytics from "./pages/VendorAnalytics";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
-          <Route path="/press" element={<Press />} />
-          <Route path="/demo" element={<Demo />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/shared/:token" element={<SharedCatalog />} />
-          <Route path="/custom-order" element={<CustomOrder />} />
-          
-          {/* Auth-only route (requires login but not approval) */}
-          <Route path="/pending-approval" element={<AuthGuard><PendingApproval /></AuthGuard>} />
-          
-          {/* Protected routes (requires login + approval) */}
-          <Route path="/catalog" element={<ApprovalGuard><Catalog /></ApprovalGuard>} />
-          <Route path="/add-product" element={<ApprovalGuard><AddProduct /></ApprovalGuard>} />
-          <Route path="/import" element={<ApprovalGuard><Import /></ApprovalGuard>} />
-          <Route path="/share" element={<ApprovalGuard><Share /></ApprovalGuard>} />
-          <Route path="/interests" element={<ApprovalGuard><Interests /></ApprovalGuard>} />
-          <Route path="/team" element={<ApprovalGuard><TeamManagement /></ApprovalGuard>} />
-          <Route path="/vendor-profile" element={<ApprovalGuard><VendorProfile /></ApprovalGuard>} />
-          <Route path="/active-sessions" element={<ApprovalGuard><ActiveSessions /></ApprovalGuard>} />
-          <Route path="/global-search" element={<ApprovalGuard><GlobalSearch /></ApprovalGuard>} />
-          <Route path="/video-requests" element={<ApprovalGuard><VideoRequests /></ApprovalGuard>} />
-          <Route path="/vendor-analytics" element={<ApprovalGuard><VendorAnalytics /></ApprovalGuard>} />
-          
-          {/* Admin routes (requires admin role) */}
-          <Route path="/admin/*" element={<AdminDashboard />} />
-          <Route path="/super-admin" element={<AdminGuard><SuperAdmin /></AdminGuard>} />
-          <Route path="/vendor-approvals" element={<AdminGuard><VendorApprovals /></AdminGuard>} />
-          <Route path="/vendor-management" element={<AdminGuard><VendorManagement /></AdminGuard>} />
-          <Route path="/customer-database" element={<AdminGuard><CustomerDatabase /></AdminGuard>} />
-          <Route path="/analytics-dashboard" element={<AdminGuard><AnalyticsDashboard /></AdminGuard>} />
-          <Route path="/audit-logs" element={<AdminGuard><AuditLogs /></AdminGuard>} />
-          <Route path="/export-reports" element={<AdminGuard><ExportReports /></AdminGuard>} />
-              <Route path="/login-history" element={<AdminGuard><LoginHistory /></AdminGuard>} />
-              <Route path="/plan-management" element={<AdminGuard><PlanManagement /></AdminGuard>} />
-              <Route path="/permission-presets" element={<AdminGuard><PermissionPresets /></AdminGuard>} />
-          <Route path="/migrate-images" element={<AdminGuard><MigrateImages /></AdminGuard>} />
-          
-          {/* 404 - must be last */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path={ROUTES.HOME} element={<Index />} />
+            <Route path={ROUTES.PRICING} element={<Pricing />} />
+            <Route path={ROUTES.BLOG} element={<Blog />} />
+            <Route path={ROUTES.BLOG_POST} element={<BlogPost />} />
+            <Route path={ROUTES.PRESS} element={<Press />} />
+            <Route path={ROUTES.DEMO} element={<Demo />} />
+            <Route path={ROUTES.ABOUT} element={<About />} />
+            <Route path={ROUTES.CONTACT} element={<Contact />} />
+            <Route path={ROUTES.AUTH} element={<Auth />} />
+            <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
+            <Route path={ROUTES.SHARED_CATALOG} element={<SharedCatalog />} />
+            <Route path={ROUTES.CUSTOM_ORDER} element={<CustomOrder />} />
+            
+            {/* Auth-only route (requires login but not approval) */}
+            <Route 
+              path={ROUTES.PENDING_APPROVAL} 
+              element={<AuthGuard><PendingApproval /></AuthGuard>} 
+            />
+            
+            {/* Protected routes (requires login + approval) */}
+            <Route path={ROUTES.CATALOG} element={<ApprovalGuard><Catalog /></ApprovalGuard>} />
+            <Route path={ROUTES.ADD_PRODUCT} element={<ApprovalGuard><AddProduct /></ApprovalGuard>} />
+            <Route path={ROUTES.IMPORT} element={<ApprovalGuard><Import /></ApprovalGuard>} />
+            <Route path={ROUTES.SHARE} element={<ApprovalGuard><Share /></ApprovalGuard>} />
+            <Route path={ROUTES.INTERESTS} element={<ApprovalGuard><Interests /></ApprovalGuard>} />
+            <Route path={ROUTES.TEAM} element={<ApprovalGuard><TeamManagement /></ApprovalGuard>} />
+            <Route path={ROUTES.VENDOR_PROFILE} element={<ApprovalGuard><VendorProfile /></ApprovalGuard>} />
+            <Route path={ROUTES.ACTIVE_SESSIONS} element={<ApprovalGuard><ActiveSessions /></ApprovalGuard>} />
+            <Route path={ROUTES.GLOBAL_SEARCH} element={<ApprovalGuard><GlobalSearch /></ApprovalGuard>} />
+            <Route path={ROUTES.VIDEO_REQUESTS} element={<ApprovalGuard><VideoRequests /></ApprovalGuard>} />
+            <Route path={ROUTES.VENDOR_ANALYTICS} element={<ApprovalGuard><VendorAnalytics /></ApprovalGuard>} />
+            
+            {/* Admin routes (requires admin role) */}
+            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path={ROUTES.SUPER_ADMIN} element={<AdminGuard><SuperAdmin /></AdminGuard>} />
+            <Route path={ROUTES.VENDOR_APPROVALS} element={<AdminGuard><VendorApprovals /></AdminGuard>} />
+            <Route path={ROUTES.VENDOR_MANAGEMENT} element={<AdminGuard><VendorManagement /></AdminGuard>} />
+            <Route path={ROUTES.CUSTOMER_DATABASE} element={<AdminGuard><CustomerDatabase /></AdminGuard>} />
+            <Route path={ROUTES.ANALYTICS_DASHBOARD} element={<AdminGuard><AnalyticsDashboard /></AdminGuard>} />
+            <Route path={ROUTES.AUDIT_LOGS} element={<AdminGuard><AuditLogs /></AdminGuard>} />
+            <Route path={ROUTES.EXPORT_REPORTS} element={<AdminGuard><ExportReports /></AdminGuard>} />
+            <Route path={ROUTES.LOGIN_HISTORY} element={<AdminGuard><LoginHistory /></AdminGuard>} />
+            <Route path={ROUTES.PLAN_MANAGEMENT} element={<AdminGuard><PlanManagement /></AdminGuard>} />
+            <Route path={ROUTES.PERMISSION_PRESETS} element={<AdminGuard><PermissionPresets /></AdminGuard>} />
+            <Route path={ROUTES.MIGRATE_IMAGES} element={<AdminGuard><MigrateImages /></AdminGuard>} />
+            
+            {/* 404 - must be last */}
+            <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

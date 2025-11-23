@@ -1,15 +1,23 @@
+/**
+ * User approval status management hook
+ * Fetches and tracks user approval status for access control
+ */
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ApprovalStatus, UseApprovalStatusReturn } from "@/types";
 
-export type ApprovalStatus = "pending" | "approved" | "rejected" | null;
-
-export const useApprovalStatus = () => {
+export const useApprovalStatus = (): UseApprovalStatusReturn => {
   const [status, setStatus] = useState<ApprovalStatus>(null);
   const [loading, setLoading] = useState(true);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchApprovalStatus = async () => {
+    fetchApprovalStatus();
+  }, []);
+
+  const fetchApprovalStatus = async () => {
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -31,12 +39,18 @@ export const useApprovalStatus = () => {
         setStatus(data?.status as ApprovalStatus);
         setRejectionReason(data?.rejection_reason || null);
       }
-      
+    } catch (error) {
+      console.error("Unexpected error in fetchApprovalStatus:", error);
+      setStatus(null);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchApprovalStatus();
-  }, []);
-
-  return { status, loading, rejectionReason, isApproved: status === "approved" };
+  return {
+    status,
+    loading,
+    rejectionReason,
+    isApproved: status === "approved",
+  };
 };

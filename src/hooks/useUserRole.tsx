@@ -1,11 +1,7 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-export type UserRole = "admin" | "team_member" | null;
-
 /**
- * SECURITY NOTE: This hook fetches user roles for UI rendering purposes only.
+ * User role management hook
  * 
+ * SECURITY NOTE: This hook fetches user roles for UI rendering purposes only.
  * Client-side role checks are NOT a security boundary - they only control what
  * UI elements are displayed. All actual authorization is enforced server-side via:
  * - Row Level Security (RLS) policies on database tables
@@ -15,12 +11,21 @@ export type UserRole = "admin" | "team_member" | null;
  * An attacker manipulating client-side code to bypass these checks would only
  * see UI elements they cannot actually use due to backend protection.
  */
-export const useUserRole = () => {
+
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { UserRole, UseUserRoleReturn } from "@/types";
+
+export const useUserRole = (): UseUserRoleReturn => {
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserRole = async () => {
+    fetchUserRole();
+  }, []);
+
+  const fetchUserRole = async () => {
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -41,12 +46,18 @@ export const useUserRole = () => {
       } else {
         setRole(data?.role as UserRole);
       }
-      
+    } catch (error) {
+      console.error("Unexpected error in fetchUserRole:", error);
+      setRole(null);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchUserRole();
-  }, []);
-
-  return { role, loading, isAdmin: role === "admin", isTeamMember: role === "team_member" };
+  return {
+    role,
+    loading,
+    isAdmin: role === "admin",
+    isTeamMember: role === "team_member",
+  };
 };
