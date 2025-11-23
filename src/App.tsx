@@ -38,6 +38,7 @@ import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import AuditLogs from "./pages/AuditLogs";
 import ExportReports from "./pages/ExportReports";
 import LoginHistory from "./pages/LoginHistory";
+import PlanManagement from "./pages/PlanManagement";
 import MigrateImages from "./pages/MigrateImages";
 import VideoRequests from "./pages/VideoRequests";
 import VendorAnalytics from "./pages/VendorAnalytics";
@@ -90,7 +91,8 @@ const App = () => (
           <Route path="/analytics-dashboard" element={<AdminGuard><AnalyticsDashboard /></AdminGuard>} />
           <Route path="/audit-logs" element={<AdminGuard><AuditLogs /></AdminGuard>} />
           <Route path="/export-reports" element={<AdminGuard><ExportReports /></AdminGuard>} />
-          <Route path="/login-history" element={<AdminGuard><LoginHistory /></AdminGuard>} />
+              <Route path="/login-history" element={<AdminGuard><LoginHistory /></AdminGuard>} />
+              <Route path="/plan-management" element={<AdminGuard><PlanManagement /></AdminGuard>} />
           <Route path="/migrate-images" element={<AdminGuard><MigrateImages /></AdminGuard>} />
           
           {/* 404 - must be last */}
