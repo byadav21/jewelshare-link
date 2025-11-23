@@ -762,6 +762,7 @@ export type Database = {
           max_products: number | null
           max_share_links: number | null
           max_team_members: number | null
+          override_plan_limits: boolean | null
           plan_updated_at: string | null
           plan_updated_by: string | null
           subscription_plan: Database["public"]["Enums"]["subscription_plan"]
@@ -792,6 +793,7 @@ export type Database = {
           max_products?: number | null
           max_share_links?: number | null
           max_team_members?: number | null
+          override_plan_limits?: boolean | null
           plan_updated_at?: string | null
           plan_updated_by?: string | null
           subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
@@ -822,6 +824,7 @@ export type Database = {
           max_products?: number | null
           max_share_links?: number | null
           max_team_members?: number | null
+          override_plan_limits?: boolean | null
           plan_updated_at?: string | null
           plan_updated_by?: string | null
           subscription_plan?: Database["public"]["Enums"]["subscription_plan"]

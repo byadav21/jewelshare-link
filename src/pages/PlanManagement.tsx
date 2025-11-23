@@ -23,6 +23,7 @@ interface VendorPermission {
   max_team_members: number | null;
   max_product_images: number | null;
   max_active_sessions: number;
+  override_plan_limits: boolean | null;
   can_add_products: boolean | null;
   can_edit_products: boolean | null;
   can_delete_products: boolean | null;
@@ -124,6 +125,7 @@ export default function PlanManagement() {
       max_team_members: vendor.max_team_members,
       max_product_images: vendor.max_product_images,
       max_active_sessions: vendor.max_active_sessions,
+      override_plan_limits: vendor.override_plan_limits,
       can_add_products: vendor.can_add_products,
       can_edit_products: vendor.can_edit_products,
       can_delete_products: vendor.can_delete_products,
@@ -297,6 +299,23 @@ export default function PlanManagement() {
             </DialogHeader>
 
             <div className="space-y-6 py-4">
+              {/* Override Toggle */}
+              <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="override_limits" className="text-base font-semibold">Override Plan Limits</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Allow this vendor to bypass all plan restrictions and limits
+                    </p>
+                  </div>
+                  <Switch
+                    id="override_limits"
+                    checked={editedPlan.override_plan_limits || false}
+                    onCheckedChange={(checked) => setEditedPlan({ ...editedPlan, override_plan_limits: checked })}
+                  />
+                </div>
+              </div>
+
               {/* Limits Section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold">Resource Limits</h3>
