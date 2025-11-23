@@ -791,22 +791,6 @@ const Catalog = () => {
               )}
 
               {/* Filters */}
-              {/* Category Selector */}
-              {approvedCategories.length > 1 && (
-                <div className="mb-6 flex gap-2 flex-wrap">
-                  {approvedCategories.map((category) => (
-                    <Button
-                      key={category}
-                      variant={selectedProductType === category ? "default" : "outline"}
-                      onClick={() => setSelectedProductType(category)}
-                    >
-                      {category}
-                    </Button>
-                  ))}
-                </div>
-              )}
-
-              {/* Filters */}
               <div className="mb-6 sm:mb-8">
                 <CatalogFilters
                   filters={filters}
