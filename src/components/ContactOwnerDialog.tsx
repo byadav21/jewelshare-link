@@ -29,7 +29,7 @@ export const ContactOwnerDialog = ({ shareLinkId }: ContactOwnerDialogProps) => 
     // Validate form data
     const validation = contactOwnerSchema.safeParse(formData);
     if (!validation.success) {
-      const firstError = validation.error.errors[0];
+      const firstError = validation.error.issues[0];
       toast.error(firstError.message);
       return;
     }

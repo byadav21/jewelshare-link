@@ -31,7 +31,7 @@ export const NewsletterSubscription = () => {
       const result = emailSchema.safeParse({ email });
       
       if (!result.success) {
-        const errorMessage = result.error.errors[0]?.message || "Invalid email";
+        const errorMessage = result.error.issues[0]?.message || "Invalid email";
         setError(errorMessage);
         setIsLoading(false);
         return;

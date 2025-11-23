@@ -79,7 +79,7 @@ export const gemstoneImportSchema = z.object({
 export const diamondImportSchema = z.object({
   user_id: z.string().uuid(),
   sku: z.string().trim().min(1, "SKU is required").max(100),
-  diamond_type: z.enum(['Natural', 'Lab Grown'], { required_error: "Diamond type is required" }),
+  diamond_type: z.union([z.literal('Natural'), z.literal('Lab Grown')]),
   status: z.string().max(50).nullable(),
   shape: z.string().trim().min(1, "Shape is required").max(50),
   carat: z.number().min(0.01, "Carat must be greater than 0"),

@@ -124,7 +124,7 @@ const CustomOrder = () => {
     // Validate form data
     const validation = customOrderSchema.safeParse(formData);
     if (!validation.success) {
-      const firstError = validation.error.errors[0];
+      const firstError = validation.error.issues[0];
       toast({
         title: "Validation Error",
         description: firstError.message,

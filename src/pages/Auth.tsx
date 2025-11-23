@@ -5,8 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Gem } from "lucide-react";
+import { PasswordStrength, validatePasswordStrength } from "@/components/PasswordStrength";
+import { z } from "zod";
+
+
+// Validation schemas
+const emailSchema = z.string().trim().email({ message: "Invalid email address" }).max(255);
+const passwordSchema = z.string().min(8, { message: "Password must be at least 8 characters" });
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +23,7 @@ const Auth = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["Jewellery"]);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -107,9 +116,32 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate email
+      const emailValidation = emailSchema.safeParse(email);
+      if (!emailValidation.success) {
+        toast.error(emailValidation.error.issues[0].message);
+        setLoading(false);
+        return;
+      }
+
+      // Validate password
+      const passwordValidation = passwordSchema.safeParse(password);
+      if (!passwordValidation.success) {
+        toast.error(passwordValidation.error.issues[0].message);
+        setLoading(false);
+        return;
+      }
+
       if (isSignUp) {
+        // Additional validation for signup - check password strength
+        if (!validatePasswordStrength(password)) {
+          toast.error("Password must include uppercase, lowercase, number, and special character");
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: emailValidation.data,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
@@ -147,10 +179,16 @@ const Auth = () => {
         toast.success("Account created! Your request is pending admin approval.");
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
+          email: emailValidation.data,
           password,
         });
         if (error) throw error;
+
+        // Update session persistence based on remember me
+        if (!rememberMe && data.session) {
+          // If remember me is off, update to use sessionStorage instead of localStorage
+          await supabase.auth.setSession(data.session);
+        }
         
         // Register device session
         if (data.session) {
@@ -264,8 +302,9 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••••"
-                    minLength={6}
+                    minLength={8}
                   />
+                  <PasswordStrength password={password} />
                 </div>
               )}
 
@@ -300,10 +339,26 @@ const Auth = () => {
                 </div>
               )}
 
+              {!isSignUp && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <Label
+                    htmlFor="rememberMe"
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    Remember me for 30 days
+                  </Label>
+                </div>
+              )}
+
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={loading || (isSignUp && selectedCategories.length === 0)}
+                disabled={loading || (isSignUp && (selectedCategories.length === 0 || !validatePasswordStrength(password)))}
               >
                 {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
               </Button>
