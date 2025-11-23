@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft, Copy, ExternalLink } from "lucide-react";
+import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 
 const Share = () => {
   const navigate = useNavigate();
@@ -116,6 +117,10 @@ const Share = () => {
               <CardTitle className="text-3xl font-serif">Create Share Link</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Plan Limit Warning */}
+              <div className="mb-6">
+                <PlanLimitWarning />
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">

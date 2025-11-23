@@ -16,6 +16,7 @@ import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -865,6 +866,10 @@ const Catalog = () => {
         </header>
 
         <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-10 max-w-[1800px]">
+          {/* Plan Limit Warning */}
+          <div className="mb-6">
+            <PlanLimitWarning />
+          </div>
           {loading ? (
             <div className="space-y-8 animate-fade-in">
               {/* Loading Skeletons */}
