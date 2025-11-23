@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
+import { LoadingSkeleton } from "./LoadingSkeleton";
 
 export const ApprovalGuard = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -42,11 +43,7 @@ export const ApprovalGuard = ({ children }: { children: React.ReactNode }) => {
   }, [session, status, authLoading, approvalLoading, navigate]);
 
   if (authLoading || approvalLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-primary text-xl">Loading...</div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   return session && status === "approved" ? <>{children}</> : null;

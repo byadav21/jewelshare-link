@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
+import { LoadingSkeleton } from "./LoadingSkeleton";
 
 export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -28,11 +29,7 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   }, [navigate]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-primary text-xl">Loading...</div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   return session ? <>{children}</> : null;
