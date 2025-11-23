@@ -362,17 +362,18 @@ export default function SuperAdmin() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/plan-management")}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98] border-primary/50 bg-gradient-to-br from-primary/5 to-transparent" onClick={() => navigate("/plan-management")}>
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
                   <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Plan Management
+                  <Badge variant="secondary" className="ml-auto text-xs">Permissions</Badge>
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Manage subscription plans</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Manage vendor subscription plans & permissions</CardDescription>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
-                  Manage Plans
+                  Manage Plans & Access
                 </Button>
               </CardContent>
             </Card>
