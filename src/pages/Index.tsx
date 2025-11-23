@@ -679,7 +679,15 @@ const Index = () => {
             <div>
               <h3 className="mb-4 font-semibold">Company</h3>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                <li><a href="#" className="transition-colors hover:text-foreground">About Us</a></li>
+                <li>
+                  <a 
+                    href="#" 
+                    className="transition-colors hover:text-foreground" 
+                    onClick={(e) => { e.preventDefault(); navigate('/about'); }}
+                  >
+                    About Us
+                  </a>
+                </li>
                 <li><a href="#" className="transition-colors hover:text-foreground">Careers</a></li>
                 <li>
                   <a 
@@ -714,6 +722,15 @@ const Index = () => {
                 <li className="flex items-start gap-2">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>Mumbai, Maharashtra, India</span>
+                </li>
+                <li>
+                  <a 
+                    href="#" 
+                    className="transition-colors hover:text-foreground" 
+                    onClick={(e) => { e.preventDefault(); navigate('/contact'); }}
+                  >
+                    Contact Form →
+                  </a>
                 </li>
               </ul>
             </div>
