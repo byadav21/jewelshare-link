@@ -389,36 +389,92 @@ const Import = () => {
                 <div className="rounded-lg bg-muted p-4 space-y-2">
                   <h3 className="font-semibold text-sm">Supported Columns:</h3>
                   <ul className="text-sm text-muted-foreground space-y-1 grid grid-cols-1 md:grid-cols-2 gap-1">
-                    <li>• CERT (SKU)</li>
-                    <li>• PRODUCT (name)</li>
-                    <li>• Diamond Color/Co</li>
-                    <li>• CLARITY</li>
-                    <li>• D.WT 1, D.WT 2 (diamond weights)</li>
-                    <li>• T DWT (total diamond weight)</li>
-                    <li>• G WT (gross weight)</li>
-                    <li>• NET WT (net weight)</li>
-                    <li>• CS TYPE (category)</li>
-                    <li>• PURITY_FRACTION_USED</li>
-                    <li>• D RATE 1 (diamond rate)</li>
-                    <li>• Pointer diamond</li>
-                    <li>• D VALUE (diamond value)</li>
-                    <li>• GEMSTONE TYPE</li>
-                    <li>• MKG (making charges)</li>
-                    <li>• GOLD (gold cost)</li>
-                    <li>• Certification cost</li>
-                    <li>• Gemstone cost</li>
-                    <li>• TOTAL (retail price)</li>
-                    <li>• TOTAL_USD</li>
-                    <li>• Product Type</li>
-                    <li>• IMAGE_URL (images - use | separator)</li>
-                    <li>• Thumbnail (3rd image)</li>
-                    <li className="font-semibold text-primary">• DELIVERY TYPE (immediate/scheduled)</li>
-                    <li className="font-semibold text-primary">• DELIVERY DATE (for scheduled)</li>
+                    {selectedProductType === 'Jewellery' && (
+                      <>
+                        <li>• CERT (SKU)</li>
+                        <li>• PRODUCT (name)</li>
+                        <li>• Diamond Color/Co</li>
+                        <li>• CLARITY</li>
+                        <li>• D.WT 1, D.WT 2 (diamond weights)</li>
+                        <li>• T DWT (total diamond weight)</li>
+                        <li>• G WT (gross weight)</li>
+                        <li>• NET WT (net weight)</li>
+                        <li>• CS TYPE (category)</li>
+                        <li>• PURITY_FRACTION_USED</li>
+                        <li>• D RATE 1 (diamond rate)</li>
+                        <li>• Pointer diamond</li>
+                        <li>• D VALUE (diamond value)</li>
+                        <li>• GEMSTONE TYPE</li>
+                        <li>• MKG (making charges)</li>
+                        <li>• GOLD (gold cost)</li>
+                        <li>• Certification cost</li>
+                        <li>• Gemstone cost</li>
+                        <li>• TOTAL (retail price)</li>
+                        <li>• TOTAL_USD</li>
+                        <li>• Product Type</li>
+                        <li>• IMAGE_URL (images - use | separator)</li>
+                        <li>• Thumbnail (3rd image)</li>
+                        <li className="font-semibold text-primary">• DELIVERY TYPE (immediate/scheduled)</li>
+                        <li className="font-semibold text-primary">• DELIVERY DATE (for scheduled)</li>
+                      </>
+                    )}
+                    
+                    {selectedProductType === 'Gemstones' && (
+                      <>
+                        <li>• SKU ID (SKU)</li>
+                        <li>• GEMSTONE NAME</li>
+                        <li>• GEMSTONE TYPE</li>
+                        <li>• CARAT WEIGHT</li>
+                        <li>• COLOR</li>
+                        <li>• CLARITY</li>
+                        <li>• CUT</li>
+                        <li>• POLISH</li>
+                        <li>• SYMMETRY</li>
+                        <li>• MEASUREMENT</li>
+                        <li>• CERTIFICATION</li>
+                        <li>• PRICE_INR</li>
+                        <li>• STOCK QUANTITY</li>
+                        <li>• IMAGE_URL (images - use | separator)</li>
+                      </>
+                    )}
+                    
+                    {selectedProductType === 'Loose Diamonds' && (
+                      <>
+                        <li>• SKU NO</li>
+                        <li>• DIAMOND TYPE (Natural/Lab-grown)</li>
+                        <li>• STATUS</li>
+                        <li>• SHAPE</li>
+                        <li>• CARAT</li>
+                        <li>• CLARITY</li>
+                        <li>• COLOR</li>
+                        <li>• COLOR SHADE AMOUNT</li>
+                        <li>• CUT</li>
+                        <li>• POLISH</li>
+                        <li>• SYMMETRY</li>
+                        <li>• FLO (Fluorescence)</li>
+                        <li>• MEASUREMENT</li>
+                        <li>• RATIO</li>
+                        <li>• LAB</li>
+                        <li>• PRICE_INR</li>
+                        <li>• STOCK QUANTITY</li>
+                        <li>• IMAGE_URL (images - use | separator)</li>
+                      </>
+                    )}
                   </ul>
                   <div className="mt-3 pt-3 border-t border-border">
                     <p className="text-xs text-muted-foreground">
-                      <span className="font-semibold">Delivery:</span> Set DELIVERY TYPE to "immediate" or "scheduled". 
-                      If scheduled, add DELIVERY DATE in YYYY-MM-DD format.
+                      {selectedProductType === 'Jewellery' && (
+                        <>
+                          <span className="font-semibold">Delivery:</span> Set DELIVERY TYPE to "immediate" or "scheduled". 
+                          If scheduled, add DELIVERY DATE in YYYY-MM-DD format.
+                        </>
+                      )}
+                      {(selectedProductType === 'Gemstones' || selectedProductType === 'Loose Diamonds') && (
+                        <>
+                          <span className="font-semibold">Images:</span> Separate multiple image URLs with | (pipe) symbol. 
+                          Up to 3 images supported.
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
