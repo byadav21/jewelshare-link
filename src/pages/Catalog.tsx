@@ -391,11 +391,12 @@ const Catalog = () => {
       setTransitioning(true);
       setLoading(true);
       
-      // Small delay for fade-out effect
-      setTimeout(() => {
-        fetchProducts();
-        setTimeout(() => setTransitioning(false), 100);
-      }, 150);
+      // Fetch products and clear transition state
+      fetchProducts().finally(() => {
+        setTimeout(() => {
+          setTransitioning(false);
+        }, 200);
+      });
     }
   }, [selectedProductType, fetchProducts]);
 
@@ -842,7 +843,7 @@ const Catalog = () => {
                     const categoryKey = category.toLowerCase().replace(/\s+/g, '-');
                     
                     // Define category-specific colors and icons
-                    const categoryStyles = {
+                    const categoryStyles: Record<string, any> = {
                       'jewellery': {
                         gradient: 'from-category-jewellery/20 to-category-jewellery/5',
                         border: 'border-category-jewellery/40',
@@ -851,6 +852,13 @@ const Catalog = () => {
                         icon: '💍'
                       },
                       'gemstones': {
+                        gradient: 'from-category-gemstone/20 to-category-gemstone/5',
+                        border: 'border-category-gemstone/40',
+                        text: 'text-category-gemstone',
+                        glow: 'shadow-[0_0_20px_hsl(var(--category-gemstone)/0.3)]',
+                        icon: '💎'
+                      },
+                      'loose-gemstones': {
                         gradient: 'from-category-gemstone/20 to-category-gemstone/5',
                         border: 'border-category-gemstone/40',
                         text: 'text-category-gemstone',
@@ -926,7 +934,7 @@ const Catalog = () => {
                 </div>
               )}
 
-              {/* Filters */}
+              {/* Filters - Always visible, not affected by transition */}
               <div 
                 key={`filters-${selectedProductType}`}
                 className="mb-6 sm:mb-8 animate-slide-in-right"
