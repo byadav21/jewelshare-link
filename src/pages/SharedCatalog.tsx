@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InterestDialog } from "@/components/InterestDialog";
+import { VideoRequestDialog } from "@/components/VideoRequestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { Gem, AlertCircle, Building2, Video, Zap, Calendar } from "lucide-react";
@@ -156,11 +157,11 @@ const SharedCatalog = () => {
 
     setVideoRequestLoading(true);
 
-    const { error } = await supabase.from("catalog_inquiries").insert({
+    const { error } = await supabase.from("video_requests").insert({
       customer_name: videoRequestData.customer_name,
       customer_email: videoRequestData.customer_email,
       customer_phone: videoRequestData.customer_phone || null,
-      message: `[VIDEO REQUEST] ${videoRequestData.message}`,
+      requested_products: videoRequestData.message,
       share_link_id: shareLinkId,
     });
 
@@ -672,11 +673,24 @@ const SharedCatalog = () => {
                     </div>
                   </div>
                   {shareLinkId && (
-                    <InterestDialog
-                      productId={product.id}
-                      productName={product.name}
-                      shareLinkId={shareLinkId}
-                    />
+                    <div className="flex gap-2">
+                      <InterestDialog
+                        productId={product.id}
+                        productName={product.name}
+                        shareLinkId={shareLinkId}
+                      />
+                      <VideoRequestDialog
+                        productId={product.id}
+                        productName={product.name}
+                        shareLinkId={shareLinkId}
+                        trigger={
+                          <Button variant="outline" size="sm">
+                            <Video className="h-4 w-4 mr-1" />
+                            Video
+                          </Button>
+                        }
+                      />
+                    </div>
                   )}
                 </CardFooter>
               </Card>
