@@ -35,38 +35,39 @@ const CustomOrder = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    // Limit to 5 images
+    // Limit to 5 files
     if (uploadedImages.length + files.length > 5) {
       toast({
-        title: "Too many images",
-        description: "You can upload up to 5 reference images",
+        title: "Too many files",
+        description: "You can upload up to 5 reference images or videos",
         variant: "destructive",
       });
       return;
     }
 
     setUploading(true);
-    const newImageUrls: string[] = [];
+    const newFileUrls: string[] = [];
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        // Validate file size (max 20MB for videos, 5MB for images)
+        const maxSize = file.type.startsWith('video/') ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
+        if (file.size > maxSize) {
           toast({
             title: "File too large",
-            description: `${file.name} is larger than 5MB`,
+            description: `${file.name} is larger than ${file.type.startsWith('video/') ? '20MB' : '5MB'}`,
             variant: "destructive",
           });
           continue;
         }
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
+        // Validate file type (images and videos only)
+        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
           toast({
             title: "Invalid file type",
-            description: `${file.name} is not an image`,
+            description: `${file.name} must be an image or video`,
             variant: "destructive",
           });
           continue;
@@ -91,19 +92,19 @@ const CustomOrder = () => {
           .from('vendor-qr-codes')
           .getPublicUrl(filePath);
 
-        newImageUrls.push(publicUrl);
+        newFileUrls.push(publicUrl);
       }
 
-      setUploadedImages([...uploadedImages, ...newImageUrls]);
+      setUploadedImages([...uploadedImages, ...newFileUrls]);
       toast({
         title: "Success",
-        description: `${newImageUrls.length} image(s) uploaded successfully`,
+        description: `${newFileUrls.length} file(s) uploaded successfully`,
       });
     } catch (error) {
-      console.error('Error uploading images:', error);
+      console.error('Error uploading files:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload images. Please try again.",
+        description: "Failed to upload files. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -298,13 +299,13 @@ const CustomOrder = () => {
                 />
               </div>
 
-              {/* Reference Images Upload */}
+              {/* Reference Images/Videos Upload */}
               <div className="space-y-2">
                 <Label htmlFor="reference_images">
-                  Reference Images (Optional)
+                  Reference Images/Videos (Optional)
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Upload up to 5 images for design inspiration (max 5MB each)
+                  Upload up to 5 images or videos for design inspiration (max 5MB for images, 20MB for videos)
                 </p>
                 
                 {/* Upload Button */}
@@ -316,37 +317,48 @@ const CustomOrder = () => {
                     disabled={uploading || uploadedImages.length >= 5}
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    {uploading ? "Uploading..." : "Upload Images"}
+                    {uploading ? "Uploading..." : "Upload Files"}
                   </Button>
                   <Input
                     id="reference_images"
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     multiple
                     onChange={handleImageUpload}
                     className="hidden"
                   />
                 </div>
 
-                {/* Uploaded Images Preview */}
+                {/* Uploaded Files Preview */}
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                    {uploadedImages.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Reference ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border border-border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
+                    {uploadedImages.map((url, index) => {
+                      const isVideo = url.match(/\.(mp4|mov|avi|webm|mkv)(\?|$)/i);
+                      return (
+                        <div key={index} className="relative group">
+                          {isVideo ? (
+                            <video
+                              src={url}
+                              className="w-full h-32 object-cover rounded-lg border border-border"
+                              controls
+                            />
+                          ) : (
+                            <img
+                              src={url}
+                              alt={`Reference ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border border-border"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
