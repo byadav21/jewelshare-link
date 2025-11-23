@@ -7,6 +7,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { ParallaxImage } from "@/components/ParallaxImage";
 import { JewelryViewer3D } from "@/components/JewelryViewer3D";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
+import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
 import heroBanner from "@/assets/hero-banner.jpg";
 import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -291,6 +292,16 @@ const Index = () => {
             </ScrollReveal>
           </div>
         </div>
+      </section>
+
+      {/* Brand Logos Carousel */}
+      <section className="container mx-auto px-4 py-16">
+        <ScrollReveal>
+          <div className="mb-8 text-center">
+            <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Trusted by Leading Jewelry Brands</p>
+          </div>
+        </ScrollReveal>
+        <BrandLogosCarousel />
       </section>
 
       {/* Features Grid */}
