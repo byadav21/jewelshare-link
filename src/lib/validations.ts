@@ -44,7 +44,59 @@ export const productImportSchema = z.object({
   stock_quantity: z.number().int().min(0, "Stock must be non-negative").max(100000, "Stock seems too high"),
 });
 
+// Gemstone import validation
+export const gemstoneImportSchema = z.object({
+  user_id: z.string().uuid(),
+  sku: z.string().trim().min(1, "SKU ID is required").max(100),
+  gemstone_name: z.string().trim().min(1, "Gemstone name is required").max(200),
+  gemstone_type: z.string().max(100).nullable(),
+  carat_weight: z.number().min(0).nullable(),
+  color: z.string().max(100).nullable(),
+  clarity: z.string().max(50).nullable(),
+  cut: z.string().max(50).nullable(),
+  polish: z.string().max(50).nullable(),
+  symmetry: z.string().max(50).nullable(),
+  measurement: z.string().max(100).nullable(),
+  certification: z.string().max(100).nullable(),
+  image_url: z.string().url().max(500).nullable(),
+  image_url_2: z.string().url().max(500).nullable().or(z.literal(null)),
+  image_url_3: z.string().url().max(500).nullable().or(z.literal(null)),
+  price_inr: z.number().min(0.01, "Price must be greater than 0"),
+  price_usd: z.number().min(0).nullable(),
+  stock_quantity: z.number().int().min(0).max(100000),
+  product_type: z.literal('Gemstones'),
+});
+
+// Diamond import validation
+export const diamondImportSchema = z.object({
+  user_id: z.string().uuid(),
+  sku: z.string().trim().min(1, "SKU is required").max(100),
+  diamond_type: z.enum(['Natural', 'Lab Grown'], { required_error: "Diamond type is required" }),
+  status: z.string().max(50).nullable(),
+  shape: z.string().trim().min(1, "Shape is required").max(50),
+  carat: z.number().min(0.01, "Carat must be greater than 0"),
+  clarity: z.string().trim().min(1, "Clarity is required").max(50),
+  color: z.string().trim().min(1, "Color is required").max(50),
+  color_shade_amount: z.string().max(100).nullable(),
+  cut: z.string().max(50).nullable(),
+  polish: z.string().max(50).nullable(),
+  symmetry: z.string().max(50).nullable(),
+  fluorescence: z.string().max(50).nullable(),
+  measurement: z.string().max(100).nullable(),
+  ratio: z.string().max(20).nullable(),
+  lab: z.string().max(50).nullable(),
+  image_url: z.string().url().max(500).nullable(),
+  image_url_2: z.string().url().max(500).nullable().or(z.literal(null)),
+  image_url_3: z.string().url().max(500).nullable().or(z.literal(null)),
+  price_inr: z.number().min(0.01, "Price must be greater than 0"),
+  price_usd: z.number().min(0).nullable(),
+  stock_quantity: z.number().int().min(0).max(100000),
+  product_type: z.literal('Loose Diamonds'),
+});
+
 export type CustomOrderFormData = z.infer<typeof customOrderSchema>;
 export type ContactOwnerFormData = z.infer<typeof contactOwnerSchema>;
 export type ProductInterestFormData = z.infer<typeof productInterestSchema>;
 export type ProductImportData = z.infer<typeof productImportSchema>;
+export type GemstoneImportData = z.infer<typeof gemstoneImportSchema>;
+export type DiamondImportData = z.infer<typeof diamondImportSchema>;

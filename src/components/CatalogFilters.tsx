@@ -1,54 +1,107 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Search } from "lucide-react";
+import { JewelleryFilters } from "./filters/JewelleryFilters";
+import { GemstoneFilters } from "./filters/GemstoneFilters";
+import { DiamondFilters } from "./filters/DiamondFilters";
 
 export interface FilterState {
-  category: string;
-  metalType: string;
+  // Common
+  searchQuery: string;
   minPrice: string;
   maxPrice: string;
+  // Jewellery specific
+  category: string;
+  metalType: string;
   diamondColor: string;
   diamondClarity: string;
-  searchQuery: string;
   deliveryType: string;
+  // Gemstone specific
+  gemstoneType: string;
+  color: string;
+  clarity: string;
+  cut: string;
+  minCarat: string;
+  maxCarat: string;
+  // Diamond specific
+  diamondType: string;
+  shape: string;
+  polish: string;
+  symmetry: string;
+  fluorescence: string;
+  lab: string;
 }
 
 interface CatalogFiltersProps {
   filters: FilterState;
   onFilterChange: (filters: FilterState) => void;
+  productType: string;
+  // Jewellery filters
   categories: string[];
   metalTypes: string[];
   diamondColors: string[];
   diamondClarities: string[];
   deliveryTypes: string[];
+  // Gemstone filters
+  gemstoneTypes: string[];
+  colors: string[];
+  clarities: string[];
+  cuts: string[];
+  // Diamond filters
+  shapes: string[];
+  polishes: string[];
+  symmetries: string[];
+  fluorescences: string[];
+  labs: string[];
 }
 
 export const CatalogFilters = ({
   filters,
   onFilterChange,
+  productType,
   categories,
   metalTypes,
   diamondColors,
   diamondClarities,
   deliveryTypes,
+  gemstoneTypes = [],
+  colors = [],
+  clarities = [],
+  cuts = [],
+  shapes = [],
+  polishes = [],
+  symmetries = [],
+  fluorescences = [],
+  labs = [],
 }: CatalogFiltersProps) => {
-  const updateFilter = (key: keyof FilterState, value: string) => {
+  const updateFilter = (key: string, value: string) => {
     onFilterChange({ ...filters, [key]: value });
   };
 
   const clearFilters = () => {
-    onFilterChange({
-      category: "",
-      metalType: "",
+    const baseFilters: FilterState = {
+      searchQuery: "",
       minPrice: "",
       maxPrice: "",
+      category: "",
+      metalType: "",
       diamondColor: "",
       diamondClarity: "",
-      searchQuery: "",
       deliveryType: "",
-    });
+      gemstoneType: "",
+      color: "",
+      clarity: "",
+      cut: "",
+      minCarat: "",
+      maxCarat: "",
+      diamondType: "",
+      shape: "",
+      polish: "",
+      symmetry: "",
+      fluorescence: "",
+      lab: "",
+    };
+    onFilterChange(baseFilters);
   };
 
   const hasActiveFilters = Object.values(filters).some(v => v !== "");
@@ -79,107 +132,46 @@ export const CatalogFilters = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2 sm:gap-4">
-        <div className="space-y-1.5 sm:space-y-2">
-          <Label htmlFor="category" className="text-xs sm:text-sm">Category</Label>
-          <Select value={filters.category || "all"} onValueChange={(v) => updateFilter("category", v === "all" ? "" : v)}>
-            <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent className="max-h-[200px] overflow-y-auto bg-popover z-50">
-              <SelectItem value="all" className="text-xs sm:text-sm">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5 sm:space-y-2">
-          <Label htmlFor="metal" className="text-xs sm:text-sm">Metal</Label>
-          <Select value={filters.metalType || "all"} onValueChange={(v) => updateFilter("metalType", v === "all" ? "" : v)}>
-            <SelectTrigger id="metal" className="h-9 sm:h-10 text-xs sm:text-sm">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              <SelectItem value="all" className="text-xs sm:text-sm">All Metals</SelectItem>
-              {metalTypes.map((metal) => (
-                <SelectItem key={metal} value={metal} className="text-xs sm:text-sm">{metal}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5 sm:space-y-2">
-          <Label htmlFor="minPrice" className="text-xs sm:text-sm">Min (₹)</Label>
-          <Input
-            id="minPrice"
-            type="number"
-            placeholder="0"
-            value={filters.minPrice}
-            onChange={(e) => updateFilter("minPrice", e.target.value)}
-            className="h-9 sm:h-10 text-xs sm:text-sm"
+      <div className={`grid grid-cols-2 gap-2 sm:gap-4 ${
+        productType === 'Jewellery' ? 'lg:grid-cols-3 xl:grid-cols-7' : 
+        productType === 'Gemstones' ? 'lg:grid-cols-3 xl:grid-cols-8' :
+        'lg:grid-cols-3 xl:grid-cols-6'
+      }`}>
+        {productType === 'Jewellery' && (
+          <JewelleryFilters
+            filters={filters}
+            updateFilter={updateFilter}
+            categories={categories}
+            metalTypes={metalTypes}
+            diamondColors={diamondColors}
+            diamondClarities={diamondClarities}
+            deliveryTypes={deliveryTypes}
           />
-        </div>
-
-        <div className="space-y-1.5 sm:space-y-2">
-          <Label htmlFor="maxPrice" className="text-xs sm:text-sm">Max (₹)</Label>
-          <Input
-            id="maxPrice"
-            type="number"
-            placeholder="No limit"
-            value={filters.maxPrice}
-            onChange={(e) => updateFilter("maxPrice", e.target.value)}
-            className="h-9 sm:h-10 text-xs sm:text-sm"
+        )}
+        {productType === 'Gemstones' && (
+          <GemstoneFilters
+            filters={filters}
+            updateFilter={updateFilter}
+            gemstoneTypes={gemstoneTypes}
+            colors={colors}
+            clarities={clarities}
+            cuts={cuts}
           />
-        </div>
-
-        <div className="space-y-1.5 sm:space-y-2">
-          <Label htmlFor="diamondColor" className="text-xs sm:text-sm">Color</Label>
-          <Select value={filters.diamondColor || "all"} onValueChange={(v) => updateFilter("diamondColor", v === "all" ? "" : v)}>
-            <SelectTrigger id="diamondColor" className="h-9 sm:h-10 text-xs sm:text-sm">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              <SelectItem value="all" className="text-xs sm:text-sm">All Colors</SelectItem>
-              {diamondColors.map((color) => (
-                <SelectItem key={color} value={color} className="text-xs sm:text-sm">{color}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5 sm:space-y-2">
-          <Label htmlFor="diamondClarity" className="text-xs sm:text-sm">Clarity</Label>
-          <Select value={filters.diamondClarity || "all"} onValueChange={(v) => updateFilter("diamondClarity", v === "all" ? "" : v)}>
-            <SelectTrigger id="diamondClarity" className="h-9 sm:h-10 text-xs sm:text-sm">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              <SelectItem value="all" className="text-xs sm:text-sm">All Clarities</SelectItem>
-              {diamondClarities.map((clarity) => (
-                <SelectItem key={clarity} value={clarity} className="text-xs sm:text-sm">{clarity}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5 sm:space-y-2">
-          <Label htmlFor="deliveryType" className="text-xs sm:text-sm">Delivery</Label>
-          <Select value={filters.deliveryType || "all"} onValueChange={(v) => updateFilter("deliveryType", v === "all" ? "" : v)}>
-            <SelectTrigger id="deliveryType" className="h-9 sm:h-10 text-xs sm:text-sm">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              <SelectItem value="all" className="text-xs sm:text-sm">All Types</SelectItem>
-              {deliveryTypes.map((type) => (
-                <SelectItem key={type} value={type} className="text-xs sm:text-sm">
-                  {type === 'immediate' ? 'Immediate Dispatch' : 'Scheduled Delivery'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        )}
+        {productType === 'Loose Diamonds' && (
+          <DiamondFilters
+            filters={filters}
+            updateFilter={updateFilter}
+            shapes={shapes}
+            colors={colors}
+            clarities={clarities}
+            cuts={cuts}
+            polishes={polishes}
+            symmetries={symmetries}
+            fluorescences={fluorescences}
+            labs={labs}
+          />
+        )}
       </div>
     </div>
   );
