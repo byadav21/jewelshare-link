@@ -788,19 +788,84 @@ const Catalog = () => {
                 </div>
               ) : (
                 <>
-              {/* Category Selector */}
+              {/* Elegant Category Selector */}
               {approvedCategories.length > 1 && (
-                <div className="mb-6 flex gap-2 flex-wrap">
-                  {approvedCategories.map((category) => (
-                    <Button
-                      key={category}
-                      variant={selectedProductType === category ? "default" : "outline"}
-                      onClick={() => setSelectedProductType(category)}
-                      className="transition-all duration-300 hover:scale-105"
-                    >
-                      {category}
-                    </Button>
-                  ))}
+                <div className="mb-8 flex gap-3 flex-wrap justify-center">
+                  {approvedCategories.map((category) => {
+                    const isSelected = selectedProductType === category;
+                    const categoryKey = category.toLowerCase().replace(/\s+/g, '-');
+                    
+                    // Define category-specific colors and icons
+                    const categoryStyles = {
+                      'jewellery': {
+                        gradient: 'from-category-jewellery/20 to-category-jewellery/5',
+                        border: 'border-category-jewellery/40',
+                        text: 'text-category-jewellery',
+                        glow: 'shadow-[0_0_20px_hsl(var(--category-jewellery)/0.3)]',
+                        icon: '💍'
+                      },
+                      'gemstones': {
+                        gradient: 'from-category-gemstone/20 to-category-gemstone/5',
+                        border: 'border-category-gemstone/40',
+                        text: 'text-category-gemstone',
+                        glow: 'shadow-[0_0_20px_hsl(var(--category-gemstone)/0.3)]',
+                        icon: '💎'
+                      },
+                      'loose-diamonds': {
+                        gradient: 'from-category-diamond/20 to-category-diamond/5',
+                        border: 'border-category-diamond/40',
+                        text: 'text-category-diamond',
+                        glow: 'shadow-[0_0_20px_hsl(var(--category-diamond)/0.3)]',
+                        icon: '✨'
+                      }
+                    };
+                    
+                    const style = categoryStyles[categoryKey] || categoryStyles['jewellery'];
+                    
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedProductType(category)}
+                        className={`
+                          group relative overflow-hidden
+                          px-8 py-4 rounded-2xl
+                          font-serif text-lg font-semibold
+                          transition-all duration-500 ease-out
+                          ${isSelected 
+                            ? `bg-gradient-to-br ${style.gradient} border-2 ${style.border} ${style.glow} scale-105` 
+                            : 'bg-card/50 border-2 border-border/30 hover:border-border/60 hover:scale-102'
+                          }
+                        `}
+                      >
+                        {/* Animated background shine effect */}
+                        <div className={`
+                          absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent
+                          -translate-x-full group-hover:translate-x-full
+                          transition-transform duration-1000 ease-out
+                        `} />
+                        
+                        {/* Content */}
+                        <span className={`
+                          relative flex items-center gap-3
+                          ${isSelected ? style.text : 'text-muted-foreground group-hover:text-foreground'}
+                          transition-colors duration-300
+                        `}>
+                          <span className="text-2xl">{style.icon}</span>
+                          <span className="tracking-wide">{category}</span>
+                        </span>
+                        
+                        {/* Bottom accent line for selected state */}
+                        {isSelected && (
+                          <div className={`
+                            absolute bottom-0 left-1/2 -translate-x-1/2
+                            h-1 w-3/4 rounded-full
+                            bg-gradient-to-r ${style.gradient}
+                            animate-pulse
+                          `} />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 

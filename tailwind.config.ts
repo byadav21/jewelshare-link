@@ -57,6 +57,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        category: {
+          jewellery: "hsl(var(--category-jewellery))",
+          gemstone: "hsl(var(--category-gemstone))",
+          diamond: "hsl(var(--category-diamond))",
+          glow: "hsl(var(--category-glow))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
