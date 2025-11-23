@@ -50,6 +50,96 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author_avatar: string | null
+          author_name: string
+          author_role: string | null
+          category: string | null
+          content: string
+          cover_image: string | null
+          created_at: string | null
+          created_by: string | null
+          excerpt: string | null
+          id: string
+          published: boolean | null
+          published_at: string | null
+          read_time: number | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_avatar?: string | null
+          author_name: string
+          author_role?: string | null
+          category?: string | null
+          content: string
+          cover_image?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          published?: boolean | null
+          published_at?: string | null
+          read_time?: number | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_avatar?: string | null
+          author_name?: string
+          author_role?: string | null
+          category?: string | null
+          content?: string
+          cover_image?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          published?: boolean | null
+          published_at?: string | null
+          read_time?: number | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      brands: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          logo_url: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          logo_url: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          logo_url?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       catalog_inquiries: {
         Row: {
           created_at: string
@@ -146,6 +236,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      press_releases: {
+        Row: {
+          content: string
+          created_at: string | null
+          external_url: string | null
+          featured: boolean | null
+          id: string
+          publication: string | null
+          publication_logo: string | null
+          published_date: string
+          subtitle: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          external_url?: string | null
+          featured?: boolean | null
+          id?: string
+          publication?: string | null
+          publication_logo?: string | null
+          published_date: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          external_url?: string | null
+          featured?: boolean | null
+          id?: string
+          publication?: string | null
+          publication_logo?: string | null
+          published_date?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       product_interests: {
         Row: {
@@ -369,6 +501,30 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           weight_grams?: number | null
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string | null
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
