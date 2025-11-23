@@ -8,7 +8,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X, Upload } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X, Upload, Video } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -689,6 +689,12 @@ const Catalog = () => {
                     Interests
                   </Button>
                 )}
+                {(permissions.can_view_interests || isAdmin) && (
+                  <Button variant="outline" size="sm" onClick={() => navigate("/video-requests")}>
+                    <Video className="h-4 w-4 mr-2" />
+                    Video Requests
+                  </Button>
+                )}
                 {(permissions.can_edit_profile || isAdmin) && (
                   <Button variant="outline" size="sm" onClick={() => navigate("/vendor-profile")}>
                     <Building2 className="h-4 w-4 mr-2" />
@@ -784,6 +790,12 @@ const Catalog = () => {
                       <DropdownMenuItem onClick={() => navigate("/interests")} className="py-3 cursor-pointer hover:bg-muted/50">
                         <Heart className="h-5 w-5 mr-3 text-primary" />
                         <span className="font-medium">View Interests</span>
+                      </DropdownMenuItem>
+                    )}
+                    {(permissions.can_view_interests || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate("/video-requests")} className="py-3 cursor-pointer hover:bg-muted/50">
+                        <Video className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-medium">Video Requests</span>
                       </DropdownMenuItem>
                     )}
                     {(permissions.can_edit_profile || isAdmin) && (
