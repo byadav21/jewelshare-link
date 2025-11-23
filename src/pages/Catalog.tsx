@@ -783,6 +783,7 @@ const Catalog = () => {
                       key={category}
                       variant={selectedProductType === category ? "default" : "outline"}
                       onClick={() => setSelectedProductType(category)}
+                      className="transition-all duration-300 hover:scale-105"
                     >
                       {category}
                     </Button>
@@ -866,15 +867,23 @@ const Catalog = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard
+                <div 
+                  key={selectedProductType}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 animate-fade-in"
+                >
+                  {filteredProducts.map((product, index) => (
+                    <div
                       key={product.id}
-                      product={product}
-                      isSelected={selectedProducts.has(product.id)}
-                      onToggleSelection={(permissions.can_delete_products || isAdmin) ? toggleProductSelection : () => {}}
-                      usdRate={usdRate}
-                    />
+                      className="animate-scale-in"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      <ProductCard
+                        product={product}
+                        isSelected={selectedProducts.has(product.id)}
+                        onToggleSelection={(permissions.can_delete_products || isAdmin) ? toggleProductSelection : () => {}}
+                        usdRate={usdRate}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
