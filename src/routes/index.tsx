@@ -19,6 +19,7 @@ export const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 export const SharedCatalog = lazy(() => import("@/pages/SharedCatalog"));
 export const CustomOrder = lazy(() => import("@/pages/CustomOrder"));
 export const NotFound = lazy(() => import("@/pages/NotFound"));
+export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizationDemo"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));
