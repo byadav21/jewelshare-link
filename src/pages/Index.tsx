@@ -681,7 +681,15 @@ const Index = () => {
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li><a href="#" className="transition-colors hover:text-foreground">About Us</a></li>
                 <li><a href="#" className="transition-colors hover:text-foreground">Careers</a></li>
-                <li><a href="#" className="transition-colors hover:text-foreground">Blog</a></li>
+                <li>
+                  <a 
+                    href="#" 
+                    className="transition-colors hover:text-foreground" 
+                    onClick={(e) => { e.preventDefault(); navigate('/blog'); }}
+                  >
+                    Blog
+                  </a>
+                </li>
                 <li><a href="#" className="transition-colors hover:text-foreground">Press</a></li>
                 <li><a href="#" className="transition-colors hover:text-foreground">Partners</a></li>
               </ul>
