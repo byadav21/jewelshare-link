@@ -54,10 +54,7 @@ const VendorApprovals = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("user_approval_status")
-      .select(`
-        *,
-        vendor_profiles!inner(seller_categories)
-      `)
+      .select("*")
       .order("requested_at", { ascending: false });
 
     if (error) {
@@ -71,11 +68,10 @@ const VendorApprovals = () => {
     } else {
       setApprovals(data || []);
       
-      // Initialize category selections with seller's requested categories
+      // Initialize category selections with default category
       const initialSelections: Record<string, string[]> = {};
       data?.forEach(approval => {
-        const sellerCategories = (approval as any).vendor_profiles?.seller_categories || ["Jewellery"];
-        initialSelections[approval.id] = sellerCategories;
+        initialSelections[approval.id] = approval.approved_categories || ["Jewellery"];
       });
       setCategorySelections(initialSelections);
     }
@@ -274,15 +270,15 @@ const VendorApprovals = () => {
                           <TableCell>{approval.phone || "N/A"}</TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              {((approval as any).vendor_profiles?.seller_categories || ["Jewellery"]).join(", ")}
+                              {(approval as any).approved_categories?.join(", ") || "Jewellery"}
                             </div>
                           </TableCell>
                           <TableCell>
                             {approval.status === "pending" ? (
                               <div className="space-y-2">
                                 {["Jewellery", "Gemstones", "Loose Diamonds"].map((category) => {
-                                  const requestedCategories = (approval as any).vendor_profiles?.seller_categories || ["Jewellery"];
-                                  const isRequested = requestedCategories.includes(category);
+                                  const requestedCategories = (approval as any).approved_categories || ["Jewellery"];
+                                  const isRequested = true; // Allow admin to approve any category
                                   
                                   return (
                                     <div key={category} className="flex items-center space-x-2">
