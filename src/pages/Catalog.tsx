@@ -17,7 +17,9 @@ import { exportCatalogToPDF } from "@/utils/pdfExport";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]); // Store all products for counting
   const [loading, setLoading] = useState(true);
+  const [transitioning, setTransitioning] = useState(false); // For smooth transitions
   const [usdRate, setUsdRate] = useState(87.67);
   const [goldRate, setGoldRate] = useState(85000);
   const [editingGoldRate, setEditingGoldRate] = useState(false);
@@ -60,6 +62,7 @@ const Catalog = () => {
   }, [isAdmin, roleLoading, navigate]);
 
   useEffect(() => {
+    fetchAllProducts(); // Fetch all products first for counts
     fetchProducts();
     fetchUSDRate();
     fetchVendorProfile();
@@ -334,6 +337,25 @@ const Catalog = () => {
     }
   }, [filteredProducts, vendorProfile, usdRate, goldRate, totalINR, totalUSD]);
 
+  // Fetch all products for category counts
+  const fetchAllProducts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("user_id", user.id)
+        .is("deleted_at", null);
+
+      if (error) throw error;
+      setAllProducts(data || []);
+    } catch (error: any) {
+      console.error("Failed to load all products:", error);
+    }
+  };
+
   const fetchProducts = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -363,13 +385,29 @@ const Catalog = () => {
     }
   }, [selectedProductType]);
 
-  // Re-fetch products when category changes
+  // Re-fetch products when category changes with transition
   useEffect(() => {
     if (selectedProductType) {
+      setTransitioning(true);
       setLoading(true);
-      fetchProducts();
+      
+      // Small delay for fade-out effect
+      setTimeout(() => {
+        fetchProducts();
+        setTimeout(() => setTransitioning(false), 100);
+      }, 150);
     }
   }, [selectedProductType, fetchProducts]);
+
+  // Calculate product counts per category
+  const getCategoryCount = useCallback((category: string) => {
+    if (category === 'Jewellery') {
+      return allProducts.filter(p => 
+        p.product_type === 'Jewellery' || p.product_type === null
+      ).length;
+    }
+    return allProducts.filter(p => p.product_type === category).length;
+  }, [allProducts]);
 
   const handleDeleteSelected = useCallback(async () => {
     try {
@@ -829,16 +867,19 @@ const Catalog = () => {
                     };
                     
                     const style = categoryStyles[categoryKey] || categoryStyles['jewellery'];
+                    const count = getCategoryCount(category);
                     
                     return (
                       <button
                         key={category}
                         onClick={() => setSelectedProductType(category)}
+                        disabled={transitioning}
                         className={`
                           group relative overflow-hidden
                           px-8 py-4 rounded-2xl
                           font-serif text-lg font-semibold
                           transition-all duration-500 ease-out
+                          disabled:opacity-50 disabled:cursor-wait
                           ${isSelected 
                             ? `bg-gradient-to-br ${style.gradient} border-2 ${style.border} ${style.glow} scale-105` 
                             : 'bg-card/50 border-2 border-border/30 hover:border-border/60 hover:scale-102'
@@ -859,7 +900,15 @@ const Catalog = () => {
                           transition-colors duration-300
                         `}>
                           <span className="text-2xl">{style.icon}</span>
-                          <span className="tracking-wide">{category}</span>
+                          <div className="flex flex-col items-start">
+                            <span className="tracking-wide">{category}</span>
+                            <span className={`
+                              text-xs font-normal opacity-70
+                              ${isSelected ? '' : 'text-muted-foreground/60'}
+                            `}>
+                              {count} {count === 1 ? 'item' : 'items'}
+                            </span>
+                          </div>
                         </span>
                         
                         {/* Bottom accent line for selected state */}
@@ -958,7 +1007,11 @@ const Catalog = () => {
               ) : (
                 <div 
                   key={selectedProductType}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 animate-fade-in"
+                  className={`
+                    grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6
+                    transition-opacity duration-300
+                    ${transitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'}
+                  `}
                 >
                   {filteredProducts.map((product, index) => (
                     <div
