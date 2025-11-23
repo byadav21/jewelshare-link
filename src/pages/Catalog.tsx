@@ -856,6 +856,18 @@ const Catalog = () => {
                       diamondClarity: "",
                       searchQuery: "",
                       deliveryType: "",
+                      gemstoneType: "",
+                      color: "",
+                      clarity: "",
+                      cut: "",
+                      minCarat: "",
+                      maxCarat: "",
+                      diamondType: "",
+                      shape: "",
+                      polish: "",
+                      symmetry: "",
+                      fluorescence: "",
+                      lab: "",
                     })}
                     className="shadow-sm hover:shadow-md transition-all"
                   >
