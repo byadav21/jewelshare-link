@@ -14,6 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -54,6 +56,10 @@ const Catalog = () => {
   const navigate = useNavigate();
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(100);
 
   useEffect(() => {
     if (!roleLoading && isAdmin) {
@@ -249,7 +255,7 @@ const Catalog = () => {
 
   // Filter products
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
+    const filtered = products.filter(product => {
       // Search query - searches across multiple fields
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase().trim();
@@ -321,7 +327,54 @@ const Catalog = () => {
 
       return true;
     });
+    
+    return filtered;
   }, [products, filters]);
+  
+  // Paginated products
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, currentPage, itemsPerPage]);
+  
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  
+  // Reset to page 1 when filters change or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, selectedProductType]);
+  
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('ellipsis');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('ellipsis');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   // Calculate totals based on filtered products
   const totalINR = filteredProducts.reduce((sum, p) => sum + (p.retail_price || 0), 0);
@@ -1014,29 +1067,100 @@ const Catalog = () => {
                   </Button>
                 </div>
               ) : (
-                <div 
-                  key={selectedProductType}
-                  className={`
-                    grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6
-                    transition-opacity duration-300
-                    ${transitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'}
-                  `}
-                >
-                  {filteredProducts.map((product, index) => (
-                    <div
-                      key={product.id}
-                      className="animate-scale-in"
-                      style={{ animationDelay: `${index * 30}ms` }}
-                    >
-                      <ProductCard
-                        product={product}
-                        isSelected={selectedProducts.has(product.id)}
-                        onToggleSelection={(permissions.can_delete_products || isAdmin) ? toggleProductSelection : () => {}}
-                        usdRate={usdRate}
-                      />
+                <>
+                  <div 
+                    key={selectedProductType}
+                    className={`
+                      grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6
+                      transition-opacity duration-300
+                      ${transitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'}
+                    `}
+                  >
+                    {paginatedProducts.map((product, index) => (
+                      <div
+                        key={product.id}
+                        className="animate-scale-in"
+                        style={{ animationDelay: `${index * 30}ms` }}
+                      >
+                        <ProductCard
+                          product={product}
+                          isSelected={selectedProducts.has(product.id)}
+                          onToggleSelection={(permissions.can_delete_products || isAdmin) ? toggleProductSelection : () => {}}
+                          usdRate={usdRate}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 py-6 border-t border-border/30">
+                      {/* Items per page selector */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground font-medium">Products per page:</span>
+                        <Select 
+                          value={itemsPerPage.toString()} 
+                          onValueChange={(value) => {
+                            setItemsPerPage(Number(value));
+                            setCurrentPage(1);
+                          }}
+                        >
+                          <SelectTrigger className="w-24 h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="50">50</SelectItem>
+                            <SelectItem value="100">100</SelectItem>
+                            <SelectItem value="200">200</SelectItem>
+                            <SelectItem value="500">500</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Page info */}
+                      <div className="text-sm text-muted-foreground">
+                        Showing <span className="font-semibold text-foreground">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+                        <span className="font-semibold text-foreground">{Math.min(currentPage * itemsPerPage, filteredProducts.length)}</span> of{' '}
+                        <span className="font-semibold text-foreground">{filteredProducts.length}</span> products
+                      </div>
+                      
+                      {/* Pagination */}
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                              className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                            />
+                          </PaginationItem>
+                          
+                          {getPageNumbers().map((page, index) => (
+                            <PaginationItem key={index}>
+                              {page === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                              ) : (
+                                <PaginationLink
+                                  onClick={() => setCurrentPage(page as number)}
+                                  isActive={currentPage === page}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              )}
+                            </PaginationItem>
+                          ))}
+                          
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </>
           )}
