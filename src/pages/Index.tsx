@@ -698,7 +698,24 @@ const Index = () => {
                     Blog
                   </a>
                 </li>
-                <li><a href="#" className="transition-colors hover:text-foreground">Press</a></li>
+                <li>
+                  <a 
+                    href="#" 
+                    className="transition-colors hover:text-foreground" 
+                    onClick={(e) => { e.preventDefault(); navigate('/press'); }}
+                  >
+                    Press
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="#" 
+                    className="transition-colors hover:text-foreground" 
+                    onClick={(e) => { e.preventDefault(); navigate('/demo'); }}
+                  >
+                    Demo
+                  </a>
+                </li>
                 <li><a href="#" className="transition-colors hover:text-foreground">Partners</a></li>
               </ul>
             </div>

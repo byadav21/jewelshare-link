@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Press from "./pages/Press";
+import Demo from "./pages/Demo";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Catalog from "./pages/Catalog";
@@ -48,6 +50,8 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:id" element={<BlogPost />} />
+          <Route path="/press" element={<Press />} />
+          <Route path="/demo" element={<Demo />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/catalog" element={<Catalog />} />
