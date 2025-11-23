@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
+import { AdminGuard } from "@/components/AdminGuard";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import Blog from "./pages/Blog";
@@ -81,16 +82,16 @@ const App = () => (
           <Route path="/vendor-analytics" element={<ApprovalGuard><VendorAnalytics /></ApprovalGuard>} />
           
           {/* Admin routes (requires admin role) */}
-          <Route path="/admin" element={<ApprovalGuard><AdminDashboard /></ApprovalGuard>} />
-          <Route path="/super-admin" element={<ApprovalGuard><SuperAdmin /></ApprovalGuard>} />
-          <Route path="/vendor-approvals" element={<ApprovalGuard><VendorApprovals /></ApprovalGuard>} />
-          <Route path="/vendor-management" element={<ApprovalGuard><VendorManagement /></ApprovalGuard>} />
-          <Route path="/customer-database" element={<ApprovalGuard><CustomerDatabase /></ApprovalGuard>} />
-          <Route path="/analytics-dashboard" element={<ApprovalGuard><AnalyticsDashboard /></ApprovalGuard>} />
-          <Route path="/audit-logs" element={<ApprovalGuard><AuditLogs /></ApprovalGuard>} />
-          <Route path="/export-reports" element={<ApprovalGuard><ExportReports /></ApprovalGuard>} />
-          <Route path="/login-history" element={<ApprovalGuard><LoginHistory /></ApprovalGuard>} />
-          <Route path="/migrate-images" element={<ApprovalGuard><MigrateImages /></ApprovalGuard>} />
+          <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+          <Route path="/super-admin" element={<AdminGuard><SuperAdmin /></AdminGuard>} />
+          <Route path="/vendor-approvals" element={<AdminGuard><VendorApprovals /></AdminGuard>} />
+          <Route path="/vendor-management" element={<AdminGuard><VendorManagement /></AdminGuard>} />
+          <Route path="/customer-database" element={<AdminGuard><CustomerDatabase /></AdminGuard>} />
+          <Route path="/analytics-dashboard" element={<AdminGuard><AnalyticsDashboard /></AdminGuard>} />
+          <Route path="/audit-logs" element={<AdminGuard><AuditLogs /></AdminGuard>} />
+          <Route path="/export-reports" element={<AdminGuard><ExportReports /></AdminGuard>} />
+          <Route path="/login-history" element={<AdminGuard><LoginHistory /></AdminGuard>} />
+          <Route path="/migrate-images" element={<AdminGuard><MigrateImages /></AdminGuard>} />
           
           {/* 404 - must be last */}
           <Route path="*" element={<NotFound />} />
