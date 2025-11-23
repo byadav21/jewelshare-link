@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { ArrowLeft, Crown, Edit, Search } from "lucide-react";
+import { ArrowLeft, Crown, Edit, Search, Bookmark } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 interface VendorPermission {
@@ -51,9 +51,39 @@ interface VendorWithPlan extends VendorPermission {
   vendor_info: VendorInfo;
 }
 
+interface PermissionTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  template_config: {
+    can_add_products: boolean;
+    can_view_catalog: boolean;
+    can_edit_products: boolean;
+    can_delete_products: boolean;
+    can_share_catalog: boolean;
+    can_view_share_links: boolean;
+    can_manage_share_links: boolean;
+    can_view_interests: boolean;
+    can_add_vendor_details: boolean;
+    can_edit_profile: boolean;
+    can_view_custom_orders: boolean;
+    can_manage_custom_orders: boolean;
+    can_import_data: boolean;
+    can_manage_team: boolean;
+    can_view_sessions: boolean;
+    can_manage_sessions: boolean;
+    max_products: number | null;
+    max_share_links: number | null;
+    max_team_members: number | null;
+    max_product_images: number | null;
+    max_active_sessions: number;
+  };
+}
+
 export default function PlanManagement() {
   const navigate = useNavigate();
   const [vendors, setVendors] = useState<VendorWithPlan[]>([]);
+  const [templates, setTemplates] = useState<PermissionTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedVendor, setSelectedVendor] = useState<VendorWithPlan | null>(null);
@@ -63,6 +93,7 @@ export default function PlanManagement() {
 
   useEffect(() => {
     fetchVendors();
+    fetchTemplates();
   }, []);
 
   const fetchVendors = async () => {
@@ -97,6 +128,43 @@ export default function PlanManagement() {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("permission_templates")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      setTemplates((data as any) || []);
+    } catch (error: any) {
+      console.error("Failed to fetch templates", error);
+    }
+  };
+
+  const handleApplyTemplate = async (templateId: string) => {
+    if (!selectedVendor) return;
+
+    const template = templates.find(t => t.id === templateId);
+    if (!template) return;
+
+    try {
+      const { error } = await supabase
+        .from("vendor_permissions")
+        .update(template.template_config)
+        .eq("user_id", selectedVendor.user_id);
+
+      if (error) throw error;
+
+      toast.success(`Template "${template.name}" applied successfully`);
+      setCustomPlanDialogOpen(false);
+      fetchVendors();
+    } catch (error: any) {
+      toast.error("Failed to apply template");
+      console.error(error);
     }
   };
 
@@ -195,9 +263,16 @@ export default function PlanManagement() {
                     <Crown className="h-8 w-8 text-primary" />
                     Plan Management
                   </h1>
-                  <p className="text-sm text-muted-foreground mt-1">Manage vendor subscription plans and permissions</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Manage vendor subscription plans and permissions
+                    {templates.length > 0 && ` • ${templates.length} template${templates.length !== 1 ? 's' : ''} available`}
+                  </p>
                 </div>
               </div>
+              <Button variant="outline" onClick={() => navigate("/permission-presets")}>
+                <Bookmark className="mr-2 h-4 w-4" />
+                Manage Templates
+              </Button>
             </div>
           </div>
         </header>
@@ -299,6 +374,38 @@ export default function PlanManagement() {
             </DialogHeader>
 
             <div className="space-y-6 py-4">
+              {/* Template Selection */}
+              {templates.length > 0 && (
+                <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <Bookmark className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <Label className="text-base font-semibold">Apply Permission Template</Label>
+                      <p className="text-sm text-muted-foreground mt-1 mb-3">
+                        Quick apply a saved permission preset to this vendor
+                      </p>
+                      <Select onValueChange={handleApplyTemplate}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a template..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {templates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{template.name}</span>
+                                {template.description && (
+                                  <span className="text-xs text-muted-foreground">{template.description}</span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Override Toggle */}
               <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
                 <div className="flex items-center justify-between">
