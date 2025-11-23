@@ -338,13 +338,20 @@ const Catalog = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("products")
         .select("*")
         .eq("user_id", user.id)
-        .eq("product_type", selectedProductType)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+        .is("deleted_at", null);
+
+      // Filter by product type, treating NULL as Jewellery for backward compatibility
+      if (selectedProductType === 'Jewellery') {
+        query = query.or(`product_type.eq.${selectedProductType},product_type.is.null`);
+      } else {
+        query = query.eq("product_type", selectedProductType);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
       setProducts(data || []);
