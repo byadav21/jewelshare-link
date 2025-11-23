@@ -31,14 +31,10 @@ const SharedCatalog = () => {
   const [showVideoRequestForm, setShowVideoRequestForm] = useState(false);
   const [videoRequestLoading, setVideoRequestLoading] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
-    category: "",
-    metalType: "",
-    minPrice: "",
-    maxPrice: "",
-    diamondColor: "",
-    diamondClarity: "",
-    searchQuery: "",
-    deliveryType: "",
+    category: "", metalType: "", minPrice: "", maxPrice: "",
+    diamondColor: "", diamondClarity: "", searchQuery: "", deliveryType: "",
+    gemstoneType: "", color: "", clarity: "", cut: "", minCarat: "", maxCarat: "",
+    diamondType: "", shape: "", polish: "", symmetry: "", fluorescence: "", lab: ""
   });
   const [customOrderData, setCustomOrderData] = useState({
     customer_name: "",
@@ -333,11 +329,14 @@ const SharedCatalog = () => {
             <CatalogFilters 
               filters={filters}
               onFilterChange={setFilters}
+              productType="Jewellery"
               categories={Array.from(new Set(products.map(p => p.category).filter(Boolean)))}
               metalTypes={Array.from(new Set(products.map(p => p.metal_type).filter(Boolean)))}
               diamondColors={Array.from(new Set(products.map(p => p.diamond_color).filter(Boolean)))}
               diamondClarities={Array.from(new Set(products.map(p => p.clarity).filter(Boolean)))}
               deliveryTypes={Array.from(new Set(products.map(p => p.delivery_type).filter(Boolean)))}
+              gemstoneTypes={[]} colors={[]} clarities={[]} cuts={[]} 
+              shapes={[]} polishes={[]} symmetries={[]} fluorescences={[]} labs={[]}
             />
           </div>
           

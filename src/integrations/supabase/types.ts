@@ -197,12 +197,17 @@ export type Database = {
       }
       products: {
         Row: {
+          carat: number | null
+          carat_weight: number | null
           category: string | null
+          certification: string | null
           certification_cost: number | null
           clarity: string | null
           color: string | null
+          color_shade_amount: string | null
           cost_price: number
           created_at: string | null
+          cut: string | null
           d_rate_1: number | null
           d_value: number | null
           d_wt_1: number | null
@@ -211,38 +216,56 @@ export type Database = {
           delivery_type: string | null
           description: string | null
           diamond_color: string | null
+          diamond_type: string | null
           diamond_weight: number | null
           dispatches_in_days: number | null
+          fluorescence: string | null
           gemstone: string | null
           gemstone_cost: number | null
+          gemstone_name: string | null
+          gemstone_type: string | null
           gold_per_gram_price: number | null
           id: string
           image_url: string | null
           image_url_2: string | null
           image_url_3: string | null
+          lab: string | null
+          measurement: string | null
           metal_type: string | null
           mkg: number | null
           name: string
           net_weight: number | null
           per_carat_price: number | null
           pointer_diamond: number | null
+          polish: string | null
+          price_inr: number | null
+          price_usd: number | null
           product_type: string | null
           purity_fraction_used: number | null
+          ratio: string | null
           retail_price: number
+          shape: string | null
           sku: string | null
+          status: string | null
           stock_quantity: number | null
+          symmetry: string | null
           total_usd: number | null
           updated_at: string | null
           user_id: string
           weight_grams: number | null
         }
         Insert: {
+          carat?: number | null
+          carat_weight?: number | null
           category?: string | null
+          certification?: string | null
           certification_cost?: number | null
           clarity?: string | null
           color?: string | null
+          color_shade_amount?: string | null
           cost_price: number
           created_at?: string | null
+          cut?: string | null
           d_rate_1?: number | null
           d_value?: number | null
           d_wt_1?: number | null
@@ -251,38 +274,56 @@ export type Database = {
           delivery_type?: string | null
           description?: string | null
           diamond_color?: string | null
+          diamond_type?: string | null
           diamond_weight?: number | null
           dispatches_in_days?: number | null
+          fluorescence?: string | null
           gemstone?: string | null
           gemstone_cost?: number | null
+          gemstone_name?: string | null
+          gemstone_type?: string | null
           gold_per_gram_price?: number | null
           id?: string
           image_url?: string | null
           image_url_2?: string | null
           image_url_3?: string | null
+          lab?: string | null
+          measurement?: string | null
           metal_type?: string | null
           mkg?: number | null
           name: string
           net_weight?: number | null
           per_carat_price?: number | null
           pointer_diamond?: number | null
+          polish?: string | null
+          price_inr?: number | null
+          price_usd?: number | null
           product_type?: string | null
           purity_fraction_used?: number | null
+          ratio?: string | null
           retail_price: number
+          shape?: string | null
           sku?: string | null
+          status?: string | null
           stock_quantity?: number | null
+          symmetry?: string | null
           total_usd?: number | null
           updated_at?: string | null
           user_id: string
           weight_grams?: number | null
         }
         Update: {
+          carat?: number | null
+          carat_weight?: number | null
           category?: string | null
+          certification?: string | null
           certification_cost?: number | null
           clarity?: string | null
           color?: string | null
+          color_shade_amount?: string | null
           cost_price?: number
           created_at?: string | null
+          cut?: string | null
           d_rate_1?: number | null
           d_value?: number | null
           d_wt_1?: number | null
@@ -291,26 +332,39 @@ export type Database = {
           delivery_type?: string | null
           description?: string | null
           diamond_color?: string | null
+          diamond_type?: string | null
           diamond_weight?: number | null
           dispatches_in_days?: number | null
+          fluorescence?: string | null
           gemstone?: string | null
           gemstone_cost?: number | null
+          gemstone_name?: string | null
+          gemstone_type?: string | null
           gold_per_gram_price?: number | null
           id?: string
           image_url?: string | null
           image_url_2?: string | null
           image_url_3?: string | null
+          lab?: string | null
+          measurement?: string | null
           metal_type?: string | null
           mkg?: number | null
           name?: string
           net_weight?: number | null
           per_carat_price?: number | null
           pointer_diamond?: number | null
+          polish?: string | null
+          price_inr?: number | null
+          price_usd?: number | null
           product_type?: string | null
           purity_fraction_used?: number | null
+          ratio?: string | null
           retail_price?: number
+          shape?: string | null
           sku?: string | null
+          status?: string | null
           stock_quantity?: number | null
+          symmetry?: string | null
           total_usd?: number | null
           updated_at?: string | null
           user_id?: string

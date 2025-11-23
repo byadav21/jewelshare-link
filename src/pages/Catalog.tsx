@@ -35,6 +35,18 @@ const Catalog = () => {
     diamondClarity: "",
     searchQuery: "",
     deliveryType: "",
+    gemstoneType: "",
+    color: "",
+    clarity: "",
+    cut: "",
+    minCarat: "",
+    maxCarat: "",
+    diamondType: "",
+    shape: "",
+    polish: "",
+    symmetry: "",
+    fluorescence: "",
+    lab: "",
   });
   const navigate = useNavigate();
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
@@ -792,11 +804,21 @@ const Catalog = () => {
                 <CatalogFilters
                   filters={filters}
                   onFilterChange={setFilters}
+                  productType={selectedProductType}
                   categories={categories}
                   metalTypes={metalTypes}
                   diamondColors={diamondColors}
                   diamondClarities={diamondClarities}
                   deliveryTypes={deliveryTypes}
+                  gemstoneTypes={[]}
+                  colors={[]}
+                  clarities={[]}
+                  cuts={[]}
+                  shapes={[]}
+                  polishes={[]}
+                  symmetries={[]}
+                  fluorescences={[]}
+                  labs={[]}
                 />
               </div>
 

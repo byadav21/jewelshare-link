@@ -1,20 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Upload, Loader2, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
-import { productImportSchema } from "@/lib/validations";
+import { productImportSchema, gemstoneImportSchema, diamondImportSchema } from "@/lib/validations";
 import { generateProductTemplate } from "@/utils/generateTemplate";
+import { convertINRtoUSD } from "@/utils/currencyConversion";
+
+type ProductType = 'Jewellery' | 'Gemstones' | 'Loose Diamonds';
 
 const Import = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedProductType, setSelectedProductType] = useState<ProductType>('Jewellery');
   const [importErrors, setImportErrors] = useState<Array<{row: number, product: string, errors: string[]}>>([]);
   const [previewData, setPreviewData] = useState<{
     valid: any[];
@@ -22,6 +28,23 @@ const Import = () => {
   } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Fetch approved categories
+  const { data: approvedCategories } = useQuery({
+    queryKey: ['approvedCategories'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data } = await supabase
+        .from('user_approval_status')
+        .select('approved_categories')
+        .eq('user_id', user.id)
+        .single();
+
+      return (data?.approved_categories || []) as string[];
+    },
+  });
 
   const handlePreview = async () => {
     if (!file) {
@@ -42,7 +65,6 @@ const Import = () => {
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      // Skip first row (the one with Base 24K rate info) and use row 2 as headers
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -53,7 +75,14 @@ const Import = () => {
       const errors: Array<{row: number, product: string, errors: string[]}> = [];
       const validProducts: any[] = [];
       
-      jsonData.forEach((row: any, index: number) => {
+      // Select appropriate schema based on product type
+      const schema = selectedProductType === 'Gemstones' ? gemstoneImportSchema :
+                     selectedProductType === 'Loose Diamonds' ? diamondImportSchema :
+                     productImportSchema;
+      
+      for (const [index, rowData] of jsonData.entries()) {
+        const row: any = rowData; // Type assertion for Excel data
+        
         // Parse numbers safely
         const parseNumber = (val: any): number => {
           if (typeof val === 'number') return val;
@@ -64,89 +93,111 @@ const Import = () => {
           return 0;
         };
 
-        const costPrice = parseNumber(row['COST PRICE']) || 0;
-        const retailPrice = parseNumber(row['RETAIL PRICE']) || parseNumber(row.TOTAL) || costPrice;
-        
-        // Parse image URLs - handle backslash escaping and pipe separators  
+        // Parse image URLs
         let imageUrl = null;
         let imageUrl2 = null;
         let imageUrl3 = null;
-        if (row.IMAGE_URL) {
-          const cleanUrls = String(row.IMAGE_URL)
-            .replace(/\\/g, '') // Remove backslashes
-            .split('|') // Split by pipe
-            .map(url => url.trim())
-            .filter(url => url.startsWith('http'));
+        if (row.IMAGE_URL || row['IMAGE URL']) {
+          const cleanUrls = String(row.IMAGE_URL || row['IMAGE URL'])
+            .replace(/\\/g, '')
+            .split('|')
+            .map((url: string) => url.trim())
+            .filter((url: string) => url.startsWith('http'));
           
           imageUrl = cleanUrls[0] || null;
           imageUrl2 = cleanUrls[1] || null;
           imageUrl3 = cleanUrls[2] || null;
         }
-        
-        // Check if Thumbnail column exists and use it for image_url_3 if available
-        if (row.Thumbnail && String(row.Thumbnail).startsWith('http')) {
-          imageUrl3 = row.Thumbnail;
+
+        let product: any;
+
+        if (selectedProductType === 'Gemstones') {
+          const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR']);
+          const priceUSD = await convertINRtoUSD(priceINR);
+          
+          product = {
+            user_id: user.id,
+            sku: row['SKU ID'] || row['SKU'] || `GEM-${index + 1}`,
+            gemstone_name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown',
+            gemstone_type: row['GEMSTONE TYPE'] || row['Gemstone Type'] || null,
+            carat_weight: parseNumber(row['CARAT WEIGHT'] || row['Carat Weight']) || null,
+            color: row.COLOR || row['Color'] || null,
+            clarity: row.CLARITY || row['Clarity'] || null,
+            cut: row.CUT || row['Cut'] || null,
+            polish: row.POLISH || row['Polish'] || null,
+            symmetry: row.SYMMETRY || row['Symmetry'] || null,
+            measurement: row.MEASUREMENT || row['Measurement'] || null,
+            certification: row.CERTIFICATION || row['Certification'] || null,
+            image_url: imageUrl,
+            image_url_2: imageUrl2,
+            image_url_3: imageUrl3,
+            price_inr: priceINR,
+            price_usd: priceUSD,
+            stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
+            product_type: 'Gemstones',
+            name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
+          };
+        } else if (selectedProductType === 'Loose Diamonds') {
+          const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR']);
+          const priceUSD = await convertINRtoUSD(priceINR);
+          
+          product = {
+            user_id: user.id,
+            sku: row['SKU NO'] || row['SKU'] || `DIA-${index + 1}`,
+            diamond_type: row['DIAMOND TYPE'] || row['Diamond Type'] || 'Natural',
+            status: row.STATUS || row['Status'] || null,
+            shape: row.SHAPE || row['Shape'] || 'Round',
+            carat: parseNumber(row.CARAT || row['Carat']),
+            clarity: row.CLARITY || row['Clarity'] || 'VS1',
+            color: row.COLOR || row['Color'] || 'F',
+            color_shade_amount: row['COLOR SHADE AMOUNT'] || row['Color Shade Amount'] || null,
+            cut: row.CUT || row['Cut'] || null,
+            polish: row.POLISH || row['Polish'] || null,
+            symmetry: row.SYMMETRY || row['Symmetry'] || null,
+            fluorescence: row.FLO || row['Fluorescence'] || null,
+            measurement: row.MEASUREMENT || row['Measurement'] || null,
+            ratio: row.RATIO || row['Ratio'] || null,
+            lab: row.LAB || row['Lab'] || null,
+            image_url: imageUrl,
+            image_url_2: imageUrl2,
+            image_url_3: imageUrl3,
+            price_inr: priceINR,
+            price_usd: priceUSD,
+            stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
+            product_type: 'Loose Diamonds',
+            name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,
+          };
+        } else {
+          // Jewellery (existing logic)
+          const costPrice = parseNumber(row['COST PRICE']) || 0;
+          const retailPrice = parseNumber(row['RETAIL PRICE']) || parseNumber(row.TOTAL) || costPrice;
+          
+          product = {
+            user_id: user.id,
+            name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
+            description: row.DESCRIPTION || null,
+            sku: row.CERT || null,
+            category: row.CATEGORY || null,
+            metal_type: row['METAL TYPE'] || null,
+            gemstone: row.GEMSTONE || null,
+            color: row.COLOR || null,
+            diamond_color: row['DIAMOND COLOR'] || null,
+            clarity: row.CLARITY || null,
+            image_url: imageUrl,
+            image_url_2: imageUrl2,
+            image_url_3: imageUrl3,
+            weight_grams: parseNumber(row['WEIGHT (grams)']) || null,
+            net_weight: parseNumber(row['NET WEIGHT']) || null,
+            diamond_weight: parseNumber(row['DIAMOND WEIGHT']) || null,
+            cost_price: costPrice,
+            retail_price: retailPrice,
+            stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
+            product_type: 'Jewellery',
+          };
         }
-        
-        
-        // Parse delivery information
-        const deliveryType = row['DELIVERY TYPE'] || row['Delivery Type'] || 'immediate delivery';
-        let dispatchesInDays = null;
-        
-        // Check for DISPATCHES IN DAYS column
-        if (row['DISPATCHES IN DAYS'] || row['Dispatches In Days']) {
-          const days = parseNumber(row['DISPATCHES IN DAYS'] || row['Dispatches In Days']);
-          if (days > 0) {
-            dispatchesInDays = Math.floor(days);
-          }
-        }
-        // Or extract from delivery type text (e.g., "Despatches in 5 working days")
-        else if (deliveryType && deliveryType.toLowerCase().includes('despatches')) {
-          const match = deliveryType.match(/(\d+)/);
-          if (match) {
-            dispatchesInDays = parseInt(match[1], 10);
-          }
-        }
-        
-        const product = {
-          user_id: user.id,
-          name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
-          description: row.DESCRIPTION || null,
-          sku: row.CERT || null,
-          category: row.CATEGORY || row['PRODUCT TYPE'] || null,
-          metal_type: row['METAL TYPE'] || null,
-          gemstone: row.GEMSTONE || null,
-          color: row.COLOR || null,
-          diamond_color: row['DIAMOND COLOR'] || null,
-          clarity: row.CLARITY || null,
-          image_url: imageUrl,
-          image_url_2: imageUrl2,
-          image_url_3: imageUrl3,
-          weight_grams: parseNumber(row['WEIGHT (grams)']) || null,
-          net_weight: parseNumber(row['NET WEIGHT']) || null,
-          diamond_weight: parseNumber(row['DIAMOND WEIGHT']) || null,
-          d_wt_1: parseNumber(row['D WT 1']) || null,
-          d_wt_2: parseNumber(row['D WT 2']) || null,
-          pointer_diamond: parseNumber(row['POINTER DIAMOND']) || null,
-          per_carat_price: parseNumber(row['PER CARAT PRICE']) || null,
-          d_rate_1: parseNumber(row['D RATE 1']) || null,
-          d_value: parseNumber(row['D VALUE']) || null,
-          gold_per_gram_price: parseNumber(row['GOLD PER GRAM PRICE']) || null,
-          purity_fraction_used: parseNumber(row['PURITY FRACTION USED']) || null,
-          mkg: parseNumber(row.MKG) || null,
-          certification_cost: parseNumber(row['CERTIFICATION COST']) || null,
-          gemstone_cost: parseNumber(row['GEMSTONE COST']) || null,
-          cost_price: parseNumber(row['COST PRICE']) || costPrice,
-          retail_price: parseNumber(row['RETAIL PRICE']) || parseNumber(row.TOTAL) || retailPrice,
-          total_usd: parseNumber(row['TOTAL USD']) || null,
-          stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
-          product_type: row['PRODUCT TYPE'] || null,
-          delivery_type: deliveryType,
-          dispatches_in_days: dispatchesInDays,
-        };
 
         // Validate product data
-        const validation = productImportSchema.safeParse(product);
+        const validation = schema.safeParse(product);
         if (!validation.success) {
           const errorMessages = validation.error.errors.map(err => 
             `${err.path.join('.')}: ${err.message}`
@@ -159,7 +210,7 @@ const Import = () => {
         } else {
           validProducts.push(product);
         }
-      });
+      }
 
       setPreviewData({
         valid: validProducts,
@@ -290,16 +341,30 @@ const Import = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="productType">Select Product Type</Label>
+                  <Select value={selectedProductType} onValueChange={(v) => setSelectedProductType(v as ProductType)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {approvedCategories?.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
                     <p className="text-sm text-muted-foreground">
-                      Get the Excel template with all required columns
+                      Get the Excel template for {selectedProductType}
                     </p>
                   </div>
                   <Button
                     variant="outline"
-                    onClick={generateProductTemplate}
+                    onClick={() => generateProductTemplate(selectedProductType)}
                     className="gap-2"
                   >
                     <Download className="h-4 w-4" />
