@@ -37,6 +37,17 @@ All colors MUST be HSL.
     --ring: 45 95% 65%;
 
     --radius: 0.75rem;
+    
+    /* Premium category styling */
+    --category-jewellery: 45 95% 65%;
+    --category-gemstone: 280 85% 70%;
+    --category-diamond: 200 90% 75%;
+    --category-glow: 45 100% 75%;
+    
+    /* Gradients */
+    --gradient-jewellery: linear-gradient(135deg, hsl(45 95% 65% / 0.15), hsl(45 95% 65% / 0.05));
+    --gradient-gemstone: linear-gradient(135deg, hsl(280 85% 70% / 0.15), hsl(280 85% 70% / 0.05));
+    --gradient-diamond: linear-gradient(135deg, hsl(200 90% 75% / 0.15), hsl(200 90% 75% / 0.05));
 
     --sidebar-background: 220 25% 8%;
     --sidebar-foreground: 45 100% 95%;
@@ -76,6 +87,17 @@ All colors MUST be HSL.
     --border: 220 15% 22%;
     --input: 220 15% 22%;
     --ring: 45 95% 65%;
+    
+    /* Premium category styling */
+    --category-jewellery: 45 95% 65%;
+    --category-gemstone: 280 85% 70%;
+    --category-diamond: 200 90% 75%;
+    --category-glow: 45 100% 75%;
+    
+    /* Gradients */
+    --gradient-jewellery: linear-gradient(135deg, hsl(45 95% 65% / 0.15), hsl(45 95% 65% / 0.05));
+    --gradient-gemstone: linear-gradient(135deg, hsl(280 85% 70% / 0.15), hsl(280 85% 70% / 0.05));
+    --gradient-diamond: linear-gradient(135deg, hsl(200 90% 75% / 0.15), hsl(200 90% 75% / 0.05));
     
     --sidebar-background: 220 25% 8%;
     --sidebar-foreground: 45 100% 95%;
