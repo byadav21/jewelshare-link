@@ -8,10 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { useVendorPermissions } from "@/hooks/useVendorPermissions";
+import { JewelleryForm } from "@/components/forms/JewelleryForm";
+import { GemstonesForm } from "@/components/forms/GemstonesForm";
+import { LooseDiamondsForm } from "@/components/forms/LooseDiamondsForm";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -24,12 +26,23 @@ const AddProduct = () => {
     description: "",
     sku: "",
     category: "",
-    product_type: "",
+    product_type: "Jewellery",
     metal_type: "",
     gemstone: "",
+    gemstone_name: "",
+    gemstone_type: "",
     color: "",
     diamond_color: "",
     clarity: "",
+    cut: "",
+    polish: "",
+    symmetry: "",
+    fluorescence: "",
+    shape: "",
+    measurement: "",
+    certification: "",
+    ratio: "",
+    lab: "",
     weight_grams: "",
     net_weight: "",
     diamond_weight: "",
@@ -40,6 +53,8 @@ const AddProduct = () => {
     pointer_diamond: "",
     d_value: "",
     mkg: "",
+    carat: "",
+    carat_weight: "",
     per_carat_price: "",
     gold_per_gram_price: "",
     certification_cost: "",
@@ -48,6 +63,7 @@ const AddProduct = () => {
     retail_price: "",
     total_usd: "",
     stock_quantity: "0",
+    color_shade_amount: "",
     image_url: "",
     image_url_2: "",
     image_url_3: "",
@@ -102,12 +118,23 @@ const AddProduct = () => {
           description: formData.description || null,
           sku: formData.sku || null,
           category: formData.category || null,
-          product_type: formData.product_type || null,
+          product_type: formData.product_type,
           metal_type: formData.metal_type || null,
           gemstone: formData.gemstone || null,
+          gemstone_name: formData.gemstone_name || null,
+          gemstone_type: formData.gemstone_type || null,
           color: formData.color || null,
           diamond_color: formData.diamond_color || null,
           clarity: formData.clarity || null,
+          cut: formData.cut || null,
+          polish: formData.polish || null,
+          symmetry: formData.symmetry || null,
+          fluorescence: formData.fluorescence || null,
+          shape: formData.shape || null,
+          measurement: formData.measurement || null,
+          certification: formData.certification || null,
+          ratio: formData.ratio || null,
+          lab: formData.lab || null,
           weight_grams: formData.weight_grams ? parseFloat(formData.weight_grams) : null,
           net_weight: formData.net_weight ? parseFloat(formData.net_weight) : null,
           diamond_weight: formData.diamond_weight ? parseFloat(formData.diamond_weight) : null,
@@ -118,6 +145,8 @@ const AddProduct = () => {
           pointer_diamond: formData.pointer_diamond ? parseFloat(formData.pointer_diamond) : null,
           d_value: formData.d_value ? parseFloat(formData.d_value) : null,
           mkg: formData.mkg ? parseFloat(formData.mkg) : null,
+          carat: formData.carat ? parseFloat(formData.carat) : null,
+          carat_weight: formData.carat_weight ? parseFloat(formData.carat_weight) : null,
           per_carat_price: formData.per_carat_price ? parseFloat(formData.per_carat_price) : null,
           gold_per_gram_price: formData.gold_per_gram_price ? parseFloat(formData.gold_per_gram_price) : null,
           certification_cost: formData.certification_cost ? parseFloat(formData.certification_cost) : null,
@@ -126,6 +155,7 @@ const AddProduct = () => {
           retail_price: parseFloat(formData.retail_price),
           total_usd: formData.total_usd ? parseFloat(formData.total_usd) : null,
           stock_quantity: parseInt(formData.stock_quantity),
+          color_shade_amount: formData.color_shade_amount || null,
           image_url: formData.image_url || null,
           image_url_2: formData.image_url_2 || null,
           image_url_3: formData.image_url_3 || null,
@@ -155,8 +185,8 @@ const AddProduct = () => {
 
   return (
     <ApprovalGuard>
-      <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto px-4 max-w-2xl">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
@@ -166,468 +196,324 @@ const AddProduct = () => {
             Back to Catalog
           </Button>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl font-serif">Add New Product</CardTitle>
+          <Card className="shadow-xl">
+            <CardHeader className="border-b border-border/50">
+              <CardTitle className="text-3xl font-serif bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Add New Product
+              </CardTitle>
+              <p className="text-muted-foreground text-sm mt-2">Select a category and fill in the product details</p>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Product Name *</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Gold Diamond Ring"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Beautiful 18k gold ring with diamond..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="sku">SKU</Label>
-                    <Input
-                      id="sku"
-                      name="sku"
-                      value={formData.sku}
-                      onChange={handleChange}
-                      placeholder="DPS19"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Input
-                      id="category"
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      placeholder="DIAMOND PANDENT SET"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="product_type">Product Type *</Label>
-                    <Select
-                      value={formData.product_type}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, product_type: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select product type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {approvedCategories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="metal_type">Metal Type</Label>
-                    <Input
-                      id="metal_type"
-                      name="metal_type"
-                      value={formData.metal_type}
-                      onChange={handleChange}
-                      placeholder="18k Gold"
-                    />
-                  </div>
-                </div>
-
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="gemstone">Gemstone</Label>
-                    <Input
-                      id="gemstone"
-                      name="gemstone"
-                      value={formData.gemstone}
-                      onChange={handleChange}
-                      placeholder="GH VS (Color Clarity)"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="diamond_color">Diamond Color</Label>
-                    <Input
-                      id="diamond_color"
-                      name="diamond_color"
-                      value={formData.diamond_color}
-                      onChange={handleChange}
-                      placeholder="GH"
-                    />
+            <CardContent className="pt-6">
+              {/* Category Selector */}
+              {approvedCategories.length > 1 && (
+                <div className="mb-8 pb-6 border-b border-border/30">
+                  <Label className="text-base font-semibold mb-4 block">Select Product Category *</Label>
+                  <div className="flex gap-3 flex-wrap">
+                    {approvedCategories.map((category) => {
+                      const isSelected = formData.product_type === category;
+                      const categoryKey = category.toLowerCase().replace(/\s+/g, '-');
+                      
+                      const categoryStyles: Record<string, any> = {
+                        'jewellery': {
+                          gradient: 'from-category-jewellery/20 to-category-jewellery/5',
+                          border: 'border-category-jewellery/40',
+                          text: 'text-category-jewellery',
+                          glow: 'shadow-[0_0_20px_hsl(var(--category-jewellery)/0.3)]',
+                          icon: '💍'
+                        },
+                        'gemstones': {
+                          gradient: 'from-category-gemstone/20 to-category-gemstone/5',
+                          border: 'border-category-gemstone/40',
+                          text: 'text-category-gemstone',
+                          glow: 'shadow-[0_0_20px_hsl(var(--category-gemstone)/0.3)]',
+                          icon: '💎'
+                        },
+                        'loose-gemstones': {
+                          gradient: 'from-category-gemstone/20 to-category-gemstone/5',
+                          border: 'border-category-gemstone/40',
+                          text: 'text-category-gemstone',
+                          glow: 'shadow-[0_0_20px_hsl(var(--category-gemstone)/0.3)]',
+                          icon: '💎'
+                        },
+                        'loose-diamonds': {
+                          gradient: 'from-category-diamond/20 to-category-diamond/5',
+                          border: 'border-category-diamond/40',
+                          text: 'text-category-diamond',
+                          glow: 'shadow-[0_0_20px_hsl(var(--category-diamond)/0.3)]',
+                          icon: '✨'
+                        }
+                      };
+                      
+                      const style = categoryStyles[categoryKey] || categoryStyles['jewellery'];
+                      
+                      return (
+                        <button
+                          key={category}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, product_type: category })}
+                          className={`
+                            group relative overflow-hidden px-6 py-3 rounded-xl
+                            font-serif text-base font-semibold transition-all duration-300 ease-out
+                            ${isSelected 
+                              ? `bg-gradient-to-br ${style.gradient} border-2 ${style.border} ${style.glow} scale-105` 
+                              : 'bg-card/50 border-2 border-border/30 hover:border-border/60 hover:scale-102'
+                            }
+                          `}
+                        >
+                          <div className={`
+                            absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent
+                            -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out
+                          `} />
+                          
+                          <span className={`
+                            relative flex items-center gap-2
+                            ${isSelected ? style.text : 'text-muted-foreground group-hover:text-foreground'}
+                            transition-colors duration-300
+                          `}>
+                            <span className="text-xl">{style.icon}</span>
+                            <span className="tracking-wide">{category}</span>
+                          </span>
+                          
+                          {isSelected && (
+                            <div className={`
+                              absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-3/4 rounded-full
+                              bg-gradient-to-r ${style.gradient} animate-pulse
+                            `} />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+              )}
 
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Common Fields for All Categories */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                    Basic Information
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                  </h3>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="color">Color</Label>
+                    <Label htmlFor="name">Product Name *</Label>
                     <Input
-                      id="color"
-                      name="color"
-                      value={formData.color}
-                      onChange={handleChange}
-                      placeholder="Yellow, White, Rose..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="clarity">Clarity</Label>
-                    <Input
-                      id="clarity"
-                      name="clarity"
-                      value={formData.clarity}
-                      onChange={handleChange}
-                      placeholder="VS"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="weight_grams">Gross Weight (g)</Label>
-                    <Input
-                      id="weight_grams"
-                      name="weight_grams"
-                      type="number"
-                      step="0.001"
-                      value={formData.weight_grams}
-                      onChange={handleChange}
-                      placeholder="4.37"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="net_weight">Net Weight (g)</Label>
-                    <Input
-                      id="net_weight"
-                      name="net_weight"
-                      type="number"
-                      step="0.001"
-                      value={formData.net_weight}
-                      onChange={handleChange}
-                      placeholder="4.252"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="d_wt_1">D.WT 1 (ct)</Label>
-                    <Input
-                      id="d_wt_1"
-                      name="d_wt_1"
-                      type="number"
-                      step="0.01"
-                      value={formData.d_wt_1}
-                      onChange={handleChange}
-                      placeholder="0.23"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="d_wt_2">D.WT 2 (ct)</Label>
-                    <Input
-                      id="d_wt_2"
-                      name="d_wt_2"
-                      type="number"
-                      step="0.01"
-                      value={formData.d_wt_2}
-                      onChange={handleChange}
-                      placeholder="0.36"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="diamond_weight">Total D.WT (ct)</Label>
-                    <Input
-                      id="diamond_weight"
-                      name="diamond_weight"
-                      type="number"
-                      step="0.01"
-                      value={formData.diamond_weight}
-                      onChange={handleChange}
-                      placeholder="0.59"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="purity_fraction_used">Purity (%)</Label>
-                    <Input
-                      id="purity_fraction_used"
-                      name="purity_fraction_used"
-                      type="number"
-                      step="0.01"
-                      value={formData.purity_fraction_used}
-                      onChange={handleChange}
-                      placeholder="76"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="d_rate_1">D Rate 1 (₹/ct)</Label>
-                    <Input
-                      id="d_rate_1"
-                      name="d_rate_1"
-                      type="number"
-                      step="0.01"
-                      value={formData.d_rate_1}
-                      onChange={handleChange}
-                      placeholder="65000"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="pointer_diamond">Pointer Diamond</Label>
-                    <Input
-                      id="pointer_diamond"
-                      name="pointer_diamond"
-                      type="number"
-                      step="0.01"
-                      value={formData.pointer_diamond}
-                      onChange={handleChange}
-                      placeholder="65000"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="d_value">D Value (₹)</Label>
-                    <Input
-                      id="d_value"
-                      name="d_value"
-                      type="number"
-                      step="0.01"
-                      value={formData.d_value}
-                      onChange={handleChange}
-                      placeholder="38350"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="mkg">MKG (₹)</Label>
-                    <Input
-                      id="mkg"
-                      name="mkg"
-                      type="number"
-                      step="0.01"
-                      value={formData.mkg}
-                      onChange={handleChange}
-                      placeholder="4039.40"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="certification_cost">Cert Cost (₹)</Label>
-                    <Input
-                      id="certification_cost"
-                      name="certification_cost"
-                      type="number"
-                      step="0.01"
-                      value={formData.certification_cost}
-                      onChange={handleChange}
-                      placeholder="2000"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="gemstone_cost">Gem Cost (₹)</Label>
-                    <Input
-                      id="gemstone_cost"
-                      name="gemstone_cost"
-                      type="number"
-                      step="0.01"
-                      value={formData.gemstone_cost}
-                      onChange={handleChange}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="per_carat_price">Per Carat Price</Label>
-                    <Input
-                      id="per_carat_price"
-                      name="per_carat_price"
-                      type="number"
-                      step="0.01"
-                      value={formData.per_carat_price}
-                      onChange={handleChange}
-                      placeholder="50000.00"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="gold_per_gram_price">Gold/Gram (₹)</Label>
-                    <Input
-                      id="gold_per_gram_price"
-                      name="gold_per_gram_price"
-                      type="number"
-                      step="0.01"
-                      value={formData.gold_per_gram_price}
-                      onChange={handleChange}
-                      placeholder="6500.00"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cost_price">Cost Price *</Label>
-                    <Input
-                      id="cost_price"
-                      name="cost_price"
-                      type="number"
-                      step="0.01"
-                      value={formData.cost_price}
+                      id="name"
+                      name="name"
+                      value={formData.name}
                       onChange={handleChange}
                       required
-                      placeholder="75000.00"
+                      placeholder="Gold Diamond Ring"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="retail_price">Retail Price (₹) *</Label>
-                    <Input
-                      id="retail_price"
-                      name="retail_price"
-                      type="number"
-                      step="0.01"
-                      value={formData.retail_price}
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
                       onChange={handleChange}
-                      required
-                      placeholder="95000.00"
+                      placeholder="Beautiful 18k gold ring with diamond..."
+                      rows={3}
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="total_usd">Total USD</Label>
-                    <Input
-                      id="total_usd"
-                      name="total_usd"
-                      type="number"
-                      step="0.01"
-                      value={formData.total_usd}
-                      onChange={handleChange}
-                      placeholder="1000.00"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="stock_quantity">Stock Quantity</Label>
-                  <Input
-                    id="stock_quantity"
-                    name="stock_quantity"
-                    type="number"
-                    value={formData.stock_quantity}
-                    onChange={handleChange}
-                    placeholder="1"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">Image URL</Label>
-                  <Input
-                    id="image_url"
-                    name="image_url"
-                    type="url"
-                    value={formData.image_url}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image_url_2">Image URL 2</Label>
-                  <Input
-                    id="image_url_2"
-                    name="image_url_2"
-                    type="url"
-                    value={formData.image_url_2}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image2.jpg"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image_url_3">Image URL 3</Label>
-                  <Input
-                    id="image_url_3"
-                    name="image_url_3"
-                    type="url"
-                    value={formData.image_url_3}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image3.jpg"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Delivery Type</Label>
-                  <RadioGroup
-                    value={formData.delivery_type}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, delivery_type: value })
-                    }
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="immediate delivery" id="immediate" />
-                      <Label htmlFor="immediate" className="font-normal">
-                        Immediate Delivery
-                      </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="sku">SKU</Label>
+                      <Input
+                        id="sku"
+                        name="sku"
+                        value={formData.sku}
+                        onChange={handleChange}
+                        placeholder="DPS19"
+                      />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="order based" id="order" />
-                      <Label htmlFor="order" className="font-normal">
-                        Order Based
-                      </Label>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Sub-Category</Label>
+                      <Input
+                        id="category"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        placeholder="DIAMOND PANDENT SET"
+                      />
                     </div>
-                  </RadioGroup>
+                  </div>
                 </div>
 
-                {formData.delivery_type === "order based" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="dispatches_in_days">Dispatches in Days</Label>
-                    <Input
-                      id="dispatches_in_days"
-                      name="dispatches_in_days"
-                      type="number"
-                      value={formData.dispatches_in_days}
-                      onChange={handleChange}
-                      placeholder="7"
-                    />
-                  </div>
+                {/* Category-Specific Forms */}
+                {formData.product_type === 'Jewellery' && (
+                  <JewelleryForm
+                    formData={formData}
+                    handleChange={handleChange}
+                    setFormData={setFormData}
+                  />
                 )}
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Adding..." : "Add Product"}
-                </Button>
+                {(formData.product_type === 'Gemstones' || formData.product_type === 'Loose Gemstones') && (
+                  <GemstonesForm
+                    formData={formData}
+                    handleChange={handleChange}
+                  />
+                )}
+
+                {formData.product_type === 'Loose Diamonds' && (
+                  <LooseDiamondsForm
+                    formData={formData}
+                    handleChange={handleChange}
+                  />
+                )}
+
+                {/* Pricing Section - Common for All */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                    Pricing & Stock
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="cost_price">Cost Price (₹) *</Label>
+                      <Input
+                        id="cost_price"
+                        name="cost_price"
+                        type="number"
+                        step="0.01"
+                        value={formData.cost_price}
+                        onChange={handleChange}
+                        required
+                        placeholder="75000.00"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="retail_price">Retail Price (₹) *</Label>
+                      <Input
+                        id="retail_price"
+                        name="retail_price"
+                        type="number"
+                        step="0.01"
+                        value={formData.retail_price}
+                        onChange={handleChange}
+                        required
+                        placeholder="95000.00"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                    <Input
+                      id="stock_quantity"
+                      name="stock_quantity"
+                      type="number"
+                      value={formData.stock_quantity}
+                      onChange={handleChange}
+                      placeholder="1"
+                    />
+                  </div>
+                </div>
+
+                {/* Images Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                    Product Images
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                  </h3>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="image_url">Primary Image URL</Label>
+                    <Input
+                      id="image_url"
+                      name="image_url"
+                      value={formData.image_url}
+                      onChange={handleChange}
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="image_url_2">Image URL 2</Label>
+                      <Input
+                        id="image_url_2"
+                        name="image_url_2"
+                        value={formData.image_url_2}
+                        onChange={handleChange}
+                        placeholder="https://..."
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="image_url_3">Image URL 3</Label>
+                      <Input
+                        id="image_url_3"
+                        name="image_url_3"
+                        value={formData.image_url_3}
+                        onChange={handleChange}
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                    Delivery
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent"></span>
+                  </h3>
+
+                  <div className="space-y-3">
+                    <Label>Delivery Type</Label>
+                    <RadioGroup
+                      value={formData.delivery_type}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, delivery_type: value })
+                      }
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="immediate delivery" id="immediate" />
+                        <Label htmlFor="immediate">Immediate Delivery</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="dispatches in" id="scheduled" />
+                        <Label htmlFor="scheduled">Scheduled Delivery</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {formData.delivery_type === "dispatches in" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="dispatches_in_days">Dispatch in (days)</Label>
+                      <Input
+                        id="dispatches_in_days"
+                        name="dispatches_in_days"
+                        type="number"
+                        value={formData.dispatches_in_days}
+                        onChange={handleChange}
+                        placeholder="3"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4">
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    disabled={loading}
+                  >
+                    {loading ? "Adding Product..." : "Add Product"}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>
