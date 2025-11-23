@@ -27,6 +27,14 @@ export const productInterestSchema = z.object({
   notes: z.string().max(500, "Notes must be less than 500 characters").optional().or(z.literal("")),
 });
 
+// Video request validation
+export const videoRequestSchema = z.object({
+  customer_name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  customer_email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  customer_phone: z.string().max(20, "Phone must be less than 20 characters").optional().or(z.literal("")),
+  requested_products: z.string().trim().min(1, "Please describe what you'd like to see").max(1000, "Description must be less than 1000 characters"),
+});
+
 // Product import validation
 export const productImportSchema = z.object({
   user_id: z.string().uuid(),
@@ -97,6 +105,7 @@ export const diamondImportSchema = z.object({
 export type CustomOrderFormData = z.infer<typeof customOrderSchema>;
 export type ContactOwnerFormData = z.infer<typeof contactOwnerSchema>;
 export type ProductInterestFormData = z.infer<typeof productInterestSchema>;
+export type VideoRequestFormData = z.infer<typeof videoRequestSchema>;
 export type ProductImportData = z.infer<typeof productImportSchema>;
 export type GemstoneImportData = z.infer<typeof gemstoneImportSchema>;
 export type DiamondImportData = z.infer<typeof diamondImportSchema>;
