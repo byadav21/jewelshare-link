@@ -28,7 +28,18 @@ const Auth = () => {
           .single();
         
         if (approvalData?.status === "approved") {
-          navigate("/");
+          // Check if user is admin
+          const { data: roleData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .single();
+          
+          if (roleData?.role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/catalog");
+          }
         } else {
           navigate("/pending-approval");
         }
@@ -48,7 +59,18 @@ const Auth = () => {
             .single();
           
           if (approvalData?.status === "approved") {
-            navigate("/");
+            // Check if user is admin
+            const { data: roleData } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", session.user.id)
+              .maybeSingle();
+            
+            if (roleData?.role === "admin") {
+              navigate("/admin");
+            } else {
+              navigate("/catalog");
+            }
           } else {
             navigate("/pending-approval");
           }
