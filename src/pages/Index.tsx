@@ -3,6 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import heroBanner from "@/assets/hero-banner.jpg";
+import catalogFeature from "@/assets/catalog-feature.jpg";
+import vendorManagement from "@/assets/vendor-management.jpg";
+import analyticsFeature from "@/assets/analytics-feature.jpg";
 import { 
   Gem, 
   Share2, 
@@ -167,7 +171,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b">
-        <div className="absolute inset-0 bg-gradient-to-br from-jewellery-from/5 via-gemstone-from/5 to-diamond-from/5" />
+        <div className="absolute inset-0">
+          <img 
+            src={heroBanner} 
+            alt="Luxury diamonds and gemstones" 
+            className="h-full w-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/90" />
+        </div>
         <div className="container relative mx-auto px-4 py-24 sm:py-32">
           <div className="mx-auto max-w-4xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm">
@@ -255,6 +266,76 @@ const Index = () => {
           <h2 className="mb-4 text-4xl font-bold">Powerful Features for Jewelry Vendors</h2>
           <p className="text-xl text-muted-foreground">Everything you need to manage and grow your jewelry business</p>
         </div>
+        
+        {/* Feature Showcase with Images */}
+        <div className="mb-16 grid gap-8 lg:grid-cols-2">
+          <div className="relative overflow-hidden rounded-2xl border-2">
+            <img 
+              src={catalogFeature} 
+              alt="Digital catalog on devices" 
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="flex flex-col justify-center space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-jewellery-to">
+                <Share2 className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-2 text-2xl font-bold">Smart Catalog Sharing</h3>
+                <p className="text-muted-foreground">
+                  Create stunning digital catalogs accessible on any device. Share with custom pricing, track engagement, and manage everything from a single dashboard. Perfect for B2B and retail customers.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-gemstone-from to-gemstone-to">
+                <Gem className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-2 text-2xl font-bold">Complete Inventory Control</h3>
+                <p className="text-muted-foreground">
+                  Manage diamonds, gemstones, and jewelry with detailed specifications. Upload multiple high-quality images, track stock levels, and update pricing instantly across all shared catalogs.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-16 grid gap-8 lg:grid-cols-2">
+          <div className="order-2 lg:order-1 flex flex-col justify-center space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-diamond-from to-diamond-to">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-2 text-2xl font-bold">Advanced Analytics</h3>
+                <p className="text-muted-foreground">
+                  Get real-time insights into catalog performance, customer engagement, and popular products. Make data-driven decisions with comprehensive dashboards and visual reports.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="mb-2 text-2xl font-bold">Team Collaboration</h3>
+                <p className="text-muted-foreground">
+                  Scale your business with multi-user access. Set granular permissions for team members, track activities, and maintain full control over who can view and manage your inventory.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="order-1 lg:order-2 relative overflow-hidden rounded-2xl border-2">
+            <img 
+              src={analyticsFeature} 
+              alt="Analytics dashboard" 
+              className="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => (
             <Card key={index} className="group relative overflow-hidden border-2 transition-all hover:shadow-lg">
@@ -308,8 +389,15 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="border-y bg-muted/30 py-24">
-        <div className="container mx-auto px-4">
+      <section className="relative border-y bg-muted/30 py-24">
+        <div className="absolute inset-0 overflow-hidden opacity-10">
+          <img 
+            src={vendorManagement} 
+            alt="Vendor using platform" 
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <div className="container relative mx-auto px-4">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-bold">How It Works</h2>
             <p className="text-xl text-muted-foreground">Simple steps to showcase your jewelry collection</p>
