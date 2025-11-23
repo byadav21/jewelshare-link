@@ -50,6 +50,50 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_comments: {
+        Row: {
+          author_email: string
+          author_name: string
+          blog_post_id: string
+          content: string
+          created_at: string | null
+          id: string
+          moderated_at: string | null
+          moderated_by: string | null
+          status: string | null
+        }
+        Insert: {
+          author_email: string
+          author_name: string
+          blog_post_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          author_email?: string
+          author_name?: string
+          blog_post_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author_avatar: string | null
@@ -236,6 +280,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          subscribed_at: string | null
+          unsubscribe_token: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
+          unsubscribe_token?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
+          unsubscribe_token?: string | null
+        }
+        Relationships: []
       }
       press_releases: {
         Row: {

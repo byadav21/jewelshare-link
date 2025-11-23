@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Users, LogOut, Monitor, Search, TrendingUp, Database, Shield, FileDown, History } from "lucide-react";
+import { ArrowLeft, Users, LogOut, Monitor, Search, TrendingUp, Database, Shield, FileDown, History, Settings } from "lucide-react";
 
 interface Stats {
   totalProducts: number;
@@ -238,6 +238,21 @@ export default function SuperAdmin() {
               <CardContent className="p-4 sm:p-6 pt-0">
                 <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
                   Manage
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => navigate("/admin")}>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                  <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  Content Management
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Manage blog posts, brands, and site settings</CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm" variant="default">
+                  Open Dashboard
                 </Button>
               </CardContent>
             </Card>

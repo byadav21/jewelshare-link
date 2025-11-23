@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   ArrowRight, 
@@ -222,24 +223,9 @@ const Blog = () => {
       <section className="border-t bg-gradient-to-br from-category-jewellery/5 via-category-gemstone/5 to-category-diamond/5 py-16">
         <div className="container mx-auto px-4">
           <ScrollReveal>
-            <Card className="mx-auto max-w-2xl border-2 border-category-jewellery/20">
-              <CardHeader className="text-center">
-                <CardTitle className="text-3xl">Stay Updated</CardTitle>
-                <CardDescription className="text-base">
-                  Subscribe to our newsletter for the latest industry insights and platform updates
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4 sm:flex-row">
-                <Input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="h-12"
-                />
-                <Button size="lg" className="bg-gradient-to-r from-category-jewellery to-category-gemstone sm:w-auto">
-                  Subscribe
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="mx-auto max-w-2xl">
+              <NewsletterSubscribe />
+            </div>
           </ScrollReveal>
         </div>
       </section>
