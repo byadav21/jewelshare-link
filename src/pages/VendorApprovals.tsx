@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface VendorApproval {
   id: string;
@@ -35,6 +37,7 @@ const VendorApprovals = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
+  const [categorySelections, setCategorySelections] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -51,7 +54,10 @@ const VendorApprovals = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("user_approval_status")
-      .select("*")
+      .select(`
+        *,
+        vendor_profiles!inner(seller_categories)
+      `)
       .order("requested_at", { ascending: false });
 
     if (error) {
@@ -64,6 +70,14 @@ const VendorApprovals = () => {
       setApprovals([]);
     } else {
       setApprovals(data || []);
+      
+      // Initialize category selections with seller's requested categories
+      const initialSelections: Record<string, string[]> = {};
+      data?.forEach(approval => {
+        const sellerCategories = (approval as any).vendor_profiles?.seller_categories || ["Jewellery"];
+        initialSelections[approval.id] = sellerCategories;
+      });
+      setCategorySelections(initialSelections);
     }
     setLoading(false);
   };
@@ -75,6 +89,17 @@ const VendorApprovals = () => {
   }, [isAdmin]);
 
   const handleApprove = async (approval: VendorApproval) => {
+    const approvedCategories = categorySelections[approval.id] || [];
+    
+    if (approvedCategories.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one category to approve",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     
     const { error: updateError } = await supabase
@@ -83,6 +108,7 @@ const VendorApprovals = () => {
         status: "approved",
         reviewed_at: new Date().toISOString(),
         reviewed_by: user?.id,
+        approved_categories: approvedCategories
       })
       .eq("id", approval.id);
 
@@ -109,7 +135,7 @@ const VendorApprovals = () => {
 
     toast({
       title: "Vendor Approved",
-      description: "The vendor has been approved successfully.",
+      description: `The vendor has been approved for ${approvedCategories.join(", ")}.`,
     });
 
     fetchApprovals();
@@ -233,6 +259,8 @@ const VendorApprovals = () => {
                         <TableHead>Email</TableHead>
                         <TableHead>Business Name</TableHead>
                         <TableHead>Phone</TableHead>
+                        <TableHead>Requested Categories</TableHead>
+                        <TableHead>Approve Categories</TableHead>
                         <TableHead>Requested</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
@@ -244,6 +272,51 @@ const VendorApprovals = () => {
                           <TableCell className="font-medium">{approval.email || "N/A"}</TableCell>
                           <TableCell>{approval.business_name || "N/A"}</TableCell>
                           <TableCell>{approval.phone || "N/A"}</TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {((approval as any).vendor_profiles?.seller_categories || ["Jewellery"]).join(", ")}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {approval.status === "pending" ? (
+                              <div className="space-y-2">
+                                {["Jewellery", "Gemstones", "Loose Diamonds"].map((category) => {
+                                  const requestedCategories = (approval as any).vendor_profiles?.seller_categories || ["Jewellery"];
+                                  const isRequested = requestedCategories.includes(category);
+                                  
+                                  return (
+                                    <div key={category} className="flex items-center space-x-2">
+                                      <Checkbox
+                                        id={`${approval.id}-${category}`}
+                                        checked={categorySelections[approval.id]?.includes(category) || false}
+                                        onCheckedChange={(checked) => {
+                                          const current = categorySelections[approval.id] || [];
+                                          const updated = checked
+                                            ? [...current, category]
+                                            : current.filter(c => c !== category);
+                                          setCategorySelections({
+                                            ...categorySelections,
+                                            [approval.id]: updated
+                                          });
+                                        }}
+                                        disabled={!isRequested}
+                                      />
+                                      <Label 
+                                        htmlFor={`${approval.id}-${category}`} 
+                                        className={`text-xs cursor-pointer ${!isRequested ? "text-muted-foreground" : ""}`}
+                                      >
+                                        {category}
+                                      </Label>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="text-sm">
+                                {(approval as any).approved_categories?.join(", ") || "N/A"}
+                              </div>
+                            )}
+                          </TableCell>
                           <TableCell>
                             {new Date(approval.requested_at).toLocaleDateString()}
                           </TableCell>
