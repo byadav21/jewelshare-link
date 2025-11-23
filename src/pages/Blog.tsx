@@ -196,7 +196,10 @@ const Blog = () => {
           <div className="grid gap-8 lg:grid-cols-2">
             {featuredPosts.slice(0, 2).map((post, index) => (
               <ScrollReveal key={post.id} delay={0.1 * index}>
-                <Card className="group cursor-pointer overflow-hidden border-2 transition-all hover:border-primary/50 hover:shadow-xl">
+                <Card 
+                  className="group cursor-pointer overflow-hidden border-2 transition-all hover:border-primary/50 hover:shadow-xl"
+                  onClick={() => navigate(`/blog/${post.id}`)}
+                >
                   <div className="relative aspect-video overflow-hidden">
                     <img
                       src={post.image}
@@ -258,7 +261,10 @@ const Blog = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredPosts.map((post, index) => (
               <ScrollReveal key={post.id} delay={0.05 * index}>
-                <Card className="group flex h-full cursor-pointer flex-col overflow-hidden transition-all hover:shadow-lg">
+                <Card 
+                  className="group flex h-full cursor-pointer flex-col overflow-hidden transition-all hover:shadow-lg"
+                  onClick={() => navigate(`/blog/${post.id}`)}
+                >
                   <div className="relative aspect-video overflow-hidden">
                     <img
                       src={post.image}
