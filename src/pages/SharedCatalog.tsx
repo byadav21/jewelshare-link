@@ -105,7 +105,7 @@ const SharedCatalog = () => {
     
     const validation = customOrderSchema.safeParse(customOrderData);
     if (!validation.success) {
-      const firstError = validation.error.errors[0];
+      const firstError = validation.error.issues[0];
       toast.error(firstError.message);
       return;
     }

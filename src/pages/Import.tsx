@@ -199,7 +199,7 @@ const Import = () => {
         // Validate product data
         const validation = schema.safeParse(product);
         if (!validation.success) {
-          const errorMessages = validation.error.errors.map(err => 
+          const errorMessages = validation.error.issues.map(err => 
             `${err.path.join('.')}: ${err.message}`
           );
           errors.push({

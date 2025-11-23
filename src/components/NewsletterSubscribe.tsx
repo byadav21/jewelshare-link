@@ -26,7 +26,7 @@ export const NewsletterSubscribe = () => {
       if (!validation.success) {
         toast({
           title: "Invalid Email",
-          description: validation.error.errors[0].message,
+          description: validation.error.issues[0].message,
           variant: "destructive",
         });
         return;
