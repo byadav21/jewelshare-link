@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Separator } from "@/components/ui/separator";
+import { BlogComments } from "@/components/BlogComments";
 import { 
   Calendar, 
   Clock, 

@@ -1,16 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 export const WhatsAppButton = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState("1234567890");
+
+  useEffect(() => {
+    fetchWhatsAppNumber();
+  }, []);
+
+  const fetchWhatsAppNumber = async () => {
+    const { data, error } = await supabase
+      .from("settings")
+      .select("value")
+      .eq("key", "whatsapp_number")
+      .maybeSingle();
+
+    if (!error && data) {
+      // Remove quotes from JSON string value
+      const number = String(data.value).replace(/"/g, "");
+      setWhatsappNumber(number);
+    }
+  };
 
   const handleWhatsAppClick = () => {
-    // Using a generic jewelry business number - replace with actual number
-    const phoneNumber = "1234567890"; // Replace with actual WhatsApp business number
     const message = encodeURIComponent("Hi! I'm interested in learning more about your jewelry catalog platform.");
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };

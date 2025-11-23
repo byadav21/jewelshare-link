@@ -9,6 +9,7 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Press from "./pages/Press";
 import Demo from "./pages/Demo";
+import AdminDashboard from "./pages/AdminDashboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Catalog from "./pages/Catalog";
@@ -52,6 +53,7 @@ const App = () => (
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/press" element={<Press />} />
           <Route path="/demo" element={<Demo />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/catalog" element={<Catalog />} />
