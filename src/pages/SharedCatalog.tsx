@@ -568,6 +568,18 @@ const SharedCatalog = () => {
                 diamondClarity: "",
                 searchQuery: "",
                 deliveryType: "",
+                gemstoneType: "",
+                color: "",
+                clarity: "",
+                cut: "",
+                minCarat: "",
+                maxCarat: "",
+                diamondType: "",
+                shape: "",
+                polish: "",
+                symmetry: "",
+                fluorescence: "",
+                lab: "",
               })}
               className="h-10 sm:h-11"
             >
