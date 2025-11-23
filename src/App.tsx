@@ -84,7 +84,7 @@ const App = () => (
           <Route path="/vendor-analytics" element={<ApprovalGuard><VendorAnalytics /></ApprovalGuard>} />
           
           {/* Admin routes (requires admin role) */}
-          <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
           <Route path="/super-admin" element={<AdminGuard><SuperAdmin /></AdminGuard>} />
           <Route path="/vendor-approvals" element={<AdminGuard><VendorApprovals /></AdminGuard>} />
           <Route path="/vendor-management" element={<AdminGuard><VendorManagement /></AdminGuard>} />
