@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { 
   Gem, 
   Share2, 
@@ -15,7 +16,8 @@ import {
   Bell,
   Sparkles,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  TrendingUp
 } from "lucide-react";
 
 const Index = () => {
@@ -116,6 +118,50 @@ const Index = () => {
               >
                 Sign In
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Statistics Section */}
+      <section className="border-b bg-gradient-to-br from-jewellery-from/5 via-gemstone-from/5 to-diamond-from/5 py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div className="text-center">
+              <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from to-jewellery-to">
+                <Gem className="h-6 w-6 text-white" />
+              </div>
+              <div className="mb-1 text-4xl font-bold">
+                <AnimatedCounter end={15000} suffix="+" />
+              </div>
+              <p className="text-muted-foreground">Products Managed</p>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-gemstone-from to-gemstone-to">
+                <Share2 className="h-6 w-6 text-white" />
+              </div>
+              <div className="mb-1 text-4xl font-bold">
+                <AnimatedCounter end={2500} suffix="+" />
+              </div>
+              <p className="text-muted-foreground">Active Catalogs</p>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-diamond-from to-diamond-to">
+                <Heart className="h-6 w-6 text-white" />
+              </div>
+              <div className="mb-1 text-4xl font-bold">
+                <AnimatedCounter end={8750} suffix="+" />
+              </div>
+              <p className="text-muted-foreground">Customer Inquiries</p>
+            </div>
+            <div className="text-center">
+              <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div className="mb-1 text-4xl font-bold">
+                <AnimatedCounter end={98} suffix="%" />
+              </div>
+              <p className="text-muted-foreground">Satisfaction Rate</p>
             </div>
           </div>
         </div>
