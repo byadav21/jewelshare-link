@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { 
@@ -19,7 +20,15 @@ import {
   CheckCircle2,
   TrendingUp,
   Quote,
-  Star
+  Star,
+  Play,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Mail,
+  Phone,
+  MapPin
 } from "lucide-react";
 
 const Index = () => {
@@ -57,6 +66,41 @@ const Index = () => {
       content: "We've been using this for 6 months and our customer engagement has doubled. The custom order management system helps us track bespoke jewelry requests perfectly. Our clients appreciate the professional presentation.",
       rating: 5,
       gradient: "from-jewellery-from to-jewellery-to"
+    }
+  ];
+
+  const faqs = [
+    {
+      question: "How does the catalog sharing work?",
+      answer: "Create a shareable link with custom pricing (markup or markdown), set an expiry date, and share it with your clients. You can track views, customer interests, and video requests all from your dashboard. Each link is unique and can be customized for different client segments."
+    },
+    {
+      question: "Can I manage multiple team members?",
+      answer: "Yes! Add team members with granular permissions. Control who can view catalogs, add products, manage share links, handle custom orders, and more. Perfect for businesses with sales teams or multiple locations."
+    },
+    {
+      question: "What types of jewelry can I manage?",
+      answer: "Our platform supports loose diamonds, gemstones, and finished jewelry pieces. Each category has specialized fields for specifications like carat weight, clarity, color, certification, metal type, and more. Upload multiple images and detailed descriptions for each piece."
+    },
+    {
+      question: "How do video requests work?",
+      answer: "When customers view your shared catalog, they can request videos of specific products. You'll receive notifications with customer details and can update the request status (pending, fulfilled, declined). Communicate directly via email or WhatsApp."
+    },
+    {
+      question: "Is my data secure?",
+      answer: "Absolutely. We use enterprise-grade security with encrypted data storage, secure authentication, and session management. You control who sees what with granular permissions and share link expiry dates. All communications are encrypted."
+    },
+    {
+      question: "Can I track customer engagement?",
+      answer: "Yes! Get detailed analytics on catalog views, popular products, customer interests, video requests, and custom orders. See which products generate the most engagement and make data-driven decisions for your inventory."
+    },
+    {
+      question: "Do you offer import/export features?",
+      answer: "Yes, you can import products in bulk using Excel/CSV files and export your catalog data, customer inquiries, and analytics reports. Perfect for integrating with your existing inventory management systems."
+    },
+    {
+      question: "What's the pricing model?",
+      answer: "We offer flexible plans based on your business size and needs. Start with a free trial to explore all features. Visit our pricing page for detailed plan comparisons and choose what works best for your jewelry business."
     }
   ];
 
@@ -330,6 +374,103 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Demo Video Section */}
+      <section className="border-y bg-muted/30 py-24">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-12 text-center">
+              <h2 className="mb-4 text-4xl font-bold">See It In Action</h2>
+              <p className="text-xl text-muted-foreground">Watch how easy it is to manage and share your jewelry catalog</p>
+            </div>
+            <div className="relative aspect-video overflow-hidden rounded-2xl border-2 bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10">
+              <div className="flex h-full items-center justify-center">
+                <div className="text-center">
+                  <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from to-diamond-from shadow-lg">
+                    <Play className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="mb-2 text-2xl font-bold">Interactive Platform Demo</h3>
+                  <p className="text-muted-foreground">3-minute walkthrough of key features</p>
+                  <Button 
+                    size="lg" 
+                    className="mt-6"
+                    onClick={() => navigate('/catalog')}
+                  >
+                    Try Live Demo
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              <div className="text-center">
+                <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-jewellery-from" />
+                <p className="text-sm font-medium">Quick Setup</p>
+                <p className="text-xs text-muted-foreground">Get started in minutes</p>
+              </div>
+              <div className="text-center">
+                <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-gemstone-from" />
+                <p className="text-sm font-medium">Easy to Use</p>
+                <p className="text-xs text-muted-foreground">Intuitive interface</p>
+              </div>
+              <div className="text-center">
+                <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-diamond-from" />
+                <p className="text-sm font-medium">Full Control</p>
+                <p className="text-xs text-muted-foreground">Manage everything</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="container mx-auto px-4 py-24">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-4xl font-bold">Frequently Asked Questions</h2>
+            <p className="text-xl text-muted-foreground">Everything you need to know about the platform</p>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-left text-lg font-semibold">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-muted-foreground">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="border-t py-24">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-4xl font-bold">Why Choose Our Platform</h2>
+            <p className="text-xl text-muted-foreground">Built specifically for jewelry industry professionals</p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {benefits.map((benefit, index) => (
+              <div key={index} className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <benefit.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="mb-1 font-semibold">{benefit.text}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {index === 0 && "Update your catalog instantly and share changes with customers in real-time"}
+                    {index === 1 && "Set custom markups or markdowns for different clients and market segments"}
+                    {index === 2 && "Get notified when customers show interest or request videos"}
+                    {index === 3 && "Elegant design tailored for the luxury jewelry market"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="border-t py-24">
         <div className="container mx-auto px-4">
@@ -352,15 +493,109 @@ const Index = () => {
                   size="lg" 
                   variant="outline" 
                   className="h-12 px-8 text-base"
-                  onClick={() => navigate('/catalog')}
+                  onClick={() => navigate('/pricing')}
                 >
-                  View Demo Catalog
+                  View Pricing
                 </Button>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t bg-muted/30">
+        <div className="container mx-auto px-4 py-16">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {/* Brand */}
+            <div>
+              <div className="mb-4 flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
+                  <Gem className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-xl font-bold">Jewelry Catalog</span>
+              </div>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Professional jewelry inventory management with shareable catalogs and custom pricing for modern vendors.
+              </p>
+              <div className="flex gap-3">
+                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                  <Facebook className="h-4 w-4" />
+                </a>
+                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                  <Twitter className="h-4 w-4" />
+                </a>
+                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                  <Instagram className="h-4 w-4" />
+                </a>
+                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                  <Linkedin className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h3 className="mb-4 font-semibold">Product</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li><a href="#" className="transition-colors hover:text-foreground">Features</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground" onClick={(e) => { e.preventDefault(); navigate('/pricing'); }}>Pricing</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground">Demo</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground">Analytics</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground">Security</a></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h3 className="mb-4 font-semibold">Company</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li><a href="#" className="transition-colors hover:text-foreground">About Us</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground">Careers</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground">Blog</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground">Press</a></li>
+                <li><a href="#" className="transition-colors hover:text-foreground">Partners</a></li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h3 className="mb-4 font-semibold">Contact</h3>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Mail className="mt-0.5 h-4 w-4 shrink-0" />
+                  <a href="mailto:support@jewelrycatalog.com" className="transition-colors hover:text-foreground">
+                    support@jewelrycatalog.com
+                  </a>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Phone className="mt-0.5 h-4 w-4 shrink-0" />
+                  <a href="tel:+1234567890" className="transition-colors hover:text-foreground">
+                    +1 (234) 567-890
+                  </a>
+                </li>
+                <li className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>Mumbai, Maharashtra, India</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t pt-8">
+            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+              <p className="text-sm text-muted-foreground">
+                © 2024 Jewelry Catalog. All rights reserved.
+              </p>
+              <div className="flex gap-6 text-sm text-muted-foreground">
+                <a href="#" className="transition-colors hover:text-foreground">Privacy Policy</a>
+                <a href="#" className="transition-colors hover:text-foreground">Terms of Service</a>
+                <a href="#" className="transition-colors hover:text-foreground">Cookie Policy</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
