@@ -35,7 +35,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="diamondType" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Types</SelectItem>
             <SelectItem value="Natural" className="text-xs sm:text-sm">Natural</SelectItem>
             <SelectItem value="Lab Grown" className="text-xs sm:text-sm">Lab Grown</SelectItem>
@@ -49,7 +49,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="shape" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="max-h-[200px] overflow-y-auto bg-popover z-50">
+          <SelectContent className="max-h-[200px] overflow-y-auto bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Shapes</SelectItem>
             {shapes.map((shape) => (
               <SelectItem key={shape} value={shape} className="text-xs sm:text-sm">{shape}</SelectItem>
@@ -64,7 +64,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="color" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Colors</SelectItem>
             {colors.map((color) => (
               <SelectItem key={color} value={color} className="text-xs sm:text-sm">{color}</SelectItem>
@@ -79,7 +79,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="clarity" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Clarities</SelectItem>
             {clarities.map((clarity) => (
               <SelectItem key={clarity} value={clarity} className="text-xs sm:text-sm">{clarity}</SelectItem>
@@ -94,7 +94,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="cut" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Cuts</SelectItem>
             {cuts.map((cut) => (
               <SelectItem key={cut} value={cut} className="text-xs sm:text-sm">{cut}</SelectItem>
@@ -109,7 +109,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="polish" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All</SelectItem>
             {polishes.map((polish) => (
               <SelectItem key={polish} value={polish} className="text-xs sm:text-sm">{polish}</SelectItem>
@@ -124,7 +124,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="symmetry" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All</SelectItem>
             {symmetries.map((symmetry) => (
               <SelectItem key={symmetry} value={symmetry} className="text-xs sm:text-sm">{symmetry}</SelectItem>
@@ -139,7 +139,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="fluorescence" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All</SelectItem>
             {fluorescences.map((flo) => (
               <SelectItem key={flo} value={flo} className="text-xs sm:text-sm">{flo}</SelectItem>
@@ -154,7 +154,7 @@ export const DiamondFilters = ({
           <SelectTrigger id="lab" className="h-9 sm:h-10 text-xs sm:text-sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-background border border-border shadow-lg z-[100]">
             <SelectItem value="all" className="text-xs sm:text-sm">All Labs</SelectItem>
             {labs.map((lab) => (
               <SelectItem key={lab} value={lab} className="text-xs sm:text-sm">{lab}</SelectItem>
