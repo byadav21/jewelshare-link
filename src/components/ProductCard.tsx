@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -37,8 +38,20 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow relative active:scale-[0.98] touch-manipulation">
-      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
+    <motion.div
+      whileHover={{ 
+        rotateX: 5,
+        rotateY: 5,
+        scale: 1.02,
+        transition: { duration: 0.3, ease: "easeOut" }
+      }}
+      style={{ 
+        transformStyle: "preserve-3d",
+        perspective: 1000
+      }}
+    >
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow relative active:scale-[0.98] touch-manipulation">
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelection(product.id)}
@@ -192,5 +205,6 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
         </div>
       </CardFooter>
     </Card>
+    </motion.div>
   );
 };
