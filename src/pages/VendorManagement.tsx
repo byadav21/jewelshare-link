@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface VendorPermissions {
   can_view_catalog: boolean;
@@ -34,6 +35,11 @@ interface VendorPermissions {
   can_view_sessions: boolean;
   can_manage_sessions: boolean;
   max_active_sessions: number;
+  subscription_plan?: 'starter' | 'professional' | 'enterprise';
+  max_products?: number;
+  max_share_links?: number;
+  max_team_members?: number;
+  max_product_images?: number;
 }
 
 interface Vendor {
@@ -156,6 +162,11 @@ export default function VendorManagement() {
             can_view_sessions: vendorPermissions.can_view_sessions ?? true,
             can_manage_sessions: vendorPermissions.can_manage_sessions ?? true,
             max_active_sessions: vendorPermissions.max_active_sessions ?? 3,
+            subscription_plan: vendorPermissions.subscription_plan,
+            max_products: vendorPermissions.max_products,
+            max_share_links: vendorPermissions.max_share_links,
+            max_team_members: vendorPermissions.max_team_members,
+            max_product_images: vendorPermissions.max_product_images,
           } : undefined,
         };
       });
@@ -387,7 +398,7 @@ export default function VendorManagement() {
 
           {/* Permissions Dialog */}
           <Dialog open={showPermissionsDialog} onOpenChange={setShowPermissionsDialog}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Vendor Permissions</DialogTitle>
                 <DialogDescription>
@@ -396,6 +407,57 @@ export default function VendorManagement() {
               </DialogHeader>
               {selectedVendor && (
                 <div className="space-y-4 py-4">
+                  {/* Subscription Plan Selector */}
+                  <div className="space-y-2 pb-4 border-b">
+                    <Label htmlFor="subscription_plan">Subscription Plan</Label>
+                    <Select
+                      value={selectedVendor.permissions?.subscription_plan || 'starter'}
+                      onValueChange={async (value: 'starter' | 'professional' | 'enterprise') => {
+                        try {
+                          const { error } = await supabase
+                            .from("vendor_permissions")
+                            .update({ subscription_plan: value })
+                            .eq("user_id", selectedVendor.id);
+
+                          if (error) throw error;
+
+                          toast.success(`Plan updated to ${value}. Permissions will refresh automatically.`);
+                          
+                          // Wait a bit for the trigger to fire, then refresh
+                          setTimeout(() => {
+                            fetchVendors();
+                            setShowPermissionsDialog(false);
+                          }, 1000);
+                        } catch (error: any) {
+                          toast.error("Failed to update subscription plan");
+                          console.error(error);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a plan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="starter">
+                          Starter - 100 products, 1 share link, limited features
+                        </SelectItem>
+                        <SelectItem value="professional">
+                          Professional - 1,000 products, 10 share links, all features
+                        </SelectItem>
+                        <SelectItem value="enterprise">
+                          Enterprise - Unlimited everything
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {selectedVendor.permissions && (
+                      <div className="text-xs text-muted-foreground space-y-1 mt-2">
+                        <p>• Products: {selectedVendor.permissions.max_products === 999999 ? 'Unlimited' : selectedVendor.permissions.max_products}</p>
+                        <p>• Share Links: {selectedVendor.permissions.max_share_links === 999999 ? 'Unlimited' : selectedVendor.permissions.max_share_links}</p>
+                        <p>• Team Members: {selectedVendor.permissions.max_team_members === 999999 ? 'Unlimited' : selectedVendor.permissions.max_team_members}</p>
+                        <p>• Product Images: {selectedVendor.permissions.max_product_images === 999999 ? 'Unlimited' : selectedVendor.permissions.max_product_images}</p>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center justify-between">
                     <Label htmlFor="can_view_catalog">View Catalog</Label>
                     <Switch
