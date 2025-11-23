@@ -8,6 +8,9 @@ import { ParallaxImage } from "@/components/ParallaxImage";
 import { JewelryViewer3D } from "@/components/JewelryViewer3D";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
+import { NewsletterSubscription } from "@/components/NewsletterSubscription";
+import { CookieConsent } from "@/components/CookieConsent";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 import heroBanner from "@/assets/hero-banner.jpg";
 import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -588,6 +591,13 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Newsletter Section */}
+      <section className="container mx-auto px-4 py-24">
+        <ScrollReveal>
+          <NewsletterSubscription />
+        </ScrollReveal>
+      </section>
+
       {/* CTA Section */}
       <section className="border-t py-24">
         <div className="container mx-auto px-4">
@@ -715,6 +725,10 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Floating Components */}
+      <WhatsAppButton />
+      <CookieConsent />
     </div>
   );
 };
