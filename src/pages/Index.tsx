@@ -17,11 +17,49 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Quote,
+  Star
 } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
+
+  const testimonials = [
+    {
+      name: "Priya Sharma",
+      business: "Brilliant Gems & Jewelry",
+      role: "Owner",
+      content: "This platform transformed how we share our diamond collection with international clients. The custom pricing feature alone has increased our B2B sales by 45%. Video requests help us close deals faster than ever.",
+      rating: 5,
+      gradient: "from-jewellery-from to-jewellery-to"
+    },
+    {
+      name: "Rajesh Patel",
+      business: "Heritage Diamonds",
+      role: "Managing Director",
+      content: "Managing our inventory of 5,000+ pieces was chaos before. Now everything is organized, shareable, and trackable. The analytics show us which products generate the most interest. Game changer for our wholesale business.",
+      rating: 5,
+      gradient: "from-gemstone-from to-gemstone-to"
+    },
+    {
+      name: "Anita Desai",
+      business: "Luxury Gemstone Gallery",
+      role: "Director of Sales",
+      content: "The shareable catalog links with expiry dates are brilliant for our seasonal promotions. Our team can manage everything from one place, and customers love how easy it is to browse and request videos of pieces they're interested in.",
+      rating: 5,
+      gradient: "from-diamond-from to-diamond-to"
+    },
+    {
+      name: "Vikram Singh",
+      business: "Royal Jewels Collection",
+      role: "CEO",
+      content: "We've been using this for 6 months and our customer engagement has doubled. The custom order management system helps us track bespoke jewelry requests perfectly. Our clients appreciate the professional presentation.",
+      rating: 5,
+      gradient: "from-jewellery-from to-jewellery-to"
+    }
+  ];
+
 
   const features = [
     {
@@ -185,6 +223,40 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">{feature.description}</CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="container mx-auto px-4 py-24">
+        <div className="mb-16 text-center">
+          <h2 className="mb-4 text-4xl font-bold">Trusted by Jewelry Vendors Worldwide</h2>
+          <p className="text-xl text-muted-foreground">See what our customers say about their experience</p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {testimonials.map((testimonial, index) => (
+            <Card key={index} className="relative overflow-hidden border-2 transition-all hover:shadow-lg">
+              <div className={`absolute right-0 top-0 h-32 w-32 bg-gradient-to-br ${testimonial.gradient} opacity-5`} />
+              <CardHeader>
+                <div className="mb-4 flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="mb-1 text-lg">{testimonial.name}</CardTitle>
+                    <CardDescription className="text-sm">
+                      {testimonial.role} at <span className="font-medium text-foreground">{testimonial.business}</span>
+                    </CardDescription>
+                  </div>
+                  <Quote className={`h-8 w-8 text-${testimonial.gradient.split('-')[1]}`} />
+                </div>
+                <div className="flex gap-1">
+                  {Array.from({ length: testimonial.rating }).map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-jewellery-from text-jewellery-from" />
+                  ))}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed">{testimonial.content}</p>
               </CardContent>
             </Card>
           ))}
