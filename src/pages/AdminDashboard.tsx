@@ -26,7 +26,8 @@ import {
   Plus,
   CheckCircle,
   XCircle,
-  ArrowLeft
+  ArrowLeft,
+  BarChart3
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -493,6 +494,22 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Quick Access Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Analytics & Insights
+            </CardTitle>
+            <CardDescription>View detailed analytics and usage trends</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate("/vendor-analytics")} className="w-full">
+              View Usage Analytics Dashboard
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
