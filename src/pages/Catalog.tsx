@@ -817,25 +817,7 @@ const Catalog = () => {
             </div>
           ) : (
             <div className="animate-fade-in">
-              {products.length === 0 ? (
-                <div className="text-center py-16 sm:py-20">
-                  <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 mb-6">
-                    <Gem className="h-10 w-10 sm:h-12 sm:h-12 text-primary" />
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-3 text-foreground">No products yet</h2>
-                  <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">Start building your stunning jewelry catalog and showcase your collection</p>
-                  <Button 
-                    onClick={() => navigate("/add-product")} 
-                    size="lg"
-                    className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Your First Product
-                  </Button>
-                </div>
-              ) : (
-                <>
-              {/* Elegant Category Selector */}
+              {/* Elegant Category Selector - Always visible */}
               {approvedCategories.length > 1 && (
                 <div className="mb-8 flex gap-3 flex-wrap justify-center">
                   {approvedCategories.map((category) => {
@@ -933,6 +915,25 @@ const Catalog = () => {
                   })}
                 </div>
               )}
+
+              {products.length === 0 ? (
+                <div className="text-center py-16 sm:py-20">
+                  <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 mb-6">
+                    <Gem className="h-10 w-10 sm:h-12 sm:h-12 text-primary" />
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-3 text-foreground">No products yet</h2>
+                  <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">Start building your stunning jewelry catalog and showcase your collection</p>
+                  <Button 
+                    onClick={() => navigate("/add-product")} 
+                    size="lg"
+                    className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Your First Product
+                  </Button>
+                </div>
+              ) : (
+                <>
 
               {/* Filters - Always visible, not affected by transition */}
               <div 
