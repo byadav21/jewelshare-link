@@ -758,6 +758,13 @@ export type Database = {
           created_at: string | null
           id: string
           max_active_sessions: number
+          max_product_images: number | null
+          max_products: number | null
+          max_share_links: number | null
+          max_team_members: number | null
+          plan_updated_at: string | null
+          plan_updated_by: string | null
+          subscription_plan: Database["public"]["Enums"]["subscription_plan"]
           updated_at: string | null
           user_id: string
         }
@@ -781,6 +788,13 @@ export type Database = {
           created_at?: string | null
           id?: string
           max_active_sessions?: number
+          max_product_images?: number | null
+          max_products?: number | null
+          max_share_links?: number | null
+          max_team_members?: number | null
+          plan_updated_at?: string | null
+          plan_updated_by?: string | null
+          subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
           updated_at?: string | null
           user_id: string
         }
@@ -804,6 +818,13 @@ export type Database = {
           created_at?: string | null
           id?: string
           max_active_sessions?: number
+          max_product_images?: number | null
+          max_products?: number | null
+          max_share_links?: number | null
+          max_team_members?: number | null
+          plan_updated_at?: string | null
+          plan_updated_by?: string | null
+          subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
           updated_at?: string | null
           user_id?: string
         }
@@ -960,6 +981,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "team_member"
       approval_status: "pending" | "approved" | "rejected"
+      subscription_plan: "starter" | "professional" | "enterprise"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1089,6 +1111,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "team_member"],
       approval_status: ["pending", "approved", "rejected"],
+      subscription_plan: ["starter", "professional", "enterprise"],
     },
   },
 } as const
