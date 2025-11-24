@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SocialShareButton } from "@/components/SocialShareButton";
+import { ShareStats } from "@/components/ShareStats";
 import { toast } from "sonner";
 import { ArrowLeft, Copy, ExternalLink } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
@@ -204,52 +206,69 @@ const Share = () => {
                 <p className="text-center text-muted-foreground py-8">No share links yet</p>
               ) : (
                 <div className="space-y-4">
-                  {shareLinks.map((link) => (
-                    <div
-                      key={link.id}
-                      className="border border-border rounded-lg p-4 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <code className="text-sm bg-muted px-2 py-1 rounded">
-                              {link.share_token.substring(0, 20)}...
-                            </code>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(link.share_token)}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => window.open(`/shared/${encodeURIComponent(link.share_token)}`, "_blank")}
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
+                  {shareLinks.map((link) => {
+                    const shareUrl = `${window.location.origin}/shared/${encodeURIComponent(link.share_token)}`;
+                    const isExpiringSoon = new Date(link.expires_at).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
+                    
+                    return (
+                      <div
+                        key={link.id}
+                        className="border border-border rounded-lg p-4 space-y-3 hover:border-primary/30 transition-colors"
+                      >
+                        {/* Viral Stats */}
+                        <ShareStats
+                          viewCount={link.view_count}
+                          isExpiringSoon={isExpiringSoon}
+                          showTrending
+                        />
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <code className="text-sm bg-muted px-2 py-1 rounded">
+                                {link.share_token.substring(0, 20)}...
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => copyToClipboard(link.share_token)}
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => window.open(shareUrl, "_blank")}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                              
+                              {/* Social Share */}
+                              <SocialShareButton
+                                url={shareUrl}
+                                title="Exclusive Jewelry Collection"
+                                description="Discover stunning jewelry pieces"
+                              />
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-2">
+                              {link.markup_percentage > 0 && `+${link.markup_percentage}% markup`}
+                              {link.markdown_percentage > 0 && `-${link.markdown_percentage}% markdown`}
+                              {link.markup_percentage === 0 && link.markdown_percentage === 0 && "No price adjustment"}
+                              {" • "}
+                              Expires: {new Date(link.expires_at).toLocaleString()}
+                            </div>
                           </div>
-                          <div className="text-sm text-muted-foreground mt-2">
-                            {link.markup_percentage > 0 && `+${link.markup_percentage}% markup`}
-                            {link.markdown_percentage > 0 && `-${link.markdown_percentage}% markdown`}
-                            {link.markup_percentage === 0 && link.markdown_percentage === 0 && "No price adjustment"}
-                            {" • "}
-                            Expires: {new Date(link.expires_at).toLocaleString()}
-                            {" • "}
-                            Views: {link.view_count}
-                          </div>
+                          <Button
+                            size="sm"
+                            variant={link.is_active ? "destructive" : "default"}
+                            onClick={() => toggleLinkStatus(link.id, link.is_active)}
+                          >
+                            {link.is_active ? "Deactivate" : "Activate"}
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant={link.is_active ? "destructive" : "default"}
-                          onClick={() => toggleLinkStatus(link.id, link.is_active)}
-                        >
-                          {link.is_active ? "Deactivate" : "Activate"}
-                        </Button>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

@@ -8,6 +8,9 @@ import { VideoRequestDialog } from "@/components/VideoRequestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
+import { SocialShareButton } from "@/components/SocialShareButton";
+import { ShareStats } from "@/components/ShareStats";
+import { CountdownTimer } from "@/components/CountdownTimer";
 import { Gem, AlertCircle, Building2, Video, Zap, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,7 @@ const SharedCatalog = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [shareLinkId, setShareLinkId] = useState<string | null>(null);
+  const [shareLinkData, setShareLinkData] = useState<any>(null);
   const [usdToInr, setUsdToInr] = useState<number>(83);
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [showVendorDetails, setShowVendorDetails] = useState(true);
@@ -87,6 +91,7 @@ const SharedCatalog = () => {
       } else {
         setProducts(data.products || []);
         setShareLinkId(data.shareLinkId || null);
+        setShareLinkData(data.shareLink || null);
         setVendorProfile(data.vendorProfile || null);
         setShowVendorDetails(data.shareLink?.show_vendor_details ?? true);
       }
@@ -241,11 +246,31 @@ const SharedCatalog = () => {
     );
   }
 
+  // Check if expiring soon (within 24 hours)
+  const isExpiringSoon = shareLinkData && 
+    new Date(shareLinkData.expires_at).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
+
+  const catalogUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/shared/${encodeURIComponent(token || '')}`
+    : '';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Mobile-Optimized Header */}
       <header className="border-b border-border/50 bg-card/90 backdrop-blur-md shadow-xl">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+          {/* Viral Stats & Timer Banner */}
+          {shareLinkData && (
+            <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between pb-4 border-b border-border/30">
+              <ShareStats 
+                viewCount={shareLinkData.view_count}
+                isExpiringSoon={isExpiringSoon}
+                showTrending
+              />
+              <CountdownTimer expiresAt={shareLinkData.expires_at} />
+            </div>
+          )}
+
           {/* Vendor Details */}
           {showVendorDetails && vendorProfile && (
             <div className="mb-4 pb-4 border-b border-border/30">
@@ -328,6 +353,13 @@ const SharedCatalog = () => {
             {/* Action Buttons */}
             {shareLinkId && (
               <div className="flex gap-2">
+                {/* Social Share Button */}
+                <SocialShareButton
+                  url={catalogUrl}
+                  title={vendorProfile?.business_name || "Jewelry Catalog"}
+                  description="Check out this amazing jewelry collection!"
+                  className="flex-1 sm:flex-none"
+                />
                 <Dialog open={showVideoRequestForm} onOpenChange={setShowVideoRequestForm}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 text-xs sm:text-sm font-medium">
