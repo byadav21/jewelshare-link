@@ -606,8 +606,25 @@ const SharedCatalog = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
-            {filteredProducts.map((product) => (
-              <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-border/50 hover:border-primary/30 bg-card/80 backdrop-blur-sm">
+            {filteredProducts.map((product) => {
+              // Track product view when card is clicked
+              const handleProductClick = () => {
+                if (shareLinkId) {
+                  supabase.functions.invoke("track-product-view", {
+                    body: {
+                      shareLinkId,
+                      productId: product.id,
+                    },
+                  }).catch(err => console.error("Failed to track view:", err));
+                }
+              };
+
+              return (
+                <Card 
+                  key={product.id} 
+                  className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-border/50 hover:border-primary/30 bg-card/80 backdrop-blur-sm cursor-pointer"
+                  onClick={handleProductClick}
+                >
                 {product.image_url && (
                   <div className="aspect-square overflow-hidden bg-muted/30 relative">
                     <img
@@ -705,7 +722,8 @@ const SharedCatalog = () => {
                   )}
                 </CardFooter>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

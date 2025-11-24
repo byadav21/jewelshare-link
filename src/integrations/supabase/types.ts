@@ -629,6 +629,48 @@ export type Database = {
         }
         Relationships: []
       }
+      share_link_product_views: {
+        Row: {
+          id: string
+          product_id: string
+          share_link_id: string
+          viewed_at: string
+          viewer_ip: string | null
+          viewer_user_agent: string | null
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          share_link_id: string
+          viewed_at?: string
+          viewer_ip?: string | null
+          viewer_user_agent?: string | null
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          share_link_id?: string
+          viewed_at?: string
+          viewer_ip?: string | null
+          viewer_user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_link_product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "share_link_product_views_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       share_links: {
         Row: {
           created_at: string | null

@@ -3,5 +3,8 @@ project_id = "mznwzwuyhcmuaewqsojo"
 [functions.get-shared-catalog]
 verify_jwt = false
 
+[functions.track-product-view]
+verify_jwt = false
+
 [functions.manage-session]
 verify_jwt = true
