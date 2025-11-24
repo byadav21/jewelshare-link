@@ -7,6 +7,7 @@ import { InterestDialog } from "@/components/InterestDialog";
 import { VideoRequestDialog } from "@/components/VideoRequestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
+import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { Gem, AlertCircle, Building2, Video, Zap, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -295,32 +296,6 @@ const SharedCatalog = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* QR Codes */}
-                {(vendorProfile.instagram_qr_url || vendorProfile.whatsapp_qr_url) && (
-                  <div className="flex gap-2 sm:gap-3 self-center sm:self-start">
-                    {vendorProfile.instagram_qr_url && (
-                      <div className="text-center">
-                        <img 
-                          src={vendorProfile.instagram_qr_url} 
-                          alt="Instagram" 
-                          className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-primary/30 shadow-lg hover:scale-105 transition-transform"
-                        />
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">Instagram</p>
-                      </div>
-                    )}
-                    {vendorProfile.whatsapp_qr_url && (
-                      <div className="text-center">
-                        <img 
-                          src={vendorProfile.whatsapp_qr_url} 
-                          alt="WhatsApp" 
-                          className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-primary/30 shadow-lg hover:scale-105 transition-transform"
-                        />
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">WhatsApp</p>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -698,6 +673,14 @@ const SharedCatalog = () => {
           </div>
         )}
       </main>
+
+      {/* Floating QR Codes */}
+      {showVendorDetails && vendorProfile && (
+        <FloatingQRCodes
+          instagramQrUrl={vendorProfile.instagram_qr_url}
+          whatsappQrUrl={vendorProfile.whatsapp_qr_url}
+        />
+      )}
     </div>
   );
 };
