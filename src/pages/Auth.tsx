@@ -34,7 +34,7 @@ const Auth = () => {
           .from("user_approval_status")
           .select("status")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
         
         if (approvalData?.status === "approved") {
           // Check if user is admin
@@ -42,30 +42,30 @@ const Auth = () => {
             .from("user_roles")
             .select("role")
             .eq("user_id", session.user.id)
-            .single();
+            .maybeSingle();
           
           if (roleData?.role === "admin") {
-            navigate("/admin");
+            navigate("/admin", { replace: true });
           } else {
-            navigate("/catalog");
+            navigate("/catalog", { replace: true });
           }
         } else {
-          navigate("/pending-approval");
+          navigate("/pending-approval", { replace: true });
         }
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Don't make async calls inside onAuthStateChange - defer them with setTimeout
-      if (session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only redirect on SIGNED_IN event to avoid race conditions
+      if (event === 'SIGNED_IN' && session) {
         setTimeout(async () => {
           const { data: approvalData } = await supabase
             .from("user_approval_status")
             .select("status")
             .eq("user_id", session.user.id)
-            .single();
+            .maybeSingle();
           
           if (approvalData?.status === "approved") {
             // Check if user is admin
@@ -76,14 +76,14 @@ const Auth = () => {
               .maybeSingle();
             
             if (roleData?.role === "admin") {
-              navigate("/admin");
+              navigate("/admin", { replace: true });
             } else {
-              navigate("/catalog");
+              navigate("/catalog", { replace: true });
             }
           } else {
-            navigate("/pending-approval");
+            navigate("/pending-approval", { replace: true });
           }
-        }, 0);
+        }, 100);
       }
     });
 
