@@ -8,14 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SocialShareButton } from "@/components/SocialShareButton";
 import { ShareStats } from "@/components/ShareStats";
+import { ShareLinkQRCode } from "@/components/ShareLinkQRCode";
+import { ShareLinkAnalytics } from "@/components/ShareLinkAnalytics";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { ArrowLeft, Copy, ExternalLink } from "lucide-react";
+import { ArrowLeft, Copy, ExternalLink, ChevronDown, BarChart3 } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 
 const Share = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [shareLinks, setShareLinks] = useState<any[]>([]);
+  const [vendorProfile, setVendorProfile] = useState<any>(null);
+  const [expandedAnalytics, setExpandedAnalytics] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     markup_percentage: "",
     markdown_percentage: "",
@@ -25,7 +30,27 @@ const Share = () => {
 
   useEffect(() => {
     fetchShareLinks();
+    fetchVendorProfile();
   }, []);
+
+  const fetchVendorProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("vendor_profiles")
+        .select("business_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!error && data) {
+        setVendorProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching vendor profile:", error);
+    }
+  };
 
   const fetchShareLinks = async () => {
     try {
@@ -223,64 +248,101 @@ const Share = () => {
                   {shareLinks.map((link) => {
                     const shareUrl = `${window.location.origin}/shared/${encodeURIComponent(link.share_token)}`;
                     const isExpiringSoon = new Date(link.expires_at).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
+                    const isAnalyticsExpanded = expandedAnalytics === link.id;
                     
                     return (
-                      <div
+                      <Card
                         key={link.id}
-                        className="border border-border rounded-lg p-4 space-y-3 hover:border-primary/30 transition-colors"
+                        className="border-border hover:border-primary/30 transition-colors"
                       >
-                        {/* Viral Stats */}
-                        <ShareStats
-                          viewCount={link.view_count}
-                          isExpiringSoon={isExpiringSoon}
-                          showTrending
-                        />
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <code className="text-sm bg-muted px-2 py-1 rounded">
-                                {link.share_token.substring(0, 20)}...
-                              </code>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => copyToClipboard(link.share_token)}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => window.open(shareUrl, "_blank")}
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </Button>
-                              
-                              {/* Social Share */}
-                              <SocialShareButton
-                                url={shareUrl}
-                                title="Exclusive Jewelry Collection"
-                                description="Discover stunning jewelry pieces"
-                              />
+                        <CardContent className="p-4 space-y-3">
+                          {/* Viral Stats */}
+                          <ShareStats
+                            viewCount={link.view_count}
+                            isExpiringSoon={isExpiringSoon}
+                            showTrending
+                          />
+                          
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <code className="text-sm bg-muted px-2 py-1 rounded truncate max-w-[200px]">
+                                  {link.share_token.substring(0, 20)}...
+                                </code>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copyToClipboard(link.share_token)}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => window.open(shareUrl, "_blank")}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </Button>
+                                
+                                {/* QR Code */}
+                                <ShareLinkQRCode
+                                  shareToken={link.share_token}
+                                  businessName={vendorProfile?.business_name}
+                                />
+                                
+                                {/* Social Share */}
+                                <SocialShareButton
+                                  url={shareUrl}
+                                  title={vendorProfile?.business_name || "Exclusive Jewelry Collection"}
+                                  description="Discover stunning jewelry pieces"
+                                />
+                              </div>
+                              <div className="text-sm text-muted-foreground mt-2">
+                                {link.markup_percentage > 0 && `+${link.markup_percentage}% markup`}
+                                {link.markdown_percentage > 0 && `-${link.markdown_percentage}% markdown`}
+                                {link.markup_percentage === 0 && link.markdown_percentage === 0 && "No price adjustment"}
+                                {" • "}
+                                Expires: {new Date(link.expires_at).toLocaleString()}
+                              </div>
                             </div>
-                            <div className="text-sm text-muted-foreground mt-2">
-                              {link.markup_percentage > 0 && `+${link.markup_percentage}% markup`}
-                              {link.markdown_percentage > 0 && `-${link.markdown_percentage}% markdown`}
-                              {link.markup_percentage === 0 && link.markdown_percentage === 0 && "No price adjustment"}
-                              {" • "}
-                              Expires: {new Date(link.expires_at).toLocaleString()}
-                            </div>
+                            <Button
+                              size="sm"
+                              variant={link.is_active ? "destructive" : "default"}
+                              onClick={() => toggleLinkStatus(link.id, link.is_active)}
+                            >
+                              {link.is_active ? "Deactivate" : "Activate"}
+                            </Button>
                           </div>
-                          <Button
-                            size="sm"
-                            variant={link.is_active ? "destructive" : "default"}
-                            onClick={() => toggleLinkStatus(link.id, link.is_active)}
+
+                          {/* Analytics Section */}
+                          <Collapsible
+                            open={isAnalyticsExpanded}
+                            onOpenChange={() => setExpandedAnalytics(isAnalyticsExpanded ? null : link.id)}
                           >
-                            {link.is_active ? "Deactivate" : "Activate"}
-                          </Button>
-                        </div>
-                      </div>
+                            <CollapsibleTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full gap-2"
+                              >
+                                <BarChart3 className="h-4 w-4" />
+                                {isAnalyticsExpanded ? "Hide Analytics" : "View Analytics"}
+                                <ChevronDown
+                                  className={`h-4 w-4 transition-transform ${
+                                    isAnalyticsExpanded ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="mt-4">
+                              <ShareLinkAnalytics
+                                shareLinkId={link.id}
+                                viewCount={link.view_count}
+                              />
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </CardContent>
+                      </Card>
                     );
                   })}
                 </div>
