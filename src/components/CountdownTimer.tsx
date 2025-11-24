@@ -14,20 +14,29 @@ export const CountdownTimer = ({ expiresAt }: CountdownTimerProps) => {
     minutes: number;
     seconds: number;
   } | null>(null);
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const difference = new Date(expiresAt).getTime() - new Date().getTime();
-      
-      if (difference > 0) {
-        return {
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        };
+      try {
+        const expirationTime = new Date(expiresAt).getTime();
+        const currentTime = new Date().getTime();
+        const difference = expirationTime - currentTime;
+        
+        if (difference > 0) {
+          return {
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60),
+          };
+        }
+        setIsExpired(true);
+        return null;
+      } catch (error) {
+        console.error("Error parsing expiration date:", error);
+        return null;
       }
-      return null;
     };
 
     setTimeLeft(calculateTimeLeft());
@@ -38,13 +47,17 @@ export const CountdownTimer = ({ expiresAt }: CountdownTimerProps) => {
     return () => clearInterval(timer);
   }, [expiresAt]);
 
-  if (!timeLeft) {
+  if (!timeLeft && isExpired) {
     return (
-      <Alert variant="destructive" className="border-red-500/50">
+      <Alert variant="destructive" className="border-red-500/50 inline-flex">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>This catalog has expired</AlertDescription>
       </Alert>
     );
+  }
+
+  if (!timeLeft) {
+    return null;
   }
 
   const isUrgent = timeLeft.days === 0 && timeLeft.hours < 6;

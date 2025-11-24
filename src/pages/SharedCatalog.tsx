@@ -248,11 +248,15 @@ const SharedCatalog = () => {
 
   // Check if expiring soon (within 24 hours)
   const isExpiringSoon = shareLinkData && 
-    new Date(shareLinkData.expires_at).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
+    new Date(shareLinkData.expires_at).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000 &&
+    new Date(shareLinkData.expires_at).getTime() > new Date().getTime();
 
   const catalogUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/shared/${encodeURIComponent(token || '')}`
     : '';
+
+  // Check if catalog is expired
+  const isExpired = shareLinkData && new Date(shareLinkData.expires_at).getTime() <= new Date().getTime();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -260,7 +264,7 @@ const SharedCatalog = () => {
       <header className="border-b border-border/50 bg-card/90 backdrop-blur-md shadow-xl">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
           {/* Viral Stats & Timer Banner */}
-          {shareLinkData && (
+          {shareLinkData && !isExpired && (
             <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between pb-4 border-b border-border/30">
               <ShareStats 
                 viewCount={shareLinkData.view_count}

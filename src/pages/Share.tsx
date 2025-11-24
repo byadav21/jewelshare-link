@@ -58,6 +58,16 @@ const Share = () => {
         return;
       }
 
+      // Validate expiration date is in the future
+      const expirationDate = new Date(formData.expires_at);
+      const now = new Date();
+      
+      if (expirationDate <= now) {
+        toast.error("Expiration date must be in the future");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("share_links")
         .insert([
@@ -74,7 +84,7 @@ const Share = () => {
 
       if (error) throw error;
 
-      toast.success("Share link created!");
+      toast.success("Share link created successfully! 🎉");
       setFormData({ markup_percentage: "", markdown_percentage: "", expires_at: "", show_vendor_details: true });
       fetchShareLinks();
     } catch (error: any) {
@@ -168,8 +178,12 @@ const Share = () => {
                     type="datetime-local"
                     value={formData.expires_at}
                     onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
+                    min={new Date().toISOString().slice(0, 16)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Set when this catalog link should stop working
+                  </p>
                 </div>
 
                 <div className="space-y-2">
