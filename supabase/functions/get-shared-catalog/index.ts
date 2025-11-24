@@ -181,6 +181,8 @@ serve(async (req) => {
           show_vendor_details: shareLink.show_vendor_details,
           markup_percentage: shareLink.markup_percentage,
           markdown_percentage: shareLink.markdown_percentage,
+          expires_at: shareLink.expires_at,
+          view_count: shareLink.view_count,
         },
         vendorProfile 
       }),
