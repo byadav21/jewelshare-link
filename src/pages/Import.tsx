@@ -169,8 +169,9 @@ const Import = () => {
           };
         } else {
           // Jewellery (existing logic)
-          const costPrice = parseNumber(row['COST PRICE']) || 0;
-          const retailPrice = parseNumber(row['RETAIL PRICE']) || parseNumber(row.TOTAL) || costPrice;
+          const totalPrice = parseNumber(row.TOTAL) || parseNumber(row['TOTAL']) || 0;
+          const costPrice = parseNumber(row['COST PRICE']) || totalPrice;
+          const retailPrice = parseNumber(row['RETAIL PRICE']) || totalPrice || costPrice;
           
           product = {
             user_id: user.id,
