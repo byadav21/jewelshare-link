@@ -66,7 +66,7 @@ export const gemstoneImportSchema = z.object({
   symmetry: z.string().max(50).nullable(),
   measurement: z.string().max(100).nullable(),
   certification: z.string().max(100).nullable(),
-  image_url: z.string().url().max(500).nullable(),
+  image_url: z.string().url().max(500).nullable().or(z.literal(null)),
   image_url_2: z.string().url().max(500).nullable().or(z.literal(null)),
   image_url_3: z.string().url().max(500).nullable().or(z.literal(null)),
   price_inr: z.number().min(0.01, "Price must be greater than 0"),
