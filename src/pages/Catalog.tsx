@@ -17,6 +17,8 @@ import { exportCatalogToPDF } from "@/utils/pdfExport";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
+import { GoldRateDialog } from "@/components/GoldRateDialog";
+import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -143,7 +145,55 @@ const Catalog = () => {
     }
   };
 
-  const handleUpdateGoldRate = async () => {
+  const handleUpdateGoldRate = async (newRate: number) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error: profileError } = await supabase
+      .from("vendor_profiles")
+      .update({ 
+        gold_rate_24k_per_gram: newRate,
+        gold_rate_updated_at: new Date().toISOString()
+      })
+      .eq("user_id", user.id);
+
+    if (profileError) throw profileError;
+
+    const purity = 0.76;
+    const updatedProducts = products
+      .filter(p => p.weight_grams)
+      .map(product => {
+        const oldGoldValue = product.weight_grams * purity * goldRate;
+        const newGoldValue = product.weight_grams * purity * newRate;
+        const goldValueDifference = newGoldValue - oldGoldValue;
+        
+        return {
+          id: product.id,
+          cost_price: Math.max(0, product.cost_price + goldValueDifference),
+          retail_price: Math.max(0, product.retail_price + goldValueDifference)
+        };
+      });
+
+    let successCount = 0;
+    for (const update of updatedProducts) {
+      const { error } = await supabase
+        .from("products")
+        .update({ 
+          cost_price: update.cost_price,
+          retail_price: update.retail_price 
+        })
+        .eq("id", update.id);
+      
+      if (!error) successCount++;
+    }
+
+    setGoldRate(newRate);
+    await fetchProducts();
+    
+    toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated!`);
+  };
+
+  const handleUpdateGoldRateManual = async () => {
     const newRate = parseFloat(tempGoldRate);
     
     if (!tempGoldRate || tempGoldRate.trim() === "") {
@@ -164,56 +214,9 @@ const Catalog = () => {
     setUpdatingGoldRate(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setUpdatingGoldRate(false);
-        return;
-      }
-
-      const { error: profileError } = await supabase
-        .from("vendor_profiles")
-        .update({ 
-          gold_rate_24k_per_gram: newRate,
-          gold_rate_updated_at: new Date().toISOString()
-        })
-        .eq("user_id", user.id);
-
-      if (profileError) throw profileError;
-
-      const purity = 0.76;
-      const updatedProducts = products
-        .filter(p => p.weight_grams)
-        .map(product => {
-          const oldGoldValue = product.weight_grams * purity * goldRate;
-          const newGoldValue = product.weight_grams * purity * newRate;
-          const goldValueDifference = newGoldValue - oldGoldValue;
-          
-          return {
-            id: product.id,
-            cost_price: Math.max(0, product.cost_price + goldValueDifference),
-            retail_price: Math.max(0, product.retail_price + goldValueDifference)
-          };
-        });
-
-      let successCount = 0;
-      for (const update of updatedProducts) {
-        const { error } = await supabase
-          .from("products")
-          .update({ 
-            cost_price: update.cost_price,
-            retail_price: update.retail_price 
-          })
-          .eq("id", update.id);
-        
-        if (!error) successCount++;
-      }
-
-      setGoldRate(newRate);
+      await handleUpdateGoldRate(newRate);
       setEditingGoldRate(false);
       setTempGoldRate("");
-      await fetchProducts();
-      
-      toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated!`);
       
       setTimeout(() => {
         setUpdatingGoldRate(false);
@@ -516,17 +519,35 @@ const Catalog = () => {
 
   return (
     <ApprovalGuard>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Daily Gold Rate Prompt */}
+      <GoldRateDialog
+        currentGoldRate={goldRate}
+        onUpdate={handleUpdateGoldRate}
+        onSkip={() => console.log("Gold rate update skipped")}
+      />
+
+      {/* Floating QR Codes */}
+      <FloatingQRCodes
+        instagramQrUrl={vendorProfile?.instagram_qr_url}
+        whatsappQrUrl={vendorProfile?.whatsapp_qr_url}
+      />
+
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background relative overflow-hidden">
+        {/* Premium Background Effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
         {/* Mobile-Optimized Header */}
-        <header className="border-b border-border/50 bg-card/95 backdrop-blur-md shadow-lg">
-          <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 max-w-[1800px]">
+        <header className="relative border-b border-border/50 bg-card/95 backdrop-blur-xl shadow-xl z-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+          <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 max-w-[1800px] relative z-10">
             {/* Vendor Details Section */}
             {vendorProfile && (
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6 mb-4 pb-4 border-b border-border/30">
                 {/* Left: Business Info */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 flex-1 w-full lg:w-auto">
                   <div className="flex-1 w-full">
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent leading-tight mb-2">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold bg-gradient-to-r from-primary via-primary/90 to-accent bg-clip-text text-transparent leading-tight mb-2 drop-shadow-sm">
                       {vendorProfile.business_name || "My Jewelry Business"}
                     </h1>
                     {vendorProfile.address_line1 && (
@@ -561,43 +582,13 @@ const Catalog = () => {
                       )}
                     </div>
                   </div>
-                  
-                  {/* QR Codes */}
-                  {(vendorProfile.instagram_qr_url || vendorProfile.whatsapp_qr_url) && (
-                    <div className="flex gap-3 sm:gap-4">
-                      {vendorProfile.instagram_qr_url && (
-                        <div className="group text-center">
-                          <div className="relative overflow-hidden rounded-lg border-2 border-border/50 group-hover:border-primary/50 transition-all duration-300 group-hover:shadow-lg">
-                            <img 
-                              src={vendorProfile.instagram_qr_url} 
-                              alt="Instagram QR" 
-                              className="w-20 h-20 sm:w-24 sm:h-24 object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">Instagram</p>
-                        </div>
-                      )}
-                      {vendorProfile.whatsapp_qr_url && (
-                        <div className="group text-center">
-                          <div className="relative overflow-hidden rounded-lg border-2 border-border/50 group-hover:border-primary/50 transition-all duration-300 group-hover:shadow-lg">
-                            <img 
-                              src={vendorProfile.whatsapp_qr_url} 
-                              alt="WhatsApp QR" 
-                              className="w-20 h-20 sm:w-24 sm:h-24 object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 font-medium">WhatsApp</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 {/* Right: Rates & Inventory */}
                 <div className="flex flex-col items-start lg:items-end gap-3 w-full lg:w-auto">
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
                     {/* USD Rate Badge */}
-                    <div className="group relative text-xs sm:text-sm bg-gradient-to-r from-muted/80 to-muted/60 px-3 sm:px-4 py-2 rounded-lg border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="group relative text-xs sm:text-sm bg-gradient-to-br from-muted/90 to-muted/70 px-3 sm:px-4 py-2 rounded-xl border border-border/50 shadow-md hover:shadow-lg transition-all duration-300 backdrop-blur-sm">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground">1 USD = ₹{usdRate.toFixed(2)}</span>
                         <span className="text-muted-foreground text-xs">• {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
@@ -613,7 +604,7 @@ const Catalog = () => {
                           onChange={(e) => setTempGoldRate(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && !updatingGoldRate) {
-                              handleUpdateGoldRate();
+                              handleUpdateGoldRateManual();
                             } else if (e.key === 'Escape' && !updatingGoldRate) {
                               setEditingGoldRate(false);
                               setTempGoldRate("");
@@ -629,7 +620,7 @@ const Catalog = () => {
                         />
                         <Button 
                           size="sm" 
-                          onClick={handleUpdateGoldRate}
+                          onClick={handleUpdateGoldRateManual}
                           disabled={updatingGoldRate}
                           className="h-8 px-3 text-xs bg-amber-600 hover:bg-amber-700 disabled:opacity-50"
                         >
@@ -661,7 +652,7 @@ const Catalog = () => {
                           setEditingGoldRate(true);
                           setTempGoldRate(goldRate.toString());
                         }}
-                        className="group relative text-xs sm:text-sm bg-gradient-to-r from-amber-500/20 to-amber-600/20 px-3 sm:px-4 py-2 rounded-lg border border-amber-500/40 hover:border-amber-500/60 shadow-sm hover:shadow-md transition-all duration-300 active:scale-95"
+                        className="group relative text-xs sm:text-sm bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-500/20 px-3 sm:px-4 py-2 rounded-xl border border-amber-500/40 hover:border-amber-500/60 shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 backdrop-blur-sm"
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-amber-700 dark:text-amber-400">24K Gold: ₹{goldRate.toLocaleString('en-IN')}/g</span>
@@ -673,14 +664,15 @@ const Catalog = () => {
 
                   {/* Total Inventory Card */}
                   {products.length > 0 && (
-                    <div className="flex flex-col items-start lg:items-end gap-1 px-4 sm:px-5 py-3 bg-gradient-to-br from-primary/15 to-primary/5 rounded-xl border border-primary/30 shadow-md hover:shadow-lg transition-all duration-300 w-full lg:w-auto">
-                      <div className="text-[10px] sm:text-xs text-muted-foreground font-semibold uppercase tracking-wider">Total Inventory Value</div>
-                      <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    <div className="relative flex flex-col items-start lg:items-end gap-1 px-4 sm:px-5 py-3 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 rounded-xl border border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300 w-full lg:w-auto overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative z-10 text-[10px] sm:text-xs text-muted-foreground font-semibold uppercase tracking-wider">Total Inventory Value</div>
+                      <div className="relative z-10 text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent drop-shadow-sm">
                         ₹{totalINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                       </div>
-                      <div className="text-sm sm:text-base text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                      <div className="relative z-10 text-sm sm:text-base text-muted-foreground font-semibold">${totalUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
                       {filteredProducts.length !== products.length && (
-                        <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                        <div className="relative z-10 text-[10px] sm:text-xs text-muted-foreground mt-1">
                           Showing {filteredProducts.length} of {products.length} products
                         </div>
                       )}
