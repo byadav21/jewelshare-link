@@ -1,21 +1,73 @@
+import { useState, useEffect } from "react";
 import { useRewardsSystem } from "@/hooks/useRewardsSystem";
 import { useMilestones } from "@/hooks/useMilestones";
+import { useRedemptions } from "@/hooks/useRedemptions";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, Package, Share2, Eye, ArrowLeft, Gift } from "lucide-react";
+import { Trophy, Star, Package, Share2, Eye, ArrowLeft, Gift, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { RewardCard } from "@/components/RewardCard";
 
 const Rewards = () => {
   const navigate = useNavigate();
-  const { points, history, loading: pointsLoading } = useRewardsSystem();
+  const { toast } = useToast();
+  const { points, history, loading: pointsLoading, refetch: refetchPoints } = useRewardsSystem();
   const { milestones, loading: milestonesLoading } = useMilestones();
+  const { redemptions, refetch: refetchRedemptions } = useRedemptions();
+  const [rewardsCatalog, setRewardsCatalog] = useState<any[]>([]);
+  const [redeemingId, setRedeemingId] = useState<string | null>(null);
 
   const loading = pointsLoading || milestonesLoading;
+
+  useEffect(() => {
+    fetchRewardsCatalog();
+  }, []);
+
+  const fetchRewardsCatalog = async () => {
+    const { data, error } = await supabase
+      .from('rewards_catalog')
+      .select('*')
+      .eq('is_active', true)
+      .order('points_cost', { ascending: true });
+
+    if (!error && data) {
+      setRewardsCatalog(data);
+    }
+  };
+
+  const handleRedeem = async (rewardId: string) => {
+    setRedeemingId(rewardId);
+    try {
+      const { data, error } = await supabase.functions.invoke('redeem-reward', {
+        body: { reward_id: rewardId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Reward Redeemed!",
+        description: "Your reward has been successfully applied to your account.",
+      });
+
+      await refetchPoints();
+      await refetchRedemptions();
+    } catch (error: any) {
+      toast({
+        title: "Redemption Failed",
+        description: error.message || "Unable to redeem reward. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setRedeemingId(null);
+    }
+  };
 
   const getTierColor = (tier: string) => {
     const colors: Record<string, string> = {
@@ -228,6 +280,30 @@ const Rewards = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Redeem Rewards */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5 text-primary" />
+                Redeem Rewards
+              </CardTitle>
+              <CardDescription>Exchange your points for exclusive perks</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {rewardsCatalog.map((reward) => (
+                  <RewardCard
+                    key={reward.id}
+                    reward={reward}
+                    userPoints={points?.total_points || 0}
+                    onRedeem={handleRedeem}
+                    isRedeeming={redeemingId === reward.id}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* How to Earn Points */}
           <Card>
