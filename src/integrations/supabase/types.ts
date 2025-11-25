@@ -1205,6 +1205,7 @@ export type Database = {
           gold_rate_updated_at: string | null
           id: string
           instagram_qr_url: string | null
+          logo_url: string | null
           phone: string | null
           pincode: string | null
           seller_categories: string[] | null
@@ -1226,6 +1227,7 @@ export type Database = {
           gold_rate_updated_at?: string | null
           id?: string
           instagram_qr_url?: string | null
+          logo_url?: string | null
           phone?: string | null
           pincode?: string | null
           seller_categories?: string[] | null
@@ -1247,6 +1249,7 @@ export type Database = {
           gold_rate_updated_at?: string | null
           id?: string
           instagram_qr_url?: string | null
+          logo_url?: string | null
           phone?: string | null
           pincode?: string | null
           seller_categories?: string[] | null

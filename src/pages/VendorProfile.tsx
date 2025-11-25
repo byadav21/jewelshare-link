@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MediaUpload } from "@/components/MediaUpload";
 import { toast } from "sonner";
 import { ArrowLeft, Upload } from "lucide-react";
 
@@ -27,6 +28,7 @@ const VendorProfile = () => {
     whatsapp_number: "",
     instagram_qr_url: "",
     whatsapp_qr_url: "",
+    logo_url: "",
   });
 
   useEffect(() => {
@@ -61,6 +63,7 @@ const VendorProfile = () => {
           whatsapp_number: profile.whatsapp_number || "",
           instagram_qr_url: profile.instagram_qr_url || "",
           whatsapp_qr_url: profile.whatsapp_qr_url || "",
+          logo_url: profile.logo_url || "",
         });
       }
     } catch (error: any) {
@@ -147,6 +150,18 @@ const VendorProfile = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Brand Logo</Label>
+                    <MediaUpload
+                      bucket="brand-logos"
+                      onUploadComplete={(url) => setFormData({ ...formData, logo_url: url })}
+                      currentImage={formData.logo_url}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Upload your brand logo (recommended: square format, min 300x300px)
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="business_name">Business Name *</Label>
                     <Input

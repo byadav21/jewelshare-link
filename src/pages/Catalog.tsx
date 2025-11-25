@@ -560,14 +560,31 @@ const Catalog = () => {
         <header className="relative border-b border-border/50 bg-card/95 backdrop-blur-xl shadow-xl z-10">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 pointer-events-none" />
           <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 max-w-[1800px] relative z-10">
-            {/* Vendor Details Section */}
+            {/* Vendor Details Section - Enhanced with Logo */}
             {vendorProfile && <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6 mb-4 pb-4 border-b border-border/30">
-                {/* Left: Business Info */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 flex-1 w-full lg:w-auto">
+                {/* Left: Logo & Business Info */}
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 w-full lg:w-auto">
+                  {/* Brand Logo */}
+                  {vendorProfile.logo_url && (
+                    <div className="flex-shrink-0 relative group/logo">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl blur-lg group-hover/logo:blur-xl transition-all duration-300" />
+                      <div className="relative w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg group-hover/logo:border-primary/40 group-hover/logo:scale-105 transition-all duration-300 bg-background">
+                        <img 
+                          src={vendorProfile.logo_url} 
+                          alt={vendorProfile.business_name || "Vendor Logo"} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex-1 w-full">
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold bg-gradient-to-r from-primary via-primary/90 to-accent bg-clip-text text-transparent leading-tight mb-2 drop-shadow-sm">
-                      {vendorProfile.business_name || "My Jewelry Business"}
-                    </h1>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Gem className="h-5 w-5 sm:h-6 sm:w-6 text-primary animate-pulse" />
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold bg-gradient-to-r from-primary via-primary/90 to-accent bg-clip-text text-transparent leading-tight drop-shadow-sm">
+                        {vendorProfile.business_name || "My Jewelry Business"}
+                      </h1>
+                    </div>
                     {vendorProfile.address_line1 && <div className="text-xs sm:text-sm text-muted-foreground mb-2 leading-relaxed">
                         <span className="block sm:inline">
                           {vendorProfile.address_line1}
