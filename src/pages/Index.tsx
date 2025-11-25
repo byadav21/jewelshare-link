@@ -9,6 +9,7 @@ import { AnimatedParticles } from "@/components/AnimatedParticles";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { AnimatedIcon } from "@/components/AnimatedIcon";
 import { ParallaxSection } from "@/components/ParallaxSection";
+import { TiltCard } from "@/components/TiltCard";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
@@ -308,48 +309,56 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <ScrollReveal delay={0.1}>
-              <div className="text-center group">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <AnimatedIcon icon={Gem} className="h-8 w-8 text-white" animation="pulse" delay={0.1} />
+              <TiltCard maxTilt={6} scale={1.08}>
+                <div className="text-center group">
+                  <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <AnimatedIcon icon={Gem} className="h-8 w-8 text-white" animation="pulse" delay={0.1} />
+                  </div>
+                  <div className="mb-2 text-5xl font-bold font-serif">
+                    <AnimatedCounter end={15000} suffix="+" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">Products Managed</p>
                 </div>
-                <div className="mb-2 text-5xl font-bold font-serif">
-                  <AnimatedCounter end={15000} suffix="+" />
-                </div>
-                <p className="text-muted-foreground font-medium">Products Managed</p>
-              </div>
+              </TiltCard>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
-              <div className="text-center group">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-gemstone-from to-gemstone-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <AnimatedIcon icon={Share2} className="h-8 w-8 text-white" animation="rotate" delay={0.2} />
+              <TiltCard maxTilt={6} scale={1.08}>
+                <div className="text-center group">
+                  <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-gemstone-from to-gemstone-to shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <AnimatedIcon icon={Share2} className="h-8 w-8 text-white" animation="rotate" delay={0.2} />
+                  </div>
+                  <div className="mb-2 text-5xl font-bold font-serif">
+                    <AnimatedCounter end={2500} suffix="+" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">Active Catalogs</p>
                 </div>
-                <div className="mb-2 text-5xl font-bold font-serif">
-                  <AnimatedCounter end={2500} suffix="+" />
-                </div>
-                <p className="text-muted-foreground font-medium">Active Catalogs</p>
-              </div>
+              </TiltCard>
             </ScrollReveal>
             <ScrollReveal delay={0.3}>
-              <div className="text-center group">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-diamond-from to-diamond-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <AnimatedIcon icon={Heart} className="h-8 w-8 text-white" animation="bounce" delay={0.3} />
+              <TiltCard maxTilt={6} scale={1.08}>
+                <div className="text-center group">
+                  <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-diamond-from to-diamond-to shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <AnimatedIcon icon={Heart} className="h-8 w-8 text-white" animation="bounce" delay={0.3} />
+                  </div>
+                  <div className="mb-2 text-5xl font-bold font-serif">
+                    <AnimatedCounter end={8750} suffix="+" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">Customer Inquiries</p>
                 </div>
-                <div className="mb-2 text-5xl font-bold font-serif">
-                  <AnimatedCounter end={8750} suffix="+" />
-                </div>
-                <p className="text-muted-foreground font-medium">Customer Inquiries</p>
-              </div>
+              </TiltCard>
             </ScrollReveal>
             <ScrollReveal delay={0.4}>
-              <div className="text-center group">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <AnimatedIcon icon={TrendingUp} className="h-8 w-8 text-white" animation="scale" delay={0.4} />
+              <TiltCard maxTilt={6} scale={1.08}>
+                <div className="text-center group">
+                  <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <AnimatedIcon icon={TrendingUp} className="h-8 w-8 text-white" animation="scale" delay={0.4} />
+                  </div>
+                  <div className="mb-2 text-5xl font-bold font-serif">
+                    <AnimatedCounter end={98} suffix="%" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">Satisfaction Rate</p>
                 </div>
-                <div className="mb-2 text-5xl font-bold font-serif">
-                  <AnimatedCounter end={98} suffix="%" />
-                </div>
-                <p className="text-muted-foreground font-medium">Satisfaction Rate</p>
-              </div>
+              </TiltCard>
             </ScrollReveal>
           </div>
         </div>
@@ -467,27 +476,29 @@ const Index = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
               <ScrollReveal key={index} delay={0.1 * index} direction="up">
-                <Card className="group relative overflow-hidden border-2 transition-all hover:shadow-lg">
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-5`}
-                  />
-                  <CardHeader>
+                <TiltCard maxTilt={8} scale={1.05}>
+                  <Card className="group relative overflow-hidden border-2 h-full transition-all hover:shadow-lg hover:shadow-primary/10">
                     <div
-                      className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${feature.gradient}`}
-                    >
-                      <AnimatedIcon 
-                        icon={feature.icon} 
-                        className="h-6 w-6 text-white" 
-                        animation={index % 4 === 0 ? "pulse" : index % 4 === 1 ? "rotate" : index % 4 === 2 ? "bounce" : "scale"}
-                        delay={0.1 * index}
-                      />
-                    </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">{feature.description}</CardDescription>
-                  </CardContent>
-                </Card>
+                      className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-5`}
+                    />
+                    <CardHeader>
+                      <div
+                        className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${feature.gradient}`}
+                      >
+                        <AnimatedIcon 
+                          icon={feature.icon} 
+                          className="h-6 w-6 text-white" 
+                          animation={index % 4 === 0 ? "pulse" : index % 4 === 1 ? "rotate" : index % 4 === 2 ? "bounce" : "scale"}
+                          delay={0.1 * index}
+                        />
+                      </div>
+                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base">{feature.description}</CardDescription>
+                    </CardContent>
+                  </Card>
+                </TiltCard>
               </ScrollReveal>
             ))}
           </div>
