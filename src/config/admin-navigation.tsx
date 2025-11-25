@@ -40,6 +40,7 @@ export const CONTENT_MANAGEMENT_ITEMS: NavigationItem[] = [
   { title: "Newsletter", url: ROUTES.ADMIN_NEWSLETTER, icon: Mail },
   { title: "Press Releases", url: ROUTES.ADMIN_PRESS, icon: Newspaper },
   { title: "Scratch Leads", url: ROUTES.SCRATCH_LEADS, icon: Gift },
+  { title: "Rewards", url: ROUTES.ADMIN_REWARDS, icon: Crown },
 ];
 
 export const VENDOR_MANAGEMENT_ITEMS: NavigationItem[] = [

@@ -100,14 +100,18 @@ Deno.serve(async (req) => {
         .eq('user_id', user.id);
     }
 
-    // Log points transaction
+    // Log points transaction with expiration date (90 days)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 90);
+    
     await supabaseClient
       .from('points_history')
       .insert({
         user_id: user.id,
         points,
         action_type,
-        action_details: action_details || {}
+        action_details: action_details || {},
+        expires_at: expiresAt.toISOString()
       });
 
     console.log(`Awarded ${points} points to user ${user.id} for action: ${action_type}`);
