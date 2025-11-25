@@ -270,13 +270,16 @@ const SharedCatalog = () => {
   const isExpired = shareLinkData && new Date(shareLinkData.expires_at).getTime() <= new Date().getTime();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-background relative">
+      {/* Premium background effects */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
+      
       {/* Mobile-Optimized Header */}
-      <header className="border-b border-border/50 bg-card/90 backdrop-blur-md shadow-xl">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+      <header className="border-b border-border/50 bg-gradient-to-b from-card via-card/95 to-card/90 backdrop-blur-xl shadow-2xl relative z-10">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
           {/* Viral Stats & Timer Banner */}
           {shareLinkData && !isExpired && (
-            <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between pb-4 border-b border-border/30">
+            <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between pb-5 border-b border-border/30 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 py-4 rounded-xl">
               <ShareStats 
                 viewCount={shareLinkData.view_count}
                 isExpiringSoon={isExpiringSoon}
@@ -288,13 +291,16 @@ const SharedCatalog = () => {
 
           {/* Vendor Details */}
           {showVendorDetails && vendorProfile && (
-            <div className="mb-4 pb-4 border-b border-border/30">
+            <div className="mb-5 pb-5 border-b border-border/30">
               <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                 {/* Logo & Business Info */}
                 <div className="flex items-start gap-3 flex-1 min-w-0 w-full">
-                  <Gem className="h-8 w-8 sm:h-10 sm:w-10 text-primary flex-shrink-0 drop-shadow-lg" />
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 blur-xl rounded-full" />
+                    <Gem className="relative h-8 w-8 sm:h-12 sm:w-12 text-primary flex-shrink-0 drop-shadow-2xl" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-foreground leading-tight mb-2 break-words">
+                    <h1 className="text-xl sm:text-3xl lg:text-4xl font-serif font-bold bg-gradient-to-r from-foreground via-foreground to-primary/80 bg-clip-text text-transparent leading-tight mb-3 break-words">
                       {vendorProfile.business_name || "Jewelry Catalog"}
                     </h1>
                     
@@ -359,9 +365,10 @@ const SharedCatalog = () => {
           {/* Bottom Action Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-4 pt-3 border-t border-border/30">
             {/* Exchange Rate */}
-            <div className="bg-gradient-to-r from-primary/15 to-primary/5 border border-primary/30 px-4 py-2.5 rounded-xl shadow-md">
-              <span className="text-xs sm:text-sm font-semibold text-foreground">
-                1 USD = <span className="text-primary text-base sm:text-lg">₹{usdToInr.toFixed(2)}</span>
+            <div className="relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/30 px-5 py-3 rounded-2xl shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer" />
+              <span className="relative text-xs sm:text-sm font-bold text-foreground">
+                1 USD = <span className="text-primary text-lg sm:text-xl drop-shadow-sm">₹{usdToInr.toFixed(2)}</span>
               </span>
             </div>
             
@@ -575,7 +582,7 @@ const SharedCatalog = () => {
       </header>
 
       {/* Product Grid */}
-      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-8 sm:py-12 relative z-10">
         {filteredProducts.length === 0 && products.length > 0 ? (
           <div className="text-center py-16 sm:py-20">
             <Gem className="h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground mx-auto mb-4 opacity-50" />
@@ -616,7 +623,7 @@ const SharedCatalog = () => {
             <p className="text-sm sm:text-base text-muted-foreground">This catalog is currently empty</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-8">
             {filteredProducts.map((product) => {
               // Track product view when card is clicked
               const handleProductClick = () => {
@@ -633,23 +640,26 @@ const SharedCatalog = () => {
               return (
                 <Card 
                   key={product.id} 
-                  className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-border/50 hover:border-primary/30 bg-card/80 backdrop-blur-sm cursor-pointer"
+                  className="group overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-border/50 hover:border-primary/40 bg-gradient-to-b from-card to-card/95 backdrop-blur-sm cursor-pointer hover:-translate-y-2"
                   onClick={handleProductClick}
                 >
+                {/* Premium hover glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                
                 {product.image_url && (
-                  <div className="aspect-square overflow-hidden bg-muted/30 relative">
+                  <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 relative">
                     <OptimizedImage
                       src={product.image_url}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       width={400}
                       height={400}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
                 )}
-                <CardHeader className="pb-3">
-                  <h3 className="font-serif text-base sm:text-lg font-bold text-foreground line-clamp-2 leading-tight">
+                <CardHeader className="pb-3 relative z-10">
+                  <h3 className="font-serif text-base sm:text-lg font-bold text-foreground group-hover:text-primary line-clamp-2 leading-tight transition-colors duration-300">
                     {product.name}
                   </h3>
                   {product.sku && (
@@ -680,19 +690,19 @@ const SharedCatalog = () => {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="border-t border-border/30 pt-4 flex-col gap-3 bg-muted/10">
+                <CardFooter className="border-t border-border/30 pt-4 flex-col gap-3.5 bg-gradient-to-b from-muted/10 to-transparent relative z-10">
                   {/* Delivery Badge */}
                   {product.delivery_type && (
                     <div className="w-full">
                       {product.delivery_type === 'immediate delivery' ? (
-                        <Badge variant="secondary" className="w-full justify-center gap-1.5 py-1.5 bg-gradient-to-r from-emerald-500/15 to-green-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/20 hover:to-green-500/20">
-                          <Zap className="h-3 w-3" />
-                          <span className="text-xs font-medium">Immediate Dispatch</span>
+                        <Badge variant="secondary" className="w-full justify-center gap-2 py-2 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/30 hover:to-green-500/30 shadow-sm font-semibold">
+                          <Zap className="h-3.5 w-3.5" />
+                          <span className="text-xs">Immediate Dispatch</span>
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="w-full justify-center gap-1.5 py-1.5 border-primary/30 text-primary hover:bg-primary/5">
-                          <Calendar className="h-3 w-3" />
-                          <span className="text-xs font-medium">{product.delivery_type}</span>
+                        <Badge variant="outline" className="w-full justify-center gap-2 py-2 border-primary/40 text-primary hover:bg-primary/10 shadow-sm font-semibold">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span className="text-xs">{product.delivery_type}</span>
                         </Badge>
                       )}
                     </div>
@@ -700,13 +710,15 @@ const SharedCatalog = () => {
                   
                   <div className="w-full space-y-2">
                     <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-muted-foreground">INR</span>
-                      <p className="text-xl sm:text-2xl font-bold text-primary">
-                        ₹{product.displayed_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                      </p>
+                      <span className="text-xs text-muted-foreground font-medium">INR</span>
+                      <div className="relative">
+                        <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent drop-shadow-sm">
+                          ₹{product.displayed_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-muted-foreground">USD</span>
+                      <span className="text-xs text-muted-foreground font-medium">USD</span>
                       <p className="text-base sm:text-lg font-semibold text-foreground">
                         ${(product.displayed_price / usdToInr).toFixed(2)}
                       </p>
