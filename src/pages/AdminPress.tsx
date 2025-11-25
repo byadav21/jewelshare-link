@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, Newspaper } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MediaUpload } from "@/components/MediaUpload";
+import { AdminLoadingSkeleton } from "@/components/admin/AdminLoadingSkeleton";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 
 interface PressRelease {
   id: string;
@@ -146,12 +148,17 @@ export default function AdminPress() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Press Releases</h1>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Press Releases
+            </h1>
+            <p className="text-muted-foreground mt-1">Manage press coverage and media mentions</p>
+          </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
+              <Button onClick={resetForm} className="shadow-md hover:shadow-lg transition-all">
                 <Plus className="h-4 w-4 mr-2" />
                 New Release
               </Button>
@@ -171,6 +178,7 @@ export default function AdminPress() {
                       setFormData({ ...formData, title: e.target.value })
                     }
                     required
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
@@ -180,6 +188,7 @@ export default function AdminPress() {
                     onChange={(e) =>
                       setFormData({ ...formData, subtitle: e.target.value })
                     }
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
@@ -191,6 +200,7 @@ export default function AdminPress() {
                     }
                     rows={8}
                     required
+                    className="mt-1.5"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -201,6 +211,7 @@ export default function AdminPress() {
                       onChange={(e) =>
                         setFormData({ ...formData, publication: e.target.value })
                       }
+                      className="mt-1.5"
                     />
                   </div>
                   <div>
@@ -212,18 +223,21 @@ export default function AdminPress() {
                         setFormData({ ...formData, published_date: e.target.value })
                       }
                       required
+                      className="mt-1.5"
                     />
                   </div>
                 </div>
                 <div>
                   <Label>Publication Logo</Label>
-                  <MediaUpload
-                    bucket="press-media"
-                    onUploadComplete={(url) =>
-                      setFormData({ ...formData, publication_logo: url })
-                    }
-                    currentImage={formData.publication_logo}
-                  />
+                  <div className="mt-1.5">
+                    <MediaUpload
+                      bucket="press-media"
+                      onUploadComplete={(url) =>
+                        setFormData({ ...formData, publication_logo: url })
+                      }
+                      currentImage={formData.publication_logo}
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label>External URL</Label>
@@ -234,9 +248,10 @@ export default function AdminPress() {
                       setFormData({ ...formData, external_url: e.target.value })
                     }
                     placeholder="https://..."
+                    className="mt-1.5"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 pt-2">
                   <Switch
                     checked={formData.featured}
                     onCheckedChange={(checked) =>
@@ -254,21 +269,37 @@ export default function AdminPress() {
         </div>
 
         {isLoading ? (
-          <div>Loading...</div>
+          <AdminLoadingSkeleton />
+        ) : !releases || releases.length === 0 ? (
+          <AdminEmptyState
+            icon={Newspaper}
+            title="No press releases yet"
+            description="Add press releases to showcase your media coverage and announcements"
+            actionLabel="Create First Release"
+            onAction={() => setIsDialogOpen(true)}
+          />
         ) : (
           <div className="grid gap-4">
-            {releases?.map((release) => (
-              <Card key={release.id}>
+            {releases.map((release, index) => (
+              <Card
+                key={release.id}
+                className="bg-gradient-card border-border/50 shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <CardTitle>{release.title}</CardTitle>
-                      <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                        {release.publication && <span>{release.publication}</span>}
-                        <span>
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-2 flex-1">
+                      <CardTitle className="text-xl">{release.title}</CardTitle>
+                      <div className="flex flex-wrap gap-2 items-center text-sm">
+                        {release.publication && (
+                          <span className="font-medium text-foreground">{release.publication}</span>
+                        )}
+                        <span className="text-muted-foreground">
                           {new Date(release.published_date).toLocaleDateString()}
                         </span>
-                        {release.featured && <Badge>Featured</Badge>}
+                        {release.featured && (
+                          <Badge className="bg-gradient-primary">Featured</Badge>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -277,6 +308,7 @@ export default function AdminPress() {
                           size="sm"
                           variant="outline"
                           asChild
+                          className="hover:bg-primary/10 hover:border-primary transition-colors"
                         >
                           <a href={release.external_url} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4" />
@@ -287,6 +319,7 @@ export default function AdminPress() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleEdit(release)}
+                        className="hover:bg-primary/10 hover:border-primary transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -300,11 +333,11 @@ export default function AdminPress() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   {release.subtitle && (
-                    <p className="text-sm font-medium mb-2">{release.subtitle}</p>
+                    <p className="text-sm font-medium text-foreground/80">{release.subtitle}</p>
                   )}
-                  <p className="text-sm text-muted-foreground line-clamp-3">
+                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                     {release.content}
                   </p>
                 </CardContent>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Trash2, Mail } from "lucide-react";
+import { Trash2, Mail, MailOpen } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -14,6 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AdminLoadingSkeleton } from "@/components/admin/AdminLoadingSkeleton";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 
 interface Subscriber {
   id: string;
@@ -72,95 +74,116 @@ export default function AdminNewsletter() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Newsletter Subscribers</h1>
+      <div className="p-6 space-y-6 animate-fade-in">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Newsletter Subscribers
+          </h1>
+          <p className="text-muted-foreground mt-1">Manage your email newsletter subscribers</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Total Subscribers</CardTitle>
+          <Card className="bg-gradient-card border-border/50 shadow-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Subscribers
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalCount}</div>
+              <div className="text-3xl font-bold">{totalCount}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Active Subscribers</CardTitle>
+          <Card className="bg-gradient-success border-border/50 shadow-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-success-foreground">
+                Active Subscribers
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{activeCount}</div>
+              <div className="text-3xl font-bold text-success">{activeCount}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Inactive Subscribers</CardTitle>
+          <Card className="bg-gradient-card border-border/50 shadow-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Inactive Subscribers
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalCount - activeCount}</div>
+              <div className="text-3xl font-bold">{totalCount - activeCount}</div>
             </CardContent>
           </Card>
         </div>
 
         {isLoading ? (
-          <div>Loading...</div>
+          <AdminLoadingSkeleton />
+        ) : !subscribers || subscribers.length === 0 ? (
+          <AdminEmptyState
+            icon={MailOpen}
+            title="No subscribers yet"
+            description="Email subscribers will appear here when visitors sign up for your newsletter"
+          />
         ) : (
-          <Card>
+          <Card className="bg-gradient-card border-border/50 shadow-md">
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Subscribed</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {subscribers?.map((subscriber) => (
-                    <TableRow key={subscriber.id}>
-                      <TableCell className="font-medium">
-                        {subscriber.email}
-                      </TableCell>
-                      <TableCell>
-                        {subscriber.is_active ? (
-                          <Badge>Active</Badge>
-                        ) : (
-                          <Badge variant="outline">Inactive</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(subscriber.subscribed_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              toggleActiveMutation.mutate({
-                                id: subscriber.id,
-                                is_active: !subscriber.is_active,
-                              })
-                            }
-                          >
-                            <Mail className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => deleteMutation.mutate(subscriber.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-border/50 hover:bg-transparent">
+                      <TableHead className="font-semibold">Email</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Subscribed</TableHead>
+                      <TableHead className="text-right font-semibold">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {subscribers.map((subscriber) => (
+                      <TableRow
+                        key={subscriber.id}
+                        className="border-border/50 hover:bg-muted/30 transition-colors"
+                      >
+                        <TableCell className="font-medium">
+                          {subscriber.email}
+                        </TableCell>
+                        <TableCell>
+                          {subscriber.is_active ? (
+                            <Badge className="bg-success text-success-foreground">Active</Badge>
+                          ) : (
+                            <Badge variant="outline">Inactive</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(subscriber.subscribed_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                toggleActiveMutation.mutate({
+                                  id: subscriber.id,
+                                  is_active: !subscriber.is_active,
+                                })
+                              }
+                              className="hover:bg-primary/10 hover:border-primary transition-colors"
+                            >
+                              <Mail className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => deleteMutation.mutate(subscriber.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         )}
