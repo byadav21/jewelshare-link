@@ -263,6 +263,14 @@ const AppContent = () => {
         } 
       />
       <Route 
+        path={ROUTES.ADMIN_REWARDS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminRewards /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route
         path={ROUTES.SUPER_ADMIN}
         element={
           <AdminGuard>
