@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MediaUpload } from "@/components/MediaUpload";
+import { LogoUpload } from "@/components/LogoUpload";
 import { toast } from "sonner";
 import { ArrowLeft, Upload } from "lucide-react";
 
@@ -158,13 +159,12 @@ const VendorProfile = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Brand Logo</Label>
-                    <MediaUpload
-                      bucket="brand-logos"
+                    <LogoUpload
                       onUploadComplete={(url) => setFormData({ ...formData, logo_url: url })}
                       currentImage={formData.logo_url}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Upload your brand logo (recommended: square format, min 300x300px)
+                      Automatically cropped and optimized to 500×500px WebP format
                     </p>
                   </div>
 
