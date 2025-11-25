@@ -10,6 +10,7 @@ import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { PurchaseInquiryDialog } from "@/components/PurchaseInquiryDialog";
 import { SocialShareButton } from "@/components/SocialShareButton";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ShareStats } from "@/components/ShareStats";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { OptimizedImage } from "@/components/OptimizedImage";
@@ -795,6 +796,14 @@ const SharedCatalog = () => {
         <FloatingQRCodes
           instagramQrUrl={vendorProfile.instagram_qr_url}
           whatsappQrUrl={vendorProfile.whatsapp_qr_url}
+        />
+      )}
+
+      {/* WhatsApp Contact Button */}
+      {vendorProfile?.whatsapp_number && (
+        <WhatsAppButton
+          whatsappNumber={vendorProfile.whatsapp_number}
+          businessName={vendorProfile.business_name}
         />
       )}
     </div>
