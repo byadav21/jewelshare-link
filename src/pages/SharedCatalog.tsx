@@ -60,7 +60,7 @@ const SharedCatalog = () => {
     customer_phone: "",
     message: "",
   });
-  const [displayCount, setDisplayCount] = useState(12);
+  const [displayCount, setDisplayCount] = useState(60);
 
   useEffect(() => {
     const cachedRate = sessionStorage.getItem('usd_rate');
@@ -240,7 +240,7 @@ const SharedCatalog = () => {
 
   // Reset display count when filters change
   useEffect(() => {
-    setDisplayCount(12);
+    setDisplayCount(60);
   }, [filters]);
 
   if (loading) {
@@ -779,7 +779,7 @@ const SharedCatalog = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={() => setDisplayCount(prev => prev + 12)}
+                  onClick={() => setDisplayCount(prev => prev + 60)}
                   className="px-8 py-6 text-base font-semibold hover:bg-primary/10 hover:border-primary transition-all duration-300"
                 >
                   Load More Products ({filteredProducts.length - displayCount} remaining)
