@@ -873,7 +873,7 @@ const Catalog = () => {
             <div className="animate-fade-in">
               {/* Elegant Category Selector - Always visible */}
               {approvedCategories.length > 1 && (
-                <div className="mb-8 flex gap-3 flex-wrap justify-center">
+                <div className="mb-6 flex gap-2 overflow-x-auto justify-start md:justify-center pb-2 px-2 scrollbar-hide">
                   {approvedCategories.map((category) => {
                     const isSelected = selectedProductType === category;
                     const categoryKey = category.toLowerCase().replace(/\s+/g, '-');
@@ -919,9 +919,9 @@ const Catalog = () => {
                         onClick={() => setSelectedProductType(category)}
                         disabled={transitioning}
                         className={`
-                          group relative overflow-hidden
-                          px-8 py-4 rounded-2xl
-                          font-serif text-lg font-semibold
+                          group relative overflow-hidden flex-shrink-0
+                          px-3 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl
+                          font-serif text-sm sm:text-base md:text-lg font-semibold
                           transition-all duration-500 ease-out
                           disabled:opacity-50 disabled:cursor-wait
                           ${isSelected 
@@ -939,15 +939,15 @@ const Catalog = () => {
                         
                         {/* Content */}
                         <span className={`
-                          relative flex items-center gap-3
+                          relative flex items-center gap-2 sm:gap-2.5 md:gap-3
                           ${isSelected ? style.text : 'text-muted-foreground group-hover:text-foreground'}
                           transition-colors duration-300
                         `}>
-                          <span className="text-2xl">{style.icon}</span>
+                          <span className="text-lg sm:text-xl md:text-2xl">{style.icon}</span>
                           <div className="flex flex-col items-start">
-                            <span className="tracking-wide">{category}</span>
+                            <span className="tracking-wide whitespace-nowrap">{category}</span>
                             <span className={`
-                              text-xs font-normal opacity-70
+                              text-[10px] sm:text-xs font-normal opacity-70
                               ${isSelected ? '' : 'text-muted-foreground/60'}
                             `}>
                               {count} {count === 1 ? 'item' : 'items'}
