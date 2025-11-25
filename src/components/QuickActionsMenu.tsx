@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { useToast } from "@/hooks/use-toast";
+import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 interface QuickActionsMenuProps {
   onExportPDF: () => void;
@@ -15,7 +15,8 @@ export const QuickActionsMenu = ({
 }: QuickActionsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [upgradeLimitType, setUpgradeLimitType] = useState<'products' | 'share_links' | undefined>();
   const {
     keyboardHeight,
     isKeyboardVisible
@@ -23,26 +24,24 @@ export const QuickActionsMenu = ({
   const { canAddProducts, canAddShareLinks, productsRemaining, shareLinksRemaining } = usePlanLimits();
   const handleAddProduct = () => {
     if (!canAddProducts) {
-      toast({
-        title: "Product Limit Reached",
-        description: "You've reached your plan's product limit. Please upgrade to add more products.",
-        variant: "destructive",
-      });
+      setUpgradeLimitType('products');
+      setIsUpgradeDialogOpen(true);
+      setIsOpen(false);
       return;
     }
     navigate("/add-product");
+    setIsOpen(false);
   };
 
   const handleShareCatalog = () => {
     if (!canAddShareLinks) {
-      toast({
-        title: "Share Link Limit Reached",
-        description: "You've reached your plan's share link limit. Please upgrade to create more links.",
-        variant: "destructive",
-      });
+      setUpgradeLimitType('share_links');
+      setIsUpgradeDialogOpen(true);
+      setIsOpen(false);
       return;
     }
     navigate("/share");
+    setIsOpen(false);
   };
 
   const getProductLabel = () => {
@@ -95,7 +94,9 @@ export const QuickActionsMenu = ({
 
   // Calculate dynamic bottom position based on keyboard
   const bottomPosition = isKeyboardVisible ? `${keyboardHeight + 16}px` : '2rem';
-  return <motion.div className="fixed right-8 z-50" animate={{
+  return (
+    <>
+      <motion.div className="fixed right-8 z-50" animate={{
     bottom: bottomPosition
   }} transition={{
     duration: 0.3,
@@ -216,5 +217,13 @@ export const QuickActionsMenu = ({
             Quick Actions
           </motion.div>}
       </AnimatePresence>
-    </motion.div>;
+    </motion.div>
+    
+    <UpgradePromptDialog
+      open={isUpgradeDialogOpen}
+      onOpenChange={setIsUpgradeDialogOpen}
+      limitType={upgradeLimitType}
+    />
+  </>
+  );
 };
