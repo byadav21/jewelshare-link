@@ -4,6 +4,9 @@ import { Plus, Share2, FileDown, Zap, X, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 interface QuickActionsMenuProps {
   onExportPDF: () => void;
 }
@@ -12,34 +15,66 @@ export const QuickActionsMenu = ({
 }: QuickActionsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     keyboardHeight,
     isKeyboardVisible
   } = useKeyboardHeight();
+  const { canAddProducts, canAddShareLinks, productsRemaining, shareLinksRemaining } = usePlanLimits();
+  const handleAddProduct = () => {
+    if (!canAddProducts) {
+      toast({
+        title: "Product Limit Reached",
+        description: "You've reached your plan's product limit. Please upgrade to add more products.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate("/add-product");
+  };
+
+  const handleShareCatalog = () => {
+    if (!canAddShareLinks) {
+      toast({
+        title: "Share Link Limit Reached",
+        description: "You've reached your plan's share link limit. Please upgrade to create more links.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate("/share");
+  };
+
   const actions = [{
     icon: Plus,
     label: "Add Product",
-    onClick: () => navigate("/add-product"),
+    onClick: handleAddProduct,
     gradient: "from-primary/20 to-primary/5",
-    iconColor: "text-primary"
+    iconColor: "text-primary",
+    disabled: !canAddProducts,
+    tooltip: !canAddProducts ? `Product limit reached (${productsRemaining} remaining)` : undefined
   }, {
     icon: Share2,
     label: "Share Catalog",
-    onClick: () => navigate("/share"),
+    onClick: handleShareCatalog,
     gradient: "from-blue-500/20 to-blue-500/5",
-    iconColor: "text-blue-500"
+    iconColor: "text-blue-500",
+    disabled: !canAddShareLinks,
+    tooltip: !canAddShareLinks ? `Share link limit reached (${shareLinksRemaining} remaining)` : undefined
   }, {
     icon: ShoppingCart,
     label: "Purchase Inquiries",
     onClick: () => navigate("/purchase-inquiries"),
     gradient: "from-purple-500/20 to-purple-500/5",
-    iconColor: "text-purple-500"
+    iconColor: "text-purple-500",
+    disabled: false
   }, {
     icon: FileDown,
     label: "Export PDF",
     onClick: onExportPDF,
     gradient: "from-green-500/20 to-green-500/5",
-    iconColor: "text-green-500"
+    iconColor: "text-green-500",
+    disabled: false
   }];
 
   // Calculate dynamic bottom position based on keyboard
@@ -66,36 +101,66 @@ export const QuickActionsMenu = ({
       }} transition={{
         duration: 0.2
       }} className="absolute bottom-20 right-0 flex flex-col gap-3 mb-2">
-            {actions.map((action, index) => <motion.button key={action.label} initial={{
-          opacity: 0,
-          x: 20
-        }} animate={{
-          opacity: 1,
-          x: 0
-        }} exit={{
-          opacity: 0,
-          x: 20
-        }} transition={{
-          delay: index * 0.05
-        }} onClick={() => {
-          action.onClick();
-          setIsOpen(false);
-        }} className={`
-                  group relative flex items-center gap-3 px-4 py-3 rounded-xl
-                  bg-gradient-to-br ${action.gradient} backdrop-blur-sm
-                  border border-border/50 shadow-lg hover:shadow-xl
-                  transition-all duration-300 hover:scale-105
-                `}>
-                <div className={`
-                  w-10 h-10 rounded-lg bg-background/50 flex items-center justify-center
-                  ${action.iconColor} group-hover:scale-110 transition-transform duration-300
-                `}>
-                  <action.icon className="w-5 h-5" />
-                </div>
-                <span className="font-medium text-foreground pr-2 whitespace-nowrap">
-                  {action.label}
-                </span>
-              </motion.button>)}
+            {actions.map((action, index) => {
+              const buttonContent = (
+                <motion.button 
+                  key={action.label} 
+                  initial={{
+                    opacity: 0,
+                    x: 20
+                  }} 
+                  animate={{
+                    opacity: 1,
+                    x: 0
+                  }} 
+                  exit={{
+                    opacity: 0,
+                    x: 20
+                  }} 
+                  transition={{
+                    delay: index * 0.05
+                  }} 
+                  onClick={() => {
+                    if (!action.disabled) {
+                      action.onClick();
+                      setIsOpen(false);
+                    }
+                  }} 
+                  disabled={action.disabled}
+                  className={`
+                    group relative flex items-center gap-3 px-4 py-3 rounded-xl
+                    bg-gradient-to-br ${action.gradient} backdrop-blur-sm
+                    border border-border/50 shadow-lg hover:shadow-xl
+                    transition-all duration-300 hover:scale-105
+                    ${action.disabled ? 'opacity-50 cursor-not-allowed hover:scale-100' : ''}
+                  `}
+                >
+                  <div className={`
+                    w-10 h-10 rounded-lg bg-background/50 flex items-center justify-center
+                    ${action.iconColor} group-hover:scale-110 transition-transform duration-300
+                    ${action.disabled ? 'group-hover:scale-100' : ''}
+                  `}>
+                    <action.icon className="w-5 h-5" />
+                  </div>
+                  <span className="font-medium text-foreground pr-2 whitespace-nowrap">
+                    {action.label}
+                  </span>
+                </motion.button>
+              );
+
+              return action.tooltip ? (
+                <TooltipProvider key={action.label}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {buttonContent}
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p>{action.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : buttonContent;
+            })}
           </motion.div>}
       </AnimatePresence>
 
