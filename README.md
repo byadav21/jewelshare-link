@@ -34,7 +34,7 @@ src/
 
 - Node.js 18+ 
 - npm or bun
-- Supabase account (via Lovable Cloud)
+- Supabase account 
 
 ### Installation
 
