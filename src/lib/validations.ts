@@ -47,9 +47,18 @@ export const productImportSchema = z.object({
   color: z.string().max(100).nullable(),
   diamond_color: z.string().max(100).nullable(),
   clarity: z.string().max(50).nullable(),
-  image_url: z.union([z.string().url("Invalid image URL").max(500, "URL must be less than 500 characters"), z.literal(""), z.null()]),
-  image_url_2: z.union([z.string().url().max(500), z.literal(""), z.null()]),
-  image_url_3: z.union([z.string().url().max(500), z.literal(""), z.null()]),
+  image_url: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url("Invalid image URL").max(500, "URL must be less than 500 characters").nullable()
+  ),
+  image_url_2: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
+  image_url_3: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
   weight_grams: z.number().min(0, "Weight must be positive").max(100000, "Weight seems too high").nullable(),
   net_weight: z.number().min(0).max(100000).nullable(),
   diamond_weight: z.number().min(0).max(100000).nullable(),
@@ -74,9 +83,18 @@ export const gemstoneImportSchema = z.object({
   symmetry: z.string().max(50).nullable(),
   measurement: z.string().max(100).nullable(),
   certification: z.string().max(100).nullable(),
-  image_url: z.union([z.string().url().max(500), z.literal(""), z.null()]),
-  image_url_2: z.union([z.string().url().max(500), z.literal(""), z.null()]),
-  image_url_3: z.union([z.string().url().max(500), z.literal(""), z.null()]),
+  image_url: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
+  image_url_2: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
+  image_url_3: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
   price_inr: z.number().min(0.01, "Price must be greater than 0"),
   price_usd: z.number().min(0).nullable(),
   stock_quantity: z.number().int().min(0).max(100000),
@@ -102,9 +120,18 @@ export const diamondImportSchema = z.object({
   measurement: z.string().max(100).nullable(),
   ratio: z.string().max(20).nullable(),
   lab: z.string().max(50).nullable(),
-  image_url: z.union([z.string().url().max(500), z.literal(""), z.null()]),
-  image_url_2: z.union([z.string().url().max(500), z.literal(""), z.null()]),
-  image_url_3: z.union([z.string().url().max(500), z.literal(""), z.null()]),
+  image_url: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
+  image_url_2: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
+  image_url_3: z.preprocess(
+    (val) => val === "" ? null : val,
+    z.string().url().max(500).nullable()
+  ),
   price_inr: z.number().min(0.01, "Price must be greater than 0"),
   price_usd: z.number().min(0).nullable(),
   stock_quantity: z.number().int().min(0).max(100000),
