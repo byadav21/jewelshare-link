@@ -16,9 +16,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import { ArrowLeft, Copy, ExternalLink, ChevronDown, BarChart3 } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
+import { useRewardsSystem } from "@/hooks/useRewardsSystem";
 
 const Share = () => {
   const navigate = useNavigate();
+  const { awardPoints } = useRewardsSystem();
   const [loading, setLoading] = useState(false);
   const [shareLinks, setShareLinks] = useState<any[]>([]);
   const [vendorProfile, setVendorProfile] = useState<any>(null);
@@ -118,6 +120,13 @@ const Share = () => {
         .single();
 
       if (error) throw error;
+
+      // Award points for creating share link
+      try {
+        await awardPoints('share_link_created');
+      } catch (pointsError) {
+        console.error('Failed to award points:', pointsError);
+      }
 
       toast.success("Share link created successfully! 🎉");
       setFormData({ 

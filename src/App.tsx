@@ -196,6 +196,14 @@ const AppContent = () => {
           </ApprovalGuard>
         } 
       />
+      <Route 
+        path={ROUTES.REWARDS} 
+        element={
+          <ApprovalGuard>
+            <RouteSuspense><Pages.Rewards /></RouteSuspense>
+          </ApprovalGuard>
+        } 
+      />
       
       {/* Admin routes (requires admin role) */}
       <Route 
