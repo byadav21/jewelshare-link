@@ -15,7 +15,7 @@ import { ShareStats } from "@/components/ShareStats";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
-import { Gem, AlertCircle, Building2, Video, Zap, Calendar } from "lucide-react";
+import { Gem, AlertCircle, Building2, Video, Zap, Calendar, MessageCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -749,6 +749,21 @@ const SharedCatalog = () => {
                         shareLinkId={shareLinkId}
                       />
                       <div className="flex gap-2">
+                        {vendorProfile?.whatsapp_number && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="flex-1 bg-emerald-500 hover:bg-emerald-600"
+                            onClick={() => {
+                              const message = `Hi! I'm interested in:\n${product.name}${product.sku ? `\nSKU: ${product.sku}` : ''}\n\nPrice: ₹${product.displayed_price.toLocaleString('en-IN')}\n\nCould you provide more details?`;
+                              const whatsappUrl = `https://wa.me/${vendorProfile.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                              window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                            }}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            WhatsApp
+                          </Button>
+                        )}
                         <InterestDialog
                           productId={product.id}
                           productName={product.name}
