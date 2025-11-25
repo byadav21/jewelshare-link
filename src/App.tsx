@@ -188,6 +188,14 @@ const AppContent = () => {
           </ApprovalGuard>
         } 
       />
+      <Route 
+        path={ROUTES.PURCHASE_INQUIRIES} 
+        element={
+          <ApprovalGuard>
+            <RouteSuspense><Pages.PurchaseInquiries /></RouteSuspense>
+          </ApprovalGuard>
+        } 
+      />
       
       {/* Admin routes (requires admin role) */}
       <Route 

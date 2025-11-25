@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Share2, FileDown, Zap, X } from "lucide-react";
+import { Plus, Share2, FileDown, Zap, X, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +26,13 @@ export const QuickActionsMenu = ({ onExportPDF }: QuickActionsMenuProps) => {
       onClick: () => navigate("/share"),
       gradient: "from-blue-500/20 to-blue-500/5",
       iconColor: "text-blue-500",
+    },
+    {
+      icon: ShoppingCart,
+      label: "Purchase Inquiries",
+      onClick: () => navigate("/purchase-inquiries"),
+      gradient: "from-purple-500/20 to-purple-500/5",
+      iconColor: "text-purple-500",
     },
     {
       icon: FileDown,

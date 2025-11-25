@@ -35,6 +35,7 @@ export const ROUTES = {
   GLOBAL_SEARCH: "/global-search",
   VIDEO_REQUESTS: "/video-requests",
   VENDOR_ANALYTICS: "/vendor-analytics",
+  PURCHASE_INQUIRIES: "/purchase-inquiries",
 
   // Admin routes
   ADMIN: "/admin",

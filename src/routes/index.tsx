@@ -34,6 +34,7 @@ export const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 export const VendorProfile = lazy(() => import("@/pages/VendorProfile"));
 export const VideoRequests = lazy(() => import("@/pages/VideoRequests"));
 export const VendorAnalytics = lazy(() => import("@/pages/VendorAnalytics"));
+export const PurchaseInquiries = lazy(() => import("@/pages/PurchaseInquiries"));
 
 // Admin pages - Loaded only for admin users
 export const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
