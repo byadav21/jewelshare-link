@@ -49,7 +49,7 @@ export const PurchaseInquiryDialog = ({
         message: formData.message || undefined,
       });
 
-      const { error } = await supabase.from("purchase_inquiries").insert([{
+      const { data, error } = await supabase.from("purchase_inquiries").insert([{
         product_id: productId,
         share_link_id: shareLinkId,
         customer_name: validatedData.customer_name,
@@ -57,9 +57,21 @@ export const PurchaseInquiryDialog = ({
         customer_phone: validatedData.customer_phone,
         quantity: validatedData.quantity,
         message: validatedData.message,
-      }]);
+      }]).select();
 
       if (error) throw error;
+
+      // Send notification email to vendor
+      if (data && data[0]) {
+        try {
+          await supabase.functions.invoke("notify-purchase-inquiry", {
+            body: { inquiry_id: data[0].id },
+          });
+        } catch (emailError) {
+          console.error("Failed to send notification email:", emailError);
+          // Don't fail the inquiry submission if email fails
+        }
+      }
 
       toast.success("Purchase inquiry submitted successfully!", {
         description: "The vendor will contact you soon.",

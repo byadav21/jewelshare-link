@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { AdminLoadingSkeleton } from "@/components/admin/AdminLoadingSkeleton";
 import { toast } from "sonner";
-import { ShoppingCart, Search, Mail, Phone, Package, Calendar, TrendingUp, CheckCircle, Clock, XCircle } from "lucide-react";
+import { ShoppingCart, Search, Mail, Phone, Package, Calendar, TrendingUp, CheckCircle, Clock, XCircle, Download, FileSpreadsheet } from "lucide-react";
 import { motion } from "framer-motion";
+import * as XLSX from "xlsx";
 
 interface PurchaseInquiry {
   id: string;
@@ -93,6 +94,53 @@ const PurchaseInquiries = () => {
       console.error("Error updating status:", error);
       toast.error("Failed to update status");
     }
+  };
+
+  const exportToCSV = () => {
+    const exportData = filteredInquiries.map((inquiry) => ({
+      "Customer Name": inquiry.customer_name,
+      "Email": inquiry.customer_email,
+      "Phone": inquiry.customer_phone || "N/A",
+      "Product": inquiry.products?.name || "N/A",
+      "SKU": inquiry.products?.sku || "N/A",
+      "Quantity": inquiry.quantity,
+      "Unit Price": inquiry.products?.retail_price || 0,
+      "Total Value": (inquiry.products?.retail_price || 0) * inquiry.quantity,
+      "Status": inquiry.status,
+      "Message": inquiry.message || "N/A",
+      "Date": new Date(inquiry.created_at).toLocaleDateString(),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `purchase-inquiries-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    toast.success("CSV exported successfully");
+  };
+
+  const exportToExcel = () => {
+    const exportData = filteredInquiries.map((inquiry) => ({
+      "Customer Name": inquiry.customer_name,
+      "Email": inquiry.customer_email,
+      "Phone": inquiry.customer_phone || "N/A",
+      "Product": inquiry.products?.name || "N/A",
+      "SKU": inquiry.products?.sku || "N/A",
+      "Quantity": inquiry.quantity,
+      "Unit Price": inquiry.products?.retail_price || 0,
+      "Total Value": (inquiry.products?.retail_price || 0) * inquiry.quantity,
+      "Status": inquiry.status,
+      "Message": inquiry.message || "N/A",
+      "Date": new Date(inquiry.created_at).toLocaleDateString(),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Purchase Inquiries");
+    XLSX.writeFile(wb, `purchase-inquiries-${new Date().toISOString().split("T")[0]}.xlsx`);
+    toast.success("Excel file exported successfully");
   };
 
   const filteredInquiries = inquiries.filter((inquiry) => {
@@ -245,6 +293,16 @@ const PurchaseInquiries = () => {
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={exportToCSV} className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+                <Button variant="outline" onClick={exportToExcel} className="gap-2">
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Export Excel
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
