@@ -116,7 +116,7 @@ export const WhatsAppButton = () => {
         </Button>
         
         {/* Pulse animation */}
-        <span className="absolute -inset-1 rounded-full bg-emerald-500 opacity-75 animate-ping" />
+        <span className="absolute -inset-1 rounded-full bg-emerald-500 opacity-75 animate-ping pointer-events-none" />
       </motion.div>
     </>
   );
