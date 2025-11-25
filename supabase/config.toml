@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.manage-session]
 verify_jwt = true
+
+[functions.notify-purchase-inquiry]
+verify_jwt = false
+
+[functions.check-pending-inquiries]
+verify_jwt = false
