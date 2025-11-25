@@ -81,6 +81,10 @@ const AppContent = () => {
         element={<RouteSuspense><Pages.SharedCatalog /></RouteSuspense>} 
       />
       <Route 
+        path={ROUTES.WISHLIST} 
+        element={<RouteSuspense><Pages.Wishlist /></RouteSuspense>} 
+      />
+      <Route 
         path={ROUTES.CUSTOM_ORDER} 
         element={<RouteSuspense><Pages.CustomOrder /></RouteSuspense>} 
       />

@@ -18,6 +18,7 @@ export const ROUTES = {
   RESET_PASSWORD: "/reset-password",
 
   SHARED_CATALOG: "/shared/:token",
+  WISHLIST: "/wishlist/:token?",
   CUSTOM_ORDER: "/custom-order",
 
   // Auth-only routes
