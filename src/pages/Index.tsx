@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ParallaxImage } from "@/components/ParallaxImage";
-import { JewelryViewer3D } from "@/components/JewelryViewer3D";
+import { lazy, Suspense } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
 import { NewsletterSubscription } from "@/components/NewsletterSubscription";
@@ -15,6 +15,8 @@ import heroBanner from "@/assets/hero-banner.jpg";
 import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
 import analyticsFeature from "@/assets/analytics-feature.jpg";
+
+const JewelryViewer3D = lazy(() => import("@/components/JewelryViewer3D").then(m => ({ default: m.JewelryViewer3D })));
 import {
   Gem,
   Share2,
@@ -243,7 +245,16 @@ const Index = () => {
         </ScrollReveal>
         <ScrollReveal delay={0.2}>
           <div className="mx-auto max-w-5xl">
-            <JewelryViewer3D />
+            <Suspense fallback={
+              <div className="h-[500px] w-full rounded-2xl overflow-hidden border-2 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+                <div className="text-center">
+                  <Gem className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+                  <p className="text-muted-foreground">Loading 3D Viewer...</p>
+                </div>
+              </div>
+            }>
+              <JewelryViewer3D />
+            </Suspense>
             <p className="mt-6 text-center text-sm text-muted-foreground">
               Click and drag to rotate • Scroll to zoom • Auto-rotate enabled
             </p>

@@ -11,6 +11,7 @@ import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { SocialShareButton } from "@/components/SocialShareButton";
 import { ShareStats } from "@/components/ShareStats";
 import { CountdownTimer } from "@/components/CountdownTimer";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { Gem, AlertCircle, Building2, Video, Zap, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,15 @@ const SharedCatalog = () => {
   });
 
   useEffect(() => {
-    fetchExchangeRate();
+    const cachedRate = sessionStorage.getItem('usd_rate');
+    const cachedTime = sessionStorage.getItem('usd_rate_time');
+    
+    if (cachedRate && cachedTime && Date.now() - parseInt(cachedTime) < 3600000) {
+      setUsdToInr(parseFloat(cachedRate));
+    } else {
+      fetchExchangeRate();
+    }
+    
     if (token) {
       fetchSharedCatalog();
     }
@@ -71,6 +80,8 @@ const SharedCatalog = () => {
       const data = await response.json();
       if (data.rates && data.rates.INR) {
         setUsdToInr(data.rates.INR);
+        sessionStorage.setItem('usd_rate', data.rates.INR.toString());
+        sessionStorage.setItem('usd_rate_time', Date.now().toString());
       }
     } catch (err) {
       console.error('Failed to fetch exchange rate, using default');
@@ -627,11 +638,12 @@ const SharedCatalog = () => {
                 >
                 {product.image_url && (
                   <div className="aspect-square overflow-hidden bg-muted/30 relative">
-                    <img
+                    <OptimizedImage
                       src={product.image_url}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      loading="lazy"
+                      width={400}
+                      height={400}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
