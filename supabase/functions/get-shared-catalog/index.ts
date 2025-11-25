@@ -143,9 +143,13 @@ serve(async (req) => {
     }
 
     // Filter products by selected categories
-    const filteredProducts = products.filter(product => 
-      shareLink.shared_categories?.includes(product.product_type)
-    );
+    // If product_type is null (legacy products), include all products
+    const filteredProducts = products.filter(product => {
+      if (!product.product_type) {
+        return true; // Include legacy products without product_type
+      }
+      return shareLink.shared_categories?.includes(product.product_type);
+    });
 
     // Calculate adjusted prices
     const adjustedProducts = filteredProducts.map(product => {
