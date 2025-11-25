@@ -60,7 +60,7 @@ const Catalog = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(100);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   useEffect(() => {
     if (!roleLoading && isAdmin) {
@@ -69,9 +69,17 @@ const Catalog = () => {
   }, [isAdmin, roleLoading, navigate]);
 
   useEffect(() => {
-    fetchAllProducts(); // Fetch all products first for counts
+    const cachedRate = sessionStorage.getItem('usd_rate');
+    const cachedTime = sessionStorage.getItem('usd_rate_time');
+    
+    if (cachedRate && cachedTime && Date.now() - parseInt(cachedTime) < 3600000) {
+      setUsdRate(parseFloat(cachedRate));
+    } else {
+      fetchUSDRate();
+    }
+    
+    fetchAllProducts();
     fetchProducts();
-    fetchUSDRate();
     fetchVendorProfile();
     fetchApprovedCategories();
   }, []);
@@ -103,6 +111,8 @@ const Catalog = () => {
       const data = await response.json();
       if (data.rates?.INR) {
         setUsdRate(data.rates.INR);
+        sessionStorage.setItem('usd_rate', data.rates.INR.toString());
+        sessionStorage.setItem('usd_rate_time', Date.now().toString());
       }
     } catch (error) {
       console.error("Failed to fetch USD rate:", error);

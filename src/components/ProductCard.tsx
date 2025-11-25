@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { Gem, ChevronLeft, ChevronRight, Zap, Calendar } from "lucide-react";
 
 interface ProductCardProps {
@@ -64,14 +65,12 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <img
+          <OptimizedImage
             src={images[currentImageIndex]}
             alt={`${product.name} - Image ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-all duration-300 animate-fade-in"
-            onError={(e) => {
-              console.error(`Failed to load image ${currentImageIndex + 1} for ${product.sku}: ${images[currentImageIndex]}`);
-              e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
-            }}
+            className="w-full h-full object-cover transition-all duration-300"
+            width={400}
+            height={400}
           />
           {images.length > 1 && (
             <>
