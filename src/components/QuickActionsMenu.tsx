@@ -45,22 +45,38 @@ export const QuickActionsMenu = ({
     navigate("/share");
   };
 
+  const getProductLabel = () => {
+    if (!canAddProducts) return "Add Product (Limit reached)";
+    if (productsRemaining !== Infinity && productsRemaining < 100) {
+      return `Add Product (${productsRemaining} left)`;
+    }
+    return "Add Product";
+  };
+
+  const getShareLabel = () => {
+    if (!canAddShareLinks) return "Share Catalog (Limit reached)";
+    if (shareLinksRemaining !== Infinity && shareLinksRemaining < 100) {
+      return `Share Catalog (${shareLinksRemaining} left)`;
+    }
+    return "Share Catalog";
+  };
+
   const actions = [{
     icon: Plus,
-    label: "Add Product",
+    label: getProductLabel(),
     onClick: handleAddProduct,
     gradient: "from-primary/20 to-primary/5",
     iconColor: "text-primary",
     disabled: !canAddProducts,
-    tooltip: !canAddProducts ? `Product limit reached (${productsRemaining} remaining)` : undefined
+    tooltip: !canAddProducts ? "Product limit reached" : undefined
   }, {
     icon: Share2,
-    label: "Share Catalog",
+    label: getShareLabel(),
     onClick: handleShareCatalog,
     gradient: "from-blue-500/20 to-blue-500/5",
     iconColor: "text-blue-500",
     disabled: !canAddShareLinks,
-    tooltip: !canAddShareLinks ? `Share link limit reached (${shareLinksRemaining} remaining)` : undefined
+    tooltip: !canAddShareLinks ? "Share link limit reached" : undefined
   }, {
     icon: ShoppingCart,
     label: "Purchase Inquiries",

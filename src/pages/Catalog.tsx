@@ -69,7 +69,7 @@ const Catalog = () => {
     permissions,
     loading: permissionsLoading
   } = useVendorPermissions();
-  const { canAddProducts, canAddShareLinks } = usePlanLimits();
+  const { canAddProducts, canAddShareLinks, productsRemaining, shareLinksRemaining } = usePlanLimits();
 
   // Load more pagination state
   const [displayCount, setDisplayCount] = useState(100);
@@ -552,6 +552,11 @@ const Catalog = () => {
                         >
                           <Share2 className="h-4 w-4 mr-2" />
                           Share
+                          {!isAdmin && shareLinksRemaining !== Infinity && shareLinksRemaining < 100 && (
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              ({shareLinksRemaining} left)
+                            </span>
+                          )}
                         </Button>
                       </TooltipTrigger>
                       {!canAddShareLinks && !isAdmin && (
@@ -582,6 +587,11 @@ const Catalog = () => {
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Add
+                          {!isAdmin && productsRemaining !== Infinity && productsRemaining < 100 && (
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              ({productsRemaining} left)
+                            </span>
+                          )}
                         </Button>
                       </TooltipTrigger>
                       {!canAddProducts && !isAdmin && (
@@ -679,7 +689,12 @@ const Catalog = () => {
                       >
                         <Share2 className="h-5 w-5 mr-3 text-primary" />
                         <span className="font-medium">Share Catalog</span>
-                        {!canAddShareLinks && !isAdmin && <span className="ml-auto text-xs text-muted-foreground">(Limit reached)</span>}
+                        {!isAdmin && shareLinksRemaining !== Infinity && shareLinksRemaining < 100 && (
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            ({shareLinksRemaining} left)
+                          </span>
+                        )}
+                        {!canAddShareLinks && !isAdmin && <span className="ml-auto text-xs text-destructive">(Limit reached)</span>}
                       </DropdownMenuItem>}
                     {isAdmin && <>
                         <DropdownMenuSeparator className="my-2" />
@@ -702,7 +717,12 @@ const Catalog = () => {
                       >
                         <Plus className="h-5 w-5 mr-3 text-primary" />
                         <span className="font-medium">Add Product</span>
-                        {!canAddProducts && !isAdmin && <span className="ml-auto text-xs text-muted-foreground">(Limit reached)</span>}
+                        {!isAdmin && productsRemaining !== Infinity && productsRemaining < 100 && (
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            ({productsRemaining} left)
+                          </span>
+                        )}
+                        {!canAddProducts && !isAdmin && <span className="ml-auto text-xs text-destructive">(Limit reached)</span>}
                       </DropdownMenuItem>}
                     {(permissions.can_import_data || isAdmin) && <DropdownMenuItem onClick={() => navigate("/import")} className="py-3 cursor-pointer hover:bg-muted/50">
                         <FileSpreadsheet className="h-5 w-5 mr-3 text-primary" />
