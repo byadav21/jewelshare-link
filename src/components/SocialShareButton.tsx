@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Share2, Facebook, Twitter, MessageCircle, Mail, Link2, Check } from "lucide-react";
+import { Share2, Facebook, Twitter, MessageCircle, Mail, Link2, Check, QrCode } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { QRCodeSVG } from "qrcode.react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ interface SocialShareButtonProps {
 export const SocialShareButton = ({ url, title, description, className }: SocialShareButtonProps) => {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   const shareText = `${title}${description ? ` - ${description}` : ""}`;
   
@@ -99,23 +101,23 @@ export const SocialShareButton = ({ url, title, description, className }: Social
           <span>Share Catalog</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-xl">
             <motion.div
               animate={{ rotate: [0, 15, -15, 0] }}
               transition={{ duration: 0.5, repeat: 2 }}
             >
-              <Share2 className="h-5 w-5 text-primary" />
+              <Share2 className="h-6 w-6 text-primary" />
             </motion.div>
             Share This Catalog
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Spread the sparkle! Share this jewelry collection with your network
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-5 mt-2">
           {/* Social Share Buttons */}
           <div className="grid grid-cols-2 gap-3">
             {shareOptions.map((option, index) => {
@@ -149,18 +151,20 @@ export const SocialShareButton = ({ url, title, description, className }: Social
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="pt-4 border-t border-border"
+            className="pt-4 border-t border-border space-y-3"
           >
-            <p className="text-sm font-medium text-foreground mb-2">Or copy link</p>
+            <p className="text-sm font-medium text-foreground mb-3">Or copy link</p>
             <div className="flex gap-2">
-              <div className="flex-1 bg-muted rounded-lg px-3 py-2 text-sm text-muted-foreground truncate border border-border">
-                {url}
+              <div className="flex-1 bg-muted/50 rounded-lg px-3 py-2.5 border border-border overflow-hidden">
+                <p className="text-xs text-muted-foreground break-all leading-relaxed">
+                  {url}
+                </p>
               </div>
               <Button
                 onClick={copyToClipboard}
                 variant="outline"
                 size="sm"
-                className={`gap-2 min-w-[100px] transition-all ${
+                className={`gap-2 min-w-[100px] flex-shrink-0 transition-all ${
                   copied ? "bg-green-50 dark:bg-green-950/30 border-green-500" : ""
                 }`}
               >
@@ -177,6 +181,38 @@ export const SocialShareButton = ({ url, title, description, className }: Social
                 )}
               </Button>
             </div>
+            
+            {/* QR Code Button */}
+            <Button
+              onClick={() => setShowQR(!showQR)}
+              variant="outline"
+              className="w-full gap-2 bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 border-primary/30"
+            >
+              <QrCode className="h-4 w-4" />
+              {showQR ? "Hide QR Code" : "Show QR Code"}
+            </Button>
+
+            {/* QR Code Display */}
+            {showQR && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center gap-4 p-6 bg-gradient-to-br from-background to-muted/20 rounded-xl border border-border"
+              >
+                <div className="bg-white p-4 rounded-xl shadow-lg">
+                  <QRCodeSVG
+                    value={url}
+                    size={200}
+                    level="H"
+                    includeMargin={true}
+                  />
+                </div>
+                <p className="text-xs text-center text-muted-foreground max-w-[250px]">
+                  Scan this QR code with your phone to open the catalog instantly
+                </p>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Engagement Tip */}
