@@ -100,12 +100,12 @@ export const ProductShowcaseCarousel = ({ products, usdRate }: ProductShowcaseCa
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="relative h-full flex items-center justify-center p-8"
         >
-          <div className="flex items-center gap-8 max-w-5xl w-full">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 max-w-5xl w-full">
             {/* Product image */}
             <motion.div
               whileHover={{ scale: 1.05, rotateY: 5 }}
               transition={{ duration: 0.4 }}
-              className="relative w-1/2 h-[300px] rounded-xl overflow-hidden shadow-2xl group"
+              className="relative w-full md:w-1/2 h-[280px] sm:h-[320px] md:h-[300px] rounded-xl overflow-hidden shadow-2xl group"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
               <img
@@ -123,16 +123,16 @@ export const ProductShowcaseCarousel = ({ products, usdRate }: ProductShowcaseCa
             </motion.div>
 
             {/* Product details */}
-            <div className="w-1/2 space-y-4">
+            <div className="w-full md:w-1/2 space-y-2 md:space-y-4 text-center md:text-left">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <Badge variant="secondary" className="mb-2">
+                <Badge variant="secondary" className="mb-1 md:mb-2">
                   {currentProduct.category || "Premium"}
                 </Badge>
-                <h3 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent line-clamp-2">
                   {currentProduct.name}
                 </h3>
               </motion.div>
@@ -141,12 +141,12 @@ export const ProductShowcaseCarousel = ({ products, usdRate }: ProductShowcaseCa
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="space-y-2"
+                className="space-y-1 md:space-y-2"
               >
-                <p className="text-4xl font-bold text-primary">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
                   ₹{currentProduct.retail_price.toLocaleString("en-IN")}
                 </p>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-base sm:text-lg text-muted-foreground">
                   ${(currentProduct.retail_price / usdRate).toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
