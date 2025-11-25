@@ -605,6 +605,36 @@ export type Database = {
         }
         Relationships: []
       }
+      scratch_rewards: {
+        Row: {
+          claimed: boolean | null
+          claimed_at: string | null
+          created_at: string | null
+          id: string
+          reward_type: string
+          reward_value: string
+          session_id: string
+        }
+        Insert: {
+          claimed?: boolean | null
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          reward_type: string
+          reward_value: string
+          session_id: string
+        }
+        Update: {
+          claimed?: boolean | null
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          reward_type?: string
+          reward_value?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           id: string
