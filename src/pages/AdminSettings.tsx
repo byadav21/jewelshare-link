@@ -94,48 +94,76 @@ const AdminSettings = () => {
   return (
     <AdminLayout>
       {loading ? (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <Loader2 className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center space-y-4 animate-fade-in">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+              <div className="relative bg-gradient-primary rounded-full p-6 shadow-glow mx-auto w-fit">
+                <Loader2 className="h-12 w-12 text-primary-foreground animate-spin" />
+              </div>
+            </div>
             <p className="text-muted-foreground">Loading settings...</p>
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <SettingsIcon className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Site Settings</h1>
+        <div className="p-6 space-y-6 animate-fade-in">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Site Settings
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Configure your website's global settings
+            </p>
           </div>
 
-          <Card>
+          <Card className="bg-gradient-card border-border/50 shadow-md">
             <CardHeader>
-              <CardTitle>General Settings</CardTitle>
-              <CardDescription>
-                Manage your site's global configuration and contact information
-              </CardDescription>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <SettingsIcon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Company Information</CardTitle>
+                  <CardDescription>
+                    Basic details about your business
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
+            <CardContent className="space-y-4">
+              <div>
                 <Label htmlFor="company_name">Company Name</Label>
                 <Input
                   id="company_name"
                   value={settings.company_name}
                   onChange={(e) => handleChange("company_name", e.target.value)}
-                  placeholder="Enter company name"
+                  placeholder="Your Company Name"
+                  className="mt-1.5"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="company_address">Company Address</Label>
                 <Input
                   id="company_address"
                   value={settings.company_address}
                   onChange={(e) => handleChange("company_address", e.target.value)}
-                  placeholder="Enter company address"
+                  placeholder="123 Main Street, City, Country"
+                  className="mt-1.5"
                 />
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-2">
+          <Card className="bg-gradient-card border-border/50 shadow-md">
+            <CardHeader>
+              <CardTitle>Contact Information</CardTitle>
+              <CardDescription>
+                How customers can reach you
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
                 <Label htmlFor="contact_email">Contact Email</Label>
                 <Input
                   id="contact_email"
@@ -143,54 +171,58 @@ const AdminSettings = () => {
                   value={settings.contact_email}
                   onChange={(e) => handleChange("contact_email", e.target.value)}
                   placeholder="contact@example.com"
+                  className="mt-1.5"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="contact_phone">Contact Phone</Label>
                 <Input
                   id="contact_phone"
                   type="tel"
                   value={settings.contact_phone}
                   onChange={(e) => handleChange("contact_phone", e.target.value)}
-                  placeholder="+1 234 567 8900"
+                  placeholder="+1 (555) 123-4567"
+                  className="mt-1.5"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="whatsapp_number">WhatsApp Number</Label>
                 <Input
                   id="whatsapp_number"
                   type="tel"
                   value={settings.whatsapp_number}
                   onChange={(e) => handleChange("whatsapp_number", e.target.value)}
-                  placeholder="+1 234 567 8900"
+                  placeholder="+1 (555) 123-4567"
+                  className="mt-1.5"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mt-1.5">
                   Include country code (e.g., +1 for US)
                 </p>
               </div>
-
-              <div className="flex justify-end gap-4 pt-4 border-t">
-                <Button variant="outline" onClick={() => navigate("/admin")}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Settings
-                    </>
-                  )}
-                </Button>
-              </div>
             </CardContent>
           </Card>
+
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="shadow-md hover:shadow-lg transition-all"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Settings
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       )}
     </AdminLayout>

@@ -38,16 +38,36 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
     
+    /* Status colors */
+    --success: 142 76% 36%;
+    --success-foreground: 45 100% 95%;
+    --info: 200 90% 55%;
+    --info-foreground: 45 100% 95%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 25% 10%;
+    
     /* Premium category styling */
     --category-jewellery: 45 95% 65%;
     --category-gemstone: 280 85% 70%;
     --category-diamond: 200 90% 75%;
     --category-glow: 45 100% 75%;
     
-    /* Gradients */
+    /* Gradients - Admin UI */
+    --gradient-primary: linear-gradient(135deg, hsl(45 95% 65% / 0.2), hsl(45 95% 55% / 0.05));
+    --gradient-card: linear-gradient(135deg, hsl(220 20% 14%), hsl(220 20% 12%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36% / 0.15), hsl(142 76% 36% / 0.05));
+    --gradient-info: linear-gradient(135deg, hsl(200 90% 55% / 0.15), hsl(200 90% 55% / 0.05));
+    
+    /* Category gradients */
     --gradient-jewellery: linear-gradient(135deg, hsl(45 95% 65% / 0.15), hsl(45 95% 65% / 0.05));
     --gradient-gemstone: linear-gradient(135deg, hsl(280 85% 70% / 0.15), hsl(280 85% 70% / 0.05));
     --gradient-diamond: linear-gradient(135deg, hsl(200 90% 75% / 0.15), hsl(200 90% 75% / 0.05));
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px hsl(220 25% 5% / 0.3);
+    --shadow-md: 0 4px 16px hsl(220 25% 5% / 0.4);
+    --shadow-lg: 0 8px 32px hsl(220 25% 5% / 0.5);
+    --shadow-glow: 0 0 20px hsl(45 95% 65% / 0.2);
 
     --sidebar-background: 220 25% 8%;
     --sidebar-foreground: 45 100% 95%;
@@ -88,16 +108,36 @@ All colors MUST be HSL.
     --input: 220 15% 22%;
     --ring: 45 95% 65%;
     
+    /* Status colors */
+    --success: 142 76% 36%;
+    --success-foreground: 45 100% 95%;
+    --info: 200 90% 55%;
+    --info-foreground: 45 100% 95%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 25% 10%;
+    
     /* Premium category styling */
     --category-jewellery: 45 95% 65%;
     --category-gemstone: 280 85% 70%;
     --category-diamond: 200 90% 75%;
     --category-glow: 45 100% 75%;
     
-    /* Gradients */
+    /* Gradients - Admin UI */
+    --gradient-primary: linear-gradient(135deg, hsl(45 95% 65% / 0.2), hsl(45 95% 55% / 0.05));
+    --gradient-card: linear-gradient(135deg, hsl(220 20% 14%), hsl(220 20% 12%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36% / 0.15), hsl(142 76% 36% / 0.05));
+    --gradient-info: linear-gradient(135deg, hsl(200 90% 55% / 0.15), hsl(200 90% 55% / 0.05));
+    
+    /* Category gradients */
     --gradient-jewellery: linear-gradient(135deg, hsl(45 95% 65% / 0.15), hsl(45 95% 65% / 0.05));
     --gradient-gemstone: linear-gradient(135deg, hsl(280 85% 70% / 0.15), hsl(280 85% 70% / 0.05));
     --gradient-diamond: linear-gradient(135deg, hsl(200 90% 75% / 0.15), hsl(200 90% 75% / 0.05));
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px hsl(220 25% 5% / 0.3);
+    --shadow-md: 0 4px 16px hsl(220 25% 5% / 0.4);
+    --shadow-lg: 0 8px 32px hsl(220 25% 5% / 0.5);
+    --shadow-glow: 0 0 20px hsl(45 95% 65% / 0.2);
     
     --sidebar-background: 220 25% 8%;
     --sidebar-foreground: 45 100% 95%;

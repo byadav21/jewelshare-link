@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Image } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MediaUpload } from "@/components/MediaUpload";
+import { AdminLoadingSkeleton } from "@/components/admin/AdminLoadingSkeleton";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 
 interface Brand {
   id: string;
@@ -124,12 +127,17 @@ export default function AdminBrands() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Brand Logos</h1>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Brand Logos
+            </h1>
+            <p className="text-muted-foreground mt-1">Manage brand logos displayed on your site</p>
+          </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
+              <Button onClick={resetForm} className="shadow-md hover:shadow-lg transition-all">
                 <Plus className="h-4 w-4 mr-2" />
                 New Brand
               </Button>
@@ -149,17 +157,20 @@ export default function AdminBrands() {
                       setFormData({ ...formData, name: e.target.value })
                     }
                     required
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
                   <Label>Logo</Label>
-                  <MediaUpload
-                    bucket="brand-logos"
-                    onUploadComplete={(url) =>
-                      setFormData({ ...formData, logo_url: url })
-                    }
-                    currentImage={formData.logo_url}
-                  />
+                  <div className="mt-1.5">
+                    <MediaUpload
+                      bucket="brand-logos"
+                      onUploadComplete={(url) =>
+                        setFormData({ ...formData, logo_url: url })
+                      }
+                      currentImage={formData.logo_url}
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label>Display Order</Label>
@@ -172,9 +183,10 @@ export default function AdminBrands() {
                         display_order: parseInt(e.target.value),
                       })
                     }
+                    className="mt-1.5"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 pt-2">
                   <Switch
                     checked={formData.active}
                     onCheckedChange={(checked) =>
@@ -192,19 +204,42 @@ export default function AdminBrands() {
         </div>
 
         {isLoading ? (
-          <div>Loading...</div>
+          <AdminLoadingSkeleton />
+        ) : !brands || brands.length === 0 ? (
+          <AdminEmptyState
+            icon={Image}
+            title="No brands yet"
+            description="Add brand logos to showcase your partners and collaborations"
+            actionLabel="Add First Brand"
+            onAction={() => setIsDialogOpen(true)}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {brands?.map((brand) => (
-              <Card key={brand.id}>
+            {brands.map((brand, index) => (
+              <Card
+                key={brand.id}
+                className="bg-gradient-card border-border/50 shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in group"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <CardTitle>{brand.name}</CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{brand.name}</CardTitle>
+                      <div className="flex gap-2 mt-2">
+                        <Badge variant={brand.active ? "default" : "secondary"} className={brand.active ? "bg-success text-success-foreground" : ""}>
+                          {brand.active ? "Active" : "Inactive"}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Order: {brand.display_order}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleEdit(brand)}
+                        className="hover:bg-primary/10 hover:border-primary transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -219,13 +254,12 @@ export default function AdminBrands() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <img
-                    src={brand.logo_url}
-                    alt={brand.name}
-                    className="w-full h-32 object-contain bg-muted rounded"
-                  />
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    Order: {brand.display_order} • {brand.active ? "Active" : "Inactive"}
+                  <div className="relative aspect-video bg-muted/50 rounded-lg overflow-hidden border border-border/50">
+                    <img
+                      src={brand.logo_url}
+                      alt={brand.name}
+                      className="w-full h-full object-contain p-4 transition-transform group-hover:scale-105"
+                    />
                   </div>
                 </CardContent>
               </Card>

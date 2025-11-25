@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MediaUpload } from "@/components/MediaUpload";
+import { AdminLoadingSkeleton } from "@/components/admin/AdminLoadingSkeleton";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 
 interface BlogPost {
   id: string;
@@ -165,12 +167,17 @@ export default function AdminBlog() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Blog Posts</h1>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Blog Posts
+            </h1>
+            <p className="text-muted-foreground mt-1">Manage your blog content</p>
+          </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
+              <Button onClick={resetForm} className="shadow-md hover:shadow-lg transition-all">
                 <Plus className="h-4 w-4 mr-2" />
                 New Post
               </Button>
@@ -190,6 +197,7 @@ export default function AdminBlog() {
                       setFormData({ ...formData, title: e.target.value })
                     }
                     required
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
@@ -200,6 +208,7 @@ export default function AdminBlog() {
                       setFormData({ ...formData, slug: e.target.value })
                     }
                     required
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
@@ -209,6 +218,7 @@ export default function AdminBlog() {
                     onChange={(e) =>
                       setFormData({ ...formData, excerpt: e.target.value })
                     }
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
@@ -220,6 +230,7 @@ export default function AdminBlog() {
                     }
                     rows={10}
                     required
+                    className="mt-1.5"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -231,6 +242,7 @@ export default function AdminBlog() {
                         setFormData({ ...formData, author_name: e.target.value })
                       }
                       required
+                      className="mt-1.5"
                     />
                   </div>
                   <div>
@@ -240,18 +252,21 @@ export default function AdminBlog() {
                       onChange={(e) =>
                         setFormData({ ...formData, author_role: e.target.value })
                       }
+                      className="mt-1.5"
                     />
                   </div>
                 </div>
                 <div>
                   <Label>Cover Image</Label>
-                  <MediaUpload
-                    bucket="blog-images"
-                    onUploadComplete={(url) =>
-                      setFormData({ ...formData, cover_image: url })
-                    }
-                    currentImage={formData.cover_image}
-                  />
+                  <div className="mt-1.5">
+                    <MediaUpload
+                      bucket="blog-images"
+                      onUploadComplete={(url) =>
+                        setFormData({ ...formData, cover_image: url })
+                      }
+                      currentImage={formData.cover_image}
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -261,6 +276,7 @@ export default function AdminBlog() {
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
                       }
+                      className="mt-1.5"
                     />
                   </div>
                   <div>
@@ -274,6 +290,7 @@ export default function AdminBlog() {
                           read_time: parseInt(e.target.value),
                         })
                       }
+                      className="mt-1.5"
                     />
                   </div>
                 </div>
@@ -285,9 +302,10 @@ export default function AdminBlog() {
                       setFormData({ ...formData, tags: e.target.value })
                     }
                     placeholder="jewelry, trends, tips"
+                    className="mt-1.5"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 pt-2">
                   <Switch
                     checked={formData.published}
                     onCheckedChange={(checked) =>
@@ -305,23 +323,40 @@ export default function AdminBlog() {
         </div>
 
         {isLoading ? (
-          <div>Loading...</div>
+          <AdminLoadingSkeleton />
+        ) : !posts || posts.length === 0 ? (
+          <AdminEmptyState
+            icon={FileText}
+            title="No blog posts yet"
+            description="Create your first blog post to start sharing content with your audience"
+            actionLabel="Create First Post"
+            onAction={() => setIsDialogOpen(true)}
+          />
         ) : (
           <div className="grid gap-4">
-            {posts?.map((post) => (
-              <Card key={post.id}>
+            {posts.map((post, index) => (
+              <Card
+                key={post.id}
+                className="bg-gradient-card border-border/50 shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <CardTitle>{post.title}</CardTitle>
-                      <div className="flex gap-2 items-center text-sm text-muted-foreground">
-                        <span>{post.author_name}</span>
-                        {post.category && <Badge variant="secondary">{post.category}</Badge>}
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-2 flex-1">
+                      <CardTitle className="text-xl">{post.title}</CardTitle>
+                      <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">{post.author_name}</span>
+                        {post.category && (
+                          <Badge variant="secondary" className="bg-gradient-primary">
+                            {post.category}
+                          </Badge>
+                        )}
                         {post.published ? (
-                          <Badge>Published</Badge>
+                          <Badge className="bg-success text-success-foreground">Published</Badge>
                         ) : (
                           <Badge variant="outline">Draft</Badge>
                         )}
+                        <span className="text-xs">{post.read_time} min read</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -329,6 +364,7 @@ export default function AdminBlog() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleEdit(post)}
+                        className="hover:bg-primary/10 hover:border-primary transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -336,18 +372,21 @@ export default function AdminBlog() {
                         size="sm"
                         variant="destructive"
                         onClick={() => deleteMutation.mutate(post.id)}
+                        className="hover:shadow-md transition-shadow"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{post.excerpt}</p>
-                  {post.tags && (
-                    <div className="flex gap-2 mt-2">
+                <CardContent className="space-y-3">
+                  {post.excerpt && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+                  )}
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
                       {post.tags.map((tag) => (
-                        <Badge key={tag} variant="outline">
+                        <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
