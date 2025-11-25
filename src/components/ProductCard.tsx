@@ -11,9 +11,10 @@ interface ProductCardProps {
   isSelected: boolean;
   onToggleSelection: (id: string) => void;
   usdRate: number;
+  vendorLogoUrl?: string;
 }
 
-export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }: ProductCardProps) => {
+export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, vendorLogoUrl }: ProductCardProps) => {
   const images = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -74,6 +75,16 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
             width={400}
             height={400}
           />
+          {/* Watermark overlay */}
+          {vendorLogoUrl && (
+            <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm p-1.5 rounded-md">
+              <img 
+                src={vendorLogoUrl} 
+                alt="Brand watermark" 
+                className="h-8 w-8 object-contain opacity-70"
+              />
+            </div>
+          )}
           {images.length > 1 && (
             <>
               <button

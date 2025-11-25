@@ -30,6 +30,7 @@ import { GoldRateDialog } from "@/components/GoldRateDialog";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
 import { QuickActionsMenu } from "@/components/QuickActionsMenu";
+import { BrandShowcase } from "@/components/BrandShowcase";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 const Catalog = () => {
@@ -1112,7 +1113,13 @@ const Catalog = () => {
                     {displayedProducts.map((product, index) => <div key={product.id} className="animate-scale-in" style={{
                   animationDelay: `${index * 30}ms`
                 }}>
-                        <ProductCard product={product} isSelected={selectedProducts.has(product.id)} onToggleSelection={permissions.can_delete_products || isAdmin ? toggleProductSelection : () => {}} usdRate={usdRate} />
+                        <ProductCard 
+                          product={product} 
+                          isSelected={selectedProducts.has(product.id)} 
+                          onToggleSelection={permissions.can_delete_products || isAdmin ? toggleProductSelection : () => {}} 
+                          usdRate={usdRate}
+                          vendorLogoUrl={vendorProfile?.logo_url}
+                        />
                       </div>)}
                   </div>
                   
@@ -1137,6 +1144,9 @@ const Catalog = () => {
                     Showing <span className="font-semibold text-foreground">{Math.min(displayCount, filteredProducts.length)}</span> of{' '}
                     <span className="font-semibold text-foreground">{filteredProducts.length}</span> products
                   </div>
+                  
+                  {/* Brand Showcase Section */}
+                  <BrandShowcase vendorProfile={vendorProfile} />
                 </>}
             </>}
         </div>}
