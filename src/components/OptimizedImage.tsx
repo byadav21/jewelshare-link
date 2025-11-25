@@ -117,7 +117,7 @@ export const OptimizedImage = ({
   };
 
   const imageClasses = cn(
-    "transition-opacity duration-300",
+    "transition-opacity duration-300 max-w-full h-auto",
     isLoaded ? "opacity-100" : "opacity-0",
     className
   );
