@@ -75,6 +75,22 @@ export default {
           diamond: "hsl(var(--category-diamond))",
           glow: "hsl(var(--category-glow))",
         },
+        jewellery: {
+          from: "hsl(45 95% 65%)",
+          to: "hsl(45 95% 55%)",
+        },
+        gemstone: {
+          from: "hsl(280 85% 70%)",
+          to: "hsl(280 85% 60%)",
+        },
+        diamond: {
+          from: "hsl(200 90% 75%)",
+          to: "hsl(200 90% 65%)",
+        },
+      },
+      fontFamily: {
+        'serif': ['Playfair Display', 'serif'],
+        'sans': ['Inter', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -129,14 +145,24 @@ export default {
           "0%": { transform: "translateX(100%)", opacity: "0" },
           "100%": { transform: "translateX(0)", opacity: "1" },
         },
+        gradient: {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         shimmer: "shimmer 2s infinite",
-        "fade-in": "fade-in 0.3s ease-out",
+        "fade-in": "fade-in 0.6s ease-out forwards",
         "scale-in": "scale-in 0.2s ease-out",
         "slide-in-right": "slide-in-right 0.3s ease-out",
+        gradient: "gradient 3s ease infinite",
+        float: "float 3s ease-in-out infinite",
       },
     },
   },

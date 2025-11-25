@@ -211,36 +211,54 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-jewellery-from/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-40 right-20 w-96 h-96 bg-gemstone-from/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-diamond-from/10 rounded-full blur-3xl animate-pulse delay-2000" />
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b">
         <div className="absolute inset-0">
           <img src={heroBanner} alt="Luxury diamonds and gemstones" className="h-full w-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/90" />
         </div>
-        <div className="container relative mx-auto px-4 py-24 sm:py-32">
+        <div className="container relative mx-auto px-4 py-32 sm:py-40">
           <ScrollReveal>
             <div className="mx-auto max-w-4xl text-center">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm">
-                <Sparkles className="h-4 w-4 text-jewellery-from" />
-                <span className="text-muted-foreground">Professional Jewelry Catalog Management</span>
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary/5 px-6 py-3 text-sm backdrop-blur-sm animate-fade-in">
+                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                <span className="font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Professional Jewelry Catalog Management
+                </span>
               </div>
-              <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+              <h1 className="mb-8 text-6xl font-bold tracking-tight sm:text-7xl lg:text-8xl animate-fade-in" style={{ animationDelay: "0.1s" }}>
                 Manage & Share Your
-                <span className="block bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
+                <span className="block mt-2 bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent animate-gradient">
                   Jewelry Collection
                 </span>
               </h1>
-              <p className="mb-10 text-xl text-muted-foreground sm:text-2xl">
+              <p className="mb-12 text-xl text-muted-foreground sm:text-2xl leading-relaxed animate-fade-in" style={{ animationDelay: "0.2s" }}>
                 The complete platform for jewelry vendors to showcase inventory, share catalogs with custom pricing, and
                 manage customer inquiries seamlessly.
               </p>
-              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button size="lg" className="group h-12 gap-2 px-8 text-base" onClick={() => navigate("/catalog")}>
-                  Get Started
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in" style={{ animationDelay: "0.3s" }}>
+                <Button 
+                  size="lg" 
+                  className="group h-14 gap-2 px-10 text-lg font-semibold shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-gradient-to-r from-primary to-accent" 
+                  onClick={() => navigate("/catalog")}
+                >
+                  Get Started Free
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
-                <Button size="lg" variant="outline" className="h-12 px-8 text-base" onClick={() => navigate("/auth")}>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="h-14 px-10 text-lg font-semibold border-2 hover:bg-primary/5 transition-all duration-300" 
+                  onClick={() => navigate("/auth")}
+                >
                   Sign In
                 </Button>
               </div>
@@ -252,9 +270,13 @@ const Index = () => {
       {/* 3D Viewer Section */}
       <section className="container mx-auto px-4 py-24">
         <ScrollReveal>
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-4xl font-bold">Experience Jewelry in 3D</h2>
-            <p className="text-xl text-muted-foreground">Interactive 3D viewer for showcasing your finest pieces</p>
+          <div className="mb-16 text-center">
+            <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
+              Experience Jewelry in 3D
+            </h2>
+            <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
+              Interactive 3D viewer for showcasing your finest pieces
+            </p>
           </div>
         </ScrollReveal>
         <ScrollReveal delay={0.2}>
@@ -277,51 +299,51 @@ const Index = () => {
       </section>
 
       {/* Statistics Section */}
-      <section className="border-y bg-gradient-to-br from-jewellery-from/5 via-gemstone-from/5 to-diamond-from/5 py-16">
+      <section className="border-y bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-20">
         <div className="container mx-auto px-4">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <ScrollReveal delay={0.1}>
-              <div className="text-center">
-                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from to-jewellery-to">
-                  <Gem className="h-6 w-6 text-white" />
+              <div className="text-center group">
+                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <Gem className="h-8 w-8 text-white" />
                 </div>
-                <div className="mb-1 text-4xl font-bold">
+                <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={15000} suffix="+" />
                 </div>
-                <p className="text-muted-foreground">Products Managed</p>
+                <p className="text-muted-foreground font-medium">Products Managed</p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
-              <div className="text-center">
-                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-gemstone-from to-gemstone-to">
-                  <Share2 className="h-6 w-6 text-white" />
+              <div className="text-center group">
+                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-gemstone-from to-gemstone-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <Share2 className="h-8 w-8 text-white" />
                 </div>
-                <div className="mb-1 text-4xl font-bold">
+                <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={2500} suffix="+" />
                 </div>
-                <p className="text-muted-foreground">Active Catalogs</p>
+                <p className="text-muted-foreground font-medium">Active Catalogs</p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.3}>
-              <div className="text-center">
-                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-diamond-from to-diamond-to">
-                  <Heart className="h-6 w-6 text-white" />
+              <div className="text-center group">
+                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-diamond-from to-diamond-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <Heart className="h-8 w-8 text-white" />
                 </div>
-                <div className="mb-1 text-4xl font-bold">
+                <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={8750} suffix="+" />
                 </div>
-                <p className="text-muted-foreground">Customer Inquiries</p>
+                <p className="text-muted-foreground font-medium">Customer Inquiries</p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.4}>
-              <div className="text-center">
-                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from">
-                  <TrendingUp className="h-6 w-6 text-white" />
+              <div className="text-center group">
+                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <TrendingUp className="h-8 w-8 text-white" />
                 </div>
-                <div className="mb-1 text-4xl font-bold">
+                <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={98} suffix="%" />
                 </div>
-                <p className="text-muted-foreground">Satisfaction Rate</p>
+                <p className="text-muted-foreground font-medium">Satisfaction Rate</p>
               </div>
             </ScrollReveal>
           </div>
@@ -343,9 +365,11 @@ const Index = () => {
       {/* Features Grid */}
       <section className="container mx-auto px-4 py-24">
         <ScrollReveal>
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-bold">Powerful Features for Jewelry Vendors</h2>
-            <p className="text-xl text-muted-foreground">
+          <div className="mb-20 text-center">
+            <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
+              Powerful Features for Jewelry Vendors
+            </h2>
+            <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
               Everything you need to manage and grow your jewelry business
             </p>
           </div>
@@ -363,12 +387,12 @@ const Index = () => {
             <div className="flex flex-col justify-center space-y-6">
               <ScrollReveal delay={0.2} direction="right">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-jewellery-to">
-                    <Share2 className="h-6 w-6 text-white" />
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-lg">
+                    <Share2 className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="mb-2 text-2xl font-bold">Smart Catalog Sharing</h3>
-                    <p className="text-muted-foreground">
+                    <h3 className="mb-3 text-3xl font-bold font-serif">Smart Catalog Sharing</h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed">
                       Create stunning digital catalogs accessible on any device. Share with custom pricing, track
                       engagement, and manage everything from a single dashboard. Perfect for B2B and retail customers.
                     </p>
@@ -377,12 +401,12 @@ const Index = () => {
               </ScrollReveal>
               <ScrollReveal delay={0.3} direction="right">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-gemstone-from to-gemstone-to">
-                    <Gem className="h-6 w-6 text-white" />
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gemstone-from to-gemstone-to shadow-lg">
+                    <Gem className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="mb-2 text-2xl font-bold">Complete Inventory Control</h3>
-                    <p className="text-muted-foreground">
+                    <h3 className="mb-3 text-3xl font-bold font-serif">Complete Inventory Control</h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed">
                       Manage diamonds, gemstones, and jewelry with detailed specifications. Upload multiple high-quality
                       images, track stock levels, and update pricing instantly across all shared catalogs.
                     </p>
@@ -463,9 +487,13 @@ const Index = () => {
       {/* Testimonials Section */}
       <section className="container mx-auto px-4 py-24">
         <ScrollReveal>
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-bold">Trusted by Jewelry Vendors Worldwide</h2>
-            <p className="text-xl text-muted-foreground">See what our customers say about their experience</p>
+          <div className="mb-20 text-center">
+            <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
+              Trusted by Jewelry Vendors Worldwide
+            </h2>
+            <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
+              See what our customers say about their experience
+            </p>
           </div>
         </ScrollReveal>
         <ScrollReveal delay={0.2}>
@@ -480,9 +508,11 @@ const Index = () => {
         </div>
         <div className="container relative mx-auto px-4">
           <ScrollReveal>
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-bold">How It Works</h2>
-              <p className="text-xl text-muted-foreground">Simple steps to showcase your jewelry collection</p>
+            <div className="mb-20 text-center">
+              <h2 className="mb-6 text-5xl font-bold font-serif">How It Works</h2>
+              <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
+                Simple steps to showcase your jewelry collection
+              </p>
             </div>
           </ScrollReveal>
           <div className="grid gap-8 md:grid-cols-3">
@@ -607,9 +637,13 @@ const Index = () => {
       <section className="container mx-auto px-4 py-24">
         <div className="mx-auto max-w-3xl">
           <ScrollReveal>
-            <div className="mb-12 text-center">
-              <h2 className="mb-4 text-4xl font-bold">Frequently Asked Questions</h2>
-              <p className="text-xl text-muted-foreground">Everything you need to know about the platform</p>
+            <div className="mb-16 text-center">
+              <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-2xl text-muted-foreground">
+                Everything you need to know about the platform
+              </p>
             </div>
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
@@ -636,21 +670,29 @@ const Index = () => {
       <section className="border-t py-24">
         <div className="container mx-auto px-4">
           <ScrollReveal>
-            <div className="relative overflow-hidden rounded-2xl border-2 bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 p-12 text-center">
+            <div className="relative overflow-hidden rounded-3xl border-2 border-primary/20 bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 p-16 text-center shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
               <div className="relative z-10">
-                <h2 className="mb-4 text-4xl font-bold">Ready to Transform Your Jewelry Business?</h2>
-                <p className="mb-8 text-xl text-muted-foreground">
-                  Join vendors who are already managing their catalogs smarter
+                <Sparkles className="h-12 w-12 text-primary mx-auto mb-6 animate-pulse" />
+                <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
+                  Ready to Transform Your Jewelry Business?
+                </h2>
+                <p className="mb-10 text-2xl text-muted-foreground max-w-2xl mx-auto">
+                  Join thousands of vendors who are already managing their catalogs smarter
                 </p>
                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                  <Button size="lg" className="group h-12 gap-2 px-8 text-base" onClick={() => navigate("/auth")}>
+                  <Button 
+                    size="lg" 
+                    className="group h-14 gap-2 px-10 text-lg font-semibold shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300" 
+                    onClick={() => navigate("/auth")}
+                  >
                     Start Free Trial
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Button>
                   <Button
                     size="lg"
                     variant="outline"
-                    className="h-12 px-8 text-base"
+                    className="h-14 px-10 text-lg font-semibold border-2 hover:bg-primary/5 transition-all duration-300"
                     onClick={() => navigate("/pricing")}
                   >
                     View Pricing
