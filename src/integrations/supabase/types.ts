@@ -338,6 +338,33 @@ export type Database = {
         }
         Relationships: []
       }
+      points_history: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          created_at: string
+          id: string
+          points: number
+          user_id: string
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          created_at?: string
+          id?: string
+          points: number
+          user_id: string
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          created_at?: string
+          id?: string
+          points?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       press_releases: {
         Row: {
           content: string
@@ -929,6 +956,33 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_milestones: {
+        Row: {
+          achieved_at: string
+          id: string
+          milestone_type: string
+          milestone_value: number
+          points_awarded: number
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          id?: string
+          milestone_type: string
+          milestone_value: number
+          points_awarded?: number
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          id?: string
+          milestone_type?: string
+          milestone_value?: number
+          points_awarded?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       vendor_permissions: {
         Row: {
           can_add_products: boolean | null
@@ -1021,6 +1075,33 @@ export type Database = {
           plan_updated_by?: string | null
           subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vendor_points: {
+        Row: {
+          created_at: string
+          current_tier: string
+          id: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_tier?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_tier?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
