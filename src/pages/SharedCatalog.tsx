@@ -771,21 +771,6 @@ const SharedCatalog = () => {
                         shareLinkId={shareLinkId}
                       />
                       <div className="flex gap-2 items-center">
-                        {vendorProfile?.whatsapp_number && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50/50 opacity-60 hover:opacity-100 transition-all whitespace-nowrap"
-                            onClick={() => {
-                              const message = `Hi! I'm interested in:\n${product.name}${product.sku ? `\nSKU: ${product.sku}` : ''}\n\nPrice: ₹${product.displayed_price.toLocaleString('en-IN')}\n\nCould you provide more details?`;
-                              const whatsappUrl = `https://wa.me/${vendorProfile.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-                              window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-                            }}
-                          >
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            WhatsApp
-                          </Button>
-                        )}
                         <InterestDialog
                           productId={product.id}
                           productName={product.name}
