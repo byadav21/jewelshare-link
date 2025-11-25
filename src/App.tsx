@@ -191,9 +191,11 @@ const AppContent = () => {
       
       {/* Admin routes (requires admin role) */}
       <Route 
-        path="/admin/*" 
+        path={ROUTES.ADMIN}
         element={
-          <RouteSuspense><Pages.AdminDashboard /></RouteSuspense>
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminDashboard /></RouteSuspense>
+          </AdminGuard>
         } 
       />
       <Route 
@@ -201,6 +203,46 @@ const AppContent = () => {
         element={
           <AdminGuard>
             <RouteSuspense><Pages.AdminSettings /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_BLOG} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminBlog /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_BRANDS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminBrands /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_COMMENTS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminComments /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_NEWSLETTER} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminNewsletter /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_PRESS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminPress /></RouteSuspense>
           </AdminGuard>
         } 
       />
