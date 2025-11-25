@@ -676,8 +676,8 @@ const SharedCatalog = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
-                    {/* Action Buttons Overlay */}
-                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    {/* Action Buttons Overlay - Always visible on mobile, hover on desktop */}
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 z-10">
                       <div className="bg-background/90 backdrop-blur-sm rounded-full shadow-lg">
                         <WishlistButton 
                           productId={product.id}

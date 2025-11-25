@@ -41,7 +41,8 @@ export const ProductShareButton = ({
       icon: MessageCircle,
       color: "bg-green-500 hover:bg-green-600",
       textColor: "text-green-700 dark:text-green-400",
-      bgColor: "bg-green-50 dark:bg-green-950/30",
+      bgColor: "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/40 dark:to-emerald-950/30",
+      borderColor: "border-green-200 dark:border-green-800",
       action: () => {
         window.open(
           `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`,
@@ -55,6 +56,7 @@ export const ProductShareButton = ({
       color: "bg-amber-500 hover:bg-amber-600",
       textColor: "text-amber-700 dark:text-amber-400",
       bgColor: "bg-amber-50 dark:bg-amber-950/30",
+      borderColor: "border-amber-200 dark:border-amber-800",
       action: () => {
         window.open(
           `sms:?body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`,
@@ -68,6 +70,7 @@ export const ProductShareButton = ({
       color: "bg-blue-600 hover:bg-blue-700",
       textColor: "text-blue-700 dark:text-blue-400",
       bgColor: "bg-blue-50 dark:bg-blue-950/30",
+      borderColor: "border-blue-200 dark:border-blue-800",
       action: () => {
         window.open(
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
@@ -81,6 +84,7 @@ export const ProductShareButton = ({
       color: "bg-sky-500 hover:bg-sky-600",
       textColor: "text-sky-700 dark:text-sky-400",
       bgColor: "bg-sky-50 dark:bg-sky-950/30",
+      borderColor: "border-sky-200 dark:border-sky-800",
       action: () => {
         window.open(
           `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
@@ -94,6 +98,7 @@ export const ProductShareButton = ({
       color: "bg-purple-500 hover:bg-purple-600",
       textColor: "text-purple-700 dark:text-purple-400",
       bgColor: "bg-purple-50 dark:bg-purple-950/30",
+      borderColor: "border-purple-200 dark:border-purple-800",
       action: () => {
         window.location.href = `mailto:?subject=${encodeURIComponent(`${productName} - Jewelry`)}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`;
       },
@@ -181,7 +186,7 @@ export const ProductShareButton = ({
                   <Button
                     onClick={option.action}
                     variant="outline"
-                    className={`w-full h-auto flex-col gap-2 py-4 ${option.bgColor} border-2 hover:scale-105 transition-transform`}
+                    className={`w-full h-auto flex-col gap-2 py-4 ${option.bgColor} ${option.borderColor || 'border-2'} hover:scale-105 transition-transform`}
                   >
                     <div className={`p-2 rounded-full ${option.color} text-white`}>
                       <Icon className="h-5 w-5" />
