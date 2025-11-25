@@ -770,7 +770,7 @@ const SharedCatalog = () => {
                         productName={product.name}
                         shareLinkId={shareLinkId}
                       />
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-2 items-stretch">
                         <InterestDialog
                           productId={product.id}
                           productName={product.name}
@@ -781,7 +781,7 @@ const SharedCatalog = () => {
                           productName={product.name}
                           shareLinkId={shareLinkId}
                           trigger={
-                            <Button variant="outline" size="sm" className="whitespace-nowrap min-w-[80px]">
+                            <Button variant="outline" size="sm" className="whitespace-nowrap px-4">
                               <Video className="h-4 w-4 mr-1" />
                               Video
                             </Button>

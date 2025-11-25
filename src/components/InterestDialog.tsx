@@ -51,7 +51,10 @@ export const InterestDialog = ({ productId, productName, shareLinkId }: Interest
 
       if (error) throw error;
 
-      toast.success("Interest recorded! The seller will contact you soon.");
+      toast.success("Interest recorded! The seller will contact you soon.", {
+        description: "We've notified the seller about your interest.",
+        duration: 5000,
+      });
       setOpen(false);
       setFormData({ name: "", email: "", phone: "", notes: "" });
     } catch (error: any) {
@@ -68,7 +71,10 @@ export const InterestDialog = ({ productId, productName, shareLinkId }: Interest
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
+        <Button 
+          variant="default" 
+          className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-md"
+        >
           <Heart className="h-4 w-4 mr-2" />
           I'm Interested
         </Button>
@@ -76,59 +82,67 @@ export const InterestDialog = ({ productId, productName, shareLinkId }: Interest
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Show Interest</DialogTitle>
-            <DialogDescription>
-              Interested in {productName}? Share your details and we'll get back to you.
+            <DialogTitle className="text-xl">Express Your Interest</DialogTitle>
+            <DialogDescription className="text-base">
+              Interested in <span className="font-semibold text-foreground">{productName}</span>? Share your details and the seller will contact you soon.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name" className="text-sm font-medium">Name *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Your full name"
+                className="h-11"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="your@email.com"
+                className="h-11"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="phone">Phone (Optional)</Label>
+              <Label htmlFor="phone" className="text-sm font-medium">Phone (Optional)</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="+1 (555) 000-0000"
+                className="h-11"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="notes">Additional Notes (Optional)</Label>
+              <Label htmlFor="notes" className="text-sm font-medium">Additional Notes (Optional)</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Any specific requirements or questions..."
                 rows={3}
+                className="resize-none"
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
+            >
               {loading ? "Submitting..." : "Submit Interest"}
             </Button>
           </DialogFooter>
