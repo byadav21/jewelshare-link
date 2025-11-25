@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
@@ -63,9 +62,9 @@ const Catalog = () => {
   const { isAdmin, isTeamMember, loading: roleLoading } = useUserRole();
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
+  // Load more pagination state
+  const [displayCount, setDisplayCount] = useState(100);
+  const LOAD_MORE_COUNT = 100;
 
   useEffect(() => {
     if (!roleLoading && isAdmin) {
@@ -348,49 +347,20 @@ const Catalog = () => {
     return filtered;
   }, [products, filters]);
   
-  // Paginated products
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredProducts.slice(startIndex, endIndex);
-  }, [filteredProducts, currentPage, itemsPerPage]);
+  // Display products with load more functionality
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, displayCount);
+  }, [filteredProducts, displayCount]);
   
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const hasMoreProducts = filteredProducts.length > displayCount;
   
-  // Reset to page 1 when filters change or category changes
+  // Reset display count when filters change or category changes
   useEffect(() => {
-    setCurrentPage(1);
+    setDisplayCount(100);
   }, [filters, selectedProductType]);
   
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-    const maxVisible = 5;
-    
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) pages.push(i);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      }
-    }
-    
-    return pages;
+  const loadMoreProducts = () => {
+    setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
 
   // Calculate totals based on filtered products
@@ -1122,7 +1092,7 @@ const Catalog = () => {
                       ${transitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'}
                     `}
                   >
-                    {paginatedProducts.map((product, index) => (
+                    {displayedProducts.map((product, index) => (
                       <div
                         key={product.id}
                         className="animate-scale-in"
@@ -1138,74 +1108,31 @@ const Catalog = () => {
                     ))}
                   </div>
                   
-                  {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 py-6 border-t border-border/30">
-                      {/* Items per page selector */}
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground font-medium">Products per page:</span>
-                        <Select 
-                          value={itemsPerPage.toString()} 
-                          onValueChange={(value) => {
-                            setItemsPerPage(Number(value));
-                            setCurrentPage(1);
-                          }}
-                        >
-                          <SelectTrigger className="w-24 h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="50">50</SelectItem>
-                            <SelectItem value="100">100</SelectItem>
-                            <SelectItem value="200">200</SelectItem>
-                            <SelectItem value="500">500</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      {/* Page info */}
-                      <div className="text-sm text-muted-foreground">
-                        Showing <span className="font-semibold text-foreground">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
-                        <span className="font-semibold text-foreground">{Math.min(currentPage * itemsPerPage, filteredProducts.length)}</span> of{' '}
-                        <span className="font-semibold text-foreground">{filteredProducts.length}</span> products
-                      </div>
-                      
-                      {/* Pagination */}
-                      <Pagination>
-                        <PaginationContent>
-                          <PaginationItem>
-                            <PaginationPrevious 
-                              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                              className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                            />
-                          </PaginationItem>
-                          
-                          {getPageNumbers().map((page, index) => (
-                            <PaginationItem key={index}>
-                              {page === 'ellipsis' ? (
-                                <PaginationEllipsis />
-                              ) : (
-                                <PaginationLink
-                                  onClick={() => setCurrentPage(page as number)}
-                                  isActive={currentPage === page}
-                                  className="cursor-pointer"
-                                >
-                                  {page}
-                                </PaginationLink>
-                              )}
-                            </PaginationItem>
-                          ))}
-                          
-                          <PaginationItem>
-                            <PaginationNext 
-                              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                            />
-                          </PaginationItem>
-                        </PaginationContent>
-                      </Pagination>
-                    </div>
+                  {/* Load More Button */}
+                  {hasMoreProducts && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-12 flex justify-center"
+                    >
+                      <Button
+                        onClick={loadMoreProducts}
+                        size="lg"
+                        className="px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                      >
+                        Load More Products
+                        <span className="ml-2 text-sm opacity-75">
+                          ({filteredProducts.length - displayCount} remaining)
+                        </span>
+                      </Button>
+                    </motion.div>
                   )}
+                  
+                  {/* Product count info */}
+                  <div className="mt-6 text-center text-sm text-muted-foreground">
+                    Showing <span className="font-semibold text-foreground">{Math.min(displayCount, filteredProducts.length)}</span> of{' '}
+                    <span className="font-semibold text-foreground">{filteredProducts.length}</span> products
+                  </div>
                 </>
               )}
             </>
