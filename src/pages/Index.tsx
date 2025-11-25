@@ -10,7 +10,7 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { AnimatedIcon } from "@/components/AnimatedIcon";
 import { ParallaxSection } from "@/components/ParallaxSection";
 import { TiltCard } from "@/components/TiltCard";
-import { DemoVideoPlayer } from "@/components/DemoVideoPlayer";
+
 import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
@@ -613,41 +613,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Demo Video Section */}
-      <section className="border-y bg-muted/30 py-24">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-5xl">
-            <ScrollReveal>
-              <div className="mb-12 text-center">
-                <h2 className="mb-4 text-4xl font-bold">See It In Action</h2>
-                <p className="text-xl text-muted-foreground">
-                  Watch how easy it is to manage and share your jewelry catalog
-                </p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.2}>
-              <DemoVideoPlayer 
-                videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
-              />
-            </ScrollReveal>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              {[
-                { icon: CheckCircle2, title: "Quick Setup", subtitle: "Get started in minutes" },
-                { icon: CheckCircle2, title: "Easy to Use", subtitle: "Intuitive interface" },
-                { icon: CheckCircle2, title: "Full Control", subtitle: "Manage everything" },
-              ].map((item, index) => (
-                <ScrollReveal key={index} delay={0.1 * (index + 3)} direction="up">
-                  <div className="text-center">
-                    <item.icon className="mx-auto mb-2 h-6 w-6 text-jewellery-from" />
-                    <p className="text-sm font-medium">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.subtitle}</p>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* FAQ Section */}
       <section className="container mx-auto px-4 py-24">
