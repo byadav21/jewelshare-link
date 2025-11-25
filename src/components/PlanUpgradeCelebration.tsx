@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Trophy, Zap, Star } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { playCelebrationSound } from "@/utils/celebrationSounds";
 
 interface PlanUpgradeCelebrationProps {
   open: boolean;
@@ -15,6 +16,9 @@ export const PlanUpgradeCelebration = ({ open, onOpenChange, planName }: PlanUpg
 
   useEffect(() => {
     if (open) {
+      // Play celebration sound
+      playCelebrationSound();
+      
       // Trigger confetti
       const duration = 3000;
       const animationEnd = Date.now() + duration;

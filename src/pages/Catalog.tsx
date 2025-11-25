@@ -20,6 +20,8 @@ import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { PlanUsageBanner } from "@/components/PlanUsageBanner";
 import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { PlanUpgradeCelebration } from "@/components/PlanUpgradeCelebration";
+import { PlanBenefitsShowcase } from "@/components/PlanBenefitsShowcase";
+import { ReferralCelebration } from "@/components/ReferralCelebration";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
@@ -44,6 +46,10 @@ const Catalog = () => {
   const [upgradeLimitType, setUpgradeLimitType] = useState<'products' | 'share_links' | undefined>();
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationPlan, setCelebrationPlan] = useState("");
+  const [showBenefits, setShowBenefits] = useState(false);
+  const [showReferralCelebration, setShowReferralCelebration] = useState(false);
+  const [referralType, setReferralType] = useState<'team_member' | 'customer'>('team_member');
+  const [referredName, setReferredName] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     category: "",
     metalType: "",
@@ -137,10 +143,16 @@ const Catalog = () => {
             setCelebrationPlan(planNames[newPlan] || newPlan);
             setShowCelebration(true);
             
+            // Show benefits after celebration
+            setTimeout(() => {
+              setShowCelebration(false);
+              setShowBenefits(true);
+            }, 3500);
+            
             // Refresh data to get new limits
             setTimeout(() => {
               window.location.reload();
-            }, 4000);
+            }, 8000);
           }
         }
       )
@@ -148,6 +160,46 @@ const Catalog = () => {
 
     return () => {
       supabase.removeChannel(channel);
+    };
+  };
+
+  // Setup referral celebration listener
+  const setupReferralListener = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Only setup for admins/owners who can see team additions
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!roleData || roleData.role !== 'admin') return;
+
+    // Listen for new user approval statuses (new signups)
+    const referralChannel = supabase
+      .channel('referral-additions')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_approval_status',
+        },
+        async (payload: any) => {
+          // Show celebration for new user signups
+          if (payload.new.email) {
+            setReferredName(payload.new.email.split('@')[0]);
+            setReferralType('customer');
+            setShowReferralCelebration(true);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(referralChannel);
     };
   };
 
@@ -169,6 +221,7 @@ const Catalog = () => {
     fetchVendorProfile();
     fetchApprovedCategories();
     setupPlanUpgradeListener();
+    setupReferralListener();
   }, []);
   const fetchApprovedCategories = async () => {
     try {
@@ -1070,6 +1123,72 @@ const Catalog = () => {
         open={showCelebration}
         onOpenChange={setShowCelebration}
         planName={celebrationPlan}
+      />
+      
+      <PlanBenefitsShowcase
+        open={showBenefits}
+        onOpenChange={setShowBenefits}
+        planName={celebrationPlan}
+        benefits={
+          celebrationPlan === "Professional Plan" ? [
+            {
+              title: "1,000 Products",
+              description: "Expand your catalog with up to 1,000 products"
+            },
+            {
+              title: "10 Share Links",
+              description: "Create up to 10 shareable catalog links"
+            },
+            {
+              title: "3 Team Members",
+              description: "Invite up to 3 team members to collaborate"
+            },
+            {
+              title: "Unlimited Product Images",
+              description: "Add as many images as you need to showcase your products"
+            },
+            {
+              title: "Custom Orders Management",
+              description: "Manage custom order requests from customers"
+            },
+            {
+              title: "Data Import Tools",
+              description: "Easily import your product data from Excel files"
+            }
+          ] : [
+            {
+              title: "Unlimited Products",
+              description: "No limits on the number of products you can add"
+            },
+            {
+              title: "Unlimited Share Links",
+              description: "Create as many shareable catalog links as you need"
+            },
+            {
+              title: "Unlimited Team Members",
+              description: "Invite unlimited team members to collaborate"
+            },
+            {
+              title: "Advanced Analytics",
+              description: "Detailed insights into your catalog performance"
+            },
+            {
+              title: "Priority Support",
+              description: "Get dedicated support from our team"
+            },
+            {
+              title: "Custom Integrations",
+              description: "Connect with your existing business tools"
+            }
+          ]
+        }
+      />
+      
+      <ReferralCelebration
+        open={showReferralCelebration}
+        onOpenChange={setShowReferralCelebration}
+        referralType={referralType}
+        referredName={referredName}
       />
     </ApprovalGuard>;
 };
