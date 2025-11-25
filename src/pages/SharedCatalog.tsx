@@ -13,6 +13,7 @@ import { SocialShareButton } from "@/components/SocialShareButton";
 import { ShareStats } from "@/components/ShareStats";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
 import { Gem, AlertCircle, Building2, Video, Zap, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -584,6 +585,13 @@ const SharedCatalog = () => {
 
       {/* Product Grid */}
       <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-8 sm:py-12 relative z-10">
+        {/* Featured Products Showcase */}
+        {products.length > 0 && (
+          <div className="mb-12">
+            <ProductShowcaseCarousel products={products.slice(0, 8)} usdRate={usdToInr} />
+          </div>
+        )}
+
         {filteredProducts.length === 0 && products.length > 0 ? (
           <div className="text-center py-16 sm:py-20">
             <Gem className="h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground mx-auto mb-4 opacity-50" />
