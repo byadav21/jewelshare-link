@@ -123,19 +123,16 @@ export const WhatsAppButton = ({
           bottom: buttonBottomPosition
         }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="fixed right-4 z-50 md:right-6"
+        className="fixed right-4 z-50 md:right-6 group"
       >
         <Button
           onClick={() => setIsExpanded(!isExpanded)}
           size="icon"
-          className="h-14 w-14 rounded-full bg-emerald-500 shadow-2xl transition-all hover:bg-emerald-600 hover:scale-110"
+          className="h-14 w-14 rounded-full bg-emerald-500/60 shadow-lg transition-all hover:bg-emerald-600 hover:scale-110 opacity-60 hover:opacity-100"
           aria-label="Open WhatsApp chat"
         >
           <MessageCircle className="h-6 w-6 text-white" />
         </Button>
-        
-        {/* Pulse animation */}
-        <span className="absolute -inset-1 rounded-full bg-emerald-500 opacity-75 animate-ping pointer-events-none" />
       </motion.div>
     </>
   );
