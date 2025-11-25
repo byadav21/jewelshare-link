@@ -56,3 +56,4 @@ export const LoginHistory = lazy(() => import("@/pages/LoginHistory"));
 export const PlanManagement = lazy(() => import("@/pages/PlanManagement"));
 export const PermissionPresets = lazy(() => import("@/pages/PermissionPresets"));
 export const MigrateImages = lazy(() => import("@/pages/MigrateImages"));
+export const ScratchLeads = lazy(() => import("@/pages/ScratchLeads"));

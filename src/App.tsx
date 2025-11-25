@@ -334,6 +334,14 @@ const AppContent = () => {
           </AdminGuard>
         } 
       />
+      <Route 
+        path={ROUTES.SCRATCH_LEADS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.ScratchLeads /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
       
       {/* 404 - must be last */}
       <Route 

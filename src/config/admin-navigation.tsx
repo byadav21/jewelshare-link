@@ -21,6 +21,7 @@ import {
   History,
   Newspaper,
   LayoutDashboard,
+  Gift,
 } from "lucide-react";
 import { NavigationItem, NavigationGroup } from "@/types";
 import { ROUTES } from "@/constants/routes";
@@ -38,6 +39,7 @@ export const CONTENT_MANAGEMENT_ITEMS: NavigationItem[] = [
   { title: "Comments", url: ROUTES.ADMIN_COMMENTS, icon: MessageSquare },
   { title: "Newsletter", url: ROUTES.ADMIN_NEWSLETTER, icon: Mail },
   { title: "Press Releases", url: ROUTES.ADMIN_PRESS, icon: Newspaper },
+  { title: "Scratch Leads", url: ROUTES.SCRATCH_LEADS, icon: Gift },
 ];
 
 export const VENDOR_MANAGEMENT_ITEMS: NavigationItem[] = [
