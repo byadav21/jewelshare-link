@@ -15,14 +15,14 @@ import heroBanner from "@/assets/hero-banner.jpg";
 import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
 import analyticsFeature from "@/assets/analytics-feature.jpg";
-import { 
-  Gem, 
-  Share2, 
-  Video, 
-  ShoppingBag, 
-  Users, 
-  BarChart3, 
-  Shield, 
+import {
+  Gem,
+  Share2,
+  Video,
+  ShoppingBag,
+  Users,
+  BarChart3,
+  Shield,
   Zap,
   Heart,
   Link2,
@@ -40,7 +40,7 @@ import {
   Linkedin,
   Mail,
   Phone,
-  MapPin
+  MapPin,
 } from "lucide-react";
 
 const Index = () => {
@@ -51,127 +51,147 @@ const Index = () => {
       name: "Priya Sharma",
       business: "Brilliant Gems & Jewelry",
       role: "Owner",
-      content: "This platform transformed how we share our diamond collection with international clients. The custom pricing feature alone has increased our B2B sales by 45%. Video requests help us close deals faster than ever.",
+      content:
+        "This platform transformed how we share our diamond collection with international clients. The custom pricing feature alone has increased our B2B sales by 45%. Video requests help us close deals faster than ever.",
       rating: 5,
-      gradient: "from-jewellery-from to-jewellery-to"
+      gradient: "from-jewellery-from to-jewellery-to",
     },
     {
       name: "Rajesh Patel",
       business: "Heritage Diamonds",
       role: "Managing Director",
-      content: "Managing our inventory of 5,000+ pieces was chaos before. Now everything is organized, shareable, and trackable. The analytics show us which products generate the most interest. Game changer for our wholesale business.",
+      content:
+        "Managing our inventory of 5,000+ pieces was chaos before. Now everything is organized, shareable, and trackable. The analytics show us which products generate the most interest. Game changer for our wholesale business.",
       rating: 5,
-      gradient: "from-gemstone-from to-gemstone-to"
+      gradient: "from-gemstone-from to-gemstone-to",
     },
     {
       name: "Anita Desai",
       business: "Luxury Gemstone Gallery",
       role: "Director of Sales",
-      content: "The shareable catalog links with expiry dates are brilliant for our seasonal promotions. Our team can manage everything from one place, and customers love how easy it is to browse and request videos of pieces they're interested in.",
+      content:
+        "The shareable catalog links with expiry dates are brilliant for our seasonal promotions. Our team can manage everything from one place, and customers love how easy it is to browse and request videos of pieces they're interested in.",
       rating: 5,
-      gradient: "from-diamond-from to-diamond-to"
+      gradient: "from-diamond-from to-diamond-to",
     },
     {
       name: "Vikram Singh",
       business: "Royal Jewels Collection",
       role: "CEO",
-      content: "We've been using this for 6 months and our customer engagement has doubled. The custom order management system helps us track bespoke jewelry requests perfectly. Our clients appreciate the professional presentation.",
+      content:
+        "We've been using this for 6 months and our customer engagement has doubled. The custom order management system helps us track bespoke jewelry requests perfectly. Our clients appreciate the professional presentation.",
       rating: 5,
-      gradient: "from-jewellery-from to-jewellery-to"
-    }
+      gradient: "from-jewellery-from to-jewellery-to",
+    },
   ];
 
   const faqs = [
     {
       question: "How does the catalog sharing work?",
-      answer: "Create a shareable link with custom pricing (markup or markdown), set an expiry date, and share it with your clients. You can track views, customer interests, and video requests all from your dashboard. Each link is unique and can be customized for different client segments."
+      answer:
+        "Create a shareable link with custom pricing (markup or markdown), set an expiry date, and share it with your clients. You can track views, customer interests, and video requests all from your dashboard. Each link is unique and can be customized for different client segments.",
     },
     {
       question: "Can I manage multiple team members?",
-      answer: "Yes! Add team members with granular permissions. Control who can view catalogs, add products, manage share links, handle custom orders, and more. Perfect for businesses with sales teams or multiple locations."
+      answer:
+        "Yes! Add team members with granular permissions. Control who can view catalogs, add products, manage share links, handle custom orders, and more. Perfect for businesses with sales teams or multiple locations.",
     },
     {
       question: "What types of jewelry can I manage?",
-      answer: "Our platform supports loose diamonds, gemstones, and finished jewelry pieces. Each category has specialized fields for specifications like carat weight, clarity, color, certification, metal type, and more. Upload multiple images and detailed descriptions for each piece."
+      answer:
+        "Our platform supports loose diamonds, gemstones, and finished jewelry pieces. Each category has specialized fields for specifications like carat weight, clarity, color, certification, metal type, and more. Upload multiple images and detailed descriptions for each piece.",
     },
     {
       question: "How do video requests work?",
-      answer: "When customers view your shared catalog, they can request videos of specific products. You'll receive notifications with customer details and can update the request status (pending, fulfilled, declined). Communicate directly via email or WhatsApp."
+      answer:
+        "When customers view your shared catalog, they can request videos of specific products. You'll receive notifications with customer details and can update the request status (pending, fulfilled, declined). Communicate directly via email or WhatsApp.",
     },
     {
       question: "Is my data secure?",
-      answer: "Absolutely. We use enterprise-grade security with encrypted data storage, secure authentication, and session management. You control who sees what with granular permissions and share link expiry dates. All communications are encrypted."
+      answer:
+        "Absolutely. We use enterprise-grade security with encrypted data storage, secure authentication, and session management. You control who sees what with granular permissions and share link expiry dates. All communications are encrypted.",
     },
     {
       question: "Can I track customer engagement?",
-      answer: "Yes! Get detailed analytics on catalog views, popular products, customer interests, video requests, and custom orders. See which products generate the most engagement and make data-driven decisions for your inventory."
+      answer:
+        "Yes! Get detailed analytics on catalog views, popular products, customer interests, video requests, and custom orders. See which products generate the most engagement and make data-driven decisions for your inventory.",
     },
     {
       question: "Do you offer import/export features?",
-      answer: "Yes, you can import products in bulk using Excel/CSV files and export your catalog data, customer inquiries, and analytics reports. Perfect for integrating with your existing inventory management systems."
+      answer:
+        "Yes, you can import products in bulk using Excel/CSV files and export your catalog data, customer inquiries, and analytics reports. Perfect for integrating with your existing inventory management systems.",
     },
     {
       question: "What's the pricing model?",
-      answer: "We offer flexible plans based on your business size and needs. Start with a free trial to explore all features. Visit our pricing page for detailed plan comparisons and choose what works best for your jewelry business."
-    }
+      answer:
+        "We offer flexible plans based on your business size and needs. Start with a free trial to explore all features. Visit our pricing page for detailed plan comparisons and choose what works best for your jewelry business.",
+    },
   ];
 
   const features = [
     {
       icon: Gem,
       title: "Comprehensive Catalog Management",
-      description: "Manage your entire jewelry inventory including loose diamonds, gemstones, and finished jewelry pieces with detailed specifications.",
-      gradient: "from-jewellery-from to-jewellery-to"
+      description:
+        "Manage your entire jewelry inventory including loose diamonds, gemstones, and finished jewelry pieces with detailed specifications.",
+      gradient: "from-jewellery-from to-jewellery-to",
     },
     {
       icon: Share2,
       title: "Smart Catalog Sharing",
-      description: "Create shareable catalogs with custom pricing (markup/markdown) and expiry dates. Track views and engagement in real-time.",
-      gradient: "from-gemstone-from to-gemstone-to"
+      description:
+        "Create shareable catalogs with custom pricing (markup/markdown) and expiry dates. Track views and engagement in real-time.",
+      gradient: "from-gemstone-from to-gemstone-to",
     },
     {
       icon: Video,
       title: "Video Request Management",
-      description: "Receive and manage video requests from customers. Update status and communicate directly via email or WhatsApp.",
-      gradient: "from-diamond-from to-diamond-to"
+      description:
+        "Receive and manage video requests from customers. Update status and communicate directly via email or WhatsApp.",
+      gradient: "from-diamond-from to-diamond-to",
     },
     {
       icon: ShoppingBag,
       title: "Custom Order Tracking",
-      description: "Handle custom jewelry orders with design descriptions, budget tracking, and reference images. Manage entire workflow from request to fulfillment.",
-      gradient: "from-jewellery-from to-jewellery-to"
+      description:
+        "Handle custom jewelry orders with design descriptions, budget tracking, and reference images. Manage entire workflow from request to fulfillment.",
+      gradient: "from-jewellery-from to-jewellery-to",
     },
     {
       icon: Heart,
       title: "Product Interest Analytics",
-      description: "Track customer interests in specific products. Collect contact details and notes to follow up effectively.",
-      gradient: "from-gemstone-from to-gemstone-to"
+      description:
+        "Track customer interests in specific products. Collect contact details and notes to follow up effectively.",
+      gradient: "from-gemstone-from to-gemstone-to",
     },
     {
       icon: Users,
       title: "Team Collaboration",
-      description: "Add team members with granular permissions. Control access to catalog, products, sharing, and customer data.",
-      gradient: "from-diamond-from to-diamond-to"
+      description:
+        "Add team members with granular permissions. Control access to catalog, products, sharing, and customer data.",
+      gradient: "from-diamond-from to-diamond-to",
     },
     {
       icon: BarChart3,
       title: "Advanced Analytics",
-      description: "Get insights into catalog performance, customer engagement, popular products, and sales trends with visual dashboards.",
-      gradient: "from-jewellery-from to-jewellery-to"
+      description:
+        "Get insights into catalog performance, customer engagement, popular products, and sales trends with visual dashboards.",
+      gradient: "from-jewellery-from to-jewellery-to",
     },
     {
       icon: Shield,
       title: "Secure Session Management",
-      description: "Control active sessions with device tracking, IP monitoring, and remote session termination for enhanced security.",
-      gradient: "from-gemstone-from to-gemstone-to"
-    }
+      description:
+        "Control active sessions with device tracking, IP monitoring, and remote session termination for enhanced security.",
+      gradient: "from-gemstone-from to-gemstone-to",
+    },
   ];
 
   const benefits = [
     { icon: Zap, text: "Lightning-fast catalog updates" },
     { icon: Link2, text: "Shareable links with custom pricing" },
     { icon: Bell, text: "Real-time customer notifications" },
-    { icon: Sparkles, text: "Premium jewelry-focused interface" }
+    { icon: Sparkles, text: "Premium jewelry-focused interface" },
   ];
 
   return (
@@ -179,11 +199,7 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b">
         <div className="absolute inset-0">
-          <img 
-            src={heroBanner} 
-            alt="Luxury diamonds and gemstones" 
-            className="h-full w-full object-cover opacity-20"
-          />
+          <img src={heroBanner} alt="Luxury diamonds and gemstones" className="h-full w-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/90" />
         </div>
         <div className="container relative mx-auto px-4 py-24 sm:py-32">
@@ -200,23 +216,15 @@ const Index = () => {
                 </span>
               </h1>
               <p className="mb-10 text-xl text-muted-foreground sm:text-2xl">
-                The complete platform for jewelry vendors to showcase inventory, share catalogs with custom pricing, and manage customer inquiries seamlessly.
+                The complete platform for jewelry vendors to showcase inventory, share catalogs with custom pricing, and
+                manage customer inquiries seamlessly.
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button 
-                  size="lg" 
-                  className="group h-12 gap-2 px-8 text-base"
-                  onClick={() => navigate('/catalog')}
-                >
+                <Button size="lg" className="group h-12 gap-2 px-8 text-base" onClick={() => navigate("/catalog")}>
                   Get Started
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-12 px-8 text-base"
-                  onClick={() => navigate('/auth')}
-                >
+                <Button size="lg" variant="outline" className="h-12 px-8 text-base" onClick={() => navigate("/auth")}>
                   Sign In
                 </Button>
               </div>
@@ -230,9 +238,7 @@ const Index = () => {
         <ScrollReveal>
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-4xl font-bold">Experience Jewelry in 3D</h2>
-            <p className="text-xl text-muted-foreground">
-              Interactive 3D viewer for showcasing your finest pieces
-            </p>
+            <p className="text-xl text-muted-foreground">Interactive 3D viewer for showcasing your finest pieces</p>
           </div>
         </ScrollReveal>
         <ScrollReveal delay={0.2}>
@@ -301,7 +307,9 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16">
         <ScrollReveal>
           <div className="mb-8 text-center">
-            <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Trusted by Leading Jewelry Brands</p>
+            <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+              Trusted by Leading Jewelry Brands
+            </p>
           </div>
         </ScrollReveal>
         <BrandLogosCarousel />
@@ -312,10 +320,12 @@ const Index = () => {
         <ScrollReveal>
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-bold">Powerful Features for Jewelry Vendors</h2>
-            <p className="text-xl text-muted-foreground">Everything you need to manage and grow your jewelry business</p>
+            <p className="text-xl text-muted-foreground">
+              Everything you need to manage and grow your jewelry business
+            </p>
           </div>
         </ScrollReveal>
-        
+
         {/* Feature Showcase with Images */}
         <ScrollReveal delay={0.1}>
           <div className="mb-16 grid gap-8 lg:grid-cols-2">
@@ -334,7 +344,8 @@ const Index = () => {
                   <div>
                     <h3 className="mb-2 text-2xl font-bold">Smart Catalog Sharing</h3>
                     <p className="text-muted-foreground">
-                      Create stunning digital catalogs accessible on any device. Share with custom pricing, track engagement, and manage everything from a single dashboard. Perfect for B2B and retail customers.
+                      Create stunning digital catalogs accessible on any device. Share with custom pricing, track
+                      engagement, and manage everything from a single dashboard. Perfect for B2B and retail customers.
                     </p>
                   </div>
                 </div>
@@ -347,7 +358,8 @@ const Index = () => {
                   <div>
                     <h3 className="mb-2 text-2xl font-bold">Complete Inventory Control</h3>
                     <p className="text-muted-foreground">
-                      Manage diamonds, gemstones, and jewelry with detailed specifications. Upload multiple high-quality images, track stock levels, and update pricing instantly across all shared catalogs.
+                      Manage diamonds, gemstones, and jewelry with detailed specifications. Upload multiple high-quality
+                      images, track stock levels, and update pricing instantly across all shared catalogs.
                     </p>
                   </div>
                 </div>
@@ -367,7 +379,8 @@ const Index = () => {
                   <div>
                     <h3 className="mb-2 text-2xl font-bold">Advanced Analytics</h3>
                     <p className="text-muted-foreground">
-                      Get real-time insights into catalog performance, customer engagement, and popular products. Make data-driven decisions with comprehensive dashboards and visual reports.
+                      Get real-time insights into catalog performance, customer engagement, and popular products. Make
+                      data-driven decisions with comprehensive dashboards and visual reports.
                     </p>
                   </div>
                 </div>
@@ -380,7 +393,8 @@ const Index = () => {
                   <div>
                     <h3 className="mb-2 text-2xl font-bold">Team Collaboration</h3>
                     <p className="text-muted-foreground">
-                      Scale your business with multi-user access. Set granular permissions for team members, track activities, and maintain full control over who can view and manage your inventory.
+                      Scale your business with multi-user access. Set granular permissions for team members, track
+                      activities, and maintain full control over who can view and manage your inventory.
                     </p>
                   </div>
                 </div>
@@ -400,9 +414,13 @@ const Index = () => {
             {features.map((feature, index) => (
               <ScrollReveal key={index} delay={0.1 * index} direction="up">
                 <Card className="group relative overflow-hidden border-2 transition-all hover:shadow-lg">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-5`} />
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-5`}
+                  />
                   <CardHeader>
-                    <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${feature.gradient}`}>
+                    <div
+                      className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${feature.gradient}`}
+                    >
                       <feature.icon className="h-6 w-6 text-white" />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
@@ -433,11 +451,7 @@ const Index = () => {
       {/* How It Works */}
       <section className="relative border-y bg-muted/30 py-24">
         <div className="absolute inset-0 overflow-hidden opacity-10">
-          <img 
-            src={vendorManagement} 
-            alt="Vendor using platform" 
-            className="h-full w-full object-cover"
-          />
+          <img src={vendorManagement} alt="Vendor using platform" className="h-full w-full object-cover" />
         </div>
         <div className="container relative mx-auto px-4">
           <ScrollReveal>
@@ -465,7 +479,8 @@ const Index = () => {
                 </div>
                 <h3 className="mb-3 text-xl font-semibold">Create Share Links</h3>
                 <p className="text-muted-foreground">
-                  Generate shareable catalog links with custom pricing adjustments and expiry dates for different clients.
+                  Generate shareable catalog links with custom pricing adjustments and expiry dates for different
+                  clients.
                 </p>
               </div>
             </ScrollReveal>
@@ -523,7 +538,9 @@ const Index = () => {
             <ScrollReveal>
               <div className="mb-12 text-center">
                 <h2 className="mb-4 text-4xl font-bold">See It In Action</h2>
-                <p className="text-xl text-muted-foreground">Watch how easy it is to manage and share your jewelry catalog</p>
+                <p className="text-xl text-muted-foreground">
+                  Watch how easy it is to manage and share your jewelry catalog
+                </p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
@@ -535,11 +552,7 @@ const Index = () => {
                     </div>
                     <h3 className="mb-2 text-2xl font-bold">Interactive Platform Demo</h3>
                     <p className="text-muted-foreground">3-minute walkthrough of key features</p>
-                    <Button 
-                      size="lg" 
-                      className="mt-6"
-                      onClick={() => navigate('/catalog')}
-                    >
+                    <Button size="lg" className="mt-6" onClick={() => navigate("/catalog")}>
                       Try Live Demo
                     </Button>
                   </div>
@@ -550,7 +563,7 @@ const Index = () => {
               {[
                 { icon: CheckCircle2, title: "Quick Setup", subtitle: "Get started in minutes" },
                 { icon: CheckCircle2, title: "Easy to Use", subtitle: "Intuitive interface" },
-                { icon: CheckCircle2, title: "Full Control", subtitle: "Manage everything" }
+                { icon: CheckCircle2, title: "Full Control", subtitle: "Manage everything" },
               ].map((item, index) => (
                 <ScrollReveal key={index} delay={0.1 * (index + 3)} direction="up">
                   <div className="text-center">
@@ -578,12 +591,8 @@ const Index = () => {
             <Accordion type="single" collapsible className="w-full">
               {faqs.map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger className="text-left text-lg font-semibold">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-base text-muted-foreground">
-                    {faq.answer}
-                  </AccordionContent>
+                  <AccordionTrigger className="text-left text-lg font-semibold">{faq.question}</AccordionTrigger>
+                  <AccordionContent className="text-base text-muted-foreground">{faq.answer}</AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
@@ -609,19 +618,15 @@ const Index = () => {
                   Join vendors who are already managing their catalogs smarter
                 </p>
                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                  <Button 
-                    size="lg" 
-                    className="group h-12 gap-2 px-8 text-base"
-                    onClick={() => navigate('/auth')}
-                  >
+                  <Button size="lg" className="group h-12 gap-2 px-8 text-base" onClick={() => navigate("/auth")}>
                     Start Free Trial
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
+                  <Button
+                    size="lg"
+                    variant="outline"
                     className="h-12 px-8 text-base"
-                    onClick={() => navigate('/pricing')}
+                    onClick={() => navigate("/pricing")}
                   >
                     View Pricing
                   </Button>
@@ -648,16 +653,28 @@ const Index = () => {
                 Professional jewelry inventory management with shareable catalogs and custom pricing for modern vendors.
               </p>
               <div className="flex gap-3">
-                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                <a
+                  href="#"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
+                >
                   <Facebook className="h-4 w-4" />
                 </a>
-                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                <a
+                  href="#"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
+                >
                   <Twitter className="h-4 w-4" />
                 </a>
-                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                <a
+                  href="#"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
+                >
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href="#" className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent">
+                <a
+                  href="#"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
+                >
                   <Linkedin className="h-4 w-4" />
                 </a>
               </div>
@@ -667,11 +684,38 @@ const Index = () => {
             <div>
               <h3 className="mb-4 font-semibold">Product</h3>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                <li><a href="#" className="transition-colors hover:text-foreground">Features</a></li>
-                <li><a href="#" className="transition-colors hover:text-foreground" onClick={(e) => { e.preventDefault(); navigate('/pricing'); }}>Pricing</a></li>
-                <li><a href="#" className="transition-colors hover:text-foreground">Demo</a></li>
-                <li><a href="#" className="transition-colors hover:text-foreground">Analytics</a></li>
-                <li><a href="#" className="transition-colors hover:text-foreground">Security</a></li>
+                <li>
+                  <a href="#" className="transition-colors hover:text-foreground">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/pricing");
+                    }}
+                  >
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="transition-colors hover:text-foreground">
+                    Demo
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="transition-colors hover:text-foreground">
+                    Analytics
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="transition-colors hover:text-foreground">
+                    Security
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -680,43 +724,63 @@ const Index = () => {
               <h3 className="mb-4 font-semibold">Company</h3>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li>
-                  <a 
-                    href="#" 
-                    className="transition-colors hover:text-foreground" 
-                    onClick={(e) => { e.preventDefault(); navigate('/about'); }}
+                  <a
+                    href="#"
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/about");
+                    }}
                   >
                     About Us
                   </a>
                 </li>
-                <li><a href="#" className="transition-colors hover:text-foreground">Careers</a></li>
                 <li>
-                  <a 
-                    href="#" 
-                    className="transition-colors hover:text-foreground" 
-                    onClick={(e) => { e.preventDefault(); navigate('/blog'); }}
+                  <a href="#" className="transition-colors hover:text-foreground">
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/blog");
+                    }}
                   >
                     Blog
                   </a>
                 </li>
                 <li>
-                  <a 
-                    href="#" 
-                    className="transition-colors hover:text-foreground" 
-                    onClick={(e) => { e.preventDefault(); navigate('/press'); }}
+                  <a
+                    href="#"
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/press");
+                    }}
                   >
                     Press
                   </a>
                 </li>
                 <li>
-                  <a 
-                    href="#" 
-                    className="transition-colors hover:text-foreground" 
-                    onClick={(e) => { e.preventDefault(); navigate('/demo'); }}
+                  <a
+                    href="#"
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/demo");
+                    }}
                   >
                     Demo
                   </a>
                 </li>
-                <li><a href="#" className="transition-colors hover:text-foreground">Partners</a></li>
+                <li>
+                  <a href="#" className="transition-colors hover:text-foreground">
+                    Partners
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -741,10 +805,13 @@ const Index = () => {
                   <span>Mumbai, Maharashtra, India</span>
                 </li>
                 <li>
-                  <a 
-                    href="#" 
-                    className="transition-colors hover:text-foreground" 
-                    onClick={(e) => { e.preventDefault(); navigate('/contact'); }}
+                  <a
+                    href="#"
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/contact");
+                    }}
                   >
                     Contact Form →
                   </a>
@@ -755,13 +822,17 @@ const Index = () => {
 
           <div className="mt-12 border-t pt-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <p className="text-sm text-muted-foreground">
-                © 2024 Jewelry Catalog. All rights reserved.
-              </p>
+              <p className="text-sm text-muted-foreground">© 2024 Jewelry Catalog. All rights reserved.</p>
               <div className="flex gap-6 text-sm text-muted-foreground">
-                <a href="#" className="transition-colors hover:text-foreground">Privacy Policy</a>
-                <a href="#" className="transition-colors hover:text-foreground">Terms of Service</a>
-                <a href="#" className="transition-colors hover:text-foreground">Cookie Policy</a>
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Privacy Policy
+                </a>
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Terms of Service
+                </a>
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Cookie Policy
+                </a>
               </div>
             </div>
           </div>
