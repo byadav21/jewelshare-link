@@ -5,14 +5,26 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
-export const WhatsAppButton = () => {
+interface WhatsAppButtonProps {
+  whatsappNumber?: string;
+  message?: string;
+  businessName?: string;
+}
+
+export const WhatsAppButton = ({ 
+  whatsappNumber: propNumber, 
+  message: propMessage,
+  businessName 
+}: WhatsAppButtonProps = {}) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [whatsappNumber, setWhatsappNumber] = useState("1234567890");
+  const [whatsappNumber, setWhatsappNumber] = useState(propNumber || "1234567890");
   const { keyboardHeight, isKeyboardVisible } = useKeyboardHeight();
 
   useEffect(() => {
-    fetchWhatsAppNumber();
-  }, []);
+    if (!propNumber) {
+      fetchWhatsAppNumber();
+    }
+  }, [propNumber]);
 
   const fetchWhatsAppNumber = async () => {
     const { data, error } = await supabase
@@ -29,7 +41,11 @@ export const WhatsAppButton = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const message = encodeURIComponent("Hi! I'm interested in learning more about your jewelry catalog platform.");
+    const defaultMessage = businessName 
+      ? `Hi! I'm interested in your jewelry collection from ${businessName}.`
+      : "Hi! I'm interested in learning more about your jewelry catalog platform.";
+    
+    const message = encodeURIComponent(propMessage || defaultMessage);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
@@ -81,7 +97,10 @@ export const WhatsAppButton = () => {
                 </div>
                 
                 <p className="text-sm text-muted-foreground">
-                  Have questions about our jewelry catalog platform? We're here to help!
+                  {businessName 
+                    ? `Have questions about ${businessName}'s jewelry collection? We're here to help!`
+                    : "Have questions about our jewelry catalog platform? We're here to help!"
+                  }
                 </p>
                 
                 <Button
