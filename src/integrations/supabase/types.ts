@@ -343,6 +343,8 @@ export type Database = {
           action_details: Json | null
           action_type: string
           created_at: string
+          expired: boolean | null
+          expires_at: string | null
           id: string
           points: number
           user_id: string
@@ -351,6 +353,8 @@ export type Database = {
           action_details?: Json | null
           action_type: string
           created_at?: string
+          expired?: boolean | null
+          expires_at?: string | null
           id?: string
           points: number
           user_id: string
@@ -359,6 +363,8 @@ export type Database = {
           action_details?: Json | null
           action_type?: string
           created_at?: string
+          expired?: boolean | null
+          expires_at?: string | null
           id?: string
           points?: number
           user_id?: string
@@ -1312,6 +1318,14 @@ export type Database = {
     }
     Functions: {
       cleanup_old_sessions: { Args: never; Returns: undefined }
+      get_active_points: { Args: { user_id_param: string }; Returns: number }
+      get_expiring_points: {
+        Args: { user_id_param: string }
+        Returns: {
+          expires_at: string
+          points: number
+        }[]
+      }
       hard_delete_products: {
         Args: { product_ids: string[] }
         Returns: undefined

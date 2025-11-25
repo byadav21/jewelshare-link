@@ -1,9 +1,12 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Star, TrendingUp } from "lucide-react";
+import { Trophy, Star, TrendingUp, Clock } from "lucide-react";
 import { useRewardsSystem } from "@/hooks/useRewardsSystem";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDistanceToNow } from "date-fns";
 
 const getTierColor = (tier: string) => {
   const colors: Record<string, string> = {
@@ -27,6 +30,26 @@ const getNextTier = (currentTier: string) => {
 
 export const RewardsWidget = () => {
   const { points, loading } = useRewardsSystem();
+  const [expiringPoints, setExpiringPoints] = useState<{ points: number; expires_at: string } | null>(null);
+
+  useEffect(() => {
+    if (points) {
+      fetchExpiringPoints();
+    }
+  }, [points]);
+
+  const fetchExpiringPoints = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase.rpc('get_expiring_points', { 
+      user_id_param: user.id 
+    });
+
+    if (!error && data && data.length > 0) {
+      setExpiringPoints(data[0]);
+    }
+  };
 
   if (loading || !points) {
     return (
@@ -81,6 +104,22 @@ export const RewardsWidget = () => {
           <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400">
             <Star className="h-4 w-4" fill="currentColor" />
             <span className="font-medium">Maximum tier achieved!</span>
+          </div>
+        )}
+
+        {expiringPoints && (
+          <div className="mt-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+            <div className="flex items-start gap-2">
+              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-orange-900 dark:text-orange-100">
+                  {expiringPoints.points} points expiring soon
+                </p>
+                <p className="text-xs text-orange-700 dark:text-orange-300">
+                  Expires {formatDistanceToNow(new Date(expiringPoints.expires_at), { addSuffix: true })}
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </Card>
