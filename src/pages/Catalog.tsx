@@ -19,6 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
+import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
+import { motion } from "framer-motion";
 
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -986,6 +988,21 @@ const Catalog = () => {
                     );
                   })}
                 </div>
+              )}
+
+              {/* Product Showcase Carousel */}
+              {filteredProducts.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-8"
+                >
+                  <ProductShowcaseCarousel 
+                    products={filteredProducts} 
+                    usdRate={usdRate} 
+                  />
+                </motion.div>
               )}
 
               {products.length === 0 ? (
