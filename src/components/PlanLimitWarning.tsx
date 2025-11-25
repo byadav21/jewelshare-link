@@ -76,36 +76,62 @@ export const PlanLimitWarning = () => {
   const productUsagePercent = (usage.products_count / limits.max_products) * 100;
   const shareLinksUsagePercent = (usage.share_links_count / limits.max_share_links) * 100;
 
-  // Only show warning if approaching limits (>80%)
-  const showProductWarning = productUsagePercent >= 80 && limits.max_products !== 999999;
-  const showShareLinkWarning = shareLinksUsagePercent >= 80 && limits.max_share_links !== 999999;
+  // Check if limits are exhausted (>= 100%)
+  const productExhausted = productUsagePercent >= 100 && limits.max_products !== 999999;
+  const shareLinksExhausted = shareLinksUsagePercent >= 100 && limits.max_share_links !== 999999;
+  
+  // Check if approaching limits (>= 80% but < 100%)
+  const productApproaching = productUsagePercent >= 80 && productUsagePercent < 100 && limits.max_products !== 999999;
+  const shareLinksApproaching = shareLinksUsagePercent >= 80 && shareLinksUsagePercent < 100 && limits.max_share_links !== 999999;
 
-  if (!showProductWarning && !showShareLinkWarning) return null;
+  const isExhausted = productExhausted || shareLinksExhausted;
+  const isApproaching = productApproaching || shareLinksApproaching;
+
+  if (!isExhausted && !isApproaching) return null;
 
   return (
-    <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
-      <AlertTriangle className="h-4 w-4 text-orange-600" />
-      <AlertTitle className="text-orange-900 dark:text-orange-100">
-        Approaching Plan Limits
+    <Alert className={isExhausted 
+      ? "border-destructive bg-destructive/10 dark:bg-destructive/20" 
+      : "border-orange-500 bg-orange-50 dark:bg-orange-950/20"
+    }>
+      <AlertTriangle className={isExhausted ? "h-4 w-4 text-destructive" : "h-4 w-4 text-orange-600"} />
+      <AlertTitle className={isExhausted 
+        ? "text-destructive dark:text-destructive" 
+        : "text-orange-900 dark:text-orange-100"
+      }>
+        {isExhausted ? "Plan Limits Exhausted" : "Approaching Plan Limits"}
       </AlertTitle>
-      <AlertDescription className="text-orange-800 dark:text-orange-200 space-y-2">
-        {showProductWarning && (
+      <AlertDescription className={isExhausted 
+        ? "text-destructive/90 dark:text-destructive/90 space-y-2" 
+        : "text-orange-800 dark:text-orange-200 space-y-2"
+      }>
+        {(productExhausted || productApproaching) && (
           <p>
             📦 Products: <strong>{usage.products_count}/{limits.max_products}</strong> used 
             ({Math.round(productUsagePercent)}%)
+            {productExhausted && <span className="ml-2 font-semibold">- Limit Reached!</span>}
           </p>
         )}
-        {showShareLinkWarning && (
+        {(shareLinksExhausted || shareLinksApproaching) && (
           <p>
             🔗 Share Links: <strong>{usage.share_links_count}/{limits.max_share_links}</strong> used 
             ({Math.round(shareLinksUsagePercent)}%)
+            {shareLinksExhausted && <span className="ml-2 font-semibold">- Limit Reached!</span>}
+          </p>
+        )}
+        {isExhausted && (
+          <p className="font-medium mt-2">
+            You've reached your plan limit. Upgrade now to continue using this feature.
           </p>
         )}
         <div className="flex gap-2 mt-3">
           <Button 
             size="sm" 
             onClick={() => navigate("/pricing")}
-            className="bg-orange-600 hover:bg-orange-700"
+            className={isExhausted 
+              ? "bg-destructive hover:bg-destructive/90" 
+              : "bg-orange-600 hover:bg-orange-700"
+            }
           >
             <TrendingUp className="mr-2 h-4 w-4" />
             Upgrade to {limits.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'}
