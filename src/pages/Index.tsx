@@ -5,12 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ParallaxImage } from "@/components/ParallaxImage";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
 import { NewsletterSubscription } from "@/components/NewsletterSubscription";
 import { CookieConsent } from "@/components/CookieConsent";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { ScratchCard } from "@/components/ScratchCard";
 import heroBanner from "@/assets/hero-banner.jpg";
 import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -47,6 +48,19 @@ import {
 
 const Index = () => {
   const navigate = useNavigate();
+  const [showScratchCard, setShowScratchCard] = useState(false);
+
+  // Show scratch card after a short delay on first visit
+  useEffect(() => {
+    const hasSeenScratch = localStorage.getItem("has_seen_scratch_card");
+    if (!hasSeenScratch) {
+      const timer = setTimeout(() => {
+        setShowScratchCard(true);
+        localStorage.setItem("has_seen_scratch_card", "true");
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const testimonials = [
     {
@@ -853,6 +867,7 @@ const Index = () => {
       {/* Floating Components */}
       <WhatsAppButton />
       <CookieConsent />
+      {showScratchCard && <ScratchCard onClose={() => setShowScratchCard(false)} />}
     </div>
   );
 };
