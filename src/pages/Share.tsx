@@ -5,6 +5,8 @@ import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SocialShareButton } from "@/components/SocialShareButton";
 import { ShareStats } from "@/components/ShareStats";
@@ -26,6 +28,7 @@ const Share = () => {
     markdown_percentage: "",
     expires_at: "",
     show_vendor_details: true,
+    shared_categories: ["Jewellery", "Gemstones", "Loose Diamonds"],
   });
 
   useEffect(() => {
@@ -83,6 +86,12 @@ const Share = () => {
         return;
       }
 
+      if (formData.shared_categories.length === 0) {
+        toast.error("Please select at least one product category to share");
+        setLoading(false);
+        return;
+      }
+
       // Validate expiration date is in the future
       const expirationDate = new Date(formData.expires_at);
       const now = new Date();
@@ -102,6 +111,7 @@ const Share = () => {
             markdown_percentage: markdown,
             expires_at: formData.expires_at,
             show_vendor_details: formData.show_vendor_details,
+            shared_categories: formData.shared_categories,
           },
         ])
         .select()
@@ -110,7 +120,13 @@ const Share = () => {
       if (error) throw error;
 
       toast.success("Share link created successfully! 🎉");
-      setFormData({ markup_percentage: "", markdown_percentage: "", expires_at: "", show_vendor_details: true });
+      setFormData({ 
+        markup_percentage: "", 
+        markdown_percentage: "", 
+        expires_at: "", 
+        show_vendor_details: true,
+        shared_categories: ["Jewellery", "Gemstones", "Loose Diamonds"]
+      });
       fetchShareLinks();
     } catch (error: any) {
       toast.error(error.message || "Failed to create share link");
@@ -212,6 +228,39 @@ const Share = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <Label>Product Categories to Share *</Label>
+                  <div className="space-y-2">
+                    {["Jewellery", "Gemstones", "Loose Diamonds"].map((category) => (
+                      <div key={category} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`category-${category}`}
+                          checked={formData.shared_categories.includes(category)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setFormData({
+                                ...formData,
+                                shared_categories: [...formData.shared_categories, category],
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                shared_categories: formData.shared_categories.filter((c) => c !== category),
+                              });
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`category-${category}`} className="cursor-pointer font-normal">
+                          {category}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Select which product types to include in this share link
+                  </p>
+                </div>
+
+                <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -303,6 +352,13 @@ const Share = () => {
                                 {link.markup_percentage === 0 && link.markdown_percentage === 0 && "No price adjustment"}
                                 {" • "}
                                 Expires: {new Date(link.expires_at).toLocaleString()}
+                              </div>
+                              <div className="flex gap-1 mt-2 flex-wrap">
+                                {link.shared_categories?.map((category: string) => (
+                                  <Badge key={category} variant="secondary" className="text-xs">
+                                    {category}
+                                  </Badge>
+                                ))}
                               </div>
                             </div>
                             <Button

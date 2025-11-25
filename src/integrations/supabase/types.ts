@@ -680,6 +680,7 @@ export type Database = {
           markdown_percentage: number | null
           markup_percentage: number | null
           share_token: string
+          shared_categories: string[] | null
           show_vendor_details: boolean
           user_id: string
           view_count: number | null
@@ -692,6 +693,7 @@ export type Database = {
           markdown_percentage?: number | null
           markup_percentage?: number | null
           share_token?: string
+          shared_categories?: string[] | null
           show_vendor_details?: boolean
           user_id: string
           view_count?: number | null
@@ -704,6 +706,7 @@ export type Database = {
           markdown_percentage?: number | null
           markup_percentage?: number | null
           share_token?: string
+          shared_categories?: string[] | null
           show_vendor_details?: boolean
           user_id?: string
           view_count?: number | null

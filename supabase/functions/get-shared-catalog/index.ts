@@ -142,8 +142,13 @@ serve(async (req) => {
       );
     }
 
+    // Filter products by selected categories
+    const filteredProducts = products.filter(product => 
+      shareLink.shared_categories?.includes(product.product_type)
+    );
+
     // Calculate adjusted prices
-    const adjustedProducts = products.map(product => {
+    const adjustedProducts = filteredProducts.map(product => {
       let adjustedPrice = product.retail_price;
       
       if (shareLink.markup_percentage > 0) {
@@ -183,6 +188,7 @@ serve(async (req) => {
           markdown_percentage: shareLink.markdown_percentage,
           expires_at: shareLink.expires_at,
           view_count: shareLink.view_count,
+          shared_categories: shareLink.shared_categories,
         },
         vendorProfile 
       }),
