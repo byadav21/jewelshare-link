@@ -605,6 +605,39 @@ export type Database = {
         }
         Relationships: []
       }
+      scratch_leads: {
+        Row: {
+          business_name: string | null
+          created_at: string | null
+          email: string
+          id: string
+          interest: string | null
+          name: string
+          phone: string | null
+          session_id: string
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          interest?: string | null
+          name: string
+          phone?: string | null
+          session_id: string
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          interest?: string | null
+          name?: string
+          phone?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
       scratch_rewards: {
         Row: {
           claimed: boolean | null
