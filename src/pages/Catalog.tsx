@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useVendorPermissions } from "@/hooks/useVendorPermissions";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
@@ -21,6 +22,7 @@ import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
 import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import { motion } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [allProducts, setAllProducts] = useState<any[]>([]); // Store all products for counting
@@ -67,6 +69,7 @@ const Catalog = () => {
     permissions,
     loading: permissionsLoading
   } = useVendorPermissions();
+  const { canAddProducts, canAddShareLinks } = usePlanLimits();
 
   // Load more pagination state
   const [displayCount, setDisplayCount] = useState(100);
@@ -532,18 +535,62 @@ const Catalog = () => {
                     <Building2 className="h-4 w-4 mr-2" />
                     Profile
                   </Button>}
-                {(permissions.can_share_catalog || isAdmin) && <Button variant="outline" size="sm" onClick={() => navigate("/share")}>
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>}
+                {(permissions.can_share_catalog || isAdmin) && <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            if (!canAddShareLinks && !isAdmin) {
+                              toast.error("Share link limit reached. Please upgrade your plan.");
+                              return;
+                            }
+                            navigate("/share");
+                          }}
+                          disabled={!canAddShareLinks && !isAdmin}
+                        >
+                          <Share2 className="h-4 w-4 mr-2" />
+                          Share
+                        </Button>
+                      </TooltipTrigger>
+                      {!canAddShareLinks && !isAdmin && (
+                        <TooltipContent>
+                          <p>Share link limit reached</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>}
                 {isAdmin && <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
                     <LayoutDashboard className="h-4 w-4 mr-2" />
                     Admin
                   </Button>}
-                {(permissions.can_add_products || isAdmin) && <Button variant="outline" size="sm" onClick={() => navigate("/add-product")}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add
-                  </Button>}
+                {(permissions.can_add_products || isAdmin) && <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            if (!canAddProducts && !isAdmin) {
+                              toast.error("Product limit reached. Please upgrade your plan.");
+                              return;
+                            }
+                            navigate("/add-product");
+                          }}
+                          disabled={!canAddProducts && !isAdmin}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add
+                        </Button>
+                      </TooltipTrigger>
+                      {!canAddProducts && !isAdmin && (
+                        <TooltipContent>
+                          <p>Product limit reached</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>}
                 {(permissions.can_import_data || isAdmin) && <Button variant="outline" size="sm" onClick={() => navigate("/import")}>
                     <FileSpreadsheet className="h-4 w-4 mr-2" />
                     Import
@@ -619,9 +666,20 @@ const Catalog = () => {
                         <Building2 className="h-5 w-5 mr-3 text-primary" />
                         <span className="font-medium">Vendor Profile</span>
                       </DropdownMenuItem>}
-                    {(permissions.can_share_catalog || isAdmin) && <DropdownMenuItem onClick={() => navigate("/share")} className="py-3 cursor-pointer hover:bg-muted/50">
+                    {(permissions.can_share_catalog || isAdmin) && <DropdownMenuItem 
+                        onClick={() => {
+                          if (!canAddShareLinks && !isAdmin) {
+                            toast.error("Share link limit reached. Please upgrade your plan.");
+                            return;
+                          }
+                          navigate("/share");
+                        }} 
+                        disabled={!canAddShareLinks && !isAdmin}
+                        className="py-3 cursor-pointer hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <Share2 className="h-5 w-5 mr-3 text-primary" />
                         <span className="font-medium">Share Catalog</span>
+                        {!canAddShareLinks && !isAdmin && <span className="ml-auto text-xs text-muted-foreground">(Limit reached)</span>}
                       </DropdownMenuItem>}
                     {isAdmin && <>
                         <DropdownMenuSeparator className="my-2" />
@@ -631,9 +689,20 @@ const Catalog = () => {
                         </DropdownMenuItem>
                       </>}
                     <DropdownMenuSeparator className="my-2" />
-                    {(permissions.can_add_products || isAdmin) && <DropdownMenuItem onClick={() => navigate("/add-product")} className="py-3 cursor-pointer hover:bg-muted/50">
+                    {(permissions.can_add_products || isAdmin) && <DropdownMenuItem 
+                        onClick={() => {
+                          if (!canAddProducts && !isAdmin) {
+                            toast.error("Product limit reached. Please upgrade your plan.");
+                            return;
+                          }
+                          navigate("/add-product");
+                        }} 
+                        disabled={!canAddProducts && !isAdmin}
+                        className="py-3 cursor-pointer hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <Plus className="h-5 w-5 mr-3 text-primary" />
                         <span className="font-medium">Add Product</span>
+                        {!canAddProducts && !isAdmin && <span className="ml-auto text-xs text-muted-foreground">(Limit reached)</span>}
                       </DropdownMenuItem>}
                     {(permissions.can_import_data || isAdmin) && <DropdownMenuItem onClick={() => navigate("/import")} className="py-3 cursor-pointer hover:bg-muted/50">
                         <FileSpreadsheet className="h-5 w-5 mr-3 text-primary" />
@@ -786,7 +855,18 @@ const Catalog = () => {
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-3 text-foreground">No products yet</h2>
                   <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">Start building your stunning jewelry catalog and showcase your collection</p>
-                  <Button onClick={() => navigate("/add-product")} size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8">
+                  <Button 
+                    onClick={() => {
+                      if (!canAddProducts && !isAdmin) {
+                        toast.error("Product limit reached. Please upgrade your plan.");
+                        return;
+                      }
+                      navigate("/add-product");
+                    }} 
+                    disabled={!canAddProducts && !isAdmin}
+                    size="lg" 
+                    className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8"
+                  >
                     <Plus className="h-5 w-5 mr-2" />
                     Add Your First Product
                   </Button>
