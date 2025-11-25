@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -20,6 +20,7 @@ interface ProductShowcaseCarouselProps {
 
 export const ProductShowcaseCarousel = ({ products, usdRate }: ProductShowcaseCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   // Get featured/new products (most recent 5)
   const featuredProducts = products
@@ -27,6 +28,17 @@ export const ProductShowcaseCarousel = ({ products, usdRate }: ProductShowcaseCa
     .slice(0, 5);
 
   if (featuredProducts.length === 0) return null;
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isPlaying || featuredProducts.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % featuredProducts.length);
+    }, 4000); // Change slide every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [isPlaying, featuredProducts.length]);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % featuredProducts.length);
@@ -43,12 +55,20 @@ export const ProductShowcaseCarousel = ({ products, usdRate }: ProductShowcaseCa
       {/* Background glow effect */}
       <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-50" />
       
-      {/* Featured badge */}
-      <div className="absolute top-6 left-6 z-10">
+      {/* Featured badge and play/pause */}
+      <div className="absolute top-6 left-6 z-10 flex items-center gap-3">
         <Badge className="bg-primary/90 text-primary-foreground backdrop-blur-sm flex items-center gap-1 px-3 py-1.5">
           <Sparkles className="w-3.5 h-3.5" />
           Featured Collection
         </Badge>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background hover:scale-110 transition-all duration-300"
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
       </div>
 
       {/* Navigation buttons */}
