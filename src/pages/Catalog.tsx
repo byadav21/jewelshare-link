@@ -20,6 +20,7 @@ import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
+import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import { motion } from "framer-motion";
 
 const Catalog = () => {
@@ -533,6 +534,9 @@ const Catalog = () => {
         instagramQrUrl={vendorProfile?.instagram_qr_url}
         whatsappQrUrl={vendorProfile?.whatsapp_qr_url}
       />
+
+      {/* Quick Actions Menu */}
+      <QuickActionsMenu onExportPDF={exportToPDF} />
 
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background relative overflow-hidden">
         {/* Premium Background Effects */}
