@@ -10,6 +10,7 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { AnimatedIcon } from "@/components/AnimatedIcon";
 import { ParallaxSection } from "@/components/ParallaxSection";
 import { TiltCard } from "@/components/TiltCard";
+import { DemoVideoPlayer } from "@/components/DemoVideoPlayer";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
@@ -625,20 +626,9 @@ const Index = () => {
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
-              <div className="relative aspect-video overflow-hidden rounded-2xl border-2 bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10">
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from to-diamond-from shadow-lg">
-                      <Play className="h-10 w-10 text-white" />
-                    </div>
-                    <h3 className="mb-2 text-2xl font-bold">Interactive Platform Demo</h3>
-                    <p className="text-muted-foreground">3-minute walkthrough of key features</p>
-                    <Button size="lg" className="mt-6" onClick={() => navigate("/catalog")}>
-                      Try Live Demo
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <DemoVideoPlayer 
+                videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
+              />
             </ScrollReveal>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
