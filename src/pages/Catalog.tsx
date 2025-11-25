@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { PlanUsageBanner } from "@/components/PlanUsageBanner";
 import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
+import { PlanUpgradeCelebration } from "@/components/PlanUpgradeCelebration";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
@@ -41,6 +42,8 @@ const Catalog = () => {
   const [approvedCategories, setApprovedCategories] = useState<string[]>(["Jewellery"]);
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const [upgradeLimitType, setUpgradeLimitType] = useState<'products' | 'share_links' | undefined>();
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationPlan, setCelebrationPlan] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     category: "",
     metalType: "",
@@ -78,6 +81,76 @@ const Catalog = () => {
   // Load more pagination state
   const [displayCount, setDisplayCount] = useState(100);
   const LOAD_MORE_COUNT = 100;
+  
+  // Setup real-time listener for plan upgrades
+  const setupPlanUpgradeListener = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Get current plan to compare
+    const { data: currentPermissions } = await supabase
+      .from("vendor_permissions")
+      .select("subscription_plan")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!currentPermissions) return;
+
+    // Store current plan in session storage
+    const storedPlan = sessionStorage.getItem('current_plan');
+    if (!storedPlan) {
+      sessionStorage.setItem('current_plan', currentPermissions.subscription_plan);
+    }
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel('plan-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'vendor_permissions',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload: any) => {
+          const newPlan = payload.new.subscription_plan;
+          const oldPlan = sessionStorage.getItem('current_plan');
+          
+          // Plan hierarchy for comparison
+          const planLevels: Record<string, number> = {
+            'starter': 1,
+            'professional': 2,
+            'enterprise': 3
+          };
+
+          // Check if it's an upgrade
+          if (oldPlan && planLevels[newPlan] > planLevels[oldPlan]) {
+            // Store new plan
+            sessionStorage.setItem('current_plan', newPlan);
+            
+            // Show celebration
+            const planNames: Record<string, string> = {
+              'professional': 'Professional Plan',
+              'enterprise': 'Enterprise Plan'
+            };
+            setCelebrationPlan(planNames[newPlan] || newPlan);
+            setShowCelebration(true);
+            
+            // Refresh data to get new limits
+            setTimeout(() => {
+              window.location.reload();
+            }, 4000);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
   useEffect(() => {
     if (!roleLoading && isAdmin) {
       navigate("/admin");
@@ -95,6 +168,7 @@ const Catalog = () => {
     fetchProducts();
     fetchVendorProfile();
     fetchApprovedCategories();
+    setupPlanUpgradeListener();
   }, []);
   const fetchApprovedCategories = async () => {
     try {
@@ -990,6 +1064,12 @@ const Catalog = () => {
         open={isUpgradeDialogOpen}
         onOpenChange={setIsUpgradeDialogOpen}
         limitType={upgradeLimitType}
+      />
+      
+      <PlanUpgradeCelebration
+        open={showCelebration}
+        onOpenChange={setShowCelebration}
+        planName={celebrationPlan}
       />
     </ApprovalGuard>;
 };
