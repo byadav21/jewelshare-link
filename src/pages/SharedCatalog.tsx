@@ -60,6 +60,7 @@ const SharedCatalog = () => {
     customer_phone: "",
     message: "",
   });
+  const [displayCount, setDisplayCount] = useState(12);
 
   useEffect(() => {
     const cachedRate = sessionStorage.getItem('usd_rate');
@@ -236,6 +237,11 @@ const SharedCatalog = () => {
       );
     });
   }, [products, filters]);
+
+  // Reset display count when filters change
+  useEffect(() => {
+    setDisplayCount(12);
+  }, [filters]);
 
   if (loading) {
     return (
@@ -632,8 +638,9 @@ const SharedCatalog = () => {
             <p className="text-sm sm:text-base text-muted-foreground">This catalog is currently empty</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-8">
-            {filteredProducts.map((product) => {
+          <>
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-8">
+              {filteredProducts.slice(0, displayCount).map((product) => {
               // Track product view when card is clicked
               const handleProductClick = () => {
                 if (shareLinkId) {
@@ -763,8 +770,23 @@ const SharedCatalog = () => {
                 </CardFooter>
               </Card>
               );
-            })}
-          </div>
+              })}
+            </div>
+            
+            {/* Load More Button */}
+            {displayCount < filteredProducts.length && (
+              <div className="flex justify-center mt-12">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setDisplayCount(prev => prev + 12)}
+                  className="px-8 py-6 text-base font-semibold hover:bg-primary/10 hover:border-primary transition-all duration-300"
+                >
+                  Load More Products ({filteredProducts.length - displayCount} remaining)
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </main>
 
