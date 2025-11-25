@@ -10,6 +10,7 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { AnimatedIcon } from "@/components/AnimatedIcon";
 import { ParallaxSection } from "@/components/ParallaxSection";
 import { TiltCard } from "@/components/TiltCard";
+import { InteractiveROICalculator } from "@/components/InteractiveROICalculator";
 
 import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
@@ -613,6 +614,12 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Interactive ROI Calculator */}
+      <section className="container mx-auto px-4 py-24">
+        <ScrollReveal>
+          <InteractiveROICalculator />
+        </ScrollReveal>
+      </section>
 
       {/* FAQ Section */}
       <section className="container mx-auto px-4 py-24">
