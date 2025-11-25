@@ -46,6 +46,7 @@ export const ROUTES = {
   ADMIN_COMMENTS: "/admin/comments",
   ADMIN_NEWSLETTER: "/admin/newsletter",
   ADMIN_PRESS: "/admin/press",
+  ADMIN_REWARDS: "/admin/rewards",
   SCRATCH_LEADS: "/admin/scratch-leads",
   
   SUPER_ADMIN: "/super-admin",
