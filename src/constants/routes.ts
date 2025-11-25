@@ -36,6 +36,7 @@ export const ROUTES = {
   VIDEO_REQUESTS: "/video-requests",
   VENDOR_ANALYTICS: "/vendor-analytics",
   PURCHASE_INQUIRIES: "/purchase-inquiries",
+  REWARDS: "/rewards",
 
   // Admin routes
   ADMIN: "/admin",

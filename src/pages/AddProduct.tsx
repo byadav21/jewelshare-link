@@ -16,10 +16,12 @@ import { GemstonesForm } from "@/components/forms/GemstonesForm";
 import { LooseDiamondsForm } from "@/components/forms/LooseDiamondsForm";
 import { Upload, X, Loader2 } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
+import { useRewardsSystem } from "@/hooks/useRewardsSystem";
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
+  const { awardPoints } = useRewardsSystem();
   const [loading, setLoading] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{ [key: string]: boolean }>({});
   const [approvedCategories, setApprovedCategories] = useState<string[]>(["Jewellery"]);
@@ -168,6 +170,14 @@ const AddProduct = () => {
       ]);
 
       if (error) throw error;
+
+      // Award points for adding a product
+      try {
+        await awardPoints('product_added', { product_name: formData.name });
+      } catch (pointsError) {
+        console.error('Failed to award points:', pointsError);
+        // Don't fail the whole operation if points fail
+      }
 
       toast.success("Product added successfully!");
       navigate("/");

@@ -22,6 +22,10 @@ import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { PlanUpgradeCelebration } from "@/components/PlanUpgradeCelebration";
 import { PlanBenefitsShowcase } from "@/components/PlanBenefitsShowcase";
 import { ReferralCelebration } from "@/components/ReferralCelebration";
+import { MilestoneCelebration } from "@/components/MilestoneCelebration";
+import { RewardsWidget } from "@/components/RewardsWidget";
+import { useMilestones } from "@/hooks/useMilestones";
+import { useRewardsSystem } from "@/hooks/useRewardsSystem";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
@@ -50,6 +54,10 @@ const Catalog = () => {
   const [showReferralCelebration, setShowReferralCelebration] = useState(false);
   const [referralType, setReferralType] = useState<'team_member' | 'customer'>('team_member');
   const [referredName, setReferredName] = useState("");
+  
+  // Rewards and milestones
+  const { awardPoints } = useRewardsSystem();
+  const { latestMilestone, clearLatestMilestone } = useMilestones();
   const [filters, setFilters] = useState<FilterState>({
     category: "",
     metalType: "",
@@ -897,6 +905,11 @@ const Catalog = () => {
             <PlanLimitWarning />
             <PlanUsageBanner />
           </div>
+          
+          {/* Rewards Widget */}
+          <div className="mb-6">
+            <RewardsWidget />
+          </div>
           {loading ? <div className="space-y-8 animate-fade-in">
               {/* Loading Skeletons */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6">
@@ -1189,6 +1202,14 @@ const Catalog = () => {
         onOpenChange={setShowReferralCelebration}
         referralType={referralType}
         referredName={referredName}
+      />
+      
+      <MilestoneCelebration
+        open={!!latestMilestone}
+        onOpenChange={(open) => !open && clearLatestMilestone()}
+        milestoneType={latestMilestone?.milestone_type || ''}
+        milestoneValue={latestMilestone?.milestone_value || 0}
+        pointsAwarded={latestMilestone?.points_awarded || 0}
       />
     </ApprovalGuard>;
 };
