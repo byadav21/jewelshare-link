@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
 export const WhatsAppButton = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState("1234567890");
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardHeight();
 
   useEffect(() => {
     fetchWhatsAppNumber();
@@ -33,16 +35,30 @@ export const WhatsAppButton = () => {
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
+  // Calculate dynamic bottom positions based on keyboard
+  const expandedBottomPosition = isKeyboardVisible 
+    ? `${keyboardHeight + 80}px` 
+    : '6rem';
+  
+  const buttonBottomPosition = isKeyboardVisible 
+    ? `${keyboardHeight + 16}px` 
+    : '1rem';
+
   return (
     <>
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              y: 0,
+              bottom: expandedBottomPosition
+            }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-4 z-50 md:right-6"
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed right-4 z-50 md:right-6"
           >
             <div className="relative rounded-lg border-2 border-emerald-500/20 bg-background p-4 shadow-2xl">
               <button
@@ -83,9 +99,12 @@ export const WhatsAppButton = () => {
 
       <motion.div
         initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.5 }}
-        className="fixed bottom-4 right-4 z-50 md:bottom-6 md:right-6"
+        animate={{ 
+          scale: 1,
+          bottom: buttonBottomPosition
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="fixed right-4 z-50 md:right-6"
       >
         <Button
           onClick={() => setIsExpanded(!isExpanded)}
