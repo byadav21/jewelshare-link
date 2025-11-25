@@ -38,6 +38,11 @@ export const VendorAnalytics = lazy(() => import("@/pages/VendorAnalytics"));
 // Admin pages - Loaded only for admin users
 export const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 export const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
+export const AdminBlog = lazy(() => import("@/pages/AdminBlog"));
+export const AdminBrands = lazy(() => import("@/pages/AdminBrands"));
+export const AdminComments = lazy(() => import("@/pages/AdminComments"));
+export const AdminNewsletter = lazy(() => import("@/pages/AdminNewsletter"));
+export const AdminPress = lazy(() => import("@/pages/AdminPress"));
 export const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
 export const VendorApprovals = lazy(() => import("@/pages/VendorApprovals"));
 export const VendorManagement = lazy(() => import("@/pages/VendorManagement"));
