@@ -25,7 +25,7 @@ export const FloatingQRCodes = ({ instagramQrUrl, whatsappQrUrl }: FloatingQRCod
 
   return (
     <TooltipProvider>
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 left-6 z-50">
         <AnimatePresence mode="wait">
           {!isExpanded ? (
             // Collapsed state - Floating button
@@ -49,7 +49,7 @@ export const FloatingQRCodes = ({ instagramQrUrl, whatsappQrUrl }: FloatingQRCod
                     <QrCode className="h-7 w-7 text-primary-foreground relative z-10 group-hover:rotate-12 transition-transform" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="font-medium">
+                <TooltipContent side="right" className="font-medium">
                   <p>Connect with us</p>
                 </TooltipContent>
               </Tooltip>
