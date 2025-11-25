@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ParallaxImage } from "@/components/ParallaxImage";
+import { AnimatedParticles } from "@/components/AnimatedParticles";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
@@ -224,6 +225,7 @@ const Index = () => {
         <div className="absolute inset-0">
           <img src={heroBanner} alt="Luxury diamonds and gemstones" className="h-full w-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/90" />
+          <AnimatedParticles />
         </div>
         <div className="container relative mx-auto px-4 py-32 sm:py-40">
           <ScrollReveal>
@@ -358,8 +360,8 @@ const Index = () => {
               Trusted by Leading Jewelry Brands
             </p>
           </div>
+          <BrandLogosCarousel />
         </ScrollReveal>
-        <BrandLogosCarousel />
       </section>
 
       {/* Features Grid */}
@@ -707,7 +709,8 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t bg-muted/30">
         <div className="container mx-auto px-4 py-16">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <ScrollReveal>
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {/* Brand */}
             <div>
               <div className="mb-4 flex items-center gap-2">
@@ -885,9 +888,11 @@ const Index = () => {
                 </li>
               </ul>
             </div>
-          </div>
+            </div>
+          </ScrollReveal>
 
-          <div className="mt-12 border-t pt-8">
+          <ScrollReveal delay={0.2}>
+            <div className="mt-12 border-t pt-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <p className="text-sm text-muted-foreground">© 2024 Jewelry Catalog. All rights reserved.</p>
               <div className="flex gap-6 text-sm text-muted-foreground">
@@ -902,7 +907,8 @@ const Index = () => {
                 </a>
               </div>
             </div>
-          </div>
+            </div>
+          </ScrollReveal>
         </div>
       </footer>
 

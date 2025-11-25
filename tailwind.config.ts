@@ -150,8 +150,14 @@ export default {
           "50%": { "background-position": "100% 50%" },
         },
         float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-20px)" },
+          "0%, 100%": { 
+            transform: "translateY(0px) translateX(0px) scale(1)",
+            opacity: "0.3"
+          },
+          "50%": { 
+            transform: "translateY(-30px) translateX(15px) scale(1.1)",
+            opacity: "0.6"
+          },
         },
       },
       animation: {
