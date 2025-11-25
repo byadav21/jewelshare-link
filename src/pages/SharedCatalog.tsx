@@ -11,6 +11,7 @@ import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { PurchaseInquiryDialog } from "@/components/PurchaseInquiryDialog";
 import { SocialShareButton } from "@/components/SocialShareButton";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { ProductShareButton } from "@/components/ProductShareButton";
 import { ShareStats } from "@/components/ShareStats";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { OptimizedImage } from "@/components/OptimizedImage";
@@ -673,6 +674,20 @@ const SharedCatalog = () => {
                       height={400}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    
+                    {/* Share Button Overlay */}
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                      <div className="bg-background/90 backdrop-blur-sm rounded-full shadow-lg">
+                        <ProductShareButton
+                          productName={product.name}
+                          productSku={product.sku}
+                          price={product.displayed_price}
+                          imageUrl={product.image_url}
+                          catalogUrl={catalogUrl}
+                          businessName={vendorProfile?.business_name}
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
                 <CardHeader className="pb-3 relative z-10">
