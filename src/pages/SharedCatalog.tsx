@@ -8,6 +8,7 @@ import { VideoRequestDialog } from "@/components/VideoRequestDialog";
 import { ContactOwnerDialog } from "@/components/ContactOwnerDialog";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
+import { PurchaseInquiryDialog } from "@/components/PurchaseInquiryDialog";
 import { SocialShareButton } from "@/components/SocialShareButton";
 import { ShareStats } from "@/components/ShareStats";
 import { CountdownTimer } from "@/components/CountdownTimer";
@@ -725,23 +726,30 @@ const SharedCatalog = () => {
                     </div>
                   </div>
                   {shareLinkId && (
-                    <div className="flex gap-2">
-                      <InterestDialog
+                    <div className="flex flex-col gap-2">
+                      <PurchaseInquiryDialog
                         productId={product.id}
                         productName={product.name}
                         shareLinkId={shareLinkId}
                       />
-                      <VideoRequestDialog
-                        productId={product.id}
-                        productName={product.name}
-                        shareLinkId={shareLinkId}
-                        trigger={
-                          <Button variant="outline" size="sm">
-                            <Video className="h-4 w-4 mr-1" />
-                            Video
-                          </Button>
-                        }
-                      />
+                      <div className="flex gap-2">
+                        <InterestDialog
+                          productId={product.id}
+                          productName={product.name}
+                          shareLinkId={shareLinkId}
+                        />
+                        <VideoRequestDialog
+                          productId={product.id}
+                          productName={product.name}
+                          shareLinkId={shareLinkId}
+                          trigger={
+                            <Button variant="outline" size="sm">
+                              <Video className="h-4 w-4 mr-1" />
+                              Video
+                            </Button>
+                          }
+                        />
+                      </div>
                     </div>
                   )}
                 </CardFooter>

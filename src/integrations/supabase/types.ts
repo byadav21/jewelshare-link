@@ -605,6 +605,60 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_inquiries: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          message: string | null
+          product_id: string
+          quantity: number | null
+          share_link_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          message?: string | null
+          product_id: string
+          quantity?: number | null
+          share_link_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          message?: string | null
+          product_id?: string
+          quantity?: number | null
+          share_link_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_inquiries_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_inquiries_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scratch_leads: {
         Row: {
           business_name: string | null
