@@ -29,6 +29,9 @@ const VendorProfile = () => {
     instagram_qr_url: "",
     whatsapp_qr_url: "",
     logo_url: "",
+    business_story: "",
+    certifications: [] as string[],
+    awards: [] as string[],
   });
 
   useEffect(() => {
@@ -64,6 +67,9 @@ const VendorProfile = () => {
           instagram_qr_url: profile.instagram_qr_url || "",
           whatsapp_qr_url: profile.whatsapp_qr_url || "",
           logo_url: profile.logo_url || "",
+          business_story: profile.business_story || "",
+          certifications: profile.certifications || [],
+          awards: profile.awards || [],
         });
       }
     } catch (error: any) {
@@ -279,6 +285,91 @@ const VendorProfile = () => {
                       placeholder="India"
                       required
                     />
+                  </div>
+
+                  <div className="border-t pt-6 space-y-4">
+                    <h3 className="text-lg font-semibold">Brand Story & Credentials</h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="business_story">Business Story</Label>
+                      <Textarea
+                        id="business_story"
+                        value={formData.business_story}
+                        onChange={(e) => setFormData({ ...formData, business_story: e.target.value })}
+                        placeholder="Tell your brand's story..."
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Certifications</Label>
+                      {formData.certifications.map((cert, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={cert}
+                            onChange={(e) => {
+                              const newCerts = [...formData.certifications];
+                              newCerts[index] = e.target.value;
+                              setFormData({ ...formData, certifications: newCerts });
+                            }}
+                            placeholder="e.g., ISO 9001:2015"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              const newCerts = formData.certifications.filter((_, i) => i !== index);
+                              setFormData({ ...formData, certifications: newCerts });
+                            }}
+                          >
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFormData({ ...formData, certifications: [...formData.certifications, ""] })}
+                      >
+                        Add Certification
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Awards & Recognition</Label>
+                      {formData.awards.map((award, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={award}
+                            onChange={(e) => {
+                              const newAwards = [...formData.awards];
+                              newAwards[index] = e.target.value;
+                              setFormData({ ...formData, awards: newAwards });
+                            }}
+                            placeholder="e.g., Best Jeweler 2023"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              const newAwards = formData.awards.filter((_, i) => i !== index);
+                              setFormData({ ...formData, awards: newAwards });
+                            }}
+                          >
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFormData({ ...formData, awards: [...formData.awards, ""] })}
+                      >
+                        Add Award
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="border-t pt-6 space-y-4">

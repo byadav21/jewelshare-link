@@ -1196,7 +1196,10 @@ export type Database = {
         Row: {
           address_line1: string | null
           address_line2: string | null
+          awards: string[] | null
           business_name: string | null
+          business_story: string | null
+          certifications: string[] | null
           city: string | null
           country: string | null
           created_at: string | null
@@ -1218,7 +1221,10 @@ export type Database = {
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
+          awards?: string[] | null
           business_name?: string | null
+          business_story?: string | null
+          certifications?: string[] | null
           city?: string | null
           country?: string | null
           created_at?: string | null
@@ -1240,7 +1246,10 @@ export type Database = {
         Update: {
           address_line1?: string | null
           address_line2?: string | null
+          awards?: string[] | null
           business_name?: string | null
+          business_story?: string | null
+          certifications?: string[] | null
           city?: string | null
           country?: string | null
           created_at?: string | null
