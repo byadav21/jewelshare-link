@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Share2, FileDown, Zap, X, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
 interface QuickActionsMenuProps {
   onExportPDF: () => void;
@@ -11,6 +12,7 @@ interface QuickActionsMenuProps {
 export const QuickActionsMenu = ({ onExportPDF }: QuickActionsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardHeight();
 
   const actions = [
     {
@@ -43,8 +45,17 @@ export const QuickActionsMenu = ({ onExportPDF }: QuickActionsMenuProps) => {
     },
   ];
 
+  // Calculate dynamic bottom position based on keyboard
+  const bottomPosition = isKeyboardVisible 
+    ? `${keyboardHeight + 16}px` 
+    : '2rem';
+
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <motion.div 
+      className="fixed right-8 z-50"
+      animate={{ bottom: bottomPosition }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -130,6 +141,6 @@ export const QuickActionsMenu = ({ onExportPDF }: QuickActionsMenuProps) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };

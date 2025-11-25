@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
 interface FloatingQRCodesProps {
   instagramQrUrl?: string | null;
@@ -17,15 +18,25 @@ interface FloatingQRCodesProps {
 
 export const FloatingQRCodes = ({ instagramQrUrl, whatsappQrUrl }: FloatingQRCodesProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardHeight();
 
   // Don't render if no QR codes available
   if (!instagramQrUrl && !whatsappQrUrl) {
     return null;
   }
 
+  // Calculate dynamic bottom position based on keyboard
+  const bottomPosition = isKeyboardVisible 
+    ? `${keyboardHeight + 16}px` 
+    : '1.5rem';
+
   return (
     <TooltipProvider>
-      <div className="fixed bottom-6 left-6 z-50">
+      <motion.div 
+        className="fixed left-6 z-50"
+        animate={{ bottom: bottomPosition }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <AnimatePresence mode="wait">
           {!isExpanded ? (
             // Collapsed state - Floating button
@@ -177,7 +188,7 @@ export const FloatingQRCodes = ({ instagramQrUrl, whatsappQrUrl }: FloatingQRCod
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </TooltipProvider>
   );
 };
