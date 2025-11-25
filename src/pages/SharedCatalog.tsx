@@ -12,6 +12,7 @@ import { PurchaseInquiryDialog } from "@/components/PurchaseInquiryDialog";
 import { SocialShareButton } from "@/components/SocialShareButton";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ProductShareButton } from "@/components/ProductShareButton";
+import { WishlistButton } from "@/components/WishlistButton";
 import { ShareStats } from "@/components/ShareStats";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { OptimizedImage } from "@/components/OptimizedImage";
@@ -675,8 +676,14 @@ const SharedCatalog = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
-                    {/* Share Button Overlay */}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    {/* Action Buttons Overlay */}
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                      <div className="bg-background/90 backdrop-blur-sm rounded-full shadow-lg">
+                        <WishlistButton 
+                          productId={product.id}
+                          shareLinkId={shareLinkId}
+                        />
+                      </div>
                       <div className="bg-background/90 backdrop-blur-sm rounded-full shadow-lg">
                         <ProductShareButton
                           productName={product.name}
