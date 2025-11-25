@@ -6,6 +6,9 @@ import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ParallaxImage } from "@/components/ParallaxImage";
 import { AnimatedParticles } from "@/components/AnimatedParticles";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { AnimatedIcon } from "@/components/AnimatedIcon";
+import { ParallaxSection } from "@/components/ParallaxSection";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
@@ -307,7 +310,7 @@ const Index = () => {
             <ScrollReveal delay={0.1}>
               <div className="text-center group">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <Gem className="h-8 w-8 text-white" />
+                  <AnimatedIcon icon={Gem} className="h-8 w-8 text-white" animation="pulse" delay={0.1} />
                 </div>
                 <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={15000} suffix="+" />
@@ -318,7 +321,7 @@ const Index = () => {
             <ScrollReveal delay={0.2}>
               <div className="text-center group">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-gemstone-from to-gemstone-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <Share2 className="h-8 w-8 text-white" />
+                  <AnimatedIcon icon={Share2} className="h-8 w-8 text-white" animation="rotate" delay={0.2} />
                 </div>
                 <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={2500} suffix="+" />
@@ -329,7 +332,7 @@ const Index = () => {
             <ScrollReveal delay={0.3}>
               <div className="text-center group">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-diamond-from to-diamond-to shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <Heart className="h-8 w-8 text-white" />
+                  <AnimatedIcon icon={Heart} className="h-8 w-8 text-white" animation="bounce" delay={0.3} />
                 </div>
                 <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={8750} suffix="+" />
@@ -340,7 +343,7 @@ const Index = () => {
             <ScrollReveal delay={0.4}>
               <div className="text-center group">
                 <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <TrendingUp className="h-8 w-8 text-white" />
+                  <AnimatedIcon icon={TrendingUp} className="h-8 w-8 text-white" animation="scale" delay={0.4} />
                 </div>
                 <div className="mb-2 text-5xl font-bold font-serif">
                   <AnimatedCounter end={98} suffix="%" />
@@ -390,7 +393,7 @@ const Index = () => {
               <ScrollReveal delay={0.2} direction="right">
                 <div className="flex items-start gap-4">
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-lg">
-                    <Share2 className="h-7 w-7 text-white" />
+                    <AnimatedIcon icon={Share2} className="h-7 w-7 text-white" animation="rotate" delay={0.2} />
                   </div>
                   <div>
                     <h3 className="mb-3 text-3xl font-bold font-serif">Smart Catalog Sharing</h3>
@@ -404,7 +407,7 @@ const Index = () => {
               <ScrollReveal delay={0.3} direction="right">
                 <div className="flex items-start gap-4">
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gemstone-from to-gemstone-to shadow-lg">
-                    <Gem className="h-7 w-7 text-white" />
+                    <AnimatedIcon icon={Gem} className="h-7 w-7 text-white" animation="pulse" delay={0.3} />
                   </div>
                   <div>
                     <h3 className="mb-3 text-3xl font-bold font-serif">Complete Inventory Control</h3>
@@ -425,7 +428,7 @@ const Index = () => {
               <ScrollReveal delay={0.2} direction="left">
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-diamond-from to-diamond-to">
-                    <BarChart3 className="h-6 w-6 text-white" />
+                    <AnimatedIcon icon={BarChart3} className="h-6 w-6 text-white" animation="scale" delay={0.2} />
                   </div>
                   <div>
                     <h3 className="mb-2 text-2xl font-bold">Advanced Analytics</h3>
@@ -439,7 +442,7 @@ const Index = () => {
               <ScrollReveal delay={0.3} direction="left">
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from">
-                    <Users className="h-6 w-6 text-white" />
+                    <AnimatedIcon icon={Users} className="h-6 w-6 text-white" animation="bounce" delay={0.3} />
                   </div>
                   <div>
                     <h3 className="mb-2 text-2xl font-bold">Team Collaboration</h3>
@@ -472,7 +475,12 @@ const Index = () => {
                     <div
                       className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${feature.gradient}`}
                     >
-                      <feature.icon className="h-6 w-6 text-white" />
+                      <AnimatedIcon 
+                        icon={feature.icon} 
+                        className="h-6 w-6 text-white" 
+                        animation={index % 4 === 0 ? "pulse" : index % 4 === 1 ? "rotate" : index % 4 === 2 ? "bounce" : "scale"}
+                        delay={0.1 * index}
+                      />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
                   </CardHeader>
@@ -505,9 +513,9 @@ const Index = () => {
 
       {/* How It Works */}
       <section className="relative border-y bg-muted/30 py-24">
-        <div className="absolute inset-0 overflow-hidden opacity-10">
+        <ParallaxSection speed={-0.3} className="absolute inset-0 overflow-hidden opacity-10">
           <img src={vendorManagement} alt="Vendor using platform" className="h-full w-full object-cover" />
-        </div>
+        </ParallaxSection>
         <div className="container relative mx-auto px-4">
           <ScrollReveal>
             <div className="mb-20 text-center">
@@ -570,7 +578,12 @@ const Index = () => {
               <ScrollReveal key={index} delay={0.1 * index} direction="up">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <benefit.icon className="h-5 w-5 text-primary" />
+                    <AnimatedIcon 
+                      icon={benefit.icon} 
+                      className="h-5 w-5 text-primary" 
+                      animation={index % 2 === 0 ? "pulse" : "bounce"}
+                      delay={0.1 * index}
+                    />
                   </div>
                   <div className="flex-1">
                     <h3 className="mb-1 font-semibold">{benefit.text}</h3>
@@ -913,6 +926,7 @@ const Index = () => {
       </footer>
 
       {/* Floating Components */}
+      <ThemeSwitcher />
       <WhatsAppButton />
       <CookieConsent />
       {showScratchCard && <ScratchCard onClose={() => setShowScratchCard(false)} />}
