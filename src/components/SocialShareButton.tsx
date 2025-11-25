@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Share2, Facebook, Twitter, MessageCircle, Mail, Link2, Check, QrCode } from "lucide-react";
-import { useState } from "react";
+import { Share2, Facebook, Twitter, MessageCircle, Mail, Link2, Check, QrCode, Download } from "lucide-react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 
 interface SocialShareButtonProps {
   url: string;
@@ -24,6 +24,7 @@ export const SocialShareButton = ({ url, title, description, className }: Social
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const shareText = `${title}${description ? ` - ${description}` : ""}`;
   
@@ -87,6 +88,62 @@ export const SocialShareButton = ({ url, title, description, className }: Social
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       toast.error("Failed to copy link");
+    }
+  };
+
+  const downloadQRCode = () => {
+    try {
+      const svg = qrRef.current?.querySelector('svg');
+      if (!svg) {
+        toast.error("QR code not found");
+        return;
+      }
+
+      // Create canvas from SVG
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Set canvas size with padding
+      const padding = 40;
+      const qrSize = 200;
+      canvas.width = qrSize + padding * 2;
+      canvas.height = qrSize + padding * 2;
+
+      // Fill white background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Convert SVG to image
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      const img = new Image();
+      img.onload = () => {
+        // Draw QR code centered with padding
+        ctx.drawImage(img, padding, padding, qrSize, qrSize);
+        
+        // Convert canvas to blob and download
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const downloadUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = `catalog-qr-code-${Date.now()}.png`;
+          link.href = downloadUrl;
+          link.click();
+          
+          URL.revokeObjectURL(downloadUrl);
+          toast.success("QR code downloaded!");
+        });
+        
+        URL.revokeObjectURL(url);
+      };
+      
+      img.src = url;
+    } catch (err) {
+      console.error('Download error:', err);
+      toast.error("Failed to download QR code");
     }
   };
 
@@ -200,7 +257,7 @@ export const SocialShareButton = ({ url, title, description, className }: Social
                 transition={{ duration: 0.3 }}
                 className="flex flex-col items-center gap-4 p-6 bg-gradient-to-br from-background to-muted/20 rounded-xl border border-border"
               >
-                <div className="bg-white p-4 rounded-xl shadow-lg">
+                <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-lg">
                   <QRCodeSVG
                     value={url}
                     size={200}
@@ -211,6 +268,15 @@ export const SocialShareButton = ({ url, title, description, className }: Social
                 <p className="text-xs text-center text-muted-foreground max-w-[250px]">
                   Scan this QR code with your phone to open the catalog instantly
                 </p>
+                <Button
+                  onClick={downloadQRCode}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 border-primary/30"
+                >
+                  <Download className="h-4 w-4" />
+                  Download QR Code
+                </Button>
               </motion.div>
             )}
           </motion.div>
