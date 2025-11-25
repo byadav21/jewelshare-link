@@ -17,6 +17,8 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
+import { PlanUsageBanner } from "@/components/PlanUsageBanner";
+import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
@@ -37,6 +39,8 @@ const Catalog = () => {
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [selectedProductType, setSelectedProductType] = useState<string>("Jewellery");
   const [approvedCategories, setApprovedCategories] = useState<string[]>(["Jewellery"]);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [upgradeLimitType, setUpgradeLimitType] = useState<'products' | 'share_links' | undefined>();
   const [filters, setFilters] = useState<FilterState>({
     category: "",
     metalType: "",
@@ -543,7 +547,8 @@ const Catalog = () => {
                           size="sm" 
                           onClick={() => {
                             if (!canAddShareLinks && !isAdmin) {
-                              toast.error("Share link limit reached. Please upgrade your plan.");
+                              setUpgradeLimitType('share_links');
+                              setIsUpgradeDialogOpen(true);
                               return;
                             }
                             navigate("/share");
@@ -578,7 +583,8 @@ const Catalog = () => {
                           size="sm" 
                           onClick={() => {
                             if (!canAddProducts && !isAdmin) {
-                              toast.error("Product limit reached. Please upgrade your plan.");
+                              setUpgradeLimitType('products');
+                              setIsUpgradeDialogOpen(true);
                               return;
                             }
                             navigate("/add-product");
@@ -679,11 +685,12 @@ const Catalog = () => {
                     {(permissions.can_share_catalog || isAdmin) && <DropdownMenuItem 
                         onClick={() => {
                           if (!canAddShareLinks && !isAdmin) {
-                            toast.error("Share link limit reached. Please upgrade your plan.");
+                            setUpgradeLimitType('share_links');
+                            setIsUpgradeDialogOpen(true);
                             return;
                           }
                           navigate("/share");
-                        }} 
+                        }}
                         disabled={!canAddShareLinks && !isAdmin}
                         className="py-3 cursor-pointer hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -707,11 +714,12 @@ const Catalog = () => {
                     {(permissions.can_add_products || isAdmin) && <DropdownMenuItem 
                         onClick={() => {
                           if (!canAddProducts && !isAdmin) {
-                            toast.error("Product limit reached. Please upgrade your plan.");
+                            setUpgradeLimitType('products');
+                            setIsUpgradeDialogOpen(true);
                             return;
                           }
                           navigate("/add-product");
-                        }} 
+                        }}
                         disabled={!canAddProducts && !isAdmin}
                         className="py-3 cursor-pointer hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -760,6 +768,7 @@ const Catalog = () => {
           {/* Plan Limit Warning */}
           <div className="mb-6">
             <PlanLimitWarning />
+            <PlanUsageBanner />
           </div>
           {loading ? <div className="space-y-8 animate-fade-in">
               {/* Loading Skeletons */}
@@ -878,11 +887,12 @@ const Catalog = () => {
                   <Button 
                     onClick={() => {
                       if (!canAddProducts && !isAdmin) {
-                        toast.error("Product limit reached. Please upgrade your plan.");
+                        setUpgradeLimitType('products');
+                        setIsUpgradeDialogOpen(true);
                         return;
                       }
                       navigate("/add-product");
-                    }} 
+                    }}
                     disabled={!canAddProducts && !isAdmin}
                     size="lg" 
                     className="shadow-lg hover:shadow-xl transition-all duration-300 h-12 px-8"
@@ -975,6 +985,12 @@ const Catalog = () => {
         </div>}
     </main>
       </div>
+      
+      <UpgradePromptDialog
+        open={isUpgradeDialogOpen}
+        onOpenChange={setIsUpgradeDialogOpen}
+        limitType={upgradeLimitType}
+      />
     </ApprovalGuard>;
 };
 export default Catalog;
