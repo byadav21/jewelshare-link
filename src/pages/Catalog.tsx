@@ -378,7 +378,8 @@ const Catalog = () => {
     "DIAMOND TOPS", 
     "DIAMOND GENTS RING",
     "MOISSANITE JEWELLERY",
-    "CVD JEWELLERY"
+    "CVD JEWELLERY",
+    "LAB-GROWN DIAMOND"
   ];
 
   // Extract unique filter values and merge with predefined
