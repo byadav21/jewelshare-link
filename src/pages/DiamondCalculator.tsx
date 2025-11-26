@@ -32,7 +32,7 @@ const DiamondCalculator = () => {
   const cuts = ["Excellent", "Very Good", "Good", "Fair", "Poor"];
 
   const testWithSampleData = () => {
-    setCarat("0.50");
+    setCarat("0.20");
     setShape("Round");
     setColor("D");
     setClarity("IF");
