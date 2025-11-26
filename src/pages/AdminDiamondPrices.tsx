@@ -16,6 +16,7 @@ const AdminDiamondPrices = () => {
   const [uploading, setUploading] = useState(false);
   const [pearFile, setPearFile] = useState<File | null>(null);
   const [roundFile, setRoundFile] = useState<File | null>(null);
+  const [displayCount, setDisplayCount] = useState(100);
   const queryClient = useQueryClient();
 
   const { data: prices, isLoading } = useQuery({
@@ -393,7 +394,7 @@ const AdminDiamondPrices = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {prices.slice(0, 100).map((price) => (
+                    {prices.slice(0, displayCount).map((price) => (
                       <TableRow key={price.id}>
                         <TableCell>
                           <Badge variant="outline">{price.shape}</Badge>
@@ -411,10 +412,18 @@ const AdminDiamondPrices = () => {
                     ))}
                   </TableBody>
                 </Table>
-                {prices.length > 100 && (
-                  <p className="text-sm text-muted-foreground text-center py-3 border-t">
-                    Showing first 100 of {prices.length} entries
-                  </p>
+                {prices.length > displayCount && (
+                  <div className="flex flex-col items-center gap-2 py-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {displayCount} of {prices.length} entries
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDisplayCount(prev => Math.min(prev + 100, prices.length))}
+                    >
+                      Load More (100)
+                    </Button>
+                  </div>
                 )}
               </div>
             )}
