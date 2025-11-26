@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -20,11 +21,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Search, Filter, Eye, Mail, Phone, IndianRupee } from "lucide-react";
+import { Calendar as CalendarIcon, Search, Filter, Eye, Mail, Phone, IndianRupee, CheckSquare } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AdminLoadingSkeleton } from "@/components/admin/AdminLoadingSkeleton";
@@ -56,6 +67,12 @@ const AdminManufacturingOrders = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
+  
+  // Bulk actions states
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState<string>("");
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   const statusConfig: Record<string, { label: string; color: string }> = {
     draft: { label: "Draft", color: "bg-gray-500" },
@@ -137,6 +154,82 @@ const AdminManufacturingOrders = () => {
     setStatusFilter("all");
     setDateFrom(undefined);
     setDateTo(undefined);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(new Set(filteredOrders.map(order => order.id)));
+    } else {
+      setSelectedOrders(new Set());
+    }
+  };
+
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
+    const newSelected = new Set(selectedOrders);
+    if (checked) {
+      newSelected.add(orderId);
+    } else {
+      newSelected.delete(orderId);
+    }
+    setSelectedOrders(newSelected);
+  };
+
+  const handleBulkStatusUpdate = async () => {
+    if (!bulkStatus || selectedOrders.size === 0) return;
+
+    setIsBulkUpdating(true);
+    try {
+      const ordersToUpdate = orders.filter(order => selectedOrders.has(order.id));
+      
+      // Update all selected orders
+      const { error: updateError } = await supabase
+        .from("manufacturing_cost_estimates")
+        .update({ status: bulkStatus })
+        .in("id", Array.from(selectedOrders));
+
+      if (updateError) throw updateError;
+
+      // Send email notifications for orders with customer visibility
+      const notificationPromises = ordersToUpdate
+        .filter(order => order.is_customer_visible && order.customer_email)
+        .map(order =>
+          supabase.functions.invoke('notify-order-status', {
+            body: {
+              estimateId: order.id,
+              customerName: order.customer_name,
+              customerEmail: order.customer_email,
+              status: bulkStatus,
+              estimatedCompletionDate: order.estimated_completion_date,
+              shareToken: order.share_token,
+            },
+          }).catch(err => {
+            console.error(`Failed to send notification for order ${order.id}:`, err);
+            return null; // Don't fail the whole operation if emails fail
+          })
+        );
+
+      await Promise.all(notificationPromises);
+
+      toast({
+        title: "Success",
+        description: `Updated ${selectedOrders.size} order${selectedOrders.size > 1 ? 's' : ''} to ${bulkStatus}`,
+      });
+
+      // Reset selections and refresh
+      setSelectedOrders(new Set());
+      setBulkStatus("");
+      setShowBulkDialog(false);
+      fetchOrders();
+    } catch (error: any) {
+      console.error("Error updating orders:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update orders",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBulkUpdating(false);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -275,6 +368,48 @@ const AdminManufacturingOrders = () => {
           </CardContent>
         </Card>
 
+        {/* Bulk Actions */}
+        {selectedOrders.size > 0 && (
+          <Card className="border-primary">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="h-5 w-5 text-primary" />
+                  <span className="font-medium">
+                    {selectedOrders.size} order{selectedOrders.size > 1 ? 's' : ''} selected
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Select value={bulkStatus} onValueChange={setBulkStatus}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Change status to..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="quoted">Quoted</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="in_production">In Production</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={() => setShowBulkDialog(true)}
+                    disabled={!bulkStatus}
+                  >
+                    Update Status
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedOrders(new Set())}
+                  >
+                    Clear Selection
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Orders Table */}
         <Card>
           <CardHeader>
@@ -290,6 +425,15 @@ const AdminManufacturingOrders = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={
+                            filteredOrders.length > 0 &&
+                            filteredOrders.every(order => selectedOrders.has(order.id))
+                          }
+                          onCheckedChange={handleSelectAll}
+                        />
+                      </TableHead>
                       <TableHead>Estimate Name</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead>Status</TableHead>
@@ -304,6 +448,14 @@ const AdminManufacturingOrders = () => {
                   <TableBody>
                     {filteredOrders.map((order) => (
                       <TableRow key={order.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedOrders.has(order.id)}
+                            onCheckedChange={(checked) => 
+                              handleSelectOrder(order.id, checked as boolean)
+                            }
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           {order.estimate_name}
                         </TableCell>
@@ -380,6 +532,33 @@ const AdminManufacturingOrders = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Bulk Update Confirmation Dialog */}
+        <AlertDialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Bulk Status Update</AlertDialogTitle>
+              <AlertDialogDescription>
+                You are about to update {selectedOrders.size} order{selectedOrders.size > 1 ? 's' : ''} to status:{' '}
+                <span className="font-semibold">
+                  {statusConfig[bulkStatus]?.label || bulkStatus}
+                </span>
+                <br /><br />
+                Email notifications will be sent to customers for orders that are visible to them.
+                This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isBulkUpdating}>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleBulkStatusUpdate}
+                disabled={isBulkUpdating}
+              >
+                {isBulkUpdating ? "Updating..." : "Confirm Update"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
