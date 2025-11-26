@@ -79,6 +79,8 @@ export const gemstoneImportSchema = z.object({
   image_url_3: z.union([z.string().url().max(500), z.literal(""), z.null()]),
   price_inr: z.number().min(0.01, "Price must be greater than 0"),
   price_usd: z.number().min(0).nullable(),
+  cost_price: z.number().min(0.01, "Cost price must be greater than 0"),
+  retail_price: z.number().min(0.01, "Retail price must be greater than 0"),
   stock_quantity: z.number().int().min(0).max(100000),
   product_type: z.literal('Gemstones'),
 });
@@ -107,6 +109,8 @@ export const diamondImportSchema = z.object({
   image_url_3: z.union([z.string().url().max(500), z.literal(""), z.null()]),
   price_inr: z.number().min(0.01, "Price must be greater than 0"),
   price_usd: z.number().min(0).nullable(),
+  cost_price: z.number().min(0.01, "Cost price must be greater than 0"),
+  retail_price: z.number().min(0.01, "Retail price must be greater than 0"),
   stock_quantity: z.number().int().min(0).max(100000),
   product_type: z.literal('Loose Diamonds'),
 });
