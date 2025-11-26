@@ -323,6 +323,14 @@ const AppContent = () => {
         } 
       />
       <Route 
+        path={ROUTES.ADMIN_MANUFACTURING_ORDERS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminManufacturingOrders /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
         path={ROUTES.ANALYTICS_DASHBOARD} 
         element={
           <AdminGuard>

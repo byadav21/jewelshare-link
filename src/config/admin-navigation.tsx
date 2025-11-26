@@ -23,6 +23,7 @@ import {
   LayoutDashboard,
   Gift,
   Diamond,
+  Package,
 } from "lucide-react";
 import { NavigationItem, NavigationGroup } from "@/types";
 import { ROUTES } from "@/constants/routes";
@@ -56,6 +57,7 @@ export const SYSTEM_ITEMS: NavigationItem[] = [
   { title: "Active Sessions", url: ROUTES.ACTIVE_SESSIONS, icon: Monitor },
   { title: "Global Search", url: ROUTES.GLOBAL_SEARCH, icon: Search },
   { title: "Customer Database", url: ROUTES.CUSTOMER_DATABASE, icon: Database },
+  { title: "Manufacturing Orders", url: ROUTES.ADMIN_MANUFACTURING_ORDERS, icon: Package },
   { title: "Analytics", url: ROUTES.ANALYTICS_DASHBOARD, icon: TrendingUp },
   { title: "Audit Logs", url: ROUTES.AUDIT_LOGS, icon: Shield },
   { title: "Export Reports", url: ROUTES.EXPORT_REPORTS, icon: FileDown },
