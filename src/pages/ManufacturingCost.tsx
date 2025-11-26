@@ -60,6 +60,11 @@ const ManufacturingCost = () => {
   const [guestUsageCount, setGuestUsageCount] = useState(0);
   const [showUsageLimitDialog, setShowUsageLimitDialog] = useState(false);
   const [vendorProfile, setVendorProfile] = useState<any>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState<Date>(new Date());
+  const [paymentTerms, setPaymentTerms] = useState("Net 30");
+  const [paymentDueDate, setPaymentDueDate] = useState<Date>();
+  const [invoiceNotes, setInvoiceNotes] = useState("");
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -277,10 +282,10 @@ const ManufacturingCost = () => {
   };
 
   const handleGenerateInvoice = () => {
-    if (!estimateName) {
+    if (!estimateName || !invoiceNumber) {
       toast({
         title: "Missing Information",
-        description: "Please save the estimate first before generating invoice",
+        description: "Please enter estimate name and invoice number before generating invoice",
         variant: "destructive",
       });
       return;
@@ -290,15 +295,30 @@ const ManufacturingCost = () => {
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
 
+    // Build vendor address string
+    const addressParts = [
+      vendorProfile?.address_line1,
+      vendorProfile?.address_line2,
+      vendorProfile?.city,
+      vendorProfile?.state,
+      vendorProfile?.pincode,
+      vendorProfile?.country,
+    ].filter(Boolean);
+    const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
+
     generateInvoicePDF({
+      invoiceNumber,
+      invoiceDate: invoiceDate.toISOString(),
+      paymentDueDate: paymentDueDate?.toISOString(),
+      paymentTerms,
       estimateName,
-      estimateDate: new Date().toISOString(),
       status: estimateStatus,
       customerName: customerDetails.name,
       customerPhone: customerDetails.phone,
       customerEmail: customerDetails.email,
       customerAddress: customerDetails.address,
       netWeight: formData.netWeight,
+      grossWeight: formData.grossWeight,
       purityFraction: formData.purityFraction,
       goldRate24k: formData.goldRate24k,
       makingCharges: formData.makingCharges,
@@ -312,13 +332,26 @@ const ManufacturingCost = () => {
       profitMargin,
       finalSellingPrice: costs.finalSellingPrice,
       notes,
+      invoiceNotes,
       details: {
         diamond_type: formData.diamondType,
         diamond_shape: formData.diamondShape,
         diamond_weight: formData.diamondWeight,
+        diamond_color: formData.diamondColor,
+        diamond_clarity: formData.diamondClarity,
         diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
         gemstone_weight: formData.gemstoneWeight,
       },
+      vendorBranding: vendorProfile ? {
+        businessName: vendorProfile.business_name,
+        logoUrl: vendorProfile.logo_url,
+        primaryColor: vendorProfile.primary_brand_color,
+        secondaryColor: vendorProfile.secondary_brand_color,
+        tagline: vendorProfile.brand_tagline,
+        email: vendorProfile.email,
+        phone: vendorProfile.phone,
+        address: vendorAddress,
+      } : undefined,
     });
 
     toast({
@@ -450,6 +483,12 @@ const ManufacturingCost = () => {
       status: estimateStatus,
       estimated_completion_date: estimatedCompletionDate?.toISOString() || null,
       is_customer_visible: isCustomerVisible,
+      invoice_number: invoiceNumber || null,
+      invoice_date: invoiceDate.toISOString(),
+      payment_terms: paymentTerms,
+      payment_due_date: paymentDueDate?.toISOString() || null,
+      invoice_notes: invoiceNotes || null,
+      is_invoice_generated: !!invoiceNumber,
       details: {
         gross_weight: formData.grossWeight,
         diamond_per_carat_price: formData.diamondPerCaratPrice,
@@ -609,6 +648,11 @@ const ManufacturingCost = () => {
     );
     setIsCustomerVisible(estimate.is_customer_visible || false);
     setShareToken(estimate.share_token || "");
+    setInvoiceNumber(estimate.invoice_number || "");
+    setInvoiceDate(estimate.invoice_date ? new Date(estimate.invoice_date) : new Date());
+    setPaymentTerms(estimate.payment_terms || "Net 30");
+    setPaymentDueDate(estimate.payment_due_date ? new Date(estimate.payment_due_date) : undefined);
+    setInvoiceNotes(estimate.invoice_notes || "");
     setShowLoadDialog(false);
     toast({
       title: "Loaded",
@@ -938,6 +982,96 @@ const ManufacturingCost = () => {
                   checked={isCustomerVisible}
                   onCheckedChange={setIsCustomerVisible}
                 />
+              </div>
+
+              {/* Invoice Section */}
+              <div className="border-t pt-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Invoice Details</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Configure invoice information for PDF generation
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="invoice-number">Invoice Number</Label>
+                    <Input
+                      id="invoice-number"
+                      value={invoiceNumber}
+                      onChange={(e) => setInvoiceNumber(e.target.value)}
+                      placeholder="INV-2024-001"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Invoice Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {format(invoiceDate, "PPP")}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarPicker
+                          mode="single"
+                          selected={invoiceDate}
+                          onSelect={(date) => date && setInvoiceDate(date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Payment Terms</Label>
+                    <Select value={paymentTerms} onValueChange={setPaymentTerms}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Due on Receipt">Due on Receipt</SelectItem>
+                        <SelectItem value="Net 15">Net 15</SelectItem>
+                        <SelectItem value="Net 30">Net 30</SelectItem>
+                        <SelectItem value="Net 45">Net 45</SelectItem>
+                        <SelectItem value="Net 60">Net 60</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Payment Due Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {paymentDueDate ? format(paymentDueDate, "PPP") : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarPicker
+                          mode="single"
+                          selected={paymentDueDate}
+                          onSelect={setPaymentDueDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="invoice-notes">Invoice Notes</Label>
+                  <Textarea
+                    id="invoice-notes"
+                    value={invoiceNotes}
+                    onChange={(e) => setInvoiceNotes(e.target.value)}
+                    placeholder="Add payment instructions or special terms..."
+                    rows={3}
+                  />
+                </div>
               </div>
 
               <Button onClick={handleSave} className="w-full">
