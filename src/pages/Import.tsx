@@ -114,7 +114,8 @@ const Import = () => {
         if (selectedProductType === 'Gemstones') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
           const priceUSD = priceINR > 0 ? await convertINRtoUSD(priceINR) : null;
-          const finalPrice = priceINR > 0 ? priceINR : 0.01;
+          // Use a minimum value if price is 0 or missing
+          const finalPrice = Math.max(priceINR || 0.01, 0.01);
           
           product = {
             user_id: user.id,
@@ -132,7 +133,7 @@ const Import = () => {
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
-            price_inr: finalPrice,
+            price_inr: priceINR || 0,
             price_usd: priceUSD,
             cost_price: finalPrice,
             retail_price: finalPrice,
@@ -143,7 +144,8 @@ const Import = () => {
         } else if (selectedProductType === 'Loose Diamonds') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
           const priceUSD = priceINR > 0 ? await convertINRtoUSD(priceINR) : null;
-          const finalPrice = priceINR > 0 ? priceINR : 0.01;
+          // Use a minimum value if price is 0 or missing
+          const finalPrice = Math.max(priceINR || 0.01, 0.01);
           
           product = {
             user_id: user.id,
@@ -165,7 +167,7 @@ const Import = () => {
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
-            price_inr: finalPrice,
+            price_inr: priceINR || 0,
             price_usd: priceUSD,
             cost_price: finalPrice,
             retail_price: finalPrice,
