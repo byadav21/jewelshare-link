@@ -1435,6 +1435,7 @@ export type Database = {
           address_line2: string | null
           awards: string[] | null
           brand_tagline: string | null
+          brand_theme: string | null
           business_name: string | null
           business_story: string | null
           certifications: string[] | null
@@ -1464,6 +1465,7 @@ export type Database = {
           address_line2?: string | null
           awards?: string[] | null
           brand_tagline?: string | null
+          brand_theme?: string | null
           business_name?: string | null
           business_story?: string | null
           certifications?: string[] | null
@@ -1493,6 +1495,7 @@ export type Database = {
           address_line2?: string | null
           awards?: string[] | null
           brand_tagline?: string | null
+          brand_theme?: string | null
           business_name?: string | null
           business_story?: string | null
           certifications?: string[] | null
