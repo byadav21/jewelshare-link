@@ -61,6 +61,62 @@ const AdminDiamondPrices = () => {
     toast.success("Template downloaded!");
   };
 
+  const parseRapaportFormat = (line: string, defaultShape: string = "Round") => {
+    // Format: CutGrade,Clarity,Color,CaratMin,CaratMax,Price,Date
+    // Example: BR,IF,D,0.01,0.03,830.0, 11/21/2025
+    const values = line.split(",").map(v => v.trim());
+    
+    if (values.length < 6) return null;
+
+    // Map cut grade codes to shape
+    const cutGradeMap: Record<string, string> = {
+      'BR': 'Round',
+      'PS': 'Pear',
+      'PR': 'Princess',
+      'EM': 'Emerald',
+      'CU': 'Cushion',
+      'OV': 'Oval',
+      'MQ': 'Marquise',
+      'HT': 'Heart',
+      'RD': 'Radiant',
+      'AS': 'Asscher'
+    };
+
+    const cutGrade = values[0];
+    const shape = cutGradeMap[cutGrade] || defaultShape;
+
+    return {
+      shape,
+      clarity_grade: values[1],
+      color_grade: values[2],
+      carat_range_min: parseFloat(values[3]),
+      carat_range_max: parseFloat(values[4]),
+      price_per_carat: parseFloat(values[5]),
+      cut_grade: 'Excellent',
+      currency: 'USD',
+      notes: null,
+    };
+  };
+
+  const parseStandardFormat = (line: string) => {
+    // Format: shape,carat_range_min,carat_range_max,color_grade,clarity_grade,cut_grade,price_per_carat,currency,notes
+    const values = line.split(",").map(v => v.trim());
+    
+    if (values.length < 7) return null;
+
+    return {
+      shape: values[0],
+      carat_range_min: parseFloat(values[1]),
+      carat_range_max: parseFloat(values[2]),
+      color_grade: values[3],
+      clarity_grade: values[4],
+      cut_grade: values[5],
+      price_per_carat: parseFloat(values[6]),
+      currency: values[7] || "USD",
+      notes: values[8] || null,
+    };
+  };
+
   const handleFileUpload = async () => {
     if (!file) {
       toast.error("Please select a CSV file");
@@ -72,31 +128,37 @@ const AdminDiamondPrices = () => {
       const text = await file.text();
       const lines = text.split("\n").filter(line => line.trim());
       
-      if (lines.length < 2) {
-        toast.error("CSV file is empty or invalid");
+      if (lines.length < 1) {
+        toast.error("CSV file is empty");
         return;
       }
 
-      // Skip header row
-      const dataLines = lines.slice(1);
       const records = [];
+      let skippedRows = 0;
 
-      for (const line of dataLines) {
-        const values = line.split(",").map(v => v.trim());
+      // Detect format from first line
+      const firstLine = lines[0];
+      const isRapaportFormat = /^[A-Z]{2},/.test(firstLine); // Starts with 2-letter code
+      
+      // If standard format with headers, skip first line
+      const startIndex = isRapaportFormat ? 0 : (firstLine.toLowerCase().includes('shape') ? 1 : 0);
+
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+
+        let record = null;
         
-        if (values.length < 7) continue; // Skip invalid rows
+        if (isRapaportFormat) {
+          record = parseRapaportFormat(line);
+        } else {
+          record = parseStandardFormat(line);
+        }
 
-        const record = {
-          shape: values[0],
-          carat_range_min: parseFloat(values[1]),
-          carat_range_max: parseFloat(values[2]),
-          color_grade: values[3],
-          clarity_grade: values[4],
-          cut_grade: values[5],
-          price_per_carat: parseFloat(values[6]),
-          currency: values[7] || "USD",
-          notes: values[8] || null,
-        };
+        if (!record) {
+          skippedRows++;
+          continue;
+        }
 
         // Validate required fields
         if (
@@ -108,7 +170,7 @@ const AdminDiamondPrices = () => {
           !record.cut_grade ||
           isNaN(record.price_per_carat)
         ) {
-          console.warn("Skipping invalid row:", line);
+          skippedRows++;
           continue;
         }
 
@@ -127,7 +189,11 @@ const AdminDiamondPrices = () => {
 
       if (error) throw error;
 
-      toast.success(`Successfully imported ${records.length} price records!`);
+      const message = skippedRows > 0 
+        ? `Imported ${records.length} records (${skippedRows} rows skipped)`
+        : `Successfully imported ${records.length} price records!`;
+      
+      toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["diamond-prices"] });
       setFile(null);
     } catch (error: any) {
@@ -184,8 +250,10 @@ const AdminDiamondPrices = () => {
             <CardContent className="space-y-4">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  CSV format: shape, carat_range_min, carat_range_max, color_grade, clarity_grade, cut_grade, price_per_carat, currency, notes
+                <AlertDescription className="text-xs space-y-1">
+                  <div><strong>Standard format:</strong> shape, carat_range_min, carat_range_max, color_grade, clarity_grade, cut_grade, price_per_carat, currency, notes</div>
+                  <div><strong>Rapaport format:</strong> CutCode, Clarity, Color, CaratMin, CaratMax, Price, Date</div>
+                  <div className="text-muted-foreground mt-1">Supports both formats automatically</div>
                 </AlertDescription>
               </Alert>
 
