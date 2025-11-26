@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Calculator, Diamond, Sparkles } from "lucide-react";
@@ -17,6 +18,7 @@ const DiamondCalculator = () => {
   const [color, setColor] = useState<string>("");
   const [clarity, setClarity] = useState<string>("");
   const [cut, setCut] = useState<string>("");
+  const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     pricePerCarat: number;
@@ -201,6 +203,22 @@ const DiamondCalculator = () => {
                   </Select>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="discount">Discount (%)</Label>
+                  <Slider
+                    id="discount"
+                    min={0}
+                    max={50}
+                    step={1}
+                    value={[discount]}
+                    onValueChange={(value) => setDiscount(value[0])}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground text-center">
+                    {discount}% discount applied
+                  </p>
+                </div>
+
                 <div className="flex gap-3 pt-4">
                   <Button
                     onClick={calculatePrice}
@@ -253,6 +271,20 @@ const DiamondCalculator = () => {
                           {result.currency} <AnimatedCounter end={result.totalPrice} />
                         </p>
                       </div>
+
+                      {discount > 0 && (
+                        <div className="border-t border-border pt-4">
+                          <p className="text-sm text-muted-foreground mb-1">
+                            After {discount}% Discount
+                          </p>
+                          <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                            {result.currency} <AnimatedCounter end={Math.round(result.totalPrice * (1 - discount / 100))} />
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            You save {result.currency} {Math.round(result.totalPrice * (discount / 100)).toLocaleString()}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
