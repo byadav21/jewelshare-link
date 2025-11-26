@@ -70,7 +70,7 @@ const ManufacturingCost = () => {
     diamondShape: "",
     diamondColor: "",
     diamondClarity: "",
-    diamondCertification: "",
+    diamondCertification: "none",
     gemstonePerCaratPrice: 0,
     gemstoneWeight: 0,
   });
@@ -182,7 +182,7 @@ const ManufacturingCost = () => {
       diamondShape: "",
       diamondColor: "",
       diamondClarity: "",
-      diamondCertification: "",
+      diamondCertification: "none",
       gemstonePerCaratPrice: 0,
       gemstoneWeight: 0,
     });
@@ -453,7 +453,7 @@ const ManufacturingCost = () => {
       diamondShape: details?.diamond_shape || "",
       diamondColor: details?.diamond_color || "",
       diamondClarity: details?.diamond_clarity || "",
-      diamondCertification: knownCerts.includes(certValue) ? certValue : (certValue ? "other" : ""),
+      diamondCertification: knownCerts.includes(certValue) ? certValue : (certValue ? "other" : "none"),
       gemstonePerCaratPrice: details?.gemstone_per_carat_price || 0,
       gemstoneWeight: details?.gemstone_weight || 0,
     });
@@ -1028,7 +1028,7 @@ const ManufacturingCost = () => {
                     <SelectValue placeholder="Select certification" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="GIA">GIA</SelectItem>
                     <SelectItem value="IGI">IGI</SelectItem>
                     <SelectItem value="AGS">AGS</SelectItem>
