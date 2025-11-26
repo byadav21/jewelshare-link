@@ -101,6 +101,10 @@ const AppContent = () => {
         element={<RouteSuspense><Pages.ManufacturingCost /></RouteSuspense>} 
       />
       <Route 
+        path={ROUTES.INVOICE_HISTORY} 
+        element={<RouteSuspense><Pages.InvoiceHistory /></RouteSuspense>} 
+      />
+      <Route 
         path={ROUTES.CALCULATORS} 
         element={<RouteSuspense><Pages.Calculators /></RouteSuspense>} 
       />

@@ -14,6 +14,7 @@ export const ROUTES = {
   IMAGE_DEMO: "/image-optimization-demo",
   DIAMOND_CALCULATOR: "/diamond-calculator",
   MANUFACTURING_COST: "/manufacturing-cost",
+  INVOICE_HISTORY: "/invoice-history",
   CALCULATORS: "/calculators",
   ABOUT: "/about",
   CONTACT: "/contact",
