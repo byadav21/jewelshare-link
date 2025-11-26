@@ -27,9 +27,18 @@ const DiamondCalculator = () => {
   } | null>(null);
 
   const shapes = ["Round", "Princess", "Cushion", "Emerald", "Oval", "Radiant", "Asscher", "Marquise", "Heart", "Pear"];
-  const colors = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-  const clarities = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2"];
+  const colors = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
+  const clarities = ["IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "SI3", "I1", "I2", "I3"];
   const cuts = ["Excellent", "Very Good", "Good", "Fair", "Poor"];
+
+  const testWithSampleData = () => {
+    setCarat("0.50");
+    setShape("Round");
+    setColor("D");
+    setClarity("IF");
+    setCut("Excellent");
+    toast.info("Sample data loaded - click Calculate to test");
+  };
 
   const calculatePrice = async () => {
     if (!carat || !shape || !color || !clarity || !cut) {
@@ -219,13 +228,21 @@ const DiamondCalculator = () => {
                   </p>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <Button
                     onClick={calculatePrice}
                     disabled={loading}
                     className="flex-1"
                   >
                     {loading ? "Calculating..." : "Calculate Price"}
+                  </Button>
+                  <Button
+                    onClick={testWithSampleData}
+                    variant="secondary"
+                    disabled={loading}
+                  >
+                    <Diamond className="h-4 w-4 mr-2" />
+                    Test Sample
                   </Button>
                   <Button
                     onClick={resetCalculator}
