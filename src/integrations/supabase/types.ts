@@ -395,17 +395,20 @@ export type Database = {
           customer_phone: string | null
           diamond_cost: number | null
           estimate_name: string
+          estimated_completion_date: string | null
           final_selling_price: number | null
           gemstone_cost: number | null
           gold_cost: number | null
           gold_rate_24k: number | null
           id: string
+          is_customer_visible: boolean | null
           making_charges: number | null
           net_weight: number | null
           notes: string | null
           profit_margin_percentage: number | null
           purity_fraction: number | null
           reference_images: string[] | null
+          share_token: string | null
           status: string | null
           total_cost: number | null
           updated_at: string | null
@@ -422,17 +425,20 @@ export type Database = {
           customer_phone?: string | null
           diamond_cost?: number | null
           estimate_name: string
+          estimated_completion_date?: string | null
           final_selling_price?: number | null
           gemstone_cost?: number | null
           gold_cost?: number | null
           gold_rate_24k?: number | null
           id?: string
+          is_customer_visible?: boolean | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
           profit_margin_percentage?: number | null
           purity_fraction?: number | null
           reference_images?: string[] | null
+          share_token?: string | null
           status?: string | null
           total_cost?: number | null
           updated_at?: string | null
@@ -449,17 +455,20 @@ export type Database = {
           customer_phone?: string | null
           diamond_cost?: number | null
           estimate_name?: string
+          estimated_completion_date?: string | null
           final_selling_price?: number | null
           gemstone_cost?: number | null
           gold_cost?: number | null
           gold_rate_24k?: number | null
           id?: string
+          is_customer_visible?: boolean | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
           profit_margin_percentage?: number | null
           purity_fraction?: number | null
           reference_images?: string[] | null
+          share_token?: string | null
           status?: string | null
           total_cost?: number | null
           updated_at?: string | null
