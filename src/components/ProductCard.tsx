@@ -52,13 +52,18 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, v
       <Card className="overflow-hidden relative group bg-gradient-to-b from-card to-card/95 border-border/50 shadow-lg hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 active:scale-[0.98] touch-manipulation">
         {/* Premium glow effect on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-        <div className="absolute top-3 left-3 z-10">
+        <div 
+          className="absolute top-3 left-3 z-10" 
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="relative">
             <div className="absolute inset-0 bg-primary/20 blur-md rounded opacity-0 group-hover:opacity-100 transition-opacity" />
             <Checkbox
               checked={isSelected}
-              onCheckedChange={() => onToggleSelection(product.id)}
-              className="relative bg-background/95 backdrop-blur-sm border-2 border-primary/30 w-5 h-5 sm:w-6 sm:h-6 shadow-lg"
+              onCheckedChange={(checked) => {
+                onToggleSelection(product.id);
+              }}
+              className="relative bg-background/95 backdrop-blur-sm border-2 border-primary/30 w-5 h-5 sm:w-6 sm:h-6 shadow-lg cursor-pointer"
             />
           </div>
         </div>
