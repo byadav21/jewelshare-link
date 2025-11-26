@@ -286,7 +286,18 @@ const Import = () => {
             d_wt_1: parseNumber(row['D.WT 1'] || row['D WT 1']) || null,
             d_wt_2: parseNumber(row['D.WT 2'] || row['D WT 2']) || null,
             diamond_type: row['CS TYPE'] || null,
-            purity_fraction_used: parseNumber(row.PURITY_FRACTION_USED) || null,
+            purity_fraction_used: (() => {
+              const purityValue = row.PURITY_FRACTION_USED;
+              if (!purityValue) return null;
+              // If it's a string with %, remove % and divide by 100 to get decimal
+              if (typeof purityValue === 'string' && purityValue.includes('%')) {
+                const numValue = parseFloat(purityValue.replace(/[^0-9.-]/g, ''));
+                return numValue > 0 ? numValue / 100 : null;
+              }
+              // If it's already a number, check if it's > 1 (percentage) or <= 1 (decimal)
+              const numValue = parseNumber(purityValue);
+              return numValue > 1 ? numValue / 100 : numValue;
+            })(),
             d_rate_1: parseNumber(row['D RATE 1']) || null,
             pointer_diamond: parseNumber(row['Pointer diamond']) || null,
             d_value: parseNumber(row['D VALUE']) || null,
