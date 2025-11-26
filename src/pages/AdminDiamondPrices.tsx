@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 
 const AdminDiamondPrices = () => {
   const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [pearFile, setPearFile] = useState<File | null>(null);
+  const [roundFile, setRoundFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
 
   const { data: prices, isLoading } = useQuery({
@@ -117,7 +118,7 @@ const AdminDiamondPrices = () => {
     };
   };
 
-  const handleFileUpload = async () => {
+  const handleFileUpload = async (file: File | null, targetShape: 'pear' | 'round') => {
     if (!file) {
       toast.error("Please select a CSV file");
       return;
@@ -150,9 +151,20 @@ const AdminDiamondPrices = () => {
         let record = null;
         
         if (isRapaportFormat) {
-          record = parseRapaportFormat(line);
+          record = parseRapaportFormat(line, targetShape === 'round' ? 'Round' : 'Pear');
         } else {
           record = parseStandardFormat(line);
+        }
+
+        // Override shape based on target
+        if (record && targetShape === 'round') {
+          record.shape = 'Round';
+        } else if (record && targetShape === 'pear') {
+          // For pear uploads, keep the parsed shape (could be any fancy shape)
+          // or default to Pear if not specified
+          if (!record.shape || record.shape === 'Round') {
+            record.shape = 'Pear';
+          }
         }
 
         if (!record) {
@@ -195,7 +207,8 @@ const AdminDiamondPrices = () => {
       
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["diamond-prices"] });
-      setFile(null);
+      if (targetShape === 'pear') setPearFile(null);
+      if (targetShape === 'round') setRoundFile(null);
     } catch (error: any) {
       console.error("Upload error:", error);
       toast.error(error.message || "Failed to upload CSV");
@@ -247,7 +260,7 @@ const AdminDiamondPrices = () => {
                 Upload a CSV file with diamond pricing data
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs space-y-1">
@@ -257,32 +270,62 @@ const AdminDiamondPrices = () => {
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-2">
-                <Label htmlFor="csv-file">CSV File</Label>
-                <Input
-                  id="csv-file"
-                  type="file"
-                  accept=".csv"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                />
+              {/* Pear Upload - For all fancy shapes */}
+              <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">Fancy Shapes</Badge>
+                  <p className="text-sm text-muted-foreground">Pear, Princess, Emerald, Cushion, Oval, etc.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pear-csv">Pear Pricing CSV</Label>
+                  <Input
+                    id="pear-csv"
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => setPearFile(e.target.files?.[0] || null)}
+                  />
+                </div>
+                <Button
+                  onClick={() => handleFileUpload(pearFile, 'pear')}
+                  disabled={!pearFile || uploading}
+                  className="w-full"
+                >
+                  {uploading ? "Uploading..." : "Upload Pear/Fancy Shapes"}
+                </Button>
               </div>
 
-              <div className="flex gap-2">
+              {/* Round Upload - Round only */}
+              <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">Round</Badge>
+                  <p className="text-sm text-muted-foreground">Round brilliant diamonds only</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="round-csv">Round Pricing CSV</Label>
+                  <Input
+                    id="round-csv"
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => setRoundFile(e.target.files?.[0] || null)}
+                  />
+                </div>
                 <Button
-                  onClick={handleFileUpload}
-                  disabled={!file || uploading}
-                  className="flex-1"
+                  onClick={() => handleFileUpload(roundFile, 'round')}
+                  disabled={!roundFile || uploading}
+                  className="w-full"
                 >
-                  {uploading ? "Uploading..." : "Upload CSV"}
-                </Button>
-                <Button
-                  onClick={downloadTemplate}
-                  variant="outline"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Template
+                  {uploading ? "Uploading..." : "Upload Round Pricing"}
                 </Button>
               </div>
+
+              <Button
+                onClick={downloadTemplate}
+                variant="outline"
+                className="w-full"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Template
+              </Button>
             </CardContent>
           </Card>
 
