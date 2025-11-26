@@ -337,6 +337,10 @@ const ManufacturingCost = () => {
     };
 
     if (currentEstimateId) {
+      // Get previous status for comparison
+      const previousEstimate = estimates.find(e => e.id === currentEstimateId);
+      const previousStatus = previousEstimate?.status;
+      
       const { error, data } = await supabase
         .from('manufacturing_cost_estimates')
         .update(estimateData)
@@ -352,6 +356,28 @@ const ManufacturingCost = () => {
       } else {
         if (data && data[0]) {
           setShareToken(data[0].share_token);
+          
+          // Send email notification if status changed and customer details exist
+          if (data[0].status !== previousStatus && 
+              data[0].customer_email && 
+              data[0].is_customer_visible) {
+            try {
+              await supabase.functions.invoke('notify-order-status', {
+                body: {
+                  estimateId: data[0].id,
+                  customerName: data[0].customer_name,
+                  customerEmail: data[0].customer_email,
+                  status: data[0].status,
+                  estimatedCompletionDate: data[0].estimated_completion_date,
+                  shareToken: data[0].share_token,
+                },
+              });
+              console.log('Order status notification sent');
+            } catch (emailError) {
+              console.error('Failed to send email notification:', emailError);
+              // Don't fail the save operation if email fails
+            }
+          }
         }
         toast({
           title: "Success",
@@ -376,6 +402,26 @@ const ManufacturingCost = () => {
         if (data && data[0]) {
           setShareToken(data[0].share_token);
           setCurrentEstimateId(data[0].id);
+          
+          // Send initial email notification if customer details exist and visible
+          if (data[0].customer_email && data[0].is_customer_visible) {
+            try {
+              await supabase.functions.invoke('notify-order-status', {
+                body: {
+                  estimateId: data[0].id,
+                  customerName: data[0].customer_name,
+                  customerEmail: data[0].customer_email,
+                  status: data[0].status,
+                  estimatedCompletionDate: data[0].estimated_completion_date,
+                  shareToken: data[0].share_token,
+                },
+              });
+              console.log('Initial order notification sent');
+            } catch (emailError) {
+              console.error('Failed to send email notification:', emailError);
+              // Don't fail the save operation if email fails
+            }
+          }
         }
         toast({
           title: "Success",
