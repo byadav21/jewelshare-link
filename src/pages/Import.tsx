@@ -308,7 +308,7 @@ const Import = () => {
             user_id: user.id,
             name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
             description: row.DESCRIPTION || row['Product Type'] || null,
-            sku: row.CERT || row.SKU || null,
+            sku: row.CERT || row['SKU ID'] || row.SKU || null,
             category: row.CATEGORY || null,
             metal_type: row['METAL TYPE'] || null,
             gemstone: row.GEMSTONE || null,

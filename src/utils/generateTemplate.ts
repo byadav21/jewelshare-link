@@ -141,8 +141,8 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
     // Jewellery template - GEMHUB format with auto-calculated fields
     const sampleData = [
       {
-        'CERT': 'CBG2',
-        'PRODUCT': 'CVD BANGLE',
+        'CERT': 'CLR001',
+        'PRODUCT': 'CVD LADIES RING',
         'Diamond Color': 'FGH',
         'CLARITY': 'VS',
         'D.WT 1': 2.78,
@@ -175,7 +175,8 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
       ['JEWELLERY IMPORT TEMPLATE - INSTRUCTIONS (GEMHUB FORMAT)'],
       [''],
       ['REQUIRED FIELDS:'],
-      ['- CERT: Unique SKU/Certificate number'],
+      ['- CERT: Unique SKU/Certificate (Format: C + Product Type + R/B + Number)'],
+      ['  Examples: CLR001 (Ladies Ring), CBR001 (Bracelet), CGR001 (Gents Ring), CBG001 (Bangle)'],
       ['- PRODUCT: Product name/description'],
       ['- G WT: Gross weight in grams (required for pricing calculation)'],
       ['- STOCK QUANTITY: Number of items in stock'],
