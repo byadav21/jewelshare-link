@@ -539,51 +539,26 @@ const Catalog = () => {
         return;
       }
       
-      console.log("Current user ID:", user.id);
-      console.log("Deleting products:", Array.from(selectedProducts));
-      
-      // Verify ownership before deleting
-      const { data: productsToDelete, error: fetchError } = await supabase
+      // Perform soft delete by setting deleted_at
+      const { error } = await supabase
         .from("products")
-        .select("id, user_id, name")
-        .in("id", Array.from(selectedProducts));
-      
-      console.log("Products to delete:", productsToDelete);
-      
-      if (fetchError) {
-        console.error("Error fetching products:", fetchError);
-        throw fetchError;
-      }
-      
-      // Check if all products belong to current user
-      const notOwned = productsToDelete?.filter(p => p.user_id !== user.id);
-      if (notOwned && notOwned.length > 0) {
-        console.error("Some products don't belong to current user:", notOwned);
-        toast.error("You can only delete your own products");
-        return;
-      }
-      
-      const {
-        data,
-        error
-      } = await supabase.from("products").update({
-        deleted_at: new Date().toISOString()
-      }).in("id", Array.from(selectedProducts)).select();
-      
-      console.log("Delete response:", { data, error });
+        .update({ deleted_at: new Date().toISOString() })
+        .in("id", Array.from(selectedProducts))
+        .eq("user_id", user.id); // Ensure we only update user's own products
       
       if (error) {
-        console.error("Delete error details:", error);
+        console.error("Delete error:", error);
         throw error;
       }
       
       toast.success(`${selectedProducts.size} product(s) deleted successfully`);
       setSelectedProducts(new Set());
-      fetchProducts();
-      fetchAllProducts();
+      
+      // Refresh both product lists
+      await Promise.all([fetchProducts(), fetchAllProducts()]);
     } catch (error: any) {
       console.error("Failed to delete products:", error);
-      toast.error(`Failed to delete products: ${error.message || 'Unknown error'}`);
+      toast.error(`Failed to delete: ${error.message || 'Unknown error'}`);
     }
   }, [selectedProducts, fetchProducts, fetchAllProducts]);
   const toggleProductSelection = useCallback((productId: string) => {
