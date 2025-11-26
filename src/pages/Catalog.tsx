@@ -1395,6 +1395,7 @@ const Catalog = () => {
         onOpenChange={setBulkEditOpen}
         onUpdate={handleBulkUpdate}
         selectedCount={selectedProducts.size}
+        selectedProductIds={Array.from(selectedProducts)}
       />
     </ApprovalGuard>;
 };
