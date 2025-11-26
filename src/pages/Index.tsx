@@ -178,6 +178,15 @@ const Index = () => {
       description:
         "Professional diamond pricing tool with Rapaport-based calculations. Estimate diamond values based on the 4Cs (Carat, Cut, Color, Clarity) with support for all shapes and instant price comparisons. Apply custom discounts or markups for accurate pricing.",
       gradient: "from-diamond-from to-diamond-to",
+      link: "/diamond-calculator",
+    },
+    {
+      icon: Calculator,
+      title: "Manufacturing Cost Estimator",
+      description:
+        "Calculate complete jewelry manufacturing costs including gold, diamonds, gemstones, making charges, CAD design, camming/casting, and certification. Get detailed cost breakdowns for accurate pricing and profitability analysis.",
+      gradient: "from-jewellery-from to-jewellery-to",
+      link: "/manufacturing-cost",
     },
     {
       icon: Video,
@@ -491,7 +500,10 @@ const Index = () => {
             {features.map((feature, index) => (
               <ScrollReveal key={index} delay={0.1 * index} direction="up">
                 <TiltCard maxTilt={8} scale={1.05}>
-                  <Card className="group relative overflow-hidden border-2 h-full transition-all hover:shadow-lg hover:shadow-primary/10">
+                  <Card 
+                    className={`group relative overflow-hidden border-2 h-full transition-all hover:shadow-lg hover:shadow-primary/10 ${feature.link ? 'cursor-pointer' : ''}`}
+                    onClick={() => feature.link && navigate(feature.link)}
+                  >
                     <div
                       className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-5`}
                     />
@@ -506,7 +518,10 @@ const Index = () => {
                           delay={0.1 * index}
                         />
                       </div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl flex items-center justify-between">
+                        {feature.title}
+                        {feature.link && <ArrowRight className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">{feature.description}</CardDescription>
@@ -801,6 +816,18 @@ const Index = () => {
                     }}
                   >
                     Diamond Calculator
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="#" 
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/manufacturing-cost");
+                    }}
+                  >
+                    Manufacturing Cost
                   </a>
                 </li>
                 <li>
