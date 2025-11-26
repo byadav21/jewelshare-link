@@ -128,17 +128,17 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, v
           <p className="text-xs sm:text-sm text-muted-foreground/80 mb-3 font-medium">SKU: {product.sku}</p>
         )}
         <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm border-t border-border/50 pt-3 sm:pt-4 bg-gradient-to-b from-transparent to-muted/20 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-2">
-          {product.gemstone && (
-            <>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-medium">Diamond Color:</span>
-                <span className="text-foreground font-semibold">{product.gemstone.split(' ')[0] || '-'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-medium">Diamond Clarity:</span>
-                <span className="text-foreground font-semibold">{product.gemstone.split(' ')[1] || '-'}</span>
-              </div>
-            </>
+          {product.diamond_color && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground font-medium">Diamond Color:</span>
+              <span className="text-foreground font-semibold">{product.diamond_color}</span>
+            </div>
+          )}
+          {product.clarity && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground font-medium">Diamond Clarity:</span>
+              <span className="text-foreground font-semibold">{product.clarity}</span>
+            </div>
           )}
           {product.diamond_weight && (
             <div className="flex justify-between">
