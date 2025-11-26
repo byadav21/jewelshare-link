@@ -93,7 +93,7 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
           'Gemstone cost',
           'TOTAL',
           'TOTAL_USD',
-          'Prodcut Type',
+          'Product Type',
           'IMAGE_URL',
           'DELIVERY TYPE'
         ]
