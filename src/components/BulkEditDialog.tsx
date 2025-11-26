@@ -52,6 +52,7 @@ const bulkUpdateSchema = z.object({
   cut: z.string().max(50).optional(),
   polish: z.string().max(50).optional(),
   symmetry: z.string().max(50).optional(),
+  purity_fraction_used: z.number().min(0).max(1).optional(),
   pricingAdjustment: z.object({
     type: z.enum(['markup', 'discount']),
     percentage: z.number().min(0).max(100)
@@ -92,7 +93,7 @@ export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount, se
       // Fetch current product data
       const { data: products, error } = await supabase
         .from("products")
-        .select("id, name, sku, category, metal_type, delivery_type, dispatches_in_days, status, stock_quantity, description, cost_price, retail_price, weight_grams, diamond_color, clarity, cut, polish, symmetry, gemstone, gemstone_type, certification")
+        .select("id, name, sku, category, metal_type, delivery_type, dispatches_in_days, status, stock_quantity, description, cost_price, retail_price, weight_grams, diamond_color, clarity, cut, polish, symmetry, gemstone, gemstone_type, certification, purity_fraction_used")
         .in("id", selectedProductIds);
 
       if (error) throw error;
@@ -124,7 +125,8 @@ export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount, se
           symmetry: "Symmetry",
           gemstone: "Gemstone",
           gemstone_type: "Gemstone Type",
-          certification: "Certification"
+          certification: "Certification",
+          purity_fraction_used: "Purity Fraction"
         };
 
         // Check each field for changes
@@ -521,6 +523,20 @@ export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount, se
                 maxLength={100}
                 value={updates.certification || ""}
                 onChange={(e) => handleFieldChange("certification", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="purity_fraction_used">Purity Fraction (0-1)</Label>
+              <Input
+                id="purity_fraction_used"
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                placeholder="Leave empty to keep current"
+                value={updates.purity_fraction_used || ""}
+                onChange={(e) => handleFieldChange("purity_fraction_used", e.target.value)}
               />
             </div>
           </TabsContent>
