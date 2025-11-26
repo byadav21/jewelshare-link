@@ -10,12 +10,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MediaUpload } from "@/components/MediaUpload";
 import { LogoUpload } from "@/components/LogoUpload";
 import { toast } from "sonner";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Palette } from "lucide-react";
+
+const brandThemes = {
+  elegant: {
+    name: "Elegant",
+    description: "Sophisticated purple and gold palette",
+    primary: "#6B21A8",
+    secondary: "#D97706",
+  },
+  modern: {
+    name: "Modern",
+    description: "Fresh blue and cyan tones",
+    primary: "#0EA5E9",
+    secondary: "#06B6D4",
+  },
+  classic: {
+    name: "Classic",
+    description: "Timeless navy and burgundy",
+    primary: "#1E3A8A",
+    secondary: "#991B1B",
+  },
+};
 
 const VendorProfile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<{ instagram?: boolean; whatsapp?: boolean }>({});
+  const [selectedTheme, setSelectedTheme] = useState<string>("custom");
   const [formData, setFormData] = useState({
     business_name: "",
     address_line1: "",
@@ -80,6 +102,7 @@ const VendorProfile = () => {
           secondary_brand_color: profile.secondary_brand_color || "#8B5CF6",
           brand_tagline: profile.brand_tagline || "",
         });
+        setSelectedTheme(profile.brand_theme || "custom");
       }
     } catch (error: any) {
       toast.error("Failed to load vendor profile");
@@ -99,6 +122,7 @@ const VendorProfile = () => {
         .upsert({
           user_id: user.id,
           ...formData,
+          brand_theme: selectedTheme,
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
@@ -396,11 +420,70 @@ const VendorProfile = () => {
                   </div>
 
                   <div className="border-t pt-6 space-y-4">
-                    <h3 className="text-lg font-semibold">Brand Customization for Estimates</h3>
+                    <div className="flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      <h3 className="text-lg font-semibold">Brand Customization for Estimates</h3>
+                    </div>
                     <p className="text-sm text-muted-foreground">
-                      Customize how your estimates and quotes appear to customers
+                      Choose a preset theme or customize your own brand colors
                     </p>
                     
+                    <div>
+                      <Label className="text-sm font-medium mb-3 block">
+                        Choose a Brand Theme
+                      </Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        {Object.entries(brandThemes).map(([key, theme]) => (
+                          <div
+                            key={key}
+                            onClick={() => {
+                              setSelectedTheme(key);
+                              setFormData({
+                                ...formData,
+                                primary_brand_color: theme.primary,
+                                secondary_brand_color: theme.secondary,
+                              });
+                            }}
+                            className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:scale-105 ${
+                              selectedTheme === key
+                                ? "border-primary shadow-lg ring-2 ring-primary/20"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                            style={{
+                              background: `linear-gradient(135deg, ${theme.primary}15, ${theme.secondary}15)`,
+                            }}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <div
+                                className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                                style={{ backgroundColor: theme.primary }}
+                              />
+                              <div
+                                className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                                style={{ backgroundColor: theme.secondary }}
+                              />
+                            </div>
+                            <p className="font-semibold text-sm">{theme.name}</p>
+                            <p className="text-xs text-muted-foreground">{theme.description}</p>
+                          </div>
+                        ))}
+                        <div
+                          onClick={() => setSelectedTheme("custom")}
+                          className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:scale-105 ${
+                            selectedTheme === "custom"
+                              ? "border-primary shadow-lg ring-2 ring-primary/20"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <Palette className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                          <p className="font-semibold text-sm">Custom</p>
+                          <p className="text-xs text-muted-foreground">Pick your own colors</p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="brand_tagline">Brand Tagline</Label>
                       <Input
@@ -422,13 +505,19 @@ const VendorProfile = () => {
                             id="primary_brand_color"
                             type="color"
                             value={formData.primary_brand_color}
-                            onChange={(e) => setFormData({ ...formData, primary_brand_color: e.target.value })}
+                            onChange={(e) => {
+                              setFormData({ ...formData, primary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
                             className="w-20 h-10"
                           />
                           <Input
                             type="text"
                             value={formData.primary_brand_color}
-                            onChange={(e) => setFormData({ ...formData, primary_brand_color: e.target.value })}
+                            onChange={(e) => {
+                              setFormData({ ...formData, primary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
                             placeholder="#4F46E5"
                             className="flex-1"
                           />
@@ -445,13 +534,19 @@ const VendorProfile = () => {
                             id="secondary_brand_color"
                             type="color"
                             value={formData.secondary_brand_color}
-                            onChange={(e) => setFormData({ ...formData, secondary_brand_color: e.target.value })}
+                            onChange={(e) => {
+                              setFormData({ ...formData, secondary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
                             className="w-20 h-10"
                           />
                           <Input
                             type="text"
                             value={formData.secondary_brand_color}
-                            onChange={(e) => setFormData({ ...formData, secondary_brand_color: e.target.value })}
+                            onChange={(e) => {
+                              setFormData({ ...formData, secondary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
                             placeholder="#8B5CF6"
                             className="flex-1"
                           />
