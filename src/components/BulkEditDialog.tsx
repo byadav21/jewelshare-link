@@ -1,19 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Percent } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Percent, ArrowRight, ChevronLeft, Eye } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BulkEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: (updates: Record<string, any>) => Promise<void>;
   selectedCount: number;
+  selectedProductIds: string[];
+}
+
+interface ProductPreview {
+  id: string;
+  name: string;
+  sku: string;
+  changes: Array<{
+    field: string;
+    oldValue: any;
+    newValue: any;
+  }>;
 }
 
 // Validation schema
@@ -42,19 +58,21 @@ const bulkUpdateSchema = z.object({
   }).optional()
 });
 
-export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount }: BulkEditDialogProps) {
+export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount, selectedProductIds }: BulkEditDialogProps) {
   const [updating, setUpdating] = useState(false);
   const [updates, setUpdates] = useState<Record<string, any>>({});
   const [priceAdjustmentType, setPriceAdjustmentType] = useState<'markup' | 'discount'>('markup');
   const [priceAdjustmentPercent, setPriceAdjustmentPercent] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
+  const [productPreviews, setProductPreviews] = useState<ProductPreview[]>([]);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
-  const handleUpdate = async () => {
-    setUpdating(true);
+  const generatePreview = async () => {
+    setLoadingPreview(true);
     try {
-      // Validate inputs
+      // Validate inputs first
       const validationData: any = { ...updates };
       
-      // Add pricing adjustment if specified
       if (priceAdjustmentPercent && parseFloat(priceAdjustmentPercent) > 0) {
         validationData.pricingAdjustment = {
           type: priceAdjustmentType,
@@ -67,18 +85,142 @@ export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount }: 
         bulkUpdateSchema.parse(validationData);
       } catch (validationError: any) {
         toast.error(`Validation error: ${validationError.errors[0]?.message || 'Invalid input'}`);
-        setUpdating(false);
+        setLoadingPreview(false);
         return;
+      }
+
+      // Fetch current product data
+      const { data: products, error } = await supabase
+        .from("products")
+        .select("id, name, sku, category, metal_type, delivery_type, dispatches_in_days, status, stock_quantity, description, cost_price, retail_price, weight_grams, diamond_color, clarity, cut, polish, symmetry, gemstone, gemstone_type, certification")
+        .in("id", selectedProductIds);
+
+      if (error) throw error;
+      if (!products) {
+        toast.error("Failed to fetch product data");
+        return;
+      }
+
+      // Calculate changes for each product
+      const previews: ProductPreview[] = products.map(product => {
+        const changes: Array<{ field: string; oldValue: any; newValue: any }> = [];
+
+        // Field mapping for display
+        const fieldNames: Record<string, string> = {
+          category: "Category",
+          metal_type: "Metal Type",
+          delivery_type: "Delivery Type",
+          dispatches_in_days: "Dispatch Days",
+          status: "Status",
+          stock_quantity: "Stock Quantity",
+          description: "Description",
+          cost_price: "Cost Price",
+          retail_price: "Retail Price",
+          weight_grams: "Weight",
+          diamond_color: "Diamond Color",
+          clarity: "Clarity",
+          cut: "Cut",
+          polish: "Polish",
+          symmetry: "Symmetry",
+          gemstone: "Gemstone",
+          gemstone_type: "Gemstone Type",
+          certification: "Certification"
+        };
+
+        // Check each field for changes
+        Object.entries(updates).forEach(([key, value]) => {
+          if (value !== "" && value !== null && value !== "no-change") {
+            const oldValue = product[key as keyof typeof product];
+            if (oldValue !== value) {
+              changes.push({
+                field: fieldNames[key] || key,
+                oldValue: oldValue || "—",
+                newValue: value
+              });
+            }
+          }
+        });
+
+        // Handle pricing adjustments
+        if (validationData.pricingAdjustment && validationData.pricingAdjustment.percentage > 0) {
+          const multiplier = validationData.pricingAdjustment.type === 'markup'
+            ? (1 + validationData.pricingAdjustment.percentage / 100)
+            : (1 - validationData.pricingAdjustment.percentage / 100);
+
+          const newCostPrice = Math.max(0, product.cost_price * multiplier);
+          const newRetailPrice = Math.max(0, product.retail_price * multiplier);
+
+          // Only add if not overridden by fixed prices
+          if (!updates.cost_price) {
+            changes.push({
+              field: "Cost Price",
+              oldValue: `₹${product.cost_price.toFixed(2)}`,
+              newValue: `₹${newCostPrice.toFixed(2)}`
+            });
+          }
+
+          if (!updates.retail_price) {
+            changes.push({
+              field: "Retail Price",
+              oldValue: `₹${product.retail_price.toFixed(2)}`,
+              newValue: `₹${newRetailPrice.toFixed(2)}`
+            });
+          }
+        }
+
+        return {
+          id: product.id,
+          name: product.name,
+          sku: product.sku || "N/A",
+          changes
+        };
+      });
+
+      setProductPreviews(previews.filter(p => p.changes.length > 0));
+      setShowPreview(true);
+    } catch (error: any) {
+      console.error("Failed to generate preview:", error);
+      toast.error(`Failed to generate preview: ${error.message || 'Unknown error'}`);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    setUpdating(true);
+    try {
+      const validationData: any = { ...updates };
+      
+      if (priceAdjustmentPercent && parseFloat(priceAdjustmentPercent) > 0) {
+        validationData.pricingAdjustment = {
+          type: priceAdjustmentType,
+          percentage: parseFloat(priceAdjustmentPercent)
+        };
       }
 
       await onUpdate(validationData);
       setUpdates({});
       setPriceAdjustmentPercent("");
+      setShowPreview(false);
       onOpenChange(false);
     } finally {
       setUpdating(false);
     }
   };
+
+  const handleBack = () => {
+    setShowPreview(false);
+  };
+
+  // Reset state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setShowPreview(false);
+      setProductPreviews([]);
+      setUpdates({});
+      setPriceAdjustmentPercent("");
+    }
+  }, [open]);
 
   const handleFieldChange = (field: string, value: string) => {
     if (value === "" || value === "no-change") {
@@ -94,13 +236,79 @@ export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Bulk Edit Products</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {showPreview && (
+              <Button variant="ghost" size="sm" onClick={handleBack} className="mr-2 -ml-2">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+            {showPreview ? "Preview Changes" : "Bulk Edit Products"}
+          </DialogTitle>
           <DialogDescription>
-            Update {selectedCount} selected product{selectedCount !== 1 ? 's' : ''}. Leave fields empty to keep existing values.
+            {showPreview 
+              ? `Review changes for ${productPreviews.length} product${productPreviews.length !== 1 ? 's' : ''} before applying`
+              : `Update ${selectedCount} selected product${selectedCount !== 1 ? 's' : ''}. Leave fields empty to keep existing values.`
+            }
           </DialogDescription>
         </DialogHeader>
+
+        {showPreview ? (
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {productPreviews.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No changes detected for any products.</p>
+              </div>
+            ) : (
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-6 pb-4">
+                  {productPreviews.map((preview, idx) => (
+                    <div key={preview.id} className="border rounded-lg p-4 bg-muted/30">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-semibold text-sm">{preview.name}</h4>
+                          <p className="text-xs text-muted-foreground">SKU: {preview.sku}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          {preview.changes.length} change{preview.changes.length !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                      
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[30%]">Field</TableHead>
+                            <TableHead className="w-[35%]">Current Value</TableHead>
+                            <TableHead className="w-[35%]">New Value</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {preview.changes.map((change, changeIdx) => (
+                            <TableRow key={changeIdx}>
+                              <TableCell className="font-medium text-sm">{change.field}</TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {typeof change.oldValue === 'number' 
+                                  ? change.oldValue.toLocaleString()
+                                  : change.oldValue}
+                              </TableCell>
+                              <TableCell className="text-sm font-medium flex items-center gap-2">
+                                <ArrowRight className="h-3 w-3 text-primary" />
+                                {typeof change.newValue === 'number'
+                                  ? change.newValue.toLocaleString()
+                                  : change.newValue}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </div>
+        ) : (
 
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -409,15 +617,46 @@ export function BulkEditDialog({ open, onOpenChange, onUpdate, selectedCount }: 
             </div>
           </TabsContent>
         </Tabs>
+        )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={updating}>
-            Cancel
-          </Button>
-          <Button onClick={handleUpdate} disabled={updating || !hasChanges}>
-            {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Update {selectedCount} Product{selectedCount !== 1 ? 's' : ''}
-          </Button>
+        <DialogFooter className="mt-4">
+          {showPreview ? (
+            <>
+              <Button variant="outline" onClick={handleBack} disabled={updating}>
+                Back to Edit
+              </Button>
+              <Button 
+                onClick={handleUpdate} 
+                disabled={updating || productPreviews.length === 0}
+                className="bg-primary"
+              >
+                {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Confirm & Apply Changes
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loadingPreview}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={generatePreview} 
+                disabled={loadingPreview || !hasChanges}
+              >
+                {loadingPreview ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading Preview...
+                  </>
+                ) : (
+                  <>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Preview Changes
+                  </>
+                )}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
