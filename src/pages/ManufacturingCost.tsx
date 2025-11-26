@@ -45,6 +45,7 @@ const ManufacturingCost = () => {
   const [customCertification, setCustomCertification] = useState("");
   
   const [formData, setFormData] = useState({
+    grossWeight: 0,
     netWeight: 0,
     purityFraction: 0.76,
     goldRate24k: 0,
@@ -100,6 +101,19 @@ const ManufacturingCost = () => {
     }
   };
 
+  // Calculate net weight automatically
+  useEffect(() => {
+    // Convert carat to grams (1 carat = 0.2 grams, so divide by 5)
+    const diamondWeightGrams = formData.diamondWeight / 5;
+    const gemstoneWeightGrams = formData.gemstoneWeight / 5;
+    const calculatedNetWeight = formData.grossWeight - diamondWeightGrams - gemstoneWeightGrams;
+    
+    setFormData(prev => ({
+      ...prev,
+      netWeight: Math.max(0, calculatedNetWeight), // Ensure non-negative
+    }));
+  }, [formData.grossWeight, formData.diamondWeight, formData.gemstoneWeight]);
+
   // Calculate costs
   useEffect(() => {
     const goldCost = formData.netWeight * formData.purityFraction * formData.goldRate24k;
@@ -135,6 +149,7 @@ const ManufacturingCost = () => {
 
   const handleReset = () => {
     setFormData({
+      grossWeight: 0,
       netWeight: 0,
       purityFraction: 0.76,
       goldRate24k: 0,
@@ -201,6 +216,7 @@ const ManufacturingCost = () => {
       notes: notes || null,
       reference_images: referenceImages,
       details: {
+        gross_weight: formData.grossWeight,
         diamond_per_carat_price: formData.diamondPerCaratPrice,
         diamond_weight: formData.diamondWeight,
         diamond_type: formData.diamondType,
@@ -263,6 +279,7 @@ const ManufacturingCost = () => {
     const knownCerts = ["GIA", "IGI", "AGS", "EGL", "HRD", "GSI", "none"];
     
     setFormData({
+      grossWeight: details?.gross_weight || 0,
       netWeight: estimate.net_weight || 0,
       purityFraction: estimate.purity_fraction || 0.76,
       goldRate24k: estimate.gold_rate_24k || 0,
@@ -609,15 +626,31 @@ const ManufacturingCost = () => {
             {/* Gold Cost Inputs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-accent/10 rounded-lg">
               <div className="space-y-2">
+                <Label htmlFor="grossWeight">Gross Weight (grams)</Label>
+                <Input
+                  id="grossWeight"
+                  type="number"
+                  step="0.01"
+                  value={formData.grossWeight || ""}
+                  onChange={(e) => handleChange("grossWeight", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="netWeight">Net Weight (grams)</Label>
                 <Input
                   id="netWeight"
                   type="number"
                   step="0.01"
-                  value={formData.netWeight || ""}
-                  onChange={(e) => handleChange("netWeight", e.target.value)}
-                  placeholder="0.00"
+                  value={formData.netWeight.toFixed(3) || ""}
+                  readOnly
+                  disabled
+                  className="bg-muted cursor-not-allowed"
+                  placeholder="Auto-calculated"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Auto-calculated: Gross Weight - (Diamond + Gemstone weights in grams)
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="purityFraction">Purity Fraction</Label>
