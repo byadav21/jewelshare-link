@@ -45,10 +45,11 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     let calculatedDValue = 0;
 
     // Primary formula: D.WT 1 × D RATE 1 + D.WT 2 × Pointer diamond
-    if (dWt1 > 0 && dRate1 > 0) {
+    // Use this if both D.WT 1 or D.WT 2 exist (even if one is 0)
+    if (formData.d_wt_1 || formData.d_wt_2) {
       calculatedDValue = (dWt1 * dRate1) + (dWt2 * pointerDiamond);
     }
-    // Fallback formula: T DWT × D RATE 1
+    // Fallback formula: T DWT × D RATE 1 (when D.WT 1 and D.WT 2 are both missing)
     else if (tDwt > 0 && dRate1 > 0) {
       calculatedDValue = tDwt * dRate1;
     }
