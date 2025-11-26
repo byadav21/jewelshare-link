@@ -33,6 +33,7 @@ const VendorProfile = () => {
     business_story: "",
     certifications: [] as string[],
     awards: [] as string[],
+    making_charges_per_gram: "",
   });
 
   useEffect(() => {
@@ -71,6 +72,7 @@ const VendorProfile = () => {
           business_story: profile.business_story || "",
           certifications: profile.certifications || [],
           awards: profile.awards || [],
+          making_charges_per_gram: profile.making_charges_per_gram || "",
         });
       }
     } catch (error: any) {
@@ -285,6 +287,21 @@ const VendorProfile = () => {
                       placeholder="India"
                       required
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="making_charges_per_gram">Making Charges per Gram (₹)</Label>
+                    <Input
+                      id="making_charges_per_gram"
+                      type="number"
+                      step="0.01"
+                      value={formData.making_charges_per_gram}
+                      onChange={(e) => setFormData({ ...formData, making_charges_per_gram: e.target.value })}
+                      placeholder="150"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This will be used to auto-calculate making charges for jewelry products
+                    </p>
                   </div>
 
                   <div className="border-t pt-6 space-y-4">
