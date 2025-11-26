@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.check-pending-inquiries]
 verify_jwt = false
+
+[functions.notify-order-status]
+verify_jwt = false
