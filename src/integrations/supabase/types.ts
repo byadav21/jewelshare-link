@@ -443,10 +443,16 @@ export type Database = {
           gold_cost: number | null
           gold_rate_24k: number | null
           id: string
+          invoice_date: string | null
+          invoice_notes: string | null
+          invoice_number: string | null
           is_customer_visible: boolean | null
+          is_invoice_generated: boolean | null
           making_charges: number | null
           net_weight: number | null
           notes: string | null
+          payment_due_date: string | null
+          payment_terms: string | null
           profit_margin_percentage: number | null
           purity_fraction: number | null
           reference_images: string[] | null
@@ -473,10 +479,16 @@ export type Database = {
           gold_cost?: number | null
           gold_rate_24k?: number | null
           id?: string
+          invoice_date?: string | null
+          invoice_notes?: string | null
+          invoice_number?: string | null
           is_customer_visible?: boolean | null
+          is_invoice_generated?: boolean | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
+          payment_due_date?: string | null
+          payment_terms?: string | null
           profit_margin_percentage?: number | null
           purity_fraction?: number | null
           reference_images?: string[] | null
@@ -503,10 +515,16 @@ export type Database = {
           gold_cost?: number | null
           gold_rate_24k?: number | null
           id?: string
+          invoice_date?: string | null
+          invoice_notes?: string | null
+          invoice_number?: string | null
           is_customer_visible?: boolean | null
+          is_invoice_generated?: boolean | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
+          payment_due_date?: string | null
+          payment_terms?: string | null
           profit_margin_percentage?: number | null
           purity_fraction?: number | null
           reference_images?: string[] | null
