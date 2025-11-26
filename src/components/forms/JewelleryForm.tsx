@@ -34,6 +34,22 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     };
     fetchVendorProfile();
   }, []);
+
+  // Auto-calculate T DWT (Total Diamond Weight): D.WT 1 + D.WT 2
+  useEffect(() => {
+    const dWt1 = parseFloat(formData.d_wt_1) || 0;
+    const dWt2 = parseFloat(formData.d_wt_2) || 0;
+    
+    const totalDiamondWeight = dWt1 + dWt2;
+    
+    if (totalDiamondWeight > 0 && totalDiamondWeight.toFixed(2) !== formData.diamond_weight) {
+      setFormData((prev: any) => ({
+        ...prev,
+        diamond_weight: totalDiamondWeight.toFixed(2)
+      }));
+    }
+  }, [formData.d_wt_1, formData.d_wt_2]);
+
   // Auto-calculate D VALUE
   useEffect(() => {
     const dWt1 = parseFloat(formData.d_wt_1) || 0;
@@ -79,6 +95,22 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
       }
     }
   }, [formData.weight_grams, formData.diamond_weight, formData.carat_weight]);
+
+  // Auto-calculate Gemstone Cost: GEMSTONE WT × GEMSTONE RATE
+  useEffect(() => {
+    const gemstoneWeight = parseFloat(formData.carat_weight) || 0;
+    const gemstoneRate = parseFloat(formData.gemstone_rate) || 0;
+    
+    if (gemstoneWeight > 0 && gemstoneRate > 0) {
+      const calculatedGemstoneCost = gemstoneWeight * gemstoneRate;
+      if (calculatedGemstoneCost.toFixed(2) !== formData.gemstone_cost) {
+        setFormData((prev: any) => ({
+          ...prev,
+          gemstone_cost: calculatedGemstoneCost.toFixed(2)
+        }));
+      }
+    }
+  }, [formData.carat_weight, formData.gemstone_rate]);
 
   // Auto-calculate MAKING charges (MKG): PER GRAM MAKING CHARGES × GROSS WEIGHT
   useEffect(() => {
@@ -239,7 +271,12 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
             value={formData.diamond_weight}
             onChange={handleChange}
             placeholder="0.59"
+            className="bg-muted/30"
+            readOnly
           />
+          <p className="text-xs text-muted-foreground">
+            Auto-calculated: D.WT 1 + D.WT 2
+          </p>
         </div>
       </div>
 
@@ -349,7 +386,38 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="gemstone_rate">Gemstone Rate (₹/ct)</Label>
+          <Input
+            id="gemstone_rate"
+            name="gemstone_rate"
+            type="number"
+            step="0.01"
+            value={formData.gemstone_rate}
+            onChange={handleChange}
+            placeholder="5000"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="gemstone_cost">Gemstone Cost (₹)</Label>
+          <Input
+            id="gemstone_cost"
+            name="gemstone_cost"
+            type="number"
+            step="0.01"
+            value={formData.gemstone_cost}
+            onChange={handleChange}
+            placeholder="0"
+            className="bg-muted/30"
+            readOnly
+          />
+          <p className="text-xs text-muted-foreground">
+            Auto-calculated: G.WT × Rate
+          </p>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="certification_cost">Cert Cost (₹)</Label>
           <Input
@@ -358,19 +426,6 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
             type="number"
             step="0.01"
             value={formData.certification_cost}
-            onChange={handleChange}
-            placeholder="0"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="gemstone_cost">Gemstone (₹)</Label>
-          <Input
-            id="gemstone_cost"
-            name="gemstone_cost"
-            type="number"
-            step="0.01"
-            value={formData.gemstone_cost}
             onChange={handleChange}
             placeholder="0"
           />
