@@ -258,7 +258,7 @@ const Index = () => {
                   className="group h-14 gap-2 px-10 text-lg font-semibold shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-gradient-to-r from-primary to-accent" 
                   onClick={() => navigate("/catalog")}
                 >
-                  Get Started Free
+                  Access Catalog
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
                 <Button 
@@ -755,6 +755,18 @@ const Index = () => {
                     }}
                   >
                     Pricing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/catalog");
+                    }}
+                  >
+                    Catalog
                   </a>
                 </li>
                 <li>
