@@ -532,7 +532,37 @@ const Catalog = () => {
   }, [allProducts]);
   const handleDeleteSelected = useCallback(async () => {
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to delete products");
+        return;
+      }
+      
+      console.log("Current user ID:", user.id);
       console.log("Deleting products:", Array.from(selectedProducts));
+      
+      // Verify ownership before deleting
+      const { data: productsToDelete, error: fetchError } = await supabase
+        .from("products")
+        .select("id, user_id, name")
+        .in("id", Array.from(selectedProducts));
+      
+      console.log("Products to delete:", productsToDelete);
+      
+      if (fetchError) {
+        console.error("Error fetching products:", fetchError);
+        throw fetchError;
+      }
+      
+      // Check if all products belong to current user
+      const notOwned = productsToDelete?.filter(p => p.user_id !== user.id);
+      if (notOwned && notOwned.length > 0) {
+        console.error("Some products don't belong to current user:", notOwned);
+        toast.error("You can only delete your own products");
+        return;
+      }
+      
       const {
         data,
         error
@@ -555,7 +585,7 @@ const Catalog = () => {
       console.error("Failed to delete products:", error);
       toast.error(`Failed to delete products: ${error.message || 'Unknown error'}`);
     }
-  }, [selectedProducts, fetchProducts]);
+  }, [selectedProducts, fetchProducts, fetchAllProducts]);
   const toggleProductSelection = useCallback((productId: string) => {
     setSelectedProducts(prev => {
       const newSelected = new Set(prev);
