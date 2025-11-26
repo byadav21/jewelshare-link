@@ -439,14 +439,31 @@ const Import = () => {
 
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to import products",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const products = previewData.valid;
 
       // Get existing SKUs to separate updates from inserts
       const skus = products.map(p => p.sku).filter(Boolean);
-      const { data: existingProducts } = await supabase
+      const { data: existingProducts, error: fetchError } = await supabase
         .from("products")
         .select("id, sku")
+        .eq("user_id", user.id)
+        .is("deleted_at", null)
         .in("sku", skus);
+
+      if (fetchError) {
+        console.error('Error fetching existing products:', fetchError);
+        throw new Error('Failed to check existing products. Please try again.');
+      }
 
       const existingSkuMap = new Map(existingProducts?.map(p => [p.sku, p.id]) || []);
       const productsToUpdate = products.filter(p => p.sku && existingSkuMap.has(p.sku));
