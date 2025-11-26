@@ -61,10 +61,12 @@ const ManufacturingCost = () => {
   const [showUsageLimitDialog, setShowUsageLimitDialog] = useState(false);
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [invoicePrefix, setInvoicePrefix] = useState("INV");
   const [invoiceDate, setInvoiceDate] = useState<Date>(new Date());
   const [paymentTerms, setPaymentTerms] = useState("Net 30");
   const [paymentDueDate, setPaymentDueDate] = useState<Date>();
   const [invoiceNotes, setInvoiceNotes] = useState("");
+  const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal'>('detailed');
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -281,14 +283,54 @@ const ManufacturingCost = () => {
     });
   };
 
-  const handleGenerateInvoice = () => {
-    if (!estimateName || !invoiceNumber) {
+  const generateNextInvoiceNumber = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .select("invoice_number")
+        .eq("user_id", user.id)
+        .not("invoice_number", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      const currentYear = new Date().getFullYear();
+      let nextNumber = 1;
+
+      if (data && data.length > 0) {
+        const lastInvoice = data[0].invoice_number;
+        const match = lastInvoice.match(/(\d+)$/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
+
+      const newInvoiceNumber = `${invoicePrefix}-${currentYear}-${String(nextNumber).padStart(3, '0')}`;
+      setInvoiceNumber(newInvoiceNumber);
+      return newInvoiceNumber;
+    } catch (error) {
+      console.error("Error generating invoice number:", error);
+      return `${invoicePrefix}-${new Date().getFullYear()}-001`;
+    }
+  };
+
+  const handleGenerateInvoice = async () => {
+    if (!estimateName) {
       toast({
         title: "Missing Information",
-        description: "Please enter estimate name and invoice number before generating invoice",
+        description: "Please enter estimate name before generating invoice",
         variant: "destructive",
       });
       return;
+    }
+
+    let finalInvoiceNumber = invoiceNumber;
+    if (!finalInvoiceNumber) {
+      finalInvoiceNumber = await generateNextInvoiceNumber() || "";
     }
 
     const details = formData;
@@ -307,7 +349,7 @@ const ManufacturingCost = () => {
     const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
 
     generateInvoicePDF({
-      invoiceNumber,
+      invoiceNumber: finalInvoiceNumber,
       invoiceDate: invoiceDate.toISOString(),
       paymentDueDate: paymentDueDate?.toISOString(),
       paymentTerms,
@@ -333,6 +375,7 @@ const ManufacturingCost = () => {
       finalSellingPrice: costs.finalSellingPrice,
       notes,
       invoiceNotes,
+      template: invoiceTemplate,
       details: {
         diamond_type: formData.diamondType,
         diamond_shape: formData.diamondShape,
@@ -996,13 +1039,33 @@ const ManufacturingCost = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="invoice-number">Invoice Number</Label>
+                    <Label htmlFor="invoice-prefix">Invoice Prefix</Label>
                     <Input
-                      id="invoice-number"
-                      value={invoiceNumber}
-                      onChange={(e) => setInvoiceNumber(e.target.value)}
-                      placeholder="INV-2024-001"
+                      id="invoice-prefix"
+                      value={invoicePrefix}
+                      onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
+                      placeholder="INV"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="invoice-number">Invoice Number</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="invoice-number"
+                        value={invoiceNumber}
+                        onChange={(e) => setInvoiceNumber(e.target.value)}
+                        placeholder="Auto-generated"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={generateNextInvoiceNumber}
+                        size="sm"
+                      >
+                        Auto
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -1060,6 +1123,20 @@ const ManufacturingCost = () => {
                       </PopoverContent>
                     </Popover>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Invoice Template</Label>
+                  <Select value={invoiceTemplate} onValueChange={(value: any) => setInvoiceTemplate(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="detailed">Detailed - Full breakdown with all specifications</SelectItem>
+                      <SelectItem value="summary">Summary - Condensed view with key information</SelectItem>
+                      <SelectItem value="minimal">Minimal - Basic invoice with totals only</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

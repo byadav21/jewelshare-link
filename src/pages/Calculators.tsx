@@ -9,7 +9,19 @@ import { TiltCard } from "@/components/TiltCard";
 const Calculators = () => {
   const navigate = useNavigate();
 
-  const calculators = [
+  const calculators: Array<{
+    icon: any;
+    title: string;
+    description: string;
+    features: string[];
+    gradient: string;
+    path: string;
+    badge?: string;
+    extraButton?: {
+      label: string;
+      path: string;
+    };
+  }> = [
     {
       icon: Gem,
       title: "Diamond Price Calculator",
@@ -35,12 +47,16 @@ const Calculators = () => {
         "Complete cost breakdown",
         "Profit margin calculator",
         "Save & load estimates",
-        "Compare multiple estimates",
+        "Invoice generation & history",
         "Real-time calculations"
       ],
       gradient: "from-jewellery-from to-jewellery-to",
       path: "/manufacturing-cost",
-      badge: "New"
+      badge: "New",
+      extraButton: {
+        label: "View Invoice History",
+        path: "/invoice-history"
+      }
     }
   ];
 
@@ -113,18 +129,34 @@ const Calculators = () => {
                       </ul>
                     </div>
 
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Navigating to:', calc.path);
-                        navigate(calc.path);
-                      }}
-                      className="w-full group/btn"
-                      size="lg"
-                    >
-                      Launch Calculator
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Navigating to:', calc.path);
+                          navigate(calc.path);
+                        }}
+                        className="w-full group/btn"
+                        size="lg"
+                      >
+                        Launch Calculator
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                      </Button>
+                      
+                      {calc.extraButton && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(calc.extraButton.path);
+                          }}
+                          variant="outline"
+                          className="w-full"
+                          size="lg"
+                        >
+                          {calc.extraButton.label}
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
             </ScrollReveal>

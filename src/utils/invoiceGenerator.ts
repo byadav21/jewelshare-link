@@ -41,9 +41,25 @@ interface InvoiceData {
   invoiceNotes?: string;
   details?: any;
   vendorBranding?: VendorBranding;
+  template?: 'detailed' | 'summary' | 'minimal';
 }
 
+type InvoiceTemplate = 'detailed' | 'summary' | 'minimal';
+
 export const generateInvoicePDF = (data: InvoiceData) => {
+  const template = data.template || 'detailed';
+  
+  if (template === 'summary') {
+    return generateSummaryInvoice(data);
+  } else if (template === 'minimal') {
+    return generateMinimalInvoice(data);
+  }
+  
+  // Default to detailed template
+  return generateDetailedInvoice(data);
+};
+
+const generateDetailedInvoice = (data: InvoiceData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   
@@ -338,6 +354,143 @@ export const generateInvoicePDF = (data: InvoiceData) => {
   );
   
   // Save PDF
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+  doc.save(fileName);
+};
+
+const generateSummaryInvoice = (data: InvoiceData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  const primaryColor = data.vendorBranding?.primaryColor || '#4F46E5';
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 79, g: 70, b: 229 };
+  };
+  const primaryRgb = hexToRgb(primaryColor);
+  
+  // Header
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(0, 0, pageWidth, 35, 'F');
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('INVOICE', pageWidth / 2, 22, { align: 'center' });
+  
+  doc.setTextColor(0, 0, 0);
+  
+  // Invoice info
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Invoice: ${data.invoiceNumber}`, 14, 50);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date: ${new Date(data.invoiceDate).toLocaleDateString()}`, 14, 56);
+  if (data.paymentDueDate) {
+    doc.text(`Due: ${new Date(data.paymentDueDate).toLocaleDateString()}`, 14, 62);
+  }
+  
+  // Customer info
+  if (data.customerName) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('Bill To:', 14, 75);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.customerName, 14, 81);
+    if (data.customerPhone) doc.text(data.customerPhone, 14, 87);
+  }
+  
+  // Summary table
+  const summaryData = [
+    ['Gold Cost', `₹${data.goldCost.toFixed(2)}`],
+    ['Making & Design', `₹${(data.makingCharges + data.cadDesignCharges + data.cammingCharges).toFixed(2)}`],
+    ['Stones & Gems', `₹${(data.diamondCost + data.gemstoneCost).toFixed(2)}`],
+    ['Certification', `₹${data.certificationCost.toFixed(2)}`],
+  ];
+  
+  (doc as any).autoTable({
+    startY: 100,
+    head: [['Item', 'Amount']],
+    body: summaryData,
+    theme: 'plain',
+    headStyles: { fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b], textColor: 255 },
+    margin: { left: 14, right: 14 },
+  });
+  
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
+  
+  // Total
+  doc.setFillColor(245, 245, 250);
+  doc.rect(14, finalY, pageWidth - 28, 20, 'F');
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text(`TOTAL: ₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, finalY + 13, { align: 'right' });
+  
+  doc.setTextColor(0, 0, 0);
+  
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+  doc.save(fileName);
+};
+
+const generateMinimalInvoice = (data: InvoiceData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  const primaryColor = data.vendorBranding?.primaryColor || '#4F46E5';
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 79, g: 70, b: 229 };
+  };
+  const primaryRgb = hexToRgb(primaryColor);
+  
+  // Simple header
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('INVOICE', pageWidth / 2, 30, { align: 'center' });
+  
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  
+  // Basic info
+  let yPos = 50;
+  doc.text(`Invoice Number: ${data.invoiceNumber}`, pageWidth / 2, yPos, { align: 'center' });
+  yPos += 8;
+  doc.text(`Date: ${new Date(data.invoiceDate).toLocaleDateString()}`, pageWidth / 2, yPos, { align: 'center' });
+  
+  if (data.customerName) {
+    yPos += 20;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Customer: ${data.customerName}`, pageWidth / 2, yPos, { align: 'center' });
+  }
+  
+  // Total amount - large and centered
+  yPos += 40;
+  doc.setFontSize(36);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth / 2, yPos, { align: 'center' });
+  
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  yPos += 10;
+  doc.text('Total Amount Due', pageWidth / 2, yPos, { align: 'center' });
+  
+  if (data.paymentDueDate) {
+    yPos += 15;
+    doc.setFontSize(11);
+    doc.text(`Payment Due: ${new Date(data.paymentDueDate).toLocaleDateString()}`, pageWidth / 2, yPos, { align: 'center' });
+  }
+  
   const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
   doc.save(fileName);
 };
