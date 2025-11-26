@@ -70,7 +70,13 @@ const Import = () => {
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
-      const sheetName = workbook.SheetNames[0];
+      
+      // Find the data sheet (skip "Instructions" sheet if present)
+      let sheetName = workbook.SheetNames[0];
+      if (sheetName === 'Instructions' && workbook.SheetNames.length > 1) {
+        sheetName = workbook.SheetNames[1]; // Use second sheet if first is instructions
+      }
+      
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet); // Don't skip any rows - read headers correctly
 
