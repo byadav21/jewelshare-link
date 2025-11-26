@@ -31,6 +31,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +53,7 @@ interface ManufacturingOrder {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  customer_address: string | null;
   status: string;
   total_cost: number;
   final_selling_price: number;
@@ -54,6 +62,19 @@ interface ManufacturingOrder {
   estimated_completion_date: string | null;
   is_customer_visible: boolean;
   share_token: string;
+  notes: string | null;
+  reference_images: string[] | null;
+  net_weight: number | null;
+  purity_fraction: number | null;
+  gold_rate_24k: number | null;
+  gold_cost: number | null;
+  making_charges: number | null;
+  diamond_cost: number | null;
+  gemstone_cost: number | null;
+  cad_design_charges: number | null;
+  camming_charges: number | null;
+  certification_cost: number | null;
+  profit_margin_percentage: number | null;
 }
 
 const AdminManufacturingOrders = () => {
@@ -73,6 +94,10 @@ const AdminManufacturingOrders = () => {
   const [bulkStatus, setBulkStatus] = useState<string>("");
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  
+  // Detail view states
+  const [selectedOrder, setSelectedOrder] = useState<ManufacturingOrder | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
 
   const statusConfig: Record<string, { label: string; color: string }> = {
     draft: { label: "Draft", color: "bg-gray-500" },
@@ -236,6 +261,11 @@ const AdminManufacturingOrders = () => {
     return new Intl.NumberFormat("en-IN", {
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const handleRowClick = (order: ManufacturingOrder) => {
+    setSelectedOrder(order);
+    setShowDetailDialog(true);
   };
 
   if (loading) {
@@ -447,8 +477,12 @@ const AdminManufacturingOrders = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>
+                      <TableRow 
+                        key={order.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleRowClick(order)}
+                      >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
                             checked={selectedOrders.has(order.id)}
                             onCheckedChange={(checked) => 
@@ -511,7 +545,7 @@ const AdminManufacturingOrders = () => {
                             {order.is_customer_visible ? "Yes" : "No"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           {order.is_customer_visible && order.share_token && (
                             <Button
                               variant="ghost"
@@ -559,6 +593,273 @@ const AdminManufacturingOrders = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Order Detail Dialog */}
+        <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Order Details: {selectedOrder?.estimate_name}</DialogTitle>
+              <DialogDescription>
+                Complete order information and cost breakdown
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedOrder && (
+              <div className="space-y-6">
+                {/* Status and Dates */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Order Status & Timeline</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Status</span>
+                      <Badge
+                        className={cn(
+                          "text-white",
+                          statusConfig[selectedOrder.status]?.color || "bg-gray-500"
+                        )}
+                      >
+                        {statusConfig[selectedOrder.status]?.label || selectedOrder.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Created</span>
+                      <span className="text-sm font-medium">
+                        {format(new Date(selectedOrder.created_at), "PPP")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Last Updated</span>
+                      <span className="text-sm font-medium">
+                        {format(new Date(selectedOrder.updated_at), "PPP")}
+                      </span>
+                    </div>
+                    {selectedOrder.estimated_completion_date && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Est. Completion</span>
+                        <span className="text-sm font-medium">
+                          {format(new Date(selectedOrder.estimated_completion_date), "PPP")}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Customer Visible</span>
+                      <Badge variant={selectedOrder.is_customer_visible ? "default" : "secondary"}>
+                        {selectedOrder.is_customer_visible ? "Yes" : "No"}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Customer Details */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Customer Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid gap-3">
+                      <div>
+                        <span className="text-sm text-muted-foreground">Name</span>
+                        <p className="text-sm font-medium">{selectedOrder.customer_name || "N/A"}</p>
+                      </div>
+                      {selectedOrder.customer_email && (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Email</span>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <p className="text-sm font-medium">{selectedOrder.customer_email}</p>
+                          </div>
+                        </div>
+                      )}
+                      {selectedOrder.customer_phone && (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Phone</span>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <p className="text-sm font-medium">{selectedOrder.customer_phone}</p>
+                          </div>
+                        </div>
+                      )}
+                      {selectedOrder.customer_address && (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Address</span>
+                          <p className="text-sm font-medium whitespace-pre-wrap">
+                            {selectedOrder.customer_address}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Reference Images */}
+                {selectedOrder.reference_images && selectedOrder.reference_images.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Reference Images</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {selectedOrder.reference_images.map((imageUrl, index) => (
+                          <a
+                            key={index}
+                            href={imageUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative aspect-square rounded-lg overflow-hidden border hover:border-primary transition-colors"
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`Reference ${index + 1}`}
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Cost Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Cost Breakdown</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      {selectedOrder.net_weight && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Net Weight</span>
+                          <span className="font-medium">{selectedOrder.net_weight}g</span>
+                        </div>
+                      )}
+                      {selectedOrder.purity_fraction && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Purity Fraction</span>
+                          <span className="font-medium">{selectedOrder.purity_fraction}</span>
+                        </div>
+                      )}
+                      {selectedOrder.gold_rate_24k && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Gold Rate (24k)</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.gold_rate_24k)}/g
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t pt-3 space-y-2">
+                      {selectedOrder.gold_cost > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Gold Cost</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.gold_cost)}
+                          </span>
+                        </div>
+                      )}
+                      {selectedOrder.making_charges > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Making Charges</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.making_charges)}
+                          </span>
+                        </div>
+                      )}
+                      {selectedOrder.diamond_cost > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Diamond Cost</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.diamond_cost)}
+                          </span>
+                        </div>
+                      )}
+                      {selectedOrder.gemstone_cost > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Gemstone Cost</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.gemstone_cost)}
+                          </span>
+                        </div>
+                      )}
+                      {selectedOrder.cad_design_charges > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">CAD Design Charges</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.cad_design_charges)}
+                          </span>
+                        </div>
+                      )}
+                      {selectedOrder.camming_charges > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Camming Charges</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.camming_charges)}
+                          </span>
+                        </div>
+                      )}
+                      {selectedOrder.certification_cost > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Certification Cost</span>
+                          <span className="font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(selectedOrder.certification_cost)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t pt-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">Total Cost</span>
+                        <span className="font-semibold text-lg flex items-center gap-1">
+                          <IndianRupee className="h-4 w-4" />
+                          {formatCurrency(selectedOrder.total_cost || 0)}
+                        </span>
+                      </div>
+                      {selectedOrder.profit_margin_percentage > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Profit Margin</span>
+                          <span className="font-medium">{selectedOrder.profit_margin_percentage}%</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-primary">Final Selling Price</span>
+                        <span className="font-semibold text-lg text-primary flex items-center gap-1">
+                          <IndianRupee className="h-4 w-4" />
+                          {formatCurrency(selectedOrder.final_selling_price || 0)}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Notes */}
+                {selectedOrder.notes && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm whitespace-pre-wrap">{selectedOrder.notes}</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
