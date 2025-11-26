@@ -62,14 +62,15 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     }
   }, [formData.d_wt_1, formData.d_wt_2, formData.d_rate_1, formData.pointer_diamond, formData.diamond_weight]);
 
-  // Auto-calculate net weight: Gross Weight - Diamond Weight (convert carats to grams)
+  // Auto-calculate net weight: Gross Weight - (Diamond Weight + Gemstone Weight) / 5
   useEffect(() => {
     const grossWeight = parseFloat(formData.weight_grams) || 0;
     const diamondWeightCarats = parseFloat(formData.diamond_weight) || 0;
-    const diamondWeightGrams = diamondWeightCarats * 0.2; // 1 carat = 0.2 grams
+    const gemstoneWeightCarats = parseFloat(formData.carat_weight) || 0;
     
-    if (grossWeight > 0 && diamondWeightCarats > 0) {
-      const netWeight = grossWeight - diamondWeightGrams;
+    if (grossWeight > 0 && (diamondWeightCarats > 0 || gemstoneWeightCarats > 0)) {
+      // Convert carats to grams by dividing by 5 (1 gram = 5 carats, so 1 carat = 0.2g)
+      const netWeight = grossWeight - ((diamondWeightCarats + gemstoneWeightCarats) / 5);
       if (netWeight > 0 && netWeight.toFixed(3) !== formData.net_weight) {
         setFormData((prev: any) => ({
           ...prev,
@@ -77,7 +78,7 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
         }));
       }
     }
-  }, [formData.weight_grams, formData.diamond_weight]);
+  }, [formData.weight_grams, formData.diamond_weight, formData.carat_weight]);
 
   // Auto-calculate MAKING charges (MKG): PER GRAM MAKING CHARGES × GROSS WEIGHT
   useEffect(() => {
@@ -158,7 +159,7 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="weight_grams">Gross Weight (g)</Label>
           <Input
@@ -173,6 +174,19 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="carat_weight">Gemstone Weight (ct)</Label>
+          <Input
+            id="carat_weight"
+            name="carat_weight"
+            type="number"
+            step="0.01"
+            value={formData.carat_weight}
+            onChange={handleChange}
+            placeholder="0.50"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="net_weight">Net Weight (g)</Label>
           <Input
             id="net_weight"
@@ -182,6 +196,8 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
             value={formData.net_weight}
             onChange={handleChange}
             placeholder="4.252"
+            className="bg-muted/30"
+            readOnly
           />
         </div>
       </div>
