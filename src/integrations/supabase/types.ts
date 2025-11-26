@@ -383,6 +383,72 @@ export type Database = {
         }
         Relationships: []
       }
+      manufacturing_cost_estimates: {
+        Row: {
+          cad_design_charges: number | null
+          camming_charges: number | null
+          certification_cost: number | null
+          created_at: string | null
+          diamond_cost: number | null
+          estimate_name: string
+          final_selling_price: number | null
+          gemstone_cost: number | null
+          gold_cost: number | null
+          gold_rate_24k: number | null
+          id: string
+          making_charges: number | null
+          net_weight: number | null
+          notes: string | null
+          profit_margin_percentage: number | null
+          purity_fraction: number | null
+          total_cost: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cad_design_charges?: number | null
+          camming_charges?: number | null
+          certification_cost?: number | null
+          created_at?: string | null
+          diamond_cost?: number | null
+          estimate_name: string
+          final_selling_price?: number | null
+          gemstone_cost?: number | null
+          gold_cost?: number | null
+          gold_rate_24k?: number | null
+          id?: string
+          making_charges?: number | null
+          net_weight?: number | null
+          notes?: string | null
+          profit_margin_percentage?: number | null
+          purity_fraction?: number | null
+          total_cost?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cad_design_charges?: number | null
+          camming_charges?: number | null
+          certification_cost?: number | null
+          created_at?: string | null
+          diamond_cost?: number | null
+          estimate_name?: string
+          final_selling_price?: number | null
+          gemstone_cost?: number | null
+          gold_cost?: number | null
+          gold_rate_24k?: number | null
+          id?: string
+          making_charges?: number | null
+          net_weight?: number | null
+          notes?: string | null
+          profit_margin_percentage?: number | null
+          purity_fraction?: number | null
+          total_cost?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string | null

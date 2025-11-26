@@ -100,6 +100,10 @@ const AppContent = () => {
         path={ROUTES.MANUFACTURING_COST} 
         element={<RouteSuspense><Pages.ManufacturingCost /></RouteSuspense>} 
       />
+      <Route 
+        path={ROUTES.CALCULATORS} 
+        element={<RouteSuspense><Pages.Calculators /></RouteSuspense>} 
+      />
 
       {/* Auth-only route (requires login but not approval) */}
       <Route 
