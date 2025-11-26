@@ -294,12 +294,18 @@ const Import = () => {
 
       // Insert new products
       if (productsToInsert.length > 0) {
+        // Debug: Log first product to see what values we're sending
+        console.log('DEBUG: First product to insert:', JSON.stringify(productsToInsert[0], null, 2));
+        console.log('DEBUG: cost_price value:', productsToInsert[0].cost_price);
+        console.log('DEBUG: retail_price value:', productsToInsert[0].retail_price);
+        
         const { data: insertedProducts, error: insertError } = await supabase
           .from("products")
           .insert(productsToInsert)
           .select();
 
         if (insertError) {
+          console.error('DEBUG: Insert error:', insertError);
           throw insertError;
         }
 
