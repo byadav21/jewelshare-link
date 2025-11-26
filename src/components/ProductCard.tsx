@@ -162,8 +162,14 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, v
           )}
           {product.metal_type && (
             <div className="flex justify-between">
-              <span className="text-muted-foreground font-medium">Metal Purity:</span>
+              <span className="text-muted-foreground font-medium">Metal Type:</span>
               <span className="text-foreground font-semibold">{product.metal_type}</span>
+            </div>
+          )}
+          {product.purity_fraction_used && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground font-medium">Metal Purity:</span>
+              <span className="text-foreground font-semibold">{product.purity_fraction_used}%</span>
             </div>
           )}
         </div>
