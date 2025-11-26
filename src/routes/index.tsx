@@ -66,4 +66,5 @@ export const ScratchLeads = lazy(() => import("@/pages/ScratchLeads"));
 export const AdminRewards = lazy(() => import("@/pages/AdminRewards"));
 export const AdminDiamondPrices = lazy(() => import("@/pages/AdminDiamondPrices"));
 export const AdminManufacturingOrders = lazy(() => import("@/pages/AdminManufacturingOrders"));
+export const GuestCalculatorAnalytics = lazy(() => import("@/pages/GuestCalculatorAnalytics"));
 export const Wishlist = lazy(() => import("@/pages/Wishlist"));
