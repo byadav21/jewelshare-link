@@ -16,6 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { DiamondCalculatorUpgradeBanner } from "@/components/DiamondCalculatorUpgradeBanner";
+import { UnlimitedUnlockedCelebration } from "@/components/UnlimitedUnlockedCelebration";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 
 interface ComparisonItem {
   id: string;
@@ -39,6 +41,7 @@ interface ComparisonItem {
 const DiamondCalculator = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [guestUsageCount, setGuestUsageCount] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [carat, setCarat] = useState<string>("");
   const [shape, setShape] = useState<string>("");
   const [color, setColor] = useState<string>("");
@@ -54,7 +57,7 @@ const DiamondCalculator = () => {
   } | null>(null);
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
 
-  // Check authentication status
+  // Check authentication status and show celebration on sign in
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -63,11 +66,17 @@ const DiamondCalculator = () => {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const wasGuest = !isAuthenticated;
       setIsAuthenticated(!!session);
+      
+      // Show celebration if user just signed in and was previously a guest
+      if (event === 'SIGNED_IN' && session && wasGuest) {
+        setTimeout(() => setShowCelebration(true), 500);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isAuthenticated]);
 
   // Track guest usage with daily reset
   useEffect(() => {
@@ -381,7 +390,16 @@ const DiamondCalculator = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90">
+      <UnlimitedUnlockedCelebration 
+        show={showCelebration} 
+        onClose={() => setShowCelebration(false)} 
+      />
+      
       <div className="container mx-auto px-4 py-12">
+        <div className="mb-4">
+          <BackToHomeButton />
+        </div>
+        
         <ScrollReveal>
           <div className="text-center mb-12">
             <motion.div
