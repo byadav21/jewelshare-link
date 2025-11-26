@@ -1,0 +1,388 @@
+import { useState, useEffect } from "react";
+import { AdminLayout } from "@/components/AdminLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Calendar as CalendarIcon, Search, Filter, Eye, Mail, Phone, IndianRupee } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { AdminLoadingSkeleton } from "@/components/admin/AdminLoadingSkeleton";
+
+interface ManufacturingOrder {
+  id: string;
+  estimate_name: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  status: string;
+  total_cost: number;
+  final_selling_price: number;
+  created_at: string;
+  updated_at: string;
+  estimated_completion_date: string | null;
+  is_customer_visible: boolean;
+  share_token: string;
+}
+
+const AdminManufacturingOrders = () => {
+  const { toast } = useToast();
+  const [orders, setOrders] = useState<ManufacturingOrder[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<ManufacturingOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>();
+
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    draft: { label: "Draft", color: "bg-gray-500" },
+    quoted: { label: "Quoted", color: "bg-blue-500" },
+    approved: { label: "Approved", color: "bg-green-500" },
+    in_production: { label: "In Production", color: "bg-yellow-500" },
+    completed: { label: "Completed", color: "bg-emerald-600" },
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [orders, searchQuery, statusFilter, dateFrom, dateTo]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setOrders(data || []);
+    } catch (error: any) {
+      console.error("Error fetching orders:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load manufacturing orders",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...orders];
+
+    // Search filter (customer name, email, or estimate name)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (order) =>
+          order.customer_name?.toLowerCase().includes(query) ||
+          order.customer_email?.toLowerCase().includes(query) ||
+          order.estimate_name.toLowerCase().includes(query)
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((order) => order.status === statusFilter);
+    }
+
+    // Date range filter
+    if (dateFrom) {
+      filtered = filtered.filter(
+        (order) => new Date(order.created_at) >= dateFrom
+      );
+    }
+    if (dateTo) {
+      const endOfDay = new Date(dateTo);
+      endOfDay.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(
+        (order) => new Date(order.created_at) <= endOfDay
+      );
+    }
+
+    setFilteredOrders(filtered);
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <AdminLoadingSkeleton />
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Manufacturing Orders</h1>
+          <p className="text-muted-foreground mt-2">
+            View and manage all manufacturing cost estimates and orders
+          </p>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filters
+            </CardTitle>
+            <CardDescription>
+              Filter orders by customer, status, or date range
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* Search */}
+              <div className="space-y-2">
+                <Label htmlFor="search">Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Customer or estimate name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="quoted">Quoted</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="in_production">In Production</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date From */}
+              <div className="space-y-2">
+                <Label>Date From</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Date To */}
+              <div className="space-y-2">
+                <Label>Date To</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2">
+              <Button variant="outline" onClick={resetFilters}>
+                Reset Filters
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Showing {filteredOrders.length} of {orders.length} orders
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Orders Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Orders ({filteredOrders.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {filteredOrders.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No orders found matching your filters</p>
+              </div>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Estimate Name</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Total Cost</TableHead>
+                      <TableHead>Selling Price</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Completion Date</TableHead>
+                      <TableHead>Visible</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">
+                          {order.estimate_name}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <p className="font-medium">{order.customer_name || "N/A"}</p>
+                            {order.customer_email && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Mail className="h-3 w-3" />
+                                {order.customer_email}
+                              </div>
+                            )}
+                            {order.customer_phone && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Phone className="h-3 w-3" />
+                                {order.customer_phone}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={cn(
+                              "text-white",
+                              statusConfig[order.status]?.color || "bg-gray-500"
+                            )}
+                          >
+                            {statusConfig[order.status]?.label || order.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(order.total_cost || 0)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" />
+                            {formatCurrency(order.final_selling_price || 0)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(order.created_at), "PPP")}
+                        </TableCell>
+                        <TableCell>
+                          {order.estimated_completion_date
+                            ? format(new Date(order.estimated_completion_date), "PPP")
+                            : "Not set"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={order.is_customer_visible ? "default" : "secondary"}>
+                            {order.is_customer_visible ? "Yes" : "No"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {order.is_customer_visible && order.share_token && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                window.open(`/order-tracking/${order.share_token}`, "_blank");
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default AdminManufacturingOrders;
