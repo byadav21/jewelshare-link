@@ -47,6 +47,8 @@ const ManufacturingCost = () => {
     certificationCost: 0,
     diamondPerCaratPrice: 0,
     diamondWeight: 0,
+    diamondColor: "",
+    diamondClarity: "",
     gemstonePerCaratPrice: 0,
     gemstoneWeight: 0,
   });
@@ -132,6 +134,8 @@ const ManufacturingCost = () => {
       certificationCost: 0,
       diamondPerCaratPrice: 0,
       diamondWeight: 0,
+      diamondColor: "",
+      diamondClarity: "",
       gemstonePerCaratPrice: 0,
       gemstoneWeight: 0,
     });
@@ -185,6 +189,8 @@ const ManufacturingCost = () => {
       details: {
         diamond_per_carat_price: formData.diamondPerCaratPrice,
         diamond_weight: formData.diamondWeight,
+        diamond_color: formData.diamondColor,
+        diamond_clarity: formData.diamondClarity,
         gemstone_per_carat_price: formData.gemstonePerCaratPrice,
         gemstone_weight: formData.gemstoneWeight,
       },
@@ -246,6 +252,8 @@ const ManufacturingCost = () => {
       certificationCost: estimate.certification_cost || 0,
       diamondPerCaratPrice: details?.diamond_per_carat_price || 0,
       diamondWeight: details?.diamond_weight || 0,
+      diamondColor: details?.diamond_color || "",
+      diamondClarity: details?.diamond_clarity || "",
       gemstonePerCaratPrice: details?.gemstone_per_carat_price || 0,
       gemstoneWeight: details?.gemstone_weight || 0,
     });
@@ -672,6 +680,55 @@ const ManufacturingCost = () => {
                   onChange={(e) => handleChange("diamondWeight", e.target.value)}
                   placeholder="0.00"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="diamondColor">Diamond Color</Label>
+                <Select
+                  value={formData.diamondColor}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondColor: value }))}
+                >
+                  <SelectTrigger id="diamondColor" className="bg-background">
+                    <SelectValue placeholder="Select color grade" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    <SelectItem value="D">D (Colorless)</SelectItem>
+                    <SelectItem value="E">E (Colorless)</SelectItem>
+                    <SelectItem value="F">F (Colorless)</SelectItem>
+                    <SelectItem value="G">G (Near Colorless)</SelectItem>
+                    <SelectItem value="H">H (Near Colorless)</SelectItem>
+                    <SelectItem value="I">I (Near Colorless)</SelectItem>
+                    <SelectItem value="J">J (Near Colorless)</SelectItem>
+                    <SelectItem value="K">K (Faint Yellow)</SelectItem>
+                    <SelectItem value="L">L (Faint Yellow)</SelectItem>
+                    <SelectItem value="M">M (Faint Yellow)</SelectItem>
+                    <SelectItem value="N-R">N-R (Very Light Yellow)</SelectItem>
+                    <SelectItem value="S-Z">S-Z (Light Yellow)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="diamondClarity">Diamond Clarity</Label>
+                <Select
+                  value={formData.diamondClarity}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondClarity: value }))}
+                >
+                  <SelectTrigger id="diamondClarity" className="bg-background">
+                    <SelectValue placeholder="Select clarity grade" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    <SelectItem value="FL">FL (Flawless)</SelectItem>
+                    <SelectItem value="IF">IF (Internally Flawless)</SelectItem>
+                    <SelectItem value="VVS1">VVS1 (Very Very Slightly Included)</SelectItem>
+                    <SelectItem value="VVS2">VVS2 (Very Very Slightly Included)</SelectItem>
+                    <SelectItem value="VS1">VS1 (Very Slightly Included)</SelectItem>
+                    <SelectItem value="VS2">VS2 (Very Slightly Included)</SelectItem>
+                    <SelectItem value="SI1">SI1 (Slightly Included)</SelectItem>
+                    <SelectItem value="SI2">SI2 (Slightly Included)</SelectItem>
+                    <SelectItem value="I1">I1 (Included)</SelectItem>
+                    <SelectItem value="I2">I2 (Included)</SelectItem>
+                    <SelectItem value="I3">I3 (Included)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gemstonePerCaratPrice">Gemstone Per Carat Price (₹)</Label>
