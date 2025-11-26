@@ -377,6 +377,18 @@ const Catalog = () => {
     const allCategories = [...new Set([...predefinedCategories, ...productCategories])];
     return allCategories.sort();
   }, [products]);
+  
+  // Calculate category counts for better UX
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      all: products.length
+    };
+    categories.forEach(cat => {
+      counts[cat] = products.filter(p => p.category === cat).length;
+    });
+    return counts;
+  }, [products, categories]);
+  
   const metalTypes = useMemo(() => [...new Set(products.map(p => p.metal_type).filter(Boolean))].sort(), [products]);
   const diamondColors = useMemo(() => [...new Set(products.map(p => p.gemstone?.split(' ')[0]).filter(Boolean))].sort(), [products]);
   const diamondClarities = useMemo(() => [...new Set(products.map(p => p.gemstone?.split(' ')[1]).filter(Boolean))].sort(), [products]);
@@ -1215,7 +1227,26 @@ const Catalog = () => {
 
               {/* Filters - Always visible, not affected by transition */}
               <div key={`filters-${selectedProductType}`} className="mb-6 sm:mb-8 animate-slide-in-right">
-                <CatalogFilters filters={filters} onFilterChange={setFilters} productType={selectedProductType} categories={categories} metalTypes={metalTypes} diamondColors={diamondColors} diamondClarities={diamondClarities} deliveryTypes={deliveryTypes} gemstoneTypes={[]} colors={[]} clarities={[]} cuts={[]} shapes={[]} polishes={[]} symmetries={[]} fluorescences={[]} labs={[]} />
+                <CatalogFilters 
+                  filters={filters} 
+                  onFilterChange={setFilters} 
+                  productType={selectedProductType} 
+                  categories={categories} 
+                  metalTypes={metalTypes} 
+                  diamondColors={diamondColors} 
+                  diamondClarities={diamondClarities} 
+                  deliveryTypes={deliveryTypes} 
+                  categoryCounts={categoryCounts}
+                  gemstoneTypes={[]} 
+                  colors={[]} 
+                  clarities={[]} 
+                  cuts={[]} 
+                  shapes={[]} 
+                  polishes={[]} 
+                  symmetries={[]} 
+                  fluorescences={[]} 
+                  labs={[]} 
+                />
               </div>
 
               {/* Select All Checkbox */}
