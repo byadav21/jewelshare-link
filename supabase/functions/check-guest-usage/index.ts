@@ -36,6 +36,32 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Fetch geolocation data for this IP
+    let geoData = null;
+    try {
+      // Using ip-api.com free service (no API key required)
+      // Rate limit: 45 requests per minute
+      if (clientIP !== "unknown") {
+        const geoResponse = await fetch(`http://ip-api.com/json/${clientIP}?fields=status,country,countryCode,region,city,lat,lon`);
+        if (geoResponse.ok) {
+          const geo = await geoResponse.json();
+          if (geo.status === "success") {
+            geoData = {
+              country: geo.country,
+              country_code: geo.countryCode,
+              region: geo.region,
+              city: geo.city,
+              latitude: geo.lat,
+              longitude: geo.lon,
+            };
+          }
+        }
+      }
+    } catch (geoError) {
+      console.error("Error fetching geolocation:", geoError);
+      // Continue without geo data if fetch fails
+    }
+
     // Calculate time window (last 24 hours)
     const timeWindowStart = new Date();
     timeWindowStart.setHours(timeWindowStart.getHours() - TIME_WINDOW_HOURS);
@@ -61,13 +87,25 @@ serve(async (req) => {
 
     // If usage is allowed, record this usage
     if (usageAllowed) {
+      const insertData: any = {
+        ip_address: clientIP,
+        calculator_type: calculatorType,
+        user_agent: userAgent,
+      };
+
+      // Add geolocation data if available
+      if (geoData) {
+        insertData.country = geoData.country;
+        insertData.country_code = geoData.country_code;
+        insertData.region = geoData.region;
+        insertData.city = geoData.city;
+        insertData.latitude = geoData.latitude;
+        insertData.longitude = geoData.longitude;
+      }
+
       const { error: insertError } = await supabase
         .from("guest_calculator_usage")
-        .insert({
-          ip_address: clientIP,
-          calculator_type: calculatorType,
-          user_agent: userAgent,
-        });
+        .insert(insertData);
 
       if (insertError) {
         console.error("Error recording usage:", insertError);

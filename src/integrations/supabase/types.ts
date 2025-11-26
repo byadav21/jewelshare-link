@@ -386,22 +386,40 @@ export type Database = {
       guest_calculator_usage: {
         Row: {
           calculator_type: string
+          city: string | null
+          country: string | null
+          country_code: string | null
           id: string
           ip_address: string
+          latitude: number | null
+          longitude: number | null
+          region: string | null
           used_at: string
           user_agent: string | null
         }
         Insert: {
           calculator_type: string
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
           id?: string
           ip_address: string
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
           used_at?: string
           user_agent?: string | null
         }
         Update: {
           calculator_type?: string
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
           id?: string
           ip_address?: string
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
           used_at?: string
           user_agent?: string | null
         }

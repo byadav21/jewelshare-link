@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AdminLayout } from "@/components/AdminLayout";
-import { BarChart, Users, Calculator, TrendingUp, Clock } from "lucide-react";
+import { BarChart, Users, Calculator, TrendingUp, Clock, Globe } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -39,6 +39,15 @@ interface DailyUsage {
   total: number;
 }
 
+interface GeographicData {
+  country: string;
+  country_code: string;
+  usage_count: number;
+  manufacturing: number;
+  diamond: number;
+  top_cities: Array<{ city: string; count: number }>;
+}
+
 const GuestCalculatorAnalytics = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -52,6 +61,7 @@ const GuestCalculatorAnalytics = () => {
   });
   const [topIPs, setTopIPs] = useState<TopIP[]>([]);
   const [dailyUsage, setDailyUsage] = useState<DailyUsage[]>([]);
+  const [geographicData, setGeographicData] = useState<GeographicData[]>([]);
 
   useEffect(() => {
     fetchAnalytics();
@@ -161,6 +171,62 @@ const GuestCalculatorAnalytics = () => {
         }));
 
       setDailyUsage(dailyUsageList);
+
+      // Calculate geographic distribution
+      const countryMap = new Map<string, {
+        country: string;
+        country_code: string;
+        manufacturing: number;
+        diamond: number;
+        cities: Map<string, number>;
+      }>();
+
+      allUsage
+        .filter(u => u.country) // Only include entries with geolocation data
+        .forEach(usage => {
+          const existing = countryMap.get(usage.country);
+          if (existing) {
+            existing.manufacturing += usage.calculator_type === "manufacturing" ? 1 : 0;
+            existing.diamond += usage.calculator_type === "diamond" ? 1 : 0;
+            if (usage.city) {
+              const cityCount = existing.cities.get(usage.city) || 0;
+              existing.cities.set(usage.city, cityCount + 1);
+            }
+          } else {
+            const cities = new Map<string, number>();
+            if (usage.city) {
+              cities.set(usage.city, 1);
+            }
+            countryMap.set(usage.country, {
+              country: usage.country,
+              country_code: usage.country_code || "",
+              manufacturing: usage.calculator_type === "manufacturing" ? 1 : 0,
+              diamond: usage.calculator_type === "diamond" ? 1 : 0,
+              cities,
+            });
+          }
+        });
+
+      const geoList = Array.from(countryMap.entries())
+        .map(([_, data]) => {
+          const topCities = Array.from(data.cities.entries())
+            .map(([city, count]) => ({ city, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+
+          return {
+            country: data.country,
+            country_code: data.country_code,
+            usage_count: data.manufacturing + data.diamond,
+            manufacturing: data.manufacturing,
+            diamond: data.diamond,
+            top_cities: topCities,
+          };
+        })
+        .sort((a, b) => b.usage_count - a.usage_count)
+        .slice(0, 15);
+
+      setGeographicData(geoList);
 
     } catch (error) {
       console.error("Error fetching analytics:", error);
@@ -297,6 +363,7 @@ const GuestCalculatorAnalytics = () => {
           <TabsList>
             <TabsTrigger value="top-users">Top Users</TabsTrigger>
             <TabsTrigger value="daily-usage">Daily Usage</TabsTrigger>
+            <TabsTrigger value="geographic">Geographic</TabsTrigger>
           </TabsList>
 
           <TabsContent value="top-users" className="space-y-4">
@@ -406,6 +473,85 @@ const GuestCalculatorAnalytics = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="geographic" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Geographic Distribution
+                </CardTitle>
+                <CardDescription>
+                  Calculator usage by country and region - identify expansion opportunities
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {geographicData.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No geographic data available yet. Location tracking started recently.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Country</TableHead>
+                        <TableHead>Total Uses</TableHead>
+                        <TableHead>Manufacturing</TableHead>
+                        <TableHead>Diamond</TableHead>
+                        <TableHead>Top Cities</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geographicData.map((geo, index) => (
+                        <TableRow key={geo.country_code || index}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {geo.country_code && (
+                                <span className="text-2xl">
+                                  {String.fromCodePoint(
+                                    ...[...geo.country_code.toUpperCase()].map(
+                                      c => 127397 + c.charCodeAt(0)
+                                    )
+                                  )}
+                                </span>
+                              )}
+                              <span className="font-medium">{geo.country}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-bold">{geo.usage_count}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="default" className="bg-blue-500">
+                              {geo.manufacturing}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="bg-purple-500 text-white">
+                              {geo.diamond}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm text-muted-foreground">
+                              {geo.top_cities.length > 0 ? (
+                                geo.top_cities.map((city, i) => (
+                                  <div key={i}>
+                                    {city.city} ({city.count})
+                                  </div>
+                                ))
+                              ) : (
+                                <span className="text-xs">N/A</span>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Engagement Insights */}
@@ -444,6 +590,24 @@ const GuestCalculatorAnalytics = () => {
                 }
               </p>
             </div>
+
+            {geographicData.length > 0 && (
+              <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg border border-purple-200 dark:border-purple-800">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Geographic Insights
+                </h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Top market: <strong>{geographicData[0]?.country}</strong> with {geographicData[0]?.usage_count} uses.
+                  {geographicData.length > 1 && (
+                    <> Emerging markets: {geographicData.slice(1, 4).map(g => g.country).join(", ")}.</>
+                  )}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Consider localization, regional marketing, or partnerships in high-usage countries to maximize conversion potential.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
