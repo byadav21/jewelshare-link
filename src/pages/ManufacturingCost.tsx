@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp } from "lucide-react";
+import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +33,9 @@ const ManufacturingCost = () => {
   const [notes, setNotes] = useState("");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
+  const [referenceImages, setReferenceImages] = useState<string[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     netWeight: 0,
@@ -136,6 +139,7 @@ const ManufacturingCost = () => {
     setCurrentEstimateId(null);
     setEstimateName("");
     setNotes("");
+    setReferenceImages([]);
   };
 
   const handleSave = async () => {
@@ -177,6 +181,7 @@ const ManufacturingCost = () => {
       profit_margin_percentage: profitMargin,
       final_selling_price: costs.finalSellingPrice,
       notes: notes || null,
+      reference_images: referenceImages,
       details: {
         diamond_per_carat_price: formData.diamondPerCaratPrice,
         diamond_weight: formData.diamondWeight,
@@ -248,6 +253,7 @@ const ManufacturingCost = () => {
     setCurrentEstimateId(estimate.id);
     setEstimateName(estimate.estimate_name);
     setNotes(estimate.notes || "");
+    setReferenceImages(estimate.reference_images || []);
     setShowLoadDialog(false);
     toast({
       title: "Loaded",
@@ -277,6 +283,94 @@ const ManufacturingCost = () => {
         handleReset();
       }
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      setUploadingImage(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to upload images.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const uploadedUrls: string[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+          toast({
+            title: "Invalid File Type",
+            description: `${file.name} is not an image file.`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            title: "File Too Large",
+            description: `${file.name} exceeds 5MB limit.`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        // Create unique filename
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        // Upload to Supabase Storage
+        const { data, error } = await supabase.storage
+          .from("manufacturing-estimates")
+          .upload(fileName, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from("manufacturing-estimates")
+          .getPublicUrl(data.path);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      setReferenceImages([...referenceImages, ...uploadedUrls]);
+      
+      toast({
+        title: "Images Uploaded",
+        description: `${uploadedUrls.length} image(s) uploaded successfully.`,
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setReferenceImages(referenceImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -396,6 +490,72 @@ const ManufacturingCost = () => {
             </div>
           )}
         </div>
+
+        {/* Reference Images Upload */}
+        <Card className="shadow-lg mb-6">
+          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-primary" />
+              Reference Images
+            </CardTitle>
+            <CardDescription>
+              Upload customer photos to estimate weight and materials
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-6">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+
+            {referenceImages.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {referenceImages.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square overflow-hidden rounded-lg border-2 border-border bg-muted">
+                      <img
+                        src={url}
+                        alt={`Reference ${index + 1}`}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                      />
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -right-2 -top-2 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100 shadow-lg"
+                      onClick={() => handleRemoveImage(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <Button
+              variant="outline"
+              className="w-full border-dashed border-2 hover:border-primary hover:bg-primary/5"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingImage}
+            >
+              {uploadingImage ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Reference Images
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
 
         <Card className="shadow-lg">
           <CardHeader>
