@@ -376,6 +376,44 @@ const Import = () => {
         }
       }
 
+      // Check for duplicate SKUs within the import file
+      const skuMap = new Map<string, number[]>();
+      validProducts.forEach((product, idx) => {
+        if (product.sku) {
+          const existing = skuMap.get(product.sku) || [];
+          existing.push(idx);
+          skuMap.set(product.sku, existing);
+        }
+      });
+
+      const duplicateSKUs = Array.from(skuMap.entries())
+        .filter(([_, indices]) => indices.length > 1)
+        .map(([sku, indices]) => ({
+          sku,
+          rows: indices.map(idx => idx + 2) // +2 for Excel row numbering
+        }));
+
+      if (duplicateSKUs.length > 0) {
+        const duplicateMessage = duplicateSKUs
+          .map(({ sku, rows }) => `SKU "${sku}" appears in rows: ${rows.join(', ')}`)
+          .join('\n');
+        
+        toast({
+          title: "Duplicate SKUs Found",
+          description: `Found ${duplicateSKUs.length} duplicate SKU(s) in your file. Please make each SKU unique:\n${duplicateMessage}`,
+          variant: "destructive",
+        });
+        
+        // Add duplicate SKU errors to the invalid list
+        duplicateSKUs.forEach(({ sku, rows }) => {
+          errors.push({
+            row: rows[0],
+            product: sku,
+            errors: [`Duplicate SKU found in rows: ${rows.join(', ')}`]
+          });
+        });
+      }
+
       setPreviewData({
         valid: validProducts,
         invalid: errors
@@ -383,7 +421,7 @@ const Import = () => {
 
       toast({
         title: "Preview Ready",
-        description: `${validProducts.length} products will be imported, ${errors.length} have errors`,
+        description: `${validProducts.length} products will be imported, ${errors.length + duplicateSKUs.length} have errors`,
       });
     } catch (error: any) {
       toast({
@@ -434,18 +472,27 @@ const Import = () => {
 
       // Insert new products
       if (productsToInsert.length > 0) {
-        // Debug: Log first product to see what values we're sending
-        console.log('DEBUG: First product to insert:', JSON.stringify(productsToInsert[0], null, 2));
-        console.log('DEBUG: cost_price value:', productsToInsert[0].cost_price);
-        console.log('DEBUG: retail_price value:', productsToInsert[0].retail_price);
-        
         const { data: insertedProducts, error: insertError } = await supabase
           .from("products")
           .insert(productsToInsert)
           .select();
 
         if (insertError) {
-          console.error('DEBUG: Insert error:', insertError);
+          console.error('Insert error:', insertError);
+          
+          // Check if it's a duplicate SKU error
+          if (insertError.code === '23505' && insertError.message.includes('products_sku_key')) {
+            // Extract SKU from error message if possible
+            const duplicateSKUs = productsToInsert
+              .filter(p => p.sku)
+              .map(p => p.sku)
+              .join(', ');
+            
+            throw new Error(
+              `Duplicate SKU detected. One or more SKUs already exist in your catalog: ${duplicateSKUs}. Please use unique SKUs for each product or remove duplicate rows from your Excel file.`
+            );
+          }
+          
           throw insertError;
         }
 
