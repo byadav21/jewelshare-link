@@ -1,6 +1,9 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 
 interface JewelleryFiltersProps {
   filters: any;
@@ -10,6 +13,7 @@ interface JewelleryFiltersProps {
   diamondColors: string[];
   diamondClarities: string[];
   deliveryTypes: string[];
+  categoryCounts?: Record<string, number>;
 }
 
 export const JewelleryFilters = ({
@@ -20,22 +24,75 @@ export const JewelleryFilters = ({
   diamondColors,
   diamondClarities,
   deliveryTypes,
+  categoryCounts = {},
 }: JewelleryFiltersProps) => {
+  const getCategoryIcon = (category: string) => {
+    return <Sparkles className="h-3.5 w-3.5 text-primary" />;
+  };
+
   return (
     <>
-      <div className="space-y-1.5 sm:space-y-2">
-        <Label htmlFor="category" className="text-xs sm:text-sm">Category</Label>
-        <Select value={filters.category || "all"} onValueChange={(v) => updateFilter("category", v === "all" ? "" : v)}>
-          <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
-            <SelectValue placeholder="All" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[200px] overflow-y-auto bg-background border border-border shadow-lg z-[100]">
-            <SelectItem value="all" className="text-xs sm:text-sm">All Categories</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">{cat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Enhanced Category Filter - Full Width */}
+      <div className="col-span-2 lg:col-span-3 xl:col-span-7 mb-2">
+        <Label htmlFor="category" className="text-xs sm:text-sm font-semibold mb-2 flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          Product Category
+        </Label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 mt-2">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => updateFilter("category", "")}
+            className={`
+              relative overflow-hidden rounded-lg border-2 p-3 transition-all duration-200
+              ${!filters.category 
+                ? 'border-primary bg-primary/10 shadow-md shadow-primary/20' 
+                : 'border-border bg-card hover:border-primary/50 hover:bg-accent/50'
+              }
+            `}
+          >
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium ${!filters.category ? 'text-primary' : 'text-foreground'}`}>
+                All
+              </span>
+              {categoryCounts['all'] && (
+                <Badge variant={!filters.category ? "default" : "secondary"} className="ml-2 text-xs">
+                  {categoryCounts['all']}
+                </Badge>
+              )}
+            </div>
+          </motion.button>
+
+          {categories.map((cat) => (
+            <motion.button
+              key={cat}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => updateFilter("category", cat)}
+              className={`
+                relative overflow-hidden rounded-lg border-2 p-3 transition-all duration-200
+                ${filters.category === cat 
+                  ? 'border-primary bg-primary/10 shadow-md shadow-primary/20' 
+                  : 'border-border bg-card hover:border-primary/50 hover:bg-accent/50'
+                }
+              `}
+            >
+              <div className="flex flex-col items-start gap-1">
+                <div className="flex items-center gap-1.5">
+                  {getCategoryIcon(cat)}
+                  <span className={`text-sm font-medium ${filters.category === cat ? 'text-primary' : 'text-foreground'}`}>
+                    {cat}
+                  </span>
+                </div>
+                {categoryCounts[cat] !== undefined && (
+                  <Badge variant={filters.category === cat ? "default" : "secondary"} className="text-xs">
+                    {categoryCounts[cat]} items
+                  </Badge>
+                )}
+              </div>
+            </motion.button>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-1.5 sm:space-y-2">
