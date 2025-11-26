@@ -23,6 +23,7 @@ export const ROUTES = {
   SHARED_CATALOG: "/shared/:token",
   WISHLIST: "/wishlist/:token?",
   CUSTOM_ORDER: "/custom-order",
+  ORDER_TRACKING: "/order-tracking/:token",
 
   // Auth-only routes
   PENDING_APPROVAL: "/pending-approval",
