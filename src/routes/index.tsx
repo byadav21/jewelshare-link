@@ -23,6 +23,7 @@ export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizatio
 export const DiamondCalculator = lazy(() => import("@/pages/DiamondCalculator"));
 export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"));
 export const InvoiceHistory = lazy(() => import("@/pages/InvoiceHistory"));
+export const InvoiceGenerator = lazy(() => import("@/pages/InvoiceGenerator"));
 export const Calculators = lazy(() => import("@/pages/Calculators"));
 export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 
