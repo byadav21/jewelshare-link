@@ -113,9 +113,9 @@ const Import = () => {
 
         if (selectedProductType === 'Gemstones') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
-          const priceUSD = priceINR > 0 ? await convertINRtoUSD(priceINR) : null;
-          // Use a minimum value if price is 0 or missing
-          const finalPrice = Math.max(priceINR || 0.01, 0.01);
+          // Ensure we always have a valid price (minimum 0.01)
+          const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
+          const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
           
           product = {
             user_id: user.id,
@@ -133,19 +133,19 @@ const Import = () => {
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
-            price_inr: priceINR || 0,
+            price_inr: safePrice,
             price_usd: priceUSD,
-            cost_price: finalPrice,
-            retail_price: finalPrice,
+            cost_price: safePrice,
+            retail_price: safePrice,
             stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
             product_type: 'Gemstones',
             name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
           };
         } else if (selectedProductType === 'Loose Diamonds') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
-          const priceUSD = priceINR > 0 ? await convertINRtoUSD(priceINR) : null;
-          // Use a minimum value if price is 0 or missing
-          const finalPrice = Math.max(priceINR || 0.01, 0.01);
+          // Ensure we always have a valid price (minimum 0.01)
+          const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
+          const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
           
           product = {
             user_id: user.id,
@@ -167,10 +167,10 @@ const Import = () => {
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
-            price_inr: priceINR || 0,
+            price_inr: safePrice,
             price_usd: priceUSD,
-            cost_price: finalPrice,
-            retail_price: finalPrice,
+            cost_price: safePrice,
+            retail_price: safePrice,
             stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
             product_type: 'Loose Diamonds',
             name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,
