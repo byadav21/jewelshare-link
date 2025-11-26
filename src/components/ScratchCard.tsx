@@ -411,6 +411,15 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
                   Reveal My Reward
                 </Button>
 
+                <Button
+                  onClick={onClose}
+                  variant="ghost"
+                  size="lg"
+                  className="w-full mt-2 h-12 text-muted-foreground hover:text-foreground"
+                >
+                  Maybe Later
+                </Button>
+
                 <p className="text-xs text-center text-muted-foreground mt-3">
                   By continuing, you agree to receive updates about our platform
                 </p>
