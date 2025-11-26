@@ -304,6 +304,13 @@ const Import = () => {
           const totalUsd = totalUsdFromExcel || (totalPrice > 0 ? await convertINRtoUSD(totalPrice) : null);
           
           // Handle GEMHUB format columns
+          // Get column C (Diamond Color) and column D (Clarity) by position
+          const rawRow = worksheet[`C${index + 2}`]; // +2 because index starts at 0 and row 1 is header
+          const diamondColorFromColumn = rawRow ? String(rawRow.v || '').trim() : null;
+          
+          const clarityRow = worksheet[`D${index + 2}`];
+          const clarityFromColumn = clarityRow ? String(clarityRow.v || '').trim() : null;
+          
           product = {
             user_id: user.id,
             name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
@@ -313,8 +320,10 @@ const Import = () => {
             metal_type: row['METAL TYPE'] || null,
             gemstone: row.GEMSTONE || null,
             color: row.COLOR || null,
-            diamond_color: row['Diamond Color'] || row['DIAMOND COLOR'] || null,
-            clarity: row.CLARITY || null,
+            // Read diamond_color from column C position, fallback to named columns
+            diamond_color: diamondColorFromColumn || row['Diamond Color'] || row['DIAMOND COLOR'] || null,
+            // Read clarity from column D position, fallback to named columns
+            clarity: clarityFromColumn || row.CLARITY || null,
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
