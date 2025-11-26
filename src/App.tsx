@@ -331,6 +331,14 @@ const AppContent = () => {
         } 
       />
       <Route 
+        path={ROUTES.GUEST_CALCULATOR_ANALYTICS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.GuestCalculatorAnalytics /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
         path={ROUTES.ANALYTICS_DASHBOARD} 
         element={
           <AdminGuard>

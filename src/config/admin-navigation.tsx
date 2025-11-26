@@ -24,6 +24,7 @@ import {
   Gift,
   Diamond,
   Package,
+  Calculator,
 } from "lucide-react";
 import { NavigationItem, NavigationGroup } from "@/types";
 import { ROUTES } from "@/constants/routes";
@@ -59,6 +60,7 @@ export const SYSTEM_ITEMS: NavigationItem[] = [
   { title: "Customer Database", url: ROUTES.CUSTOMER_DATABASE, icon: Database },
   { title: "Manufacturing Orders", url: ROUTES.ADMIN_MANUFACTURING_ORDERS, icon: Package },
   { title: "Analytics", url: ROUTES.ANALYTICS_DASHBOARD, icon: TrendingUp },
+  { title: "Calculator Analytics", url: ROUTES.GUEST_CALCULATOR_ANALYTICS, icon: Calculator },
   { title: "Audit Logs", url: ROUTES.AUDIT_LOGS, icon: Shield },
   { title: "Export Reports", url: ROUTES.EXPORT_REPORTS, icon: FileDown },
   { title: "Login History", url: ROUTES.LOGIN_HISTORY, icon: History },

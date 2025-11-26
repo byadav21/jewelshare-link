@@ -61,6 +61,7 @@ export const ROUTES = {
   VENDOR_MANAGEMENT: "/vendor-management",
   CUSTOMER_DATABASE: "/customer-database",
   ANALYTICS_DASHBOARD: "/analytics-dashboard",
+  GUEST_CALCULATOR_ANALYTICS: "/admin/calculator-analytics",
   AUDIT_LOGS: "/audit-logs",
   EXPORT_REPORTS: "/export-reports",
   LOGIN_HISTORY: "/login-history",
