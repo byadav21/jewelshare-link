@@ -113,8 +113,13 @@ const Import = () => {
 
         if (selectedProductType === 'Gemstones') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
-          // Ensure we always have a valid price (minimum 0.01)
+          const costPriceRaw = parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']);
+          const retailPriceRaw = parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']);
+          
+          // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
+          const costPrice = (costPriceRaw && costPriceRaw > 0) ? costPriceRaw : safePrice;
+          const retailPrice = (retailPriceRaw && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
           const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
           
           product = {
@@ -135,16 +140,21 @@ const Import = () => {
             image_url_3: imageUrl3 || null,
             price_inr: safePrice,
             price_usd: priceUSD,
-            cost_price: safePrice,
-            retail_price: safePrice,
+            cost_price: costPrice,
+            retail_price: retailPrice,
             stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
             product_type: 'Gemstones',
             name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
           };
         } else if (selectedProductType === 'Loose Diamonds') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
-          // Ensure we always have a valid price (minimum 0.01)
+          const costPriceRaw = parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']);
+          const retailPriceRaw = parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']);
+          
+          // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
+          const costPrice = (costPriceRaw && costPriceRaw > 0) ? costPriceRaw : safePrice;
+          const retailPrice = (retailPriceRaw && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
           const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
           
           product = {
@@ -169,8 +179,8 @@ const Import = () => {
             image_url_3: imageUrl3 || null,
             price_inr: safePrice,
             price_usd: priceUSD,
-            cost_price: safePrice,
-            retail_price: safePrice,
+            cost_price: costPrice,
+            retail_price: retailPrice,
             stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
             product_type: 'Loose Diamonds',
             name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,

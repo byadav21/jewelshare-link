@@ -21,6 +21,8 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
         'CERTIFICATION': 'GRS',
         'IMAGE_URL': 'https://example.com/ruby1.jpg',
         'PRICE_INR': 250000,
+        'COST_PRICE': 250000,
+        'RETAIL_PRICE': 250000,
         'STOCK QUANTITY': 1,
       }
     ];
@@ -45,9 +47,12 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
       ['- MEASUREMENT: Dimensions (e.g., 8.5 x 6.5 x 4.2 mm)'],
       ['- CERTIFICATION: Lab certification (e.g., GRS, GIA, IGI)'],
       ['- IMAGE_URL: Image URL (can use | separator for multiple images)'],
+      ['- COST_PRICE: Your cost price in INR (optional, defaults to PRICE_INR)'],
+      ['- RETAIL_PRICE: Retail/selling price in INR (optional, defaults to PRICE_INR)'],
       [''],
       ['NOTES:'],
       ['- Price will be automatically converted from INR to USD'],
+      ['- If COST_PRICE or RETAIL_PRICE not provided, PRICE_INR will be used'],
       ['- Delete instruction rows before importing'],
       ['- Keep the header row'],
       ['- Save as .xlsx format'],
@@ -58,7 +63,7 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
     XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
 
     const wsData = XLSX.utils.json_to_sheet(sampleData);
-    wsData['!cols'] = Array(13).fill({ wch: 15 });
+    wsData['!cols'] = Array(15).fill({ wch: 15 });
     XLSX.utils.book_append_sheet(wb, wsData, 'Gemstones');
 
     XLSX.writeFile(wb, 'gemstone_import_template.xlsx');
@@ -82,6 +87,8 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
         'LAB': 'GIA',
         'IMAGE_URL': 'https://example.com/diamond1.jpg',
         'PRICE_INR': 850000,
+        'COST_PRICE': 850000,
+        'RETAIL_PRICE': 850000,
         'STOCK QUANTITY': 1,
       }
     ];
@@ -110,9 +117,12 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
       ['- RATIO: Length to width ratio'],
       ['- LAB: Certification lab (e.g., GIA, IGI, HRD)'],
       ['- IMAGE_URL: Image URL (can use | separator for multiple images)'],
+      ['- COST_PRICE: Your cost price in INR (optional, defaults to PRICE_INR)'],
+      ['- RETAIL_PRICE: Retail/selling price in INR (optional, defaults to PRICE_INR)'],
       [''],
       ['NOTES:'],
       ['- Price will be automatically converted from INR to USD'],
+      ['- If COST_PRICE or RETAIL_PRICE not provided, PRICE_INR will be used'],
       ['- Delete instruction rows before importing'],
       ['- Keep the header row'],
       ['- Save as .xlsx format'],
@@ -123,7 +133,7 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
     XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
 
     const wsData = XLSX.utils.json_to_sheet(sampleData);
-    wsData['!cols'] = Array(18).fill({ wch: 15 });
+    wsData['!cols'] = Array(20).fill({ wch: 15 });
     XLSX.utils.book_append_sheet(wb, wsData, 'Diamonds');
 
     XLSX.writeFile(wb, 'diamond_import_template.xlsx');
