@@ -11,7 +11,6 @@ import { AnimatedIcon } from "@/components/AnimatedIcon";
 import { ParallaxSection } from "@/components/ParallaxSection";
 import { TiltCard } from "@/components/TiltCard";
 import { InteractiveROICalculator } from "@/components/InteractiveROICalculator";
-import { Header } from "@/components/Header";
 
 import { lazy, Suspense, useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
@@ -242,9 +241,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Header */}
-      <Header />
-      
       {/* Animated background elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-jewellery-from/10 rounded-full blur-3xl animate-pulse" />
