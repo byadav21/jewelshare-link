@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, Gem, ArrowRight, Sparkles } from "lucide-react";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -98,6 +99,10 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 pt-6">
+        <BackToHomeButton />
+      </div>
+      
       {/* Header */}
       <section className="border-b">
         <div className="container mx-auto px-4 py-16 text-center">
