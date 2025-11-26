@@ -188,8 +188,13 @@ const Import = () => {
         } else {
           // Jewellery (existing logic)
           const totalPrice = parseNumber(row.TOTAL) || parseNumber(row['TOTAL']) || 0;
-          const costPrice = parseNumber(row['COST PRICE']) || totalPrice;
-          const retailPrice = parseNumber(row['RETAIL PRICE']) || totalPrice || costPrice;
+          const costPriceRaw = parseNumber(row['COST PRICE']);
+          const retailPriceRaw = parseNumber(row['RETAIL PRICE']);
+          
+          // Ensure we always have valid prices (minimum 0.01)
+          const safeTotal = (totalPrice && totalPrice > 0) ? totalPrice : 0.01;
+          const costPrice = (costPriceRaw && costPriceRaw > 0) ? costPriceRaw : safeTotal;
+          const retailPrice = (retailPriceRaw && retailPriceRaw > 0) ? retailPriceRaw : (safeTotal > costPrice ? safeTotal : costPrice);
           
           product = {
             user_id: user.id,
