@@ -781,7 +781,7 @@ const ManufacturingCost = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Label>Weight Entry Mode:</Label>
-                <Select value={weightEntryMode} onValueChange={setWeightEntryMode}>
+                <Select value={weightEntryMode} onValueChange={(value) => setWeightEntryMode(value as "gross" | "net")}>
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -842,15 +842,18 @@ const ManufacturingCost = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="gold-rate-24k">Gold Rate 24K (per gram)</Label>
-                <Input
-                  id="gold-rate-24k"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.goldRate24k}
-                  onChange={(e) => handleChange("goldRate24k", e.target.value)}
-                  prefix={<IndianRupee className="inline-block mr-1" />}
-                />
+                <div className="relative">
+                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="gold-rate-24k"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={formData.goldRate24k}
+                    onChange={(e) => handleChange("goldRate24k", e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

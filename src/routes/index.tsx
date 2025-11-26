@@ -23,6 +23,7 @@ export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizatio
 export const DiamondCalculator = lazy(() => import("@/pages/DiamondCalculator"));
 export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"));
 export const Calculators = lazy(() => import("@/pages/Calculators"));
+export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));

@@ -104,6 +104,10 @@ const AppContent = () => {
         path={ROUTES.CALCULATORS} 
         element={<RouteSuspense><Pages.Calculators /></RouteSuspense>} 
       />
+      <Route 
+        path={ROUTES.ORDER_TRACKING} 
+        element={<RouteSuspense><Pages.OrderTracking /></RouteSuspense>} 
+      />
 
       {/* Auth-only route (requires login but not approval) */}
       <Route 
