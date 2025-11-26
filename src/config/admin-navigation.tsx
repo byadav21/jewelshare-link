@@ -22,6 +22,7 @@ import {
   Newspaper,
   LayoutDashboard,
   Gift,
+  Diamond,
 } from "lucide-react";
 import { NavigationItem, NavigationGroup } from "@/types";
 import { ROUTES } from "@/constants/routes";
@@ -41,6 +42,7 @@ export const CONTENT_MANAGEMENT_ITEMS: NavigationItem[] = [
   { title: "Press Releases", url: ROUTES.ADMIN_PRESS, icon: Newspaper },
   { title: "Scratch Leads", url: ROUTES.SCRATCH_LEADS, icon: Gift },
   { title: "Rewards", url: ROUTES.ADMIN_REWARDS, icon: Crown },
+  { title: "Diamond Prices", url: ROUTES.ADMIN_DIAMOND_PRICES, icon: Diamond },
 ];
 
 export const VENDOR_MANAGEMENT_ITEMS: NavigationItem[] = [

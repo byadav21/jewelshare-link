@@ -49,6 +49,7 @@ export const ROUTES = {
   ADMIN_NEWSLETTER: "/admin/newsletter",
   ADMIN_PRESS: "/admin/press",
   ADMIN_REWARDS: "/admin/rewards",
+  ADMIN_DIAMOND_PRICES: "/admin/diamond-prices",
   SCRATCH_LEADS: "/admin/scratch-leads",
   
   SUPER_ADMIN: "/super-admin",
