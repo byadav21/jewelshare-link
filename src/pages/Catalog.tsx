@@ -369,7 +369,17 @@ const Catalog = () => {
   };
 
   // Predefined categories
-  const predefinedCategories = ["DIAMOND PANDENT SET", "DIAMOND LADIES RING", "DIAMOND BRACELET", "DIAMOND PANDENT", "DIAMOND SET", "DIAMOND TOPS", "DIAMOND GENTS RING"];
+  const predefinedCategories = [
+    "DIAMOND PANDENT SET", 
+    "DIAMOND LADIES RING", 
+    "DIAMOND BRACELET", 
+    "DIAMOND PANDENT", 
+    "DIAMOND SET", 
+    "DIAMOND TOPS", 
+    "DIAMOND GENTS RING",
+    "MOISSANITE JEWELLERY",
+    "CVD JEWELLERY"
+  ];
 
   // Extract unique filter values and merge with predefined
   const categories = useMemo(() => {
