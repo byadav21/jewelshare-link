@@ -11,6 +11,7 @@ import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
+import { generateEstimatePDF } from "@/utils/estimateGenerator";
 import {
   Dialog,
   DialogContent,
@@ -303,6 +304,61 @@ const ManufacturingCost = () => {
     toast({
       title: "Invoice Generated",
       description: "Invoice PDF has been downloaded successfully",
+    });
+  };
+
+  const handleExportEstimate = () => {
+    if (!estimateName) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter an estimate name before exporting",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const details = formData;
+    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
+    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
+
+    generateEstimatePDF({
+      estimateName,
+      estimateDate: new Date().toISOString(),
+      status: estimateStatus,
+      customerName: customerDetails.name,
+      customerPhone: customerDetails.phone,
+      customerEmail: customerDetails.email,
+      customerAddress: customerDetails.address,
+      netWeight: formData.netWeight,
+      grossWeight: formData.grossWeight,
+      purityFraction: formData.purityFraction,
+      goldRate24k: formData.goldRate24k,
+      makingCharges: formData.makingCharges,
+      cadDesignCharges: formData.cadDesignCharges,
+      cammingCharges: formData.cammingCharges,
+      certificationCost: formData.certificationCost,
+      diamondCost,
+      gemstoneCost,
+      goldCost: costs.goldCost,
+      totalCost: costs.totalCost,
+      profitMargin,
+      finalSellingPrice: costs.finalSellingPrice,
+      estimatedCompletionDate: estimatedCompletionDate?.toISOString(),
+      notes,
+      details: {
+        diamond_type: formData.diamondType,
+        diamond_shape: formData.diamondShape,
+        diamond_weight: formData.diamondWeight,
+        diamond_color: formData.diamondColor,
+        diamond_clarity: formData.diamondClarity,
+        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
+        gemstone_weight: formData.gemstoneWeight,
+      },
+    });
+
+    toast({
+      title: "Estimate Exported",
+      description: "Customer estimate PDF has been downloaded successfully",
     });
   };
 
@@ -696,6 +752,10 @@ const ManufacturingCost = () => {
           <Button onClick={() => setShowLoadDialog(true)} variant="outline">
             <FolderOpen className="mr-2 h-4 w-4" />
             Load Estimate
+          </Button>
+          <Button onClick={handleExportEstimate} variant="default" disabled={!costs.totalCost}>
+            <FileText className="mr-2 h-4 w-4" />
+            Export Estimate
           </Button>
           {estimateName && (
             <Button onClick={handleGenerateInvoice} variant="secondary">
