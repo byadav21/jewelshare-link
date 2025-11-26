@@ -164,7 +164,7 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
         'Gemstone cost': 40000,
         'TOTAL': '',
         'TOTAL_USD': '',
-        'Prodcut Type': 'LAB GROWN DIAMOND JEWELLERY',
+        'Product Type': 'LAB GROWN DIAMOND JEWELLERY',
         'IMAGE_URL': 'https://example.com/image1.jpg|https://example.com/image2.jpg',
         'STOCK QUANTITY': 1,
         'DELIVERY TYPE': 'immediate'
@@ -210,7 +210,7 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
       [''],
       ['OTHER DETAILS (Optional):'],
       ['- Certification cost: Certification charges in INR'],
-      ['- Prodcut Type: Product category (LAB GROWN DIAMOND JEWELLERY, NATURAL DIAMOND JEWELLERY, etc.)'],
+      ['- Product Type: Product category (LAB GROWN DIAMOND JEWELLERY, NATURAL DIAMOND JEWELLERY, etc.)'],
       ['- IMAGE_URL: Image URLs separated by | (up to 3 images)'],
       ['- DELIVERY TYPE: immediate or scheduled'],
       [''],
