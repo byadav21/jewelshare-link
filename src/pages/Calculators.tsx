@@ -66,8 +66,7 @@ const Calculators = () => {
         <div className="grid gap-8 md:grid-cols-2 mb-12">
           {calculators.map((calc, index) => (
             <ScrollReveal key={index} delay={0.1 * index} direction="up">
-              <TiltCard maxTilt={5} scale={1.02}>
-                <Card className="group relative overflow-hidden border-2 h-full transition-all hover:shadow-2xl hover:shadow-primary/20">
+              <Card className="group relative overflow-hidden border-2 h-full transition-all hover:shadow-2xl hover:shadow-primary/20">
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${calc.gradient} opacity-0 transition-opacity group-hover:opacity-10`}
                   />
@@ -117,7 +116,6 @@ const Calculators = () => {
                     </Button>
                   </CardContent>
                 </Card>
-              </TiltCard>
             </ScrollReveal>
           ))}
         </div>
