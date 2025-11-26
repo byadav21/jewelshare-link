@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { DiamondCalculatorUpgradeBanner } from "@/components/DiamondCalculatorUpgradeBanner";
 
 interface ComparisonItem {
   id: string;
@@ -399,6 +400,17 @@ const DiamondCalculator = () => {
             </p>
           </div>
         </ScrollReveal>
+
+        {!isAuthenticated && (
+          <ScrollReveal delay={0.05}>
+            <div className="max-w-6xl mx-auto mb-6">
+              <DiamondCalculatorUpgradeBanner
+                remainingCalculations={5 - guestUsageCount}
+                totalLimit={5}
+              />
+            </div>
+          </ScrollReveal>
+        )}
 
         <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
           <ScrollReveal delay={0.1} className="lg:col-span-2">
