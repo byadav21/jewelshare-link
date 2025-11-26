@@ -574,6 +574,10 @@ const Catalog = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Handle pricing adjustment separately if present
+      const pricingAdjustment = updates.pricingAdjustment;
+      delete updates.pricingAdjustment;
+
       // Convert string values to appropriate types
       const formattedUpdates: Record<string, any> = {};
       
@@ -582,29 +586,80 @@ const Catalog = () => {
         
         // Numeric fields
         if (['cost_price', 'retail_price', 'weight_grams', 'stock_quantity', 'dispatches_in_days'].includes(key)) {
-          formattedUpdates[key] = parseFloat(value as string);
+          const numValue = parseFloat(value as string);
+          if (!isNaN(numValue) && numValue >= 0) {
+            formattedUpdates[key] = numValue;
+          }
         } else {
           formattedUpdates[key] = value;
         }
       });
 
-      if (Object.keys(formattedUpdates).length === 0) {
-        toast.error("No changes to update");
-        return;
-      }
+      // Apply percentage-based pricing if specified
+      if (pricingAdjustment && pricingAdjustment.percentage > 0) {
+        // Fetch current products to calculate new prices
+        const { data: currentProducts, error: fetchError } = await supabase
+          .from("products")
+          .select("id, cost_price, retail_price")
+          .in("id", Array.from(selectedProducts))
+          .eq("user_id", user.id);
 
-      const { error } = await supabase
-        .from("products")
-        .update(formattedUpdates)
-        .in("id", Array.from(selectedProducts))
-        .eq("user_id", user.id);
-      
-      if (error) {
-        console.error("Update error:", error);
-        throw error;
+        if (fetchError) throw fetchError;
+
+        if (currentProducts) {
+          // Update each product individually with calculated prices
+          const updatePromises = currentProducts.map(async (product) => {
+            const multiplier = pricingAdjustment.type === 'markup' 
+              ? (1 + pricingAdjustment.percentage / 100)
+              : (1 - pricingAdjustment.percentage / 100);
+
+            const newCostPrice = Math.max(0, product.cost_price * multiplier);
+            const newRetailPrice = Math.max(0, product.retail_price * multiplier);
+
+            // Merge with other updates, but price adjustments take precedence unless fixed prices are set
+            const productUpdate = {
+              ...formattedUpdates,
+              cost_price: formattedUpdates.cost_price || newCostPrice,
+              retail_price: formattedUpdates.retail_price || newRetailPrice,
+            };
+
+            return supabase
+              .from("products")
+              .update(productUpdate)
+              .eq("id", product.id)
+              .eq("user_id", user.id);
+          });
+
+          const results = await Promise.all(updatePromises);
+          const hasErrors = results.some(r => r.error);
+          
+          if (hasErrors) {
+            throw new Error("Some products failed to update");
+          }
+
+          toast.success(`${selectedProducts.size} product(s) updated with ${pricingAdjustment.type} of ${pricingAdjustment.percentage}%`);
+        }
+      } else {
+        // Regular update without pricing adjustment
+        if (Object.keys(formattedUpdates).length === 0) {
+          toast.error("No changes to update");
+          return;
+        }
+
+        const { error } = await supabase
+          .from("products")
+          .update(formattedUpdates)
+          .in("id", Array.from(selectedProducts))
+          .eq("user_id", user.id);
+        
+        if (error) {
+          console.error("Update error:", error);
+          throw error;
+        }
+        
+        toast.success(`${selectedProducts.size} product(s) updated successfully`);
       }
       
-      toast.success(`${selectedProducts.size} product(s) updated successfully`);
       setSelectedProducts(new Set());
       
       // Refresh product lists
