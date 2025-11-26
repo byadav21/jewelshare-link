@@ -532,17 +532,28 @@ const Catalog = () => {
   }, [allProducts]);
   const handleDeleteSelected = useCallback(async () => {
     try {
+      console.log("Deleting products:", Array.from(selectedProducts));
       const {
+        data,
         error
       } = await supabase.from("products").update({
         deleted_at: new Date().toISOString()
-      }).in("id", Array.from(selectedProducts));
-      if (error) throw error;
+      }).in("id", Array.from(selectedProducts)).select();
+      
+      console.log("Delete response:", { data, error });
+      
+      if (error) {
+        console.error("Delete error details:", error);
+        throw error;
+      }
+      
       toast.success(`${selectedProducts.size} product(s) deleted successfully`);
       setSelectedProducts(new Set());
       fetchProducts();
+      fetchAllProducts();
     } catch (error: any) {
-      toast.error("Failed to delete products");
+      console.error("Failed to delete products:", error);
+      toast.error(`Failed to delete products: ${error.message || 'Unknown error'}`);
     }
   }, [selectedProducts, fetchProducts]);
   const toggleProductSelection = useCallback((productId: string) => {
