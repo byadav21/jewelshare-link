@@ -134,7 +134,11 @@ export const CatalogFilters = ({
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 gap-2 sm:gap-4`}>
+      <div className={`grid grid-cols-2 gap-2 sm:gap-4 ${
+        productType === 'Jewellery' ? 'lg:grid-cols-3 xl:grid-cols-7' : 
+        productType === 'Gemstones' ? 'lg:grid-cols-3 xl:grid-cols-8' :
+        'lg:grid-cols-3 xl:grid-cols-6'
+      }`}>
         {productType === 'Jewellery' && (
           <JewelleryFilters
             filters={filters}
