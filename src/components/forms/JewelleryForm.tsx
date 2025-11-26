@@ -110,7 +110,7 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     // TOTAL = D VALUE + MAKING + GOLD + CERTIFICATION + GEMSTONE COST
     const totalPrice = diamondValue + mkg + goldValue + certificationCost + gemstoneCost;
     
-    if (totalPrice > 0 && totalPrice.toFixed(2) !== formData.retail_price) {
+    if (totalPrice.toFixed(2) !== formData.retail_price) {
       setFormData((prev: any) => ({
         ...prev,
         retail_price: totalPrice.toFixed(2),
