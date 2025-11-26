@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,8 @@ interface ComparisonItem {
 }
 
 const DiamondCalculator = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [guestUsageCount, setGuestUsageCount] = useState(0);
   const [carat, setCarat] = useState<string>("");
   const [shape, setShape] = useState<string>("");
   const [color, setColor] = useState<string>("");
@@ -50,6 +52,66 @@ const DiamondCalculator = () => {
     currency: string;
   } | null>(null);
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Track guest usage with daily reset
+  useEffect(() => {
+    if (!isAuthenticated) {
+      const today = new Date().toDateString();
+      const stored = localStorage.getItem('diamond_calculator_usage');
+      
+      if (stored) {
+        const { date, count } = JSON.parse(stored);
+        if (date === today) {
+          setGuestUsageCount(count);
+        } else {
+          localStorage.setItem('diamond_calculator_usage', JSON.stringify({ date: today, count: 0 }));
+          setGuestUsageCount(0);
+        }
+      } else {
+        localStorage.setItem('diamond_calculator_usage', JSON.stringify({ date: today, count: 0 }));
+        setGuestUsageCount(0);
+      }
+    }
+  }, [isAuthenticated]);
+
+  const incrementGuestUsage = () => {
+    if (!isAuthenticated) {
+      const today = new Date().toDateString();
+      const newCount = guestUsageCount + 1;
+      localStorage.setItem('diamond_calculator_usage', JSON.stringify({ date: today, count: newCount }));
+      setGuestUsageCount(newCount);
+    }
+  };
+
+  const checkUsageLimit = (): boolean => {
+    if (isAuthenticated) return true;
+    
+    if (guestUsageCount >= 5) {
+      toast.error("Daily limit reached. Please sign in for unlimited calculations.", {
+        action: {
+          label: "Sign In",
+          onClick: () => window.location.href = "/auth"
+        }
+      });
+      return false;
+    }
+    return true;
+  };
 
   // Parse adjustment input - supports percentages (50, 50%) and fractions (1/2, 3/4)
   const adjustmentPercentage = useMemo(() => {
@@ -90,6 +152,8 @@ const DiamondCalculator = () => {
   };
 
   const calculatePrice = async () => {
+    if (!checkUsageLimit()) return;
+    
     if (!carat || !shape || !color || !clarity || !cut) {
       toast.error("Please fill in all fields");
       return;
@@ -137,6 +201,7 @@ const DiamondCalculator = () => {
         currency: data.currency,
       });
 
+      incrementGuestUsage();
       toast.success("Price calculated successfully!");
     } catch (error) {
       console.error("Error calculating price:", error);
@@ -147,6 +212,8 @@ const DiamondCalculator = () => {
   };
 
   const addToComparison = () => {
+    if (!checkUsageLimit()) return;
+    
     if (!result) {
       toast.error("Calculate a price first before adding to comparison");
       return;
@@ -347,7 +414,14 @@ const DiamondCalculator = () => {
                       Enter the 4Cs to calculate your diamond's value
                     </CardDescription>
                   </div>
-                  <Diamond className="h-12 w-12 text-primary/20" />
+                  <div className="flex flex-col items-end gap-2">
+                    <Diamond className="h-12 w-12 text-primary/20" />
+                    {!isAuthenticated && (
+                      <Badge variant={guestUsageCount >= 5 ? "destructive" : guestUsageCount >= 3 ? "secondary" : "outline"} className="text-xs">
+                        {guestUsageCount}/5 today
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
