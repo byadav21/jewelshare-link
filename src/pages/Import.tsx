@@ -113,13 +113,18 @@ const Import = () => {
 
         if (selectedProductType === 'Gemstones') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
-          const costPriceRaw = parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']);
-          const retailPriceRaw = parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']);
+          
+          // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
+          const hasCostPrice = 'COST_PRICE' in row || 'COST PRICE' in row || 'Cost Price' in row;
+          const hasRetailPrice = 'RETAIL_PRICE' in row || 'RETAIL PRICE' in row || 'Retail Price' in row;
+          
+          const costPriceRaw = hasCostPrice ? parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
-          const costPrice = (costPriceRaw && costPriceRaw > 0) ? costPriceRaw : safePrice;
-          const retailPrice = (retailPriceRaw && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
+          const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safePrice;
+          const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
           const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
           
           product = {
@@ -148,13 +153,18 @@ const Import = () => {
           };
         } else if (selectedProductType === 'Loose Diamonds') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
-          const costPriceRaw = parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']);
-          const retailPriceRaw = parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']);
+          
+          // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
+          const hasCostPrice = 'COST_PRICE' in row || 'COST PRICE' in row || 'Cost Price' in row;
+          const hasRetailPrice = 'RETAIL_PRICE' in row || 'RETAIL PRICE' in row || 'Retail Price' in row;
+          
+          const costPriceRaw = hasCostPrice ? parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
-          const costPrice = (costPriceRaw && costPriceRaw > 0) ? costPriceRaw : safePrice;
-          const retailPrice = (retailPriceRaw && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
+          const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safePrice;
+          const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
           const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
           
           product = {
@@ -188,13 +198,18 @@ const Import = () => {
         } else {
           // Jewellery (existing logic)
           const totalPrice = parseNumber(row.TOTAL) || parseNumber(row['TOTAL']) || 0;
-          const costPriceRaw = parseNumber(row['COST PRICE']);
-          const retailPriceRaw = parseNumber(row['RETAIL PRICE']);
+          
+          // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
+          const hasCostPrice = 'COST PRICE' in row;
+          const hasRetailPrice = 'RETAIL PRICE' in row;
+          
+          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE']) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE']) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safeTotal = (totalPrice && totalPrice > 0) ? totalPrice : 0.01;
-          const costPrice = (costPriceRaw && costPriceRaw > 0) ? costPriceRaw : safeTotal;
-          const retailPrice = (retailPriceRaw && retailPriceRaw > 0) ? retailPriceRaw : (safeTotal > costPrice ? safeTotal : costPrice);
+          const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safeTotal;
+          const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : (safeTotal > costPrice ? safeTotal : costPrice);
           
           product = {
             user_id: user.id,
