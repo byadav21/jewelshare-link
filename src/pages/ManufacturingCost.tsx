@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ManufacturingCost = () => {
   const { toast } = useToast();
@@ -36,6 +42,7 @@ const ManufacturingCost = () => {
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [customCertification, setCustomCertification] = useState("");
   
   const [formData, setFormData] = useState({
     netWeight: 0,
@@ -48,8 +55,10 @@ const ManufacturingCost = () => {
     diamondPerCaratPrice: 0,
     diamondWeight: 0,
     diamondType: "",
+    diamondShape: "",
     diamondColor: "",
     diamondClarity: "",
+    diamondCertification: "",
     gemstonePerCaratPrice: 0,
     gemstoneWeight: 0,
   });
@@ -136,8 +145,10 @@ const ManufacturingCost = () => {
       diamondPerCaratPrice: 0,
       diamondWeight: 0,
       diamondType: "",
+      diamondShape: "",
       diamondColor: "",
       diamondClarity: "",
+      diamondCertification: "",
       gemstonePerCaratPrice: 0,
       gemstoneWeight: 0,
     });
@@ -146,6 +157,7 @@ const ManufacturingCost = () => {
     setEstimateName("");
     setNotes("");
     setReferenceImages([]);
+    setCustomCertification("");
   };
 
   const handleSave = async () => {
@@ -192,8 +204,10 @@ const ManufacturingCost = () => {
         diamond_per_carat_price: formData.diamondPerCaratPrice,
         diamond_weight: formData.diamondWeight,
         diamond_type: formData.diamondType,
+        diamond_shape: formData.diamondShape,
         diamond_color: formData.diamondColor,
         diamond_clarity: formData.diamondClarity,
+        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
         gemstone_per_carat_price: formData.gemstonePerCaratPrice,
         gemstone_weight: formData.gemstoneWeight,
       },
@@ -245,6 +259,9 @@ const ManufacturingCost = () => {
 
   const handleLoad = (estimate: any) => {
     const details = estimate.details as any;
+    const certValue = details?.diamond_certification || "";
+    const knownCerts = ["GIA", "IGI", "AGS", "EGL", "HRD", "GSI", "none"];
+    
     setFormData({
       netWeight: estimate.net_weight || 0,
       purityFraction: estimate.purity_fraction || 0.76,
@@ -256,11 +273,20 @@ const ManufacturingCost = () => {
       diamondPerCaratPrice: details?.diamond_per_carat_price || 0,
       diamondWeight: details?.diamond_weight || 0,
       diamondType: details?.diamond_type || "",
+      diamondShape: details?.diamond_shape || "",
       diamondColor: details?.diamond_color || "",
       diamondClarity: details?.diamond_clarity || "",
+      diamondCertification: knownCerts.includes(certValue) ? certValue : (certValue ? "other" : ""),
       gemstonePerCaratPrice: details?.gemstone_per_carat_price || 0,
       gemstoneWeight: details?.gemstone_weight || 0,
     });
+    
+    if (certValue && !knownCerts.includes(certValue)) {
+      setCustomCertification(certValue);
+    } else {
+      setCustomCertification("");
+    }
+    
     setProfitMargin(estimate.profit_margin_percentage || 0);
     setCurrentEstimateId(estimate.id);
     setEstimateName(estimate.estimate_name);
@@ -664,7 +690,23 @@ const ManufacturingCost = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="diamondType">Diamond Type</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="diamondType">Diamond Type</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs bg-popover">
+                        <p className="text-sm">
+                          <strong>Natural Diamonds:</strong> Formed deep in the Earth over billions of years. Typically more expensive and considered traditional.
+                          <br /><br />
+                          <strong>Lab-Grown Diamonds:</strong> Created in controlled laboratory environments. Chemically identical to natural diamonds but more affordable and environmentally friendly.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Select
                   value={formData.diamondType}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, diamondType: value }))}
@@ -675,6 +717,29 @@ const ManufacturingCost = () => {
                   <SelectContent className="bg-popover z-50">
                     <SelectItem value="natural">Natural Diamond</SelectItem>
                     <SelectItem value="lab-grown">Lab-Grown Diamond</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="diamondShape">Diamond Shape</Label>
+                <Select
+                  value={formData.diamondShape}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondShape: value }))}
+                >
+                  <SelectTrigger id="diamondShape" className="bg-background">
+                    <SelectValue placeholder="Select shape" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    <SelectItem value="round">Round</SelectItem>
+                    <SelectItem value="princess">Princess</SelectItem>
+                    <SelectItem value="cushion">Cushion</SelectItem>
+                    <SelectItem value="oval">Oval</SelectItem>
+                    <SelectItem value="emerald">Emerald</SelectItem>
+                    <SelectItem value="pear">Pear</SelectItem>
+                    <SelectItem value="marquise">Marquise</SelectItem>
+                    <SelectItem value="radiant">Radiant</SelectItem>
+                    <SelectItem value="asscher">Asscher</SelectItem>
+                    <SelectItem value="heart">Heart</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -749,6 +814,39 @@ const ManufacturingCost = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="diamondCertification">Diamond Certification</Label>
+                <Select
+                  value={formData.diamondCertification}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondCertification: value }))}
+                >
+                  <SelectTrigger id="diamondCertification" className="bg-background">
+                    <SelectValue placeholder="Select certification" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    <SelectItem value="GIA">GIA (Gemological Institute of America)</SelectItem>
+                    <SelectItem value="IGI">IGI (International Gemological Institute)</SelectItem>
+                    <SelectItem value="AGS">AGS (American Gem Society)</SelectItem>
+                    <SelectItem value="EGL">EGL (European Gemological Laboratory)</SelectItem>
+                    <SelectItem value="HRD">HRD (Hoge Raad voor Diamant)</SelectItem>
+                    <SelectItem value="GSI">GSI (Gemological Science International)</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="none">No Certification</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {formData.diamondCertification === 'other' && (
+                <div className="space-y-2">
+                  <Label htmlFor="customCertification">Custom Certification</Label>
+                  <Input
+                    id="customCertification"
+                    type="text"
+                    value={customCertification}
+                    onChange={(e) => setCustomCertification(e.target.value)}
+                    placeholder="Enter certification name"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="gemstonePerCaratPrice">Gemstone Per Carat Price (₹)</Label>
                 <Input
