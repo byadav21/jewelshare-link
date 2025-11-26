@@ -340,11 +340,11 @@ const Import = () => {
             gemstone_cost: gemstoneCost || null,
             total_usd: totalUsd,
             
-            // Pricing - use calculated TOTAL
+            // Pricing - use calculated TOTAL (ensure minimum 0.01 for validation)
             price_inr: totalPrice,
             price_usd: totalUsd,
-            cost_price: totalPrice, // Use TOTAL as cost price
-            retail_price: totalPrice, // Use TOTAL as retail price
+            cost_price: totalPrice > 0 ? totalPrice : 0.01, // Use TOTAL as cost price with minimum
+            retail_price: totalPrice > 0 ? totalPrice : 0.01, // Use TOTAL as retail price with minimum
             stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
             
             // Delivery
