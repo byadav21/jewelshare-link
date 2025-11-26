@@ -23,6 +23,7 @@ const CustomerDatabase = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Fetch product interests
   const { data: interestsData, isLoading: interestsLoading } = useQuery({
@@ -69,6 +70,22 @@ const CustomerDatabase = () => {
     enabled: isAdmin,
   });
 
+  // Fetch manufacturing estimates with customer data
+  const { data: estimatesData, isLoading: estimatesLoading } = useQuery({
+    queryKey: ["manufacturing-estimates-customers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .select("*")
+        .not("customer_name", "is", null)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin,
+  });
+
   // Filter interests
   const filteredInterests = interestsData?.filter((interest: any) => {
     if (!searchQuery) return true;
@@ -91,6 +108,20 @@ const CustomerDatabase = () => {
       inquiry.customer_phone?.toLowerCase().includes(query) ||
       inquiry.message?.toLowerCase().includes(query)
     );
+  });
+
+  // Filter manufacturing estimates
+  const filteredEstimates = estimatesData?.filter((estimate: any) => {
+    const matchesSearch = !searchQuery || (
+      estimate.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      estimate.customer_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      estimate.customer_phone?.includes(searchQuery) ||
+      estimate.estimate_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    const matchesStatus = statusFilter === "all" || estimate.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
   });
 
   // Get unique customers
@@ -216,10 +247,11 @@ const CustomerDatabase = () => {
 
       {/* Results Tabs */}
       <Tabs defaultValue="customers" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="interests">Interests</TabsTrigger>
           <TabsTrigger value="inquiries">Inquiries</TabsTrigger>
+          <TabsTrigger value="manufacturing">Manufacturing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="customers" className="space-y-4">
@@ -387,6 +419,82 @@ const CustomerDatabase = () => {
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {format(new Date(inquiry.created_at), "MMM dd, yyyy")}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="manufacturing" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Manufacturing Orders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {estimatesLoading ? (
+                <div className="text-center py-8">Loading...</div>
+              ) : !filteredEstimates || filteredEstimates.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">No manufacturing orders found</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Estimate</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Value</TableHead>
+                        <TableHead>Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredEstimates?.map((estimate: any) => (
+                        <TableRow key={estimate.id}>
+                          <TableCell className="font-medium">
+                            {estimate.customer_name}
+                            {estimate.customer_address && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {estimate.customer_address}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1 text-sm">
+                              {estimate.customer_email && (
+                                <div className="flex items-center gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  {estimate.customer_email}
+                                </div>
+                              )}
+                              {estimate.customer_phone && (
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  {estimate.customer_phone}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{estimate.estimate_name}</TableCell>
+                          <TableCell>
+                            <Badge variant={
+                              estimate.status === 'completed' ? 'default' : 
+                              estimate.status === 'cancelled' ? 'destructive' : 
+                              'secondary'
+                            }>
+                              {estimate.status?.replace('_', ' ') || 'draft'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-semibold">₹{estimate.final_selling_price?.toFixed(2)}</div>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {format(new Date(estimate.created_at), "MMM dd, yyyy")}
                           </TableCell>
                         </TableRow>
                       ))}
