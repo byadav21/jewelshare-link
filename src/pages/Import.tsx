@@ -15,6 +15,7 @@ import { productImportSchema, gemstoneImportSchema, diamondImportSchema } from "
 import { generateProductTemplate } from "@/utils/generateTemplate";
 import { convertINRtoUSD } from "@/utils/currencyConversion";
 import { getExpectedColumns } from "@/utils/columnMapping";
+import { ColumnMappingPreview } from "@/components/ColumnMappingPreview";
 
 type ProductType = 'Jewellery' | 'Gemstones' | 'Loose Diamonds';
 
@@ -32,6 +33,15 @@ const Import = () => {
     missing: string[];
     suggestions: Record<string, string>;
   } | null>(null);
+  const [detailedMappings, setDetailedMappings] = useState<Array<{
+    excelColumn: string;
+    databaseField: string;
+    sampleValue: string;
+    dataType: string;
+    required: boolean;
+    mapped: boolean;
+    columnPosition?: string;
+  }>>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -101,6 +111,108 @@ const Import = () => {
         const expectedColumns = getExpectedColumns(selectedProductType);
         const missing: string[] = [];
         const suggestions: Record<string, string> = {};
+        
+        // Build detailed mappings
+        const firstRow = jsonData[0] as any;
+        const mappingsArray: Array<{
+          excelColumn: string;
+          databaseField: string;
+          sampleValue: string;
+          dataType: string;
+          required: boolean;
+          mapped: boolean;
+          columnPosition?: string;
+        }> = [];
+
+        if (selectedProductType === 'Jewellery') {
+          // Jewelry-specific mappings
+          const jewelryMappings = [
+            { excel: 'CERT', db: 'sku', type: 'text', required: false, col: 'A' },
+            { excel: 'PRODUCT', db: 'name', type: 'text', required: true, col: 'B' },
+            { excel: 'Diamond Color', db: 'diamond_color', type: 'text', required: false, col: 'C' },
+            { excel: 'CLARITY', db: 'clarity', type: 'text', required: false, col: 'D' },
+            { excel: 'D.WT 1', db: 'd_wt_1', type: 'number', required: false },
+            { excel: 'D.WT 2', db: 'd_wt_2', type: 'number', required: false },
+            { excel: 'T DWT', db: 'diamond_weight', type: 'number', required: false },
+            { excel: 'G WT', db: 'weight_grams', type: 'number', required: true },
+            { excel: 'NET WT', db: 'net_weight', type: 'number', required: false },
+            { excel: 'PURITY_FRACTION_USED', db: 'purity_fraction_used', type: 'number', required: true },
+            { excel: 'D RATE 1', db: 'd_rate_1', type: 'number', required: false },
+            { excel: 'Pointer diamond', db: 'pointer_diamond', type: 'number', required: false },
+            { excel: 'D VALUE', db: 'd_value', type: 'number', required: false },
+            { excel: 'MKG', db: 'mkg', type: 'number', required: false },
+            { excel: 'GOLD', db: 'gold_per_gram_price', type: 'number', required: false },
+            { excel: 'Certification cost', db: 'certification_cost', type: 'number', required: false },
+            { excel: 'Gemstone cost', db: 'gemstone_cost', type: 'number', required: false },
+            { excel: 'TOTAL', db: 'retail_price', type: 'number', required: true },
+            { excel: 'METAL TYPE', db: 'metal_type', type: 'text', required: true },
+            { excel: 'IMAGE_URL', db: 'image_url', type: 'url', required: false },
+          ];
+
+          jewelryMappings.forEach(mapping => {
+            const excelValue = firstRow[mapping.excel] || firstRow[mapping.excel.toUpperCase()] || 
+                              firstRow[mapping.excel.toLowerCase()];
+            const isMapped = detectedColumns.some(col => 
+              col.toLowerCase().replace(/[^a-z0-9]/g, '') === mapping.excel.toLowerCase().replace(/[^a-z0-9]/g, '')
+            );
+            
+            mappingsArray.push({
+              excelColumn: mapping.excel,
+              databaseField: mapping.db,
+              sampleValue: excelValue ? String(excelValue).substring(0, 50) : '',
+              dataType: mapping.type,
+              required: mapping.required,
+              mapped: isMapped,
+              columnPosition: mapping.col
+            });
+          });
+        } else if (selectedProductType === 'Gemstones') {
+          // Gemstone mappings
+          const gemstoneMappings = [
+            { excel: 'SKU ID', db: 'sku', type: 'text', required: true },
+            { excel: 'GEMSTONE NAME', db: 'gemstone_name', type: 'text', required: true },
+            { excel: 'CARAT WEIGHT', db: 'carat_weight', type: 'number', required: false },
+            { excel: 'COLOR', db: 'color', type: 'text', required: false },
+            { excel: 'CLARITY', db: 'clarity', type: 'text', required: false },
+            { excel: 'PRICE INR', db: 'price_inr', type: 'number', required: true },
+          ];
+
+          gemstoneMappings.forEach(mapping => {
+            const excelValue = firstRow[mapping.excel];
+            mappingsArray.push({
+              excelColumn: mapping.excel,
+              databaseField: mapping.db,
+              sampleValue: excelValue ? String(excelValue).substring(0, 50) : '',
+              dataType: mapping.type,
+              required: mapping.required,
+              mapped: detectedColumns.includes(mapping.excel)
+            });
+          });
+        } else if (selectedProductType === 'Loose Diamonds') {
+          // Diamond mappings
+          const diamondMappings = [
+            { excel: 'SKU NO', db: 'sku', type: 'text', required: true },
+            { excel: 'SHAPE', db: 'shape', type: 'text', required: true },
+            { excel: 'CARAT', db: 'carat', type: 'number', required: true },
+            { excel: 'COLOR', db: 'color', type: 'text', required: true },
+            { excel: 'CLARITY', db: 'clarity', type: 'text', required: true },
+            { excel: 'PRICE INR', db: 'price_inr', type: 'number', required: true },
+          ];
+
+          diamondMappings.forEach(mapping => {
+            const excelValue = firstRow[mapping.excel];
+            mappingsArray.push({
+              excelColumn: mapping.excel,
+              databaseField: mapping.db,
+              sampleValue: excelValue ? String(excelValue).substring(0, 50) : '',
+              dataType: mapping.type,
+              required: mapping.required,
+              mapped: detectedColumns.includes(mapping.excel)
+            });
+          });
+        }
+
+        setDetailedMappings(mappingsArray);
 
         // Check for missing required columns and suggest mappings
         expectedColumns.required.forEach(reqCol => {
@@ -721,6 +833,15 @@ const Import = () => {
                     </p>
                   </div>
                 </div>
+
+                {detailedMappings.length > 0 && (
+                  <div className="mt-6">
+                    <ColumnMappingPreview 
+                      mappings={detailedMappings}
+                      productType={selectedProductType}
+                    />
+                  </div>
+                )}
 
                 {columnMappings && (
                   <div className="space-y-3">
