@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +44,7 @@ const ManufacturingCost = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customCertification, setCustomCertification] = useState("");
+  const [weightEntryMode, setWeightEntryMode] = useState<"gross" | "net">("gross");
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -101,18 +103,20 @@ const ManufacturingCost = () => {
     }
   };
 
-  // Calculate net weight automatically
+  // Calculate net weight automatically (only in gross weight mode)
   useEffect(() => {
-    // Convert carat to grams (1 carat = 0.2 grams, so divide by 5)
-    const diamondWeightGrams = formData.diamondWeight / 5;
-    const gemstoneWeightGrams = formData.gemstoneWeight / 5;
-    const calculatedNetWeight = formData.grossWeight - diamondWeightGrams - gemstoneWeightGrams;
-    
-    setFormData(prev => ({
-      ...prev,
-      netWeight: Math.max(0, calculatedNetWeight), // Ensure non-negative
-    }));
-  }, [formData.grossWeight, formData.diamondWeight, formData.gemstoneWeight]);
+    if (weightEntryMode === "gross") {
+      // Convert carat to grams (1 carat = 0.2 grams, so divide by 5)
+      const diamondWeightGrams = formData.diamondWeight / 5;
+      const gemstoneWeightGrams = formData.gemstoneWeight / 5;
+      const calculatedNetWeight = formData.grossWeight - diamondWeightGrams - gemstoneWeightGrams;
+      
+      setFormData(prev => ({
+        ...prev,
+        netWeight: Math.max(0, calculatedNetWeight), // Ensure non-negative
+      }));
+    }
+  }, [weightEntryMode, formData.grossWeight, formData.diamondWeight, formData.gemstoneWeight]);
 
   // Calculate costs
   useEffect(() => {
@@ -624,9 +628,26 @@ const ManufacturingCost = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Gold Cost Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-accent/10 rounded-lg">
-              <div className="space-y-2">
-                <Label htmlFor="grossWeight">Gross Weight (grams)</Label>
+            <div className="space-y-4 p-4 bg-accent/10 rounded-lg">
+              <div className="flex items-center justify-between">
+                <Label>Weight Entry Mode</Label>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm ${weightEntryMode === "gross" ? "font-semibold" : "text-muted-foreground"}`}>
+                    Gross Weight
+                  </span>
+                  <Switch
+                    checked={weightEntryMode === "net"}
+                    onCheckedChange={(checked) => setWeightEntryMode(checked ? "net" : "gross")}
+                  />
+                  <span className={`text-sm ${weightEntryMode === "net" ? "font-semibold" : "text-muted-foreground"}`}>
+                    Net Weight
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="grossWeight">Gross Weight (grams)</Label>
                 <Input
                   id="grossWeight"
                   type="number"
@@ -634,7 +655,14 @@ const ManufacturingCost = () => {
                   value={formData.grossWeight || ""}
                   onChange={(e) => handleChange("grossWeight", e.target.value)}
                   placeholder="0.00"
+                  disabled={weightEntryMode === "net"}
+                  className={weightEntryMode === "net" ? "bg-muted cursor-not-allowed" : ""}
                 />
+                {weightEntryMode === "gross" && (
+                  <p className="text-xs text-muted-foreground">
+                    Enter gross weight to auto-calculate net weight
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="netWeight">Net Weight (grams)</Label>
@@ -642,18 +670,20 @@ const ManufacturingCost = () => {
                   id="netWeight"
                   type="number"
                   step="0.01"
-                  value={formData.netWeight.toFixed(3) || ""}
-                  readOnly
-                  disabled
-                  className="bg-muted cursor-not-allowed"
-                  placeholder="Auto-calculated"
+                  value={weightEntryMode === "net" ? (formData.netWeight || "") : formData.netWeight.toFixed(3)}
+                  onChange={(e) => handleChange("netWeight", e.target.value)}
+                  placeholder={weightEntryMode === "net" ? "0.00" : "Auto-calculated"}
+                  disabled={weightEntryMode === "gross"}
+                  className={weightEntryMode === "gross" ? "bg-muted cursor-not-allowed" : ""}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Auto-calculated: Gross Weight - (Diamond + Gemstone weights in grams)
-                </p>
+                {weightEntryMode === "gross" && (
+                  <p className="text-xs text-muted-foreground">
+                    Auto-calculated: Gross Weight - (Diamond + Gemstone weights)
+                  </p>
+                )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="purityFraction">Purity Fraction</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="purityFraction">Purity Fraction</Label>
                 <Input
                   id="purityFraction"
                   type="number"
@@ -674,6 +704,7 @@ const ManufacturingCost = () => {
                   placeholder="0.00"
                 />
               </div>
+            </div>
             </div>
 
             {/* Other Cost Components */}
