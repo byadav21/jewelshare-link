@@ -6,12 +6,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw } from "lucide-react";
+import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+
+interface ComparisonItem {
+  id: string;
+  specs: {
+    carat: string;
+    shape: string;
+    color: string;
+    clarity: string;
+    cut: string;
+  };
+  result: {
+    pricePerCarat: number;
+    totalPrice: number;
+    currency: string;
+  };
+  adjustmentType: "discount" | "markup";
+  adjustmentPercentage: number;
+  finalPrice: number;
+}
 
 const DiamondCalculator = () => {
   const [carat, setCarat] = useState<string>("");
@@ -27,6 +47,7 @@ const DiamondCalculator = () => {
     totalPrice: number;
     currency: string;
   } | null>(null);
+  const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
 
   // Parse adjustment input - supports percentages (50, 50%) and fractions (1/2, 3/4)
   const adjustmentPercentage = useMemo(() => {
@@ -115,6 +136,46 @@ const DiamondCalculator = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const addToComparison = () => {
+    if (!result) {
+      toast.error("Calculate a price first before adding to comparison");
+      return;
+    }
+
+    if (comparisonList.length >= 4) {
+      toast.error("Maximum 4 diamonds can be compared at once");
+      return;
+    }
+
+    const finalPrice = adjustmentPercentage > 0
+      ? adjustmentType === "discount"
+        ? result.totalPrice * (1 - adjustmentPercentage / 100)
+        : result.totalPrice * (1 + adjustmentPercentage / 100)
+      : result.totalPrice;
+
+    const newItem: ComparisonItem = {
+      id: Date.now().toString(),
+      specs: { carat, shape, color, clarity, cut },
+      result,
+      adjustmentType,
+      adjustmentPercentage,
+      finalPrice: Math.round(finalPrice),
+    };
+
+    setComparisonList([...comparisonList, newItem]);
+    toast.success("Added to comparison");
+  };
+
+  const removeFromComparison = (id: string) => {
+    setComparisonList(comparisonList.filter(item => item.id !== id));
+    toast.success("Removed from comparison");
+  };
+
+  const clearComparison = () => {
+    setComparisonList([]);
+    toast.success("Comparison cleared");
   };
 
   const resetCalculator = () => {
@@ -453,6 +514,16 @@ const DiamondCalculator = () => {
                     <p className="text-xs text-muted-foreground text-center leading-relaxed bg-muted/20 rounded p-3">
                       <strong>Disclaimer:</strong> This is an estimate based on available market data. Actual prices may vary based on market conditions, certifications, and specific diamond characteristics.
                     </p>
+
+                    <Button
+                      onClick={addToComparison}
+                      variant="outline"
+                      size="lg"
+                      className="w-full mt-4"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add to Comparison ({comparisonList.length}/4)
+                    </Button>
                   </motion.div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -555,6 +626,176 @@ const DiamondCalculator = () => {
             </Card>
           </div>
         </ScrollReveal>
+
+        {/* Comparison Section */}
+        <AnimatePresence>
+          {comparisonList.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="mt-12 max-w-6xl mx-auto"
+            >
+              <Card className="shadow-xl border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-card">
+                <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-transparent">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-2xl">
+                        <Scale className="h-6 w-6 text-primary" />
+                        Diamond Comparison
+                      </CardTitle>
+                      <CardDescription className="mt-2">
+                        Compare up to 4 diamond specifications side-by-side
+                      </CardDescription>
+                    </div>
+                    <Button
+                      onClick={clearComparison}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {comparisonList.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="relative"
+                      >
+                        <Card className="border-2 border-primary/20 hover:border-primary/40 transition-all bg-gradient-to-br from-card to-primary/5">
+                          <Button
+                            onClick={() => removeFromComparison(item.id)}
+                            variant="ghost"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 z-10"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                          
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                Option {index + 1}
+                              </Badge>
+                              <Diamond className="h-4 w-4 text-primary" />
+                            </div>
+                          </CardHeader>
+                          
+                          <CardContent className="space-y-4">
+                            {/* Specs */}
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Carat:</span>
+                                <span className="font-semibold">{item.specs.carat}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Shape:</span>
+                                <span className="font-semibold">{item.specs.shape}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Color:</span>
+                                <span className="font-semibold">{item.specs.color}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Clarity:</span>
+                                <span className="font-semibold">{item.specs.clarity}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Cut:</span>
+                                <span className="font-semibold">{item.specs.cut}</span>
+                              </div>
+                            </div>
+
+                            <Separator />
+
+                            {/* Pricing */}
+                            <div className="space-y-3">
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Price/Carat</p>
+                                <p className="text-lg font-bold">
+                                  {item.result.currency} {item.result.pricePerCarat.toLocaleString()}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Base Price</p>
+                                <p className="text-xl font-bold">
+                                  {item.result.currency} {item.result.totalPrice.toLocaleString()}
+                                </p>
+                              </div>
+
+                              {item.adjustmentPercentage > 0 && (
+                                <div className="bg-primary/5 rounded-lg p-3 -mx-3">
+                                  <div className="flex items-center gap-1 mb-1">
+                                    {item.adjustmentType === "discount" ? (
+                                      <TrendingDown className="h-3 w-3 text-green-600" />
+                                    ) : (
+                                      <TrendingUp className="h-3 w-3 text-blue-600" />
+                                    )}
+                                    <p className="text-xs font-medium">
+                                      {item.adjustmentPercentage.toFixed(1)}% {item.adjustmentType}
+                                    </p>
+                                  </div>
+                                  <p className={`text-2xl font-bold ${
+                                    item.adjustmentType === "discount"
+                                      ? "text-green-600 dark:text-green-400"
+                                      : "text-blue-600 dark:text-blue-400"
+                                  }`}>
+                                    {item.result.currency} {item.finalPrice.toLocaleString()}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Comparison Summary */}
+                  {comparisonList.length > 1 && (
+                    <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-transparent rounded-lg border border-primary/20">
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        Quick Comparison
+                      </h4>
+                      <div className="grid md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground mb-1">Lowest Price:</p>
+                          <p className="font-bold text-green-600 dark:text-green-400">
+                            {comparisonList[0].result.currency}{" "}
+                            {Math.min(...comparisonList.map(item => item.finalPrice)).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-1">Highest Price:</p>
+                          <p className="font-bold text-red-600 dark:text-red-400">
+                            {comparisonList[0].result.currency}{" "}
+                            {Math.max(...comparisonList.map(item => item.finalPrice)).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-1">Price Difference:</p>
+                          <p className="font-bold text-primary">
+                            {comparisonList[0].result.currency}{" "}
+                            {(Math.max(...comparisonList.map(item => item.finalPrice)) - 
+                              Math.min(...comparisonList.map(item => item.finalPrice))).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
