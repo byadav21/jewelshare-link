@@ -138,67 +138,79 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
 
     XLSX.writeFile(wb, 'diamond_import_template.xlsx');
   } else {
-    // Jewellery template (existing)
+    // Jewellery template - comprehensive format
     const sampleData = [
       {
-        'PRODUCT': 'Sample Ring',
         'CERT': 'SKU-001',
-        'CATEGORY': 'Ring',
-        'DESCRIPTION': 'Beautiful gold ring with diamond',
-        'METAL TYPE': 'Gold',
-        'GEMSTONE': 'Diamond',
-        'WEIGHT (grams)': 5.5,
-        'NET WEIGHT': 5.2,
-        'DIAMOND WEIGHT': 0.3,
-        'D WT 1': 0.2,
-        'D WT 2': 0.1,
-        'DIAMOND COLOR': 'F',
-        'COLOR': 'Yellow',
-        'CLARITY': 'VS1',
-        'POINTER DIAMOND': 30,
-        'PER CARAT PRICE': 50000,
-        'D RATE 1': 45000,
-        'D VALUE': 15000,
-        'GOLD PER GRAM PRICE': 6500,
-        'PURITY FRACTION USED': 0.916,
+        'PRODUCT': 'Sample Diamond Ring',
+        'Diamond Color': 'FGH',
+        'CLARITY': 'VS',
+        'D.WT 1': 0.25,
+        'D.WT 2': 0.15,
+        'T DWT': 0.40,
+        'G WT': 5.50,
+        'CS TYPE': 'Lab Grown Diamond',
+        'NET WT': 5.20,
+        'PURITY_FRACTION_USED': 0.76,
+        'D RATE 1': 18000,
+        'Pointer diamond': 40,
+        'D VALUE': 7200,
+        'GEMSTONE TYPE': 'NONE',
         'MKG': 1200,
-        'CERTIFICATION COST': 500,
-        'GEMSTONE COST': 2000,
-        'COST PRICE': 45000,
-        'RETAIL PRICE': 55000,
+        'GOLD': 6500,
+        'Certification cost': 2000,
+        'Gemstone cost': 0,
         'TOTAL': 55000,
-        'TOTAL USD': 660,
-        'STOCK QUANTITY': 10,
-        'IMAGE URL': 'https://example.com/image1.jpg|https://example.com/image2.jpg',
-        'THUMBNAIL': 'https://example.com/thumbnail.jpg',
-        'DELIVERY TYPE': 'immediate delivery',
-        'DISPATCHES IN DAYS': ''
+        'TOTAL_USD': 650,
+        'Prodcut Type': 'IGI Certified Lab Grown Diamond Jewellery',
+        'IMAGE_URL': 'https://example.com/image1.jpg|https://example.com/image2.jpg',
+        'STOCK QUANTITY': 1,
+        'DELIVERY TYPE': 'immediate delivery'
       }
     ];
 
     const instructions = [
       ['JEWELLERY IMPORT TEMPLATE - INSTRUCTIONS'],
       [''],
-      ['REQUIRED FIELDS (must be filled):'],
-      ['- PRODUCT: Product name'],
-      ['- COST PRICE: Cost price in your currency'],
-      ['- RETAIL PRICE: Selling price in your currency'],
+      ['REQUIRED FIELDS:'],
+      ['- CERT: Unique SKU/Certificate number'],
+      ['- PRODUCT: Product name/description'],
+      ['- TOTAL: Total/Retail price in INR'],
       ['- STOCK QUANTITY: Number of items in stock'],
       [''],
-      ['OPTIONAL FIELDS:'],
-      ['- CERT/SKU: Unique product identifier'],
-      ['- CATEGORY: Product category (e.g., Ring, Necklace)'],
-      ['- DESCRIPTION: Detailed description'],
-      ['- METAL TYPE: Type of metal (e.g., Gold, Silver, Platinum)'],
-      ['- GEMSTONE: Type of gemstone'],
-      ['- WEIGHT (grams): Total weight'],
-      ['- IMAGE URL: Can contain up to 3 URLs separated by |'],
+      ['DIAMOND DETAILS (Optional):'],
+      ['- Diamond Color: Color grade (e.g., FGH, DEF)'],
+      ['- CLARITY: Clarity grade (e.g., VS, VVS, SI)'],
+      ['- D.WT 1: Primary diamond weight in carats'],
+      ['- D.WT 2: Secondary diamond weight in carats'],
+      ['- T DWT: Total diamond weight in carats'],
+      ['- CS TYPE: Diamond type (e.g., Lab Grown Diamond, Natural Diamond)'],
+      ['- D RATE 1: Diamond rate per carat'],
+      ['- Pointer diamond: Diamond pointer/size'],
+      ['- D VALUE: Total diamond value'],
+      [''],
+      ['METAL & WEIGHT DETAILS (Optional):'],
+      ['- G WT: Gross weight in grams'],
+      ['- NET WT: Net weight in grams'],
+      ['- PURITY_FRACTION_USED: Metal purity fraction (e.g., 0.76 for 18K, 0.916 for 22K)'],
+      ['- GOLD: Gold rate per gram'],
+      ['- MKG: Making charges'],
+      [''],
+      ['OTHER DETAILS (Optional):'],
+      ['- GEMSTONE TYPE: Type of gemstone if any (e.g., Ruby, Sapphire, NONE)'],
+      ['- Certification cost: Certification charges'],
+      ['- Gemstone cost: Additional gemstone cost'],
+      ['- TOTAL_USD: Price in USD (optional, will auto-convert)'],
+      ['- Prodcut Type: Product type/category description'],
+      ['- IMAGE_URL: Image URLs separated by | (up to 3 images)'],
       ['- DELIVERY TYPE: immediate delivery or Despatches in X working days'],
       [''],
       ['NOTES:'],
-      ['- Delete these instruction rows before importing'],
-      ['- Keep the header row'],
+      ['- All price/cost fields should be in INR'],
+      ['- Delete instruction rows before importing'],
+      ['- Keep the header row exactly as shown'],
       ['- Save as .xlsx format'],
+      ['- This format matches GEMHUB inventory exports'],
     ];
 
     const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
@@ -206,7 +218,7 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
     XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
 
     const wsData = XLSX.utils.json_to_sheet(sampleData);
-    wsData['!cols'] = Array(30).fill({ wch: 15 });
+    wsData['!cols'] = Array(25).fill({ wch: 15 });
     XLSX.utils.book_append_sheet(wb, wsData, 'Products');
 
     XLSX.writeFile(wb, 'jewellery_import_template.xlsx');

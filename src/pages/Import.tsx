@@ -246,41 +246,66 @@ const Import = () => {
             name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,
           };
         } else {
-          // Jewellery (existing logic)
-          const totalPrice = parseNumber(row.TOTAL) || parseNumber(row['TOTAL']) || 0;
+          // Jewellery - supports both simple and GEMHUB comprehensive format
+          const totalPrice = parseNumber(row.TOTAL) || parseNumber(row['RETAIL PRICE']) || parseNumber(row['COST PRICE']) || 0;
           
           // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
-          const hasCostPrice = 'COST PRICE' in row;
-          const hasRetailPrice = 'RETAIL PRICE' in row;
+          const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row;
+          const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row;
           
-          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE']) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE']) : null;
+          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row.COST_PRICE) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safeTotal = (totalPrice && totalPrice > 0) ? totalPrice : 0.01;
           const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safeTotal;
           const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : (safeTotal > costPrice ? safeTotal : costPrice);
           
+          // Handle GEMHUB format columns
           product = {
             user_id: user.id,
             name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
-            description: row.DESCRIPTION || null,
-            sku: row.CERT || null,
+            description: row.DESCRIPTION || row['Prodcut Type'] || null,
+            sku: row.CERT || row.SKU || null,
             category: row.CATEGORY || null,
             metal_type: row['METAL TYPE'] || null,
             gemstone: row.GEMSTONE || null,
             color: row.COLOR || null,
-            diamond_color: row['DIAMOND COLOR'] || null,
+            diamond_color: row['Diamond Color'] || row['DIAMOND COLOR'] || null,
             clarity: row.CLARITY || null,
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
-            weight_grams: parseNumber(row['WEIGHT (grams)']) || null,
-            net_weight: parseNumber(row['NET WEIGHT']) || null,
-            diamond_weight: parseNumber(row['DIAMOND WEIGHT']) || null,
+            
+            // Weight fields - support both formats
+            weight_grams: parseNumber(row['G WT'] || row['WEIGHT (grams)']) || null,
+            net_weight: parseNumber(row['NET WT'] || row['NET WEIGHT']) || null,
+            diamond_weight: parseNumber(row['T DWT'] || row['DIAMOND WEIGHT']) || null,
+            
+            // GEMHUB specific diamond fields
+            d_wt_1: parseNumber(row['D.WT 1'] || row['D WT 1']) || null,
+            d_wt_2: parseNumber(row['D.WT 2'] || row['D WT 2']) || null,
+            diamond_type: row['CS TYPE'] || null,
+            purity_fraction_used: parseNumber(row.PURITY_FRACTION_USED) || null,
+            d_rate_1: parseNumber(row['D RATE 1']) || null,
+            pointer_diamond: parseNumber(row['Pointer diamond']) || null,
+            d_value: parseNumber(row['D VALUE']) || null,
+            gemstone_type: row['GEMSTONE TYPE'] || null,
+            mkg: parseNumber(row.MKG) || null,
+            gold_per_gram_price: parseNumber(row.GOLD) || null,
+            certification_cost: parseNumber(row['Certification cost']) || null,
+            gemstone_cost: parseNumber(row['Gemstone cost']) || null,
+            total_usd: parseNumber(row.TOTAL_USD) || null,
+            
+            // Pricing
             cost_price: costPrice,
             retail_price: retailPrice,
             stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
+            
+            // Delivery
+            delivery_type: row['DELIVERY TYPE'] || 'immediate delivery',
+            dispatches_in_days: row['DISPATCHES IN DAYS'] || null,
+            
             product_type: 'Jewellery',
           };
         }
