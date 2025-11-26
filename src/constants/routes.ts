@@ -13,6 +13,7 @@ export const ROUTES = {
   DEMO: "/demo",
   IMAGE_DEMO: "/image-optimization-demo",
   DIAMOND_CALCULATOR: "/diamond-calculator",
+  MANUFACTURING_COST: "/manufacturing-cost",
   ABOUT: "/about",
   CONTACT: "/contact",
   AUTH: "/auth",
