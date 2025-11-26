@@ -9,11 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Upload, Loader2, Download } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { productImportSchema, gemstoneImportSchema, diamondImportSchema } from "@/lib/validations";
 import { generateProductTemplate } from "@/utils/generateTemplate";
 import { convertINRtoUSD } from "@/utils/currencyConversion";
+import { getExpectedColumns } from "@/utils/columnMapping";
 
 type ProductType = 'Jewellery' | 'Gemstones' | 'Loose Diamonds';
 
@@ -25,6 +26,11 @@ const Import = () => {
   const [previewData, setPreviewData] = useState<{
     valid: any[];
     invalid: Array<{row: number, product: string, errors: string[]}>;
+  } | null>(null);
+  const [columnMappings, setColumnMappings] = useState<{
+    detected: string[];
+    missing: string[];
+    suggestions: Record<string, string>;
   } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -59,6 +65,7 @@ const Import = () => {
     setLoading(true);
     setImportErrors([]);
     setPreviewData(null);
+    setColumnMappings(null);
 
     try {
       const data = await file.arrayBuffer();
@@ -66,6 +73,43 @@ const Import = () => {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
+
+      // Detect columns and check for mapping issues
+      if (jsonData.length > 0) {
+        const detectedColumns = Object.keys(jsonData[0] as any);
+        const expectedColumns = getExpectedColumns(selectedProductType);
+        const missing: string[] = [];
+        const suggestions: Record<string, string> = {};
+
+        // Check for missing required columns and suggest mappings
+        expectedColumns.required.forEach(reqCol => {
+          const exactMatch = detectedColumns.find(col => 
+            col.toLowerCase() === reqCol.toLowerCase() || 
+            col.replace(/[_\s]/g, '').toLowerCase() === reqCol.replace(/[_\s]/g, '').toLowerCase()
+          );
+          
+          if (!exactMatch) {
+            // Try to find similar column
+            const similar = detectedColumns.find(col => {
+              const colClean = col.toLowerCase().replace(/[_\s]/g, '');
+              const reqClean = reqCol.toLowerCase().replace(/[_\s]/g, '');
+              return colClean.includes(reqClean) || reqClean.includes(colClean);
+            });
+            
+            if (similar) {
+              suggestions[reqCol] = similar;
+            } else {
+              missing.push(reqCol);
+            }
+          }
+        });
+
+        setColumnMappings({
+          detected: detectedColumns,
+          missing,
+          suggestions
+        });
+      }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -532,6 +576,71 @@ const Import = () => {
                     </p>
                   </div>
                 </div>
+
+                {columnMappings && (
+                  <div className="space-y-3">
+                    {columnMappings.missing.length > 0 && (
+                      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg space-y-2">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-destructive">Missing Required Columns</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              The following columns are required but not found in your file:
+                            </p>
+                            <ul className="mt-2 space-y-1">
+                              {columnMappings.missing.map(col => (
+                                <li key={col} className="text-sm font-mono bg-background/50 px-2 py-1 rounded">
+                                  {col}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {Object.keys(columnMappings.suggestions).length > 0 && (
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg space-y-2">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-amber-600">Column Name Suggestions</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              These columns have similar names and will be automatically mapped:
+                            </p>
+                            <ul className="mt-2 space-y-1">
+                              {Object.entries(columnMappings.suggestions).map(([expected, detected]) => (
+                                <li key={expected} className="text-sm">
+                                  <span className="font-mono bg-background/50 px-2 py-1 rounded">{detected}</span>
+                                  <span className="mx-2">→</span>
+                                  <span className="font-mono bg-primary/10 px-2 py-1 rounded">{expected}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {columnMappings.missing.length === 0 && Object.keys(columnMappings.suggestions).length === 0 && (
+                      <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <p className="text-sm font-semibold text-green-600">
+                            All columns match perfectly!
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Detected columns:</strong> {columnMappings.detected.join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <Button
                   onClick={handlePreview}
