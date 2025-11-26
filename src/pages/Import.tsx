@@ -303,7 +303,7 @@ const Import = () => {
             stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
             
             // Delivery
-            delivery_type: row['DELIVERY TYPE'] || 'immediate delivery',
+            delivery_type: row['DELIVERY TYPE'] || 'immediate',
             dispatches_in_days: row['DISPATCHES IN DAYS'] || null,
             
             product_type: 'Jewellery',
