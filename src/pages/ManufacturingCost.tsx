@@ -68,6 +68,13 @@ const ManufacturingCost = () => {
 
   const [profitMargin, setProfitMargin] = useState(0);
 
+  const [customerDetails, setCustomerDetails] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+  });
+
   const [costs, setCosts] = useState({
     goldCost: 0,
     totalCost: 0,
@@ -177,6 +184,12 @@ const ManufacturingCost = () => {
     setNotes("");
     setReferenceImages([]);
     setCustomCertification("");
+    setCustomerDetails({
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+    });
   };
 
   const handleSave = async () => {
@@ -219,6 +232,10 @@ const ManufacturingCost = () => {
       final_selling_price: costs.finalSellingPrice,
       notes: notes || null,
       reference_images: referenceImages,
+      customer_name: customerDetails.name || null,
+      customer_phone: customerDetails.phone || null,
+      customer_email: customerDetails.email || null,
+      customer_address: customerDetails.address || null,
       details: {
         gross_weight: formData.grossWeight,
         diamond_per_carat_price: formData.diamondPerCaratPrice,
@@ -313,6 +330,12 @@ const ManufacturingCost = () => {
     setEstimateName(estimate.estimate_name);
     setNotes(estimate.notes || "");
     setReferenceImages(estimate.reference_images || []);
+    setCustomerDetails({
+      name: estimate.customer_name || "",
+      phone: estimate.customer_phone || "",
+      email: estimate.customer_email || "",
+      address: estimate.customer_address || "",
+    });
     setShowLoadDialog(false);
     toast({
       title: "Loaded",
@@ -482,6 +505,58 @@ const ManufacturingCost = () => {
                         rows={3}
                       />
                     </div>
+                    
+                    {/* Customer Details Section */}
+                    <div className="space-y-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="w-4 h-4 text-primary" />
+                        <Label className="text-base font-semibold">Customer Details (Optional)</Label>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Add customer information for invoice generation after production
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="customerName">Customer Name</Label>
+                          <Input
+                            id="customerName"
+                            value={customerDetails.name}
+                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="Enter customer name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="customerPhone">Phone Number</Label>
+                          <Input
+                            id="customerPhone"
+                            value={customerDetails.phone}
+                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, phone: e.target.value }))}
+                            placeholder="Enter phone number"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="customerEmail">Email Address</Label>
+                          <Input
+                            id="customerEmail"
+                            type="email"
+                            value={customerDetails.email}
+                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, email: e.target.value }))}
+                            placeholder="Enter email address"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="customerAddress">Address</Label>
+                          <Input
+                            id="customerAddress"
+                            value={customerDetails.address}
+                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, address: e.target.value }))}
+                            placeholder="Enter address"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
                     <Button onClick={handleSave} className="w-full">
                       {currentEstimateId ? 'Update' : 'Save'} Estimate
                     </Button>

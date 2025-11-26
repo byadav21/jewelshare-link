@@ -389,6 +389,10 @@ export type Database = {
           camming_charges: number | null
           certification_cost: number | null
           created_at: string | null
+          customer_address: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
           diamond_cost: number | null
           estimate_name: string
           final_selling_price: number | null
@@ -411,6 +415,10 @@ export type Database = {
           camming_charges?: number | null
           certification_cost?: number | null
           created_at?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           diamond_cost?: number | null
           estimate_name: string
           final_selling_price?: number | null
@@ -433,6 +441,10 @@ export type Database = {
           camming_charges?: number | null
           certification_cost?: number | null
           created_at?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           diamond_cost?: number | null
           estimate_name?: string
           final_selling_price?: number | null
