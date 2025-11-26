@@ -768,6 +768,18 @@ const Index = () => {
                   </a>
                 </li>
                 <li>
+                  <a 
+                    href="#" 
+                    className="transition-colors hover:text-foreground"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/diamond-calculator");
+                    }}
+                  >
+                    Diamond Calculator
+                  </a>
+                </li>
+                <li>
                   <a href="#" className="transition-colors hover:text-foreground">
                     Security
                   </a>
