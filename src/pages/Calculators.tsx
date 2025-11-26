@@ -17,10 +17,10 @@ const Calculators = () => {
     gradient: string;
     path: string;
     badge?: string;
-    extraButton?: {
+    extraButtons?: Array<{
       label: string;
       path: string;
-    };
+    }>;
   }> = [
     {
       icon: Gem,
@@ -53,10 +53,16 @@ const Calculators = () => {
       gradient: "from-jewellery-from to-jewellery-to",
       path: "/manufacturing-cost",
       badge: "New",
-      extraButton: {
-        label: "View Invoice History",
-        path: "/invoice-history"
-      }
+      extraButtons: [
+        {
+          label: "Generate Invoice",
+          path: "/invoice-generator"
+        },
+        {
+          label: "View Invoice History",
+          path: "/invoice-history"
+        }
+      ]
     }
   ];
 
@@ -143,19 +149,20 @@ const Calculators = () => {
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                       </Button>
                       
-                      {calc.extraButton && (
+                      {calc.extraButtons && calc.extraButtons.map((btn, idx) => (
                         <Button
+                          key={idx}
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(calc.extraButton.path);
+                            navigate(btn.path);
                           }}
                           variant="outline"
                           className="w-full"
                           size="lg"
                         >
-                          {calc.extraButton.label}
+                          {btn.label}
                         </Button>
-                      )}
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

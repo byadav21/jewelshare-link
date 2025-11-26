@@ -885,12 +885,10 @@ const ManufacturingCost = () => {
             <FileText className="mr-2 h-4 w-4" />
             Export Estimate
           </Button>
-          {estimateName && (
-            <Button onClick={handleGenerateInvoice} variant="secondary">
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Invoice
-            </Button>
-          )}
+          <Button onClick={() => navigate("/invoice-generator")} variant="secondary">
+            <FileText className="mr-2 h-4 w-4" />
+            Create Invoice
+          </Button>
           {shareToken && (
             <Button onClick={copyShareLink} variant="outline" size="sm">
               {copiedToken ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
