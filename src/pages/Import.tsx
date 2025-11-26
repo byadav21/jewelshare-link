@@ -68,6 +68,21 @@ const Import = () => {
     setColumnMappings(null);
 
     try {
+      // Fetch vendor profile for auto-calculations
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Not authenticated");
+      }
+
+      const { data: vendorProfile } = await supabase
+        .from('vendor_profiles')
+        .select('gold_rate_24k_per_gram, making_charges_per_gram')
+        .eq('user_id', user.id)
+        .single();
+
+      const goldRate = vendorProfile?.gold_rate_24k_per_gram || 7000; // Default fallback
+      const makingCharges = vendorProfile?.making_charges_per_gram || 500; // Default fallback
+
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       
@@ -115,11 +130,6 @@ const Import = () => {
           missing,
           suggestions
         });
-      }
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("Not authenticated");
       }
 
       const errors: Array<{row: number, product: string, errors: string[]}> = [];
@@ -246,20 +256,52 @@ const Import = () => {
             name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,
           };
         } else {
-          // Jewellery - supports both simple and GEMHUB comprehensive format
-          const totalPrice = parseNumber(row.TOTAL) || parseNumber(row['RETAIL PRICE']) || parseNumber(row['COST PRICE']) || 0;
+          // Jewellery - GEMHUB format with auto-calculations
+          const grossWeight = parseNumber(row['G WT']) || 0;
+          const totalDiamondWeight = parseNumber(row['T DWT']) || 0;
+          const gemstoneWeight = parseNumber(row['GEMSTONE WT']) || 0;
           
-          // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
-          const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row;
-          const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row;
+          // Calculate NET WT if not provided: G WT - T DWT + GEMSTONE WT/5
+          const netWeightFromExcel = parseNumber(row['NET WT']);
+          const netWeight = netWeightFromExcel || (grossWeight - totalDiamondWeight + gemstoneWeight / 5);
           
-          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row.COST_PRICE) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE) : null;
+          // Parse purity (handles both 76% and 0.76 formats)
+          const purityFraction = (() => {
+            const purityValue = row.PURITY_FRACTION_USED;
+            if (!purityValue) return 0.76; // Default 18K
+            if (typeof purityValue === 'string' && purityValue.includes('%')) {
+              const numValue = parseFloat(purityValue.replace(/[^0-9.-]/g, ''));
+              return numValue > 0 ? numValue / 100 : 0.76;
+            }
+            const numValue = parseNumber(purityValue);
+            return numValue > 1 ? numValue / 100 : (numValue || 0.76);
+          })();
           
-          // Ensure we always have valid prices (minimum 0.01)
-          const safeTotal = (totalPrice && totalPrice > 0) ? totalPrice : 0.01;
-          const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safeTotal;
-          const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : (safeTotal > costPrice ? safeTotal : costPrice);
+          // Calculate D VALUE if not provided: (D.WT 1 × D RATE 1) + (D.WT 2 × Pointer diamond)
+          const dWt1 = parseNumber(row['D.WT 1'] || row['D WT 1']) || 0;
+          const dWt2 = parseNumber(row['D.WT 2'] || row['D WT 2']) || 0;
+          const dRate1 = parseNumber(row['D RATE 1']) || 0;
+          const pointerDiamond = parseNumber(row['Pointer diamond']) || 0;
+          const dValueFromExcel = parseNumber(row['D VALUE']);
+          const dValue = dValueFromExcel || (dWt1 * dRate1 + dWt2 * pointerDiamond);
+          
+          // Calculate MKG if not provided: G WT × making_charges_per_gram
+          const mkgFromExcel = parseNumber(row.MKG);
+          const mkg = mkgFromExcel || (grossWeight * makingCharges);
+          
+          // Calculate GOLD if not provided: NET WT × gold_rate × purity_fraction
+          const goldFromExcel = parseNumber(row.GOLD);
+          const goldValue = goldFromExcel || (netWeight * goldRate * purityFraction);
+          
+          // Calculate TOTAL if not provided: D VALUE + MKG + GOLD + Certification cost + Gemstone cost
+          const certificationCost = parseNumber(row['Certification cost']) || 0;
+          const gemstoneCost = parseNumber(row['Gemstone cost']) || 0;
+          const totalFromExcel = parseNumber(row.TOTAL);
+          const totalPrice = totalFromExcel || (dValue + mkg + goldValue + certificationCost + gemstoneCost);
+          
+          // Convert to USD if not provided
+          const totalUsdFromExcel = parseNumber(row.TOTAL_USD);
+          const totalUsd = totalUsdFromExcel || (totalPrice > 0 ? await convertINRtoUSD(totalPrice) : null);
           
           // Handle GEMHUB format columns
           product = {
@@ -277,44 +319,41 @@ const Import = () => {
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
             
-            // Weight fields - support both formats
-            weight_grams: parseNumber(row['G WT'] || row['WEIGHT (grams)']) || null,
-            net_weight: parseNumber(row['NET WT'] || row['NET WEIGHT']) || null,
-            diamond_weight: parseNumber(row['T DWT'] || row['DIAMOND WEIGHT']) || null,
+            // Weight fields
+            weight_grams: grossWeight || null,
+            net_weight: netWeight || null,
+            diamond_weight: totalDiamondWeight || null,
+            carat_weight: gemstoneWeight || null, // Store gemstone weight in carat_weight
             
             // GEMHUB specific diamond fields
-            d_wt_1: parseNumber(row['D.WT 1'] || row['D WT 1']) || null,
-            d_wt_2: parseNumber(row['D.WT 2'] || row['D WT 2']) || null,
+            d_wt_1: dWt1 || null,
+            d_wt_2: dWt2 || null,
             diamond_type: row['CS TYPE'] || null,
-            purity_fraction_used: (() => {
-              const purityValue = row.PURITY_FRACTION_USED;
-              if (!purityValue) return null;
-              // If it's a string with %, remove % and divide by 100 to get decimal
-              if (typeof purityValue === 'string' && purityValue.includes('%')) {
-                const numValue = parseFloat(purityValue.replace(/[^0-9.-]/g, ''));
-                return numValue > 0 ? numValue / 100 : null;
-              }
-              // If it's already a number, check if it's > 1 (percentage) or <= 1 (decimal)
-              const numValue = parseNumber(purityValue);
-              return numValue > 1 ? numValue / 100 : numValue;
-            })(),
-            d_rate_1: parseNumber(row['D RATE 1']) || null,
-            pointer_diamond: parseNumber(row['Pointer diamond']) || null,
-            d_value: parseNumber(row['D VALUE']) || null,
+            purity_fraction_used: purityFraction,
+            d_rate_1: dRate1 || null,
+            pointer_diamond: pointerDiamond || null,
+            d_value: dValue || null,
             gemstone_type: row['GEMSTONE TYPE'] || null,
-            mkg: parseNumber(row.MKG) || null,
-            gold_per_gram_price: parseNumber(row.GOLD) || null,
-            certification_cost: parseNumber(row['Certification cost']) || null,
-            gemstone_cost: parseNumber(row['Gemstone cost']) || null,
-            total_usd: parseNumber(row.TOTAL_USD) || null,
+            mkg: mkg || null,
+            gold_per_gram_price: goldValue || null,
+            certification_cost: certificationCost || null,
+            gemstone_cost: gemstoneCost || null,
+            total_usd: totalUsd,
             
-            // Pricing
-            cost_price: costPrice,
-            retail_price: retailPrice,
+            // Pricing - use calculated TOTAL
+            price_inr: totalPrice,
+            price_usd: totalUsd,
+            cost_price: totalPrice, // Use TOTAL as cost price
+            retail_price: totalPrice, // Use TOTAL as retail price
             stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
             
             // Delivery
-            delivery_type: row['DELIVERY TYPE'] || 'immediate',
+            delivery_type: (() => {
+              const deliveryType = row['DELIVERY TYPE'];
+              if (!deliveryType) return 'immediate';
+              const typeStr = String(deliveryType).toLowerCase();
+              return typeStr.includes('schedule') ? 'scheduled' : 'immediate';
+            })(),
             dispatches_in_days: row['DISPATCHES IN DAYS'] || null,
             
             product_type: 'Jewellery',
