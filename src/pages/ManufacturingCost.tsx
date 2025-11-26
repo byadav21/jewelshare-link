@@ -97,26 +97,39 @@ const ManufacturingCost = () => {
 
   // Check auth status and usage limits
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const checkUsageAndAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      
       if (user) {
+        // Authenticated users have unlimited access
         fetchEstimates();
       } else {
-        // Check guest usage count
-        const usageKey = 'manufacturing_estimator_guest_usage';
-        const storedUsage = localStorage.getItem(usageKey);
-        const usage = storedUsage ? parseInt(storedUsage, 10) : 0;
-        
-        if (usage >= 5) {
-          setShowUsageLimitDialog(true);
-        } else {
-          // Increment usage count
-          const newUsage = usage + 1;
-          localStorage.setItem(usageKey, newUsage.toString());
-          setGuestUsageCount(newUsage);
+        // Check guest usage via backend
+        try {
+          const { data, error } = await supabase.functions.invoke('check-guest-usage', {
+            body: { calculatorType: 'manufacturing' }
+          });
+
+          if (error) {
+            console.error("Error checking guest usage:", error);
+            // Fallback to allowing access if backend check fails
+            return;
+          }
+
+          if (!data.allowed) {
+            setShowUsageLimitDialog(true);
+          } else {
+            setGuestUsageCount(data.usageCount);
+          }
+        } catch (error) {
+          console.error("Failed to check usage:", error);
+          // Fallback to allowing access if request fails
         }
       }
-    });
+    };
+
+    checkUsageAndAuth();
   }, []);
 
   // Fetch saved estimates
@@ -621,7 +634,7 @@ const ManufacturingCost = () => {
           <DialogHeader>
             <DialogTitle>Usage Limit Reached</DialogTitle>
             <DialogDescription>
-              You've reached the limit of 5 uses for guest users. Sign in to get unlimited access to the Manufacturing Cost Estimator.
+              You've reached the limit of 5 uses per 24 hours for guest users. Sign in to get unlimited access to the Manufacturing Cost Estimator, or wait 24 hours for your limit to reset.
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-4">
@@ -661,7 +674,7 @@ const ManufacturingCost = () => {
             <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border">
               <Info className="h-4 w-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                Guest Usage: {guestUsageCount}/5 uses.
+                Guest Usage: {guestUsageCount}/5 uses (resets in 24 hours).
                 <Button
                   variant="link"
                   className="ml-1 p-0 h-auto text-sm underline"
