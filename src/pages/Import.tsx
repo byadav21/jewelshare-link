@@ -156,7 +156,15 @@ const Import = () => {
         let product: any;
 
         if (selectedProductType === 'Gemstones') {
+          // DEBUG: Show what keys are in the row
+          console.log('🔍 Row keys:', Object.keys(row));
+          console.log('🔍 Full row:', JSON.stringify(row, null, 2));
+          console.log('🔍 GEMSTONE NAME value:', row['GEMSTONE NAME']);
+          console.log('🔍 PRICE_INR value:', row.PRICE_INR);
+          console.log('🔍 PRICE INR value:', row['PRICE INR']);
+          
           const priceINR = parseNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
+          console.log('🔍 Parsed priceINR:', priceINR);
           
           // Check if COST PRICE and RETAIL PRICE columns exist in the file (handle both underscore and space formats)
           const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
