@@ -47,6 +47,7 @@ const ManufacturingCost = () => {
     certificationCost: 0,
     diamondPerCaratPrice: 0,
     diamondWeight: 0,
+    diamondType: "",
     diamondColor: "",
     diamondClarity: "",
     gemstonePerCaratPrice: 0,
@@ -134,6 +135,7 @@ const ManufacturingCost = () => {
       certificationCost: 0,
       diamondPerCaratPrice: 0,
       diamondWeight: 0,
+      diamondType: "",
       diamondColor: "",
       diamondClarity: "",
       gemstonePerCaratPrice: 0,
@@ -189,6 +191,7 @@ const ManufacturingCost = () => {
       details: {
         diamond_per_carat_price: formData.diamondPerCaratPrice,
         diamond_weight: formData.diamondWeight,
+        diamond_type: formData.diamondType,
         diamond_color: formData.diamondColor,
         diamond_clarity: formData.diamondClarity,
         gemstone_per_carat_price: formData.gemstonePerCaratPrice,
@@ -252,6 +255,7 @@ const ManufacturingCost = () => {
       certificationCost: estimate.certification_cost || 0,
       diamondPerCaratPrice: details?.diamond_per_carat_price || 0,
       diamondWeight: details?.diamond_weight || 0,
+      diamondType: details?.diamond_type || "",
       diamondColor: details?.diamond_color || "",
       diamondClarity: details?.diamond_clarity || "",
       gemstonePerCaratPrice: details?.gemstone_per_carat_price || 0,
@@ -658,6 +662,21 @@ const ManufacturingCost = () => {
                   onChange={(e) => handleChange("certificationCost", e.target.value)}
                   placeholder="0.00"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="diamondType">Diamond Type</Label>
+                <Select
+                  value={formData.diamondType}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondType: value }))}
+                >
+                  <SelectTrigger id="diamondType" className="bg-background">
+                    <SelectValue placeholder="Select diamond type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-50">
+                    <SelectItem value="natural">Natural Diamond</SelectItem>
+                    <SelectItem value="lab-grown">Lab-Grown Diamond</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="diamondPerCaratPrice">Diamond Per Carat Price (₹)</Label>
