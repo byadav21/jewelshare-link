@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, Upload, Trash2, AlertCircle } from "lucide-react";
+import { Download, Upload, Trash2, AlertCircle, History, TrendingUp, TrendingDown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDiamondPrices = () => {
   const [uploading, setUploading] = useState(false);
@@ -27,6 +28,20 @@ const AdminDiamondPrices = () => {
         .select("*")
         .order("shape", { ascending: true })
         .order("carat_range_min", { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: priceHistory, isLoading: historyLoading } = useQuery({
+    queryKey: ["diamond-price-history"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("diamond_price_history")
+        .select("*")
+        .order("changed_at", { ascending: false })
+        .limit(100);
       
       if (error) throw error;
       return data;
@@ -368,65 +383,168 @@ const AdminDiamondPrices = () => {
         {/* Price List Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Current Price List</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Diamond Pricing Data
+            </CardTitle>
             <CardDescription>
-              {prices?.length || 0} entries in database
+              View current prices and update history
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <p className="text-center py-8 text-muted-foreground">Loading...</p>
-            ) : !prices || prices.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">
-                No pricing data yet. Upload a CSV to get started.
-              </p>
-            ) : (
-              <div className="border rounded-lg overflow-auto max-h-[500px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Shape</TableHead>
-                      <TableHead>Carat Range</TableHead>
-                      <TableHead>Color</TableHead>
-                      <TableHead>Clarity</TableHead>
-                      <TableHead>Cut</TableHead>
-                      <TableHead className="text-right">Price/Carat</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {prices.slice(0, displayCount).map((price) => (
-                      <TableRow key={price.id}>
-                        <TableCell>
-                          <Badge variant="outline">{price.shape}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {price.carat_range_min} - {price.carat_range_max}
-                        </TableCell>
-                        <TableCell>{price.color_grade}</TableCell>
-                        <TableCell>{price.clarity_grade}</TableCell>
-                        <TableCell>{price.cut_grade}</TableCell>
-                        <TableCell className="text-right font-mono">
-                          {price.currency} {price.price_per_carat.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                {prices.length > displayCount && (
-                  <div className="flex flex-col items-center gap-2 py-4 border-t">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {displayCount} of {prices.length} entries
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => setDisplayCount(prev => Math.min(prev + 100, prices.length))}
-                    >
-                      Load More (100)
-                    </Button>
+            <Tabs defaultValue="current" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="current">Current Prices</TabsTrigger>
+                <TabsTrigger value="history">Update History</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="current">
+                {isLoading ? (
+                  <p className="text-center py-8 text-muted-foreground">Loading...</p>
+                ) : !prices || prices.length === 0 ? (
+                  <p className="text-center py-8 text-muted-foreground">
+                    No pricing data yet. Upload a CSV to get started.
+                  </p>
+                ) : (
+                  <div className="border rounded-lg overflow-auto max-h-[500px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Shape</TableHead>
+                          <TableHead>Carat Range</TableHead>
+                          <TableHead>Color</TableHead>
+                          <TableHead>Clarity</TableHead>
+                          <TableHead>Cut</TableHead>
+                          <TableHead className="text-right">Price/Carat</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {prices.slice(0, displayCount).map((price) => (
+                          <TableRow key={price.id}>
+                            <TableCell>
+                              <Badge variant="outline">{price.shape}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {price.carat_range_min} - {price.carat_range_max}
+                            </TableCell>
+                            <TableCell>{price.color_grade}</TableCell>
+                            <TableCell>{price.clarity_grade}</TableCell>
+                            <TableCell>{price.cut_grade}</TableCell>
+                            <TableCell className="text-right font-mono">
+                              {price.currency} {price.price_per_carat.toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    {prices.length > displayCount && (
+                      <div className="flex flex-col items-center gap-2 py-4 border-t">
+                        <p className="text-sm text-muted-foreground">
+                          Showing {displayCount} of {prices.length} entries
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => setDisplayCount(prev => Math.min(prev + 100, prices.length))}
+                        >
+                          Load More (100)
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
+              </TabsContent>
+
+              <TabsContent value="history">
+                {historyLoading ? (
+                  <p className="text-center py-8 text-muted-foreground">Loading history...</p>
+                ) : !priceHistory || priceHistory.length === 0 ? (
+                  <p className="text-center py-8 text-muted-foreground">
+                    No price updates recorded yet.
+                  </p>
+                ) : (
+                  <div className="border rounded-lg overflow-auto max-h-[500px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Shape</TableHead>
+                          <TableHead>Grades</TableHead>
+                          <TableHead>Change</TableHead>
+                          <TableHead className="text-right">Old Price</TableHead>
+                          <TableHead className="text-right">New Price</TableHead>
+                          <TableHead>Type</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {priceHistory.map((history) => {
+                          const priceChange = history.old_price_per_carat 
+                            ? ((history.new_price_per_carat - history.old_price_per_carat) / history.old_price_per_carat * 100)
+                            : 0;
+                          const isIncrease = priceChange > 0;
+                          
+                          return (
+                            <TableRow key={history.id}>
+                              <TableCell className="text-sm">
+                                {new Date(history.changed_at).toLocaleString()}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{history.shape}</Badge>
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {history.color_grade}/{history.clarity_grade}/{history.cut_grade}
+                                <div className="text-xs text-muted-foreground">
+                                  {history.carat_range_min}-{history.carat_range_max}ct
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {history.change_type === 'insert' ? (
+                                  <Badge variant="secondary">New</Badge>
+                                ) : history.change_type === 'delete' ? (
+                                  <Badge variant="destructive">Deleted</Badge>
+                                ) : priceChange !== 0 ? (
+                                  <div className="flex items-center gap-1">
+                                    {isIncrease ? (
+                                      <TrendingUp className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                      <TrendingDown className="h-4 w-4 text-red-500" />
+                                    )}
+                                    <span className={isIncrease ? "text-green-600" : "text-red-600"}>
+                                      {isIncrease ? '+' : ''}{priceChange.toFixed(1)}%
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">No change</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-sm">
+                                {history.old_price_per_carat 
+                                  ? `${history.currency} ${history.old_price_per_carat.toLocaleString()}`
+                                  : '-'}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-sm">
+                                {history.currency} {history.new_price_per_carat.toLocaleString()}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={
+                                  history.change_type === 'insert' ? 'default' :
+                                  history.change_type === 'delete' ? 'destructive' :
+                                  'secondary'
+                                }>
+                                  {history.change_type}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                    <p className="text-sm text-muted-foreground text-center py-3 border-t">
+                      Showing last 100 updates
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>

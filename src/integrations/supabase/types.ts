@@ -281,6 +281,60 @@ export type Database = {
           },
         ]
       }
+      diamond_price_history: {
+        Row: {
+          carat_range_max: number
+          carat_range_min: number
+          change_type: string
+          changed_at: string
+          changed_by: string | null
+          clarity_grade: string
+          color_grade: string
+          currency: string
+          cut_grade: string
+          id: string
+          new_price_per_carat: number
+          notes: string | null
+          old_price_per_carat: number | null
+          price_id: string
+          shape: string
+        }
+        Insert: {
+          carat_range_max: number
+          carat_range_min: number
+          change_type: string
+          changed_at?: string
+          changed_by?: string | null
+          clarity_grade: string
+          color_grade: string
+          currency?: string
+          cut_grade: string
+          id?: string
+          new_price_per_carat: number
+          notes?: string | null
+          old_price_per_carat?: number | null
+          price_id: string
+          shape: string
+        }
+        Update: {
+          carat_range_max?: number
+          carat_range_min?: number
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          clarity_grade?: string
+          color_grade?: string
+          currency?: string
+          cut_grade?: string
+          id?: string
+          new_price_per_carat?: number
+          notes?: string | null
+          old_price_per_carat?: number | null
+          price_id?: string
+          shape?: string
+        }
+        Relationships: []
+      }
       diamond_prices: {
         Row: {
           carat_range_max: number
