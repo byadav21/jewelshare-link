@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, Upload, Trash2, AlertCircle, History, TrendingUp, TrendingDown } from "lucide-react";
+import { Download, Upload, Trash2, AlertCircle, History, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -255,6 +255,12 @@ const AdminDiamondPrices = () => {
     }
   };
 
+  const refreshData = () => {
+    queryClient.invalidateQueries({ queryKey: ["diamond-prices"] });
+    queryClient.invalidateQueries({ queryKey: ["diamond-price-history"] });
+    toast.success("Data refreshed");
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -349,10 +355,22 @@ const AdminDiamondPrices = () => {
           {/* Stats Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Database Stats</CardTitle>
-              <CardDescription>
-                Current pricing data summary
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Database Stats</CardTitle>
+                  <CardDescription>
+                    Current pricing data summary
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={refreshData}
+                  variant="outline"
+                  size="icon"
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
