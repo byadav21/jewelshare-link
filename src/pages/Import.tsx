@@ -156,14 +156,14 @@ const Import = () => {
         let product: any;
 
         if (selectedProductType === 'Gemstones') {
-          const priceINR = parseNumber(row['PRICE INR'] || row['PRICE_INR'] || row['Price INR'] || row['Price']);
+          const priceINR = parseNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
           
-          // Check if COST PRICE and RETAIL PRICE columns exist in the file
+          // Check if COST PRICE and RETAIL PRICE columns exist in the file (handle both underscore and space formats)
           const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
           const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
           
-          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row['COST_PRICE'] || row['Cost Price']) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row['RETAIL_PRICE'] || row['Retail Price']) : null;
+          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row.COST_PRICE || row['Cost Price']) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE || row['Retail Price']) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
@@ -196,14 +196,14 @@ const Import = () => {
             name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
           };
         } else if (selectedProductType === 'Loose Diamonds') {
-          const priceINR = parseNumber(row['PRICE INR'] || row['PRICE_INR'] || row['Price INR'] || row['Price']);
+          const priceINR = parseNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
           
-          // Check if COST PRICE and RETAIL PRICE columns exist in the file
+          // Check if COST PRICE and RETAIL PRICE columns exist in the file (handle both underscore and space formats)
           const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
           const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
           
-          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row['COST_PRICE'] || row['Cost Price']) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row['RETAIL_PRICE'] || row['Retail Price']) : null;
+          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row.COST_PRICE || row['Cost Price']) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE || row['Retail Price']) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
