@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, Upload, Trash2, AlertCircle, History, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { Download, Upload, Trash2, AlertCircle, History, TrendingUp, TrendingDown, RefreshCw, Search, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const AdminDiamondPrices = () => {
   const [uploading, setUploading] = useState(false);
@@ -20,15 +21,43 @@ const AdminDiamondPrices = () => {
   const [displayCount, setDisplayCount] = useState(100);
   const queryClient = useQueryClient();
 
+  // Filter states
+  const [filterShape, setFilterShape] = useState<string>("");
+  const [filterColorGrade, setFilterColorGrade] = useState<string>("");
+  const [filterClarityGrade, setFilterClarityGrade] = useState<string>("");
+  const [filterCaratMin, setFilterCaratMin] = useState<string>("");
+  const [filterCaratMax, setFilterCaratMax] = useState<string>("");
+
   const { data: pricesData, isLoading } = useQuery({
-    queryKey: ["diamond-prices"],
+    queryKey: ["diamond-prices", filterShape, filterColorGrade, filterClarityGrade, filterCaratMin, filterCaratMax],
     queryFn: async () => {
-      const { data, error, count } = await supabase
+      let query = supabase
         .from("diamond_prices")
-        .select("*", { count: 'exact' })
+        .select("*", { count: 'exact' });
+
+      // Apply filters
+      if (filterShape) {
+        query = query.eq("shape", filterShape);
+      }
+      if (filterColorGrade) {
+        query = query.eq("color_grade", filterColorGrade);
+      }
+      if (filterClarityGrade) {
+        query = query.eq("clarity_grade", filterClarityGrade);
+      }
+      if (filterCaratMin) {
+        query = query.gte("carat_range_min", parseFloat(filterCaratMin));
+      }
+      if (filterCaratMax) {
+        query = query.lte("carat_range_max", parseFloat(filterCaratMax));
+      }
+
+      query = query
         .order("shape", { ascending: true })
         .order("carat_range_min", { ascending: true })
         .limit(10000);
+
+      const { data, error, count } = await query;
       
       if (error) throw error;
       return { data, count };
@@ -37,6 +66,22 @@ const AdminDiamondPrices = () => {
 
   const prices = pricesData?.data || [];
   const totalCount = pricesData?.count || 0;
+
+  // Get unique values for filter dropdowns
+  const uniqueShapes = Array.from(new Set(prices.map(p => p.shape))).sort();
+  const uniqueColorGrades = Array.from(new Set(prices.map(p => p.color_grade))).sort();
+  const uniqueClarityGrades = Array.from(new Set(prices.map(p => p.clarity_grade))).sort();
+
+  const clearFilters = () => {
+    setFilterShape("");
+    setFilterColorGrade("");
+    setFilterClarityGrade("");
+    setFilterCaratMin("");
+    setFilterCaratMax("");
+    toast.success("Filters cleared");
+  };
+
+  const hasActiveFilters = filterShape || filterColorGrade || filterClarityGrade || filterCaratMin || filterCaratMax;
 
   const { data: priceHistory, isLoading: historyLoading } = useQuery({
     queryKey: ["diamond-price-history"],
@@ -401,6 +446,110 @@ const AdminDiamondPrices = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Search & Filter Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Search & Filter
+            </CardTitle>
+            <CardDescription>
+              Filter diamond prices by shape, grades, and carat range
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Shape</Label>
+                  <Select value={filterShape} onValueChange={setFilterShape}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All shapes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All shapes</SelectItem>
+                      {uniqueShapes.map(shape => (
+                        <SelectItem key={shape} value={shape}>{shape}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Color Grade</Label>
+                  <Select value={filterColorGrade} onValueChange={setFilterColorGrade}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All colors" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All colors</SelectItem>
+                      {uniqueColorGrades.map(color => (
+                        <SelectItem key={color} value={color}>{color}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Clarity Grade</Label>
+                  <Select value={filterClarityGrade} onValueChange={setFilterClarityGrade}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All clarities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All clarities</SelectItem>
+                      {uniqueClarityGrades.map(clarity => (
+                        <SelectItem key={clarity} value={clarity}>{clarity}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Carat Range Min</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 0.50"
+                    value={filterCaratMin}
+                    onChange={(e) => setFilterCaratMin(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Carat Range Max</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 1.00"
+                    value={filterCaratMax}
+                    onChange={(e) => setFilterCaratMax(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <div className="flex items-center gap-2 pt-2">
+                  <Badge variant="secondary">
+                    {totalCount} {totalCount === 1 ? 'result' : 'results'} found
+                  </Badge>
+                  <Button
+                    onClick={clearFilters}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear Filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Price List Table */}
         <Card>
