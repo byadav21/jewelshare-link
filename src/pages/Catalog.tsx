@@ -370,16 +370,26 @@ const Catalog = () => {
 
   // Predefined categories
   const predefinedCategories = [
-    "DIAMOND PANDENT SET", 
-    "DIAMOND LADIES RING", 
+    "CVD BANGLE",
+    "CVD BRACELET",
+    "CVD GENTS RING",
+    "CVD LADIES RING",
+    "CVD PANDENT",
+    "CVD TOPS",
     "DIAMOND BRACELET", 
-    "DIAMOND PANDENT", 
+    "DIAMOND GENTS RING",
+    "DIAMOND LADIES RING", 
+    "DIAMOND PANDENT",
+    "DIAMOND PANDENT SET", 
     "DIAMOND SET", 
     "DIAMOND TOPS", 
-    "DIAMOND GENTS RING",
+    "GOLD BRACELET",
+    "GOLD PANDENT",
+    "GOLD TOPS",
+    "LAB-GROWN DIAMOND",
     "MOISSANITE JEWELLERY",
-    "CVD JEWELLERY",
-    "LAB-GROWN DIAMOND"
+    "MOISSANITE PENDANT",
+    "MOISSANITE RING"
   ];
 
   // Extract unique filter values and merge with predefined
