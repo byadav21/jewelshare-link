@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UsageHeatMap from "@/components/UsageHeatMap";
 
 interface UsageStats {
   totalUses: number;
@@ -475,6 +476,43 @@ const GuestCalculatorAnalytics = () => {
           </TabsContent>
 
           <TabsContent value="geographic" className="space-y-4">
+            {geographicData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5" />
+                    World Usage Heat Map
+                  </CardTitle>
+                  <CardDescription>
+                    Visual representation of calculator usage intensity by region
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <UsageHeatMap data={geographicData} />
+                  <div className="mt-4 flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-4">
+                      <span className="text-muted-foreground">Usage Intensity:</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: "hsl(var(--muted))" }} />
+                        <span className="text-xs text-muted-foreground">Low</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: "hsl(210 80% 65%)" }} />
+                        <span className="text-xs text-muted-foreground">Medium</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: "hsl(210 80% 25%)" }} />
+                        <span className="text-xs text-muted-foreground">High</span>
+                      </div>
+                    </div>
+                    <span className="text-muted-foreground">
+                      Hover over countries to see usage details
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
