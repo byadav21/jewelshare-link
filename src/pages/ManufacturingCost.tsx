@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText } from "lucide-react";
+import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText, Calendar, Copy, Check } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +31,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
 
 const ManufacturingCost = () => {
   const { toast } = useToast();
@@ -47,6 +50,10 @@ const ManufacturingCost = () => {
   const [customCertification, setCustomCertification] = useState("");
   const [weightEntryMode, setWeightEntryMode] = useState<"gross" | "net">("gross");
   const [estimateStatus, setEstimateStatus] = useState("draft");
+  const [estimatedCompletionDate, setEstimatedCompletionDate] = useState<Date>();
+  const [isCustomerVisible, setIsCustomerVisible] = useState(false);
+  const [shareToken, setShareToken] = useState<string>("");
+  const [copiedToken, setCopiedToken] = useState(false);
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -115,14 +122,13 @@ const ManufacturingCost = () => {
   // Calculate net weight automatically (only in gross weight mode)
   useEffect(() => {
     if (weightEntryMode === "gross") {
-      // Convert carat to grams (1 carat = 0.2 grams, so divide by 5)
       const diamondWeightGrams = formData.diamondWeight / 5;
       const gemstoneWeightGrams = formData.gemstoneWeight / 5;
       const calculatedNetWeight = formData.grossWeight - diamondWeightGrams - gemstoneWeightGrams;
       
       setFormData(prev => ({
         ...prev,
-        netWeight: Math.max(0, calculatedNetWeight), // Ensure non-negative
+        netWeight: Math.max(0, calculatedNetWeight),
       }));
     }
   }, [weightEntryMode, formData.grossWeight, formData.diamondWeight, formData.gemstoneWeight]);
@@ -193,6 +199,29 @@ const ManufacturingCost = () => {
       address: "",
     });
     setEstimateStatus("draft");
+    setEstimatedCompletionDate(undefined);
+    setIsCustomerVisible(false);
+    setShareToken("");
+  };
+
+  const copyShareLink = () => {
+    if (!shareToken) {
+      toast({
+        title: "No Tracking Link",
+        description: "Please save the estimate first to generate a tracking link",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const trackingUrl = `${window.location.origin}/order-tracking/${shareToken}`;
+    navigator.clipboard.writeText(trackingUrl);
+    setCopiedToken(true);
+    setTimeout(() => setCopiedToken(false), 2000);
+    toast({
+      title: "Link Copied",
+      description: "Customer tracking link copied to clipboard",
+    });
   };
 
   const handleGenerateInvoice = () => {
@@ -291,6 +320,8 @@ const ManufacturingCost = () => {
       customer_email: customerDetails.email || null,
       customer_address: customerDetails.address || null,
       status: estimateStatus,
+      estimated_completion_date: estimatedCompletionDate?.toISOString() || null,
+      is_customer_visible: isCustomerVisible,
       details: {
         gross_weight: formData.grossWeight,
         diamond_per_carat_price: formData.diamondPerCaratPrice,
@@ -306,11 +337,11 @@ const ManufacturingCost = () => {
     };
 
     if (currentEstimateId) {
-      // Update existing
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('manufacturing_cost_estimates')
         .update(estimateData)
-        .eq('id', currentEstimateId);
+        .eq('id', currentEstimateId)
+        .select();
 
       if (error) {
         toast({
@@ -319,6 +350,9 @@ const ManufacturingCost = () => {
           variant: "destructive",
         });
       } else {
+        if (data && data[0]) {
+          setShareToken(data[0].share_token);
+        }
         toast({
           title: "Success",
           description: "Estimate updated successfully",
@@ -327,10 +361,10 @@ const ManufacturingCost = () => {
         setShowSaveDialog(false);
       }
     } else {
-      // Create new
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('manufacturing_cost_estimates')
-        .insert([estimateData]);
+        .insert([estimateData])
+        .select();
 
       if (error) {
         toast({
@@ -339,6 +373,10 @@ const ManufacturingCost = () => {
           variant: "destructive",
         });
       } else {
+        if (data && data[0]) {
+          setShareToken(data[0].share_token);
+          setCurrentEstimateId(data[0].id);
+        }
         toast({
           title: "Success",
           description: "Estimate saved successfully",
@@ -392,6 +430,11 @@ const ManufacturingCost = () => {
       address: estimate.customer_address || "",
     });
     setEstimateStatus(estimate.status || "draft");
+    setEstimatedCompletionDate(
+      estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined
+    );
+    setIsCustomerVisible(estimate.is_customer_visible || false);
+    setShareToken(estimate.share_token || "");
     setShowLoadDialog(false);
     toast({
       title: "Loaded",
@@ -444,7 +487,6 @@ const ManufacturingCost = () => {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
-        // Validate file type
         if (!file.type.startsWith("image/")) {
           toast({
             title: "Invalid File Type",
@@ -454,7 +496,6 @@ const ManufacturingCost = () => {
           continue;
         }
 
-        // Validate file size (5MB max)
         if (file.size > 5 * 1024 * 1024) {
           toast({
             title: "File Too Large",
@@ -464,11 +505,9 @@ const ManufacturingCost = () => {
           continue;
         }
 
-        // Create unique filename
         const fileExt = file.name.split(".").pop();
         const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-        // Upload to Supabase Storage
         const { data, error } = await supabase.storage
           .from("manufacturing-estimates")
           .upload(fileName, file, {
@@ -478,7 +517,6 @@ const ManufacturingCost = () => {
 
         if (error) throw error;
 
-        // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from("manufacturing-estimates")
           .getPublicUrl(data.path);
@@ -507,691 +545,566 @@ const ManufacturingCost = () => {
     }
   };
 
-  const handleRemoveImage = (index: number) => {
+  const removeImage = (index: number) => {
     setReferenceImages(referenceImages.filter((_, i) => i !== index));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 py-8 px-4">
-      <div className="container max-w-5xl mx-auto">
-        <BackToHomeButton />
-        
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Calculator className="w-10 h-10 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">Manufacturing Cost Estimator</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
+      <BackToHomeButton />
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Header Section */}
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full mb-4">
+            <Calculator className="h-8 w-8 text-primary" />
           </div>
-          <p className="text-muted-foreground text-lg">
-            Calculate the total manufacturing cost for jewellery production
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient">
+            Manufacturing Cost Estimator
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Calculate precise manufacturing costs and pricing for your custom jewelry orders
           </p>
-
-          {user && (
-            <div className="flex gap-2 justify-center mt-4">
-              <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Estimate
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Save Manufacturing Cost Estimate</DialogTitle>
-                    <DialogDescription>
-                      Save this estimate for future reference and comparison
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="estimateName">Estimate Name *</Label>
-                      <Input
-                        id="estimateName"
-                        value={estimateName}
-                        onChange={(e) => setEstimateName(e.target.value)}
-                        placeholder="e.g., Gold Ring - Design A"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Notes (Optional)</Label>
-                      <Textarea
-                        id="notes"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Add any additional notes..."
-                        rows={3}
-                      />
-                    </div>
-                    
-                    {/* Customer Details Section */}
-                    <div className="space-y-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="w-4 h-4 text-primary" />
-                        <Label className="text-base font-semibold">Customer Details (Optional)</Label>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Add customer information for invoice generation after production
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="customerName">Customer Name</Label>
-                          <Input
-                            id="customerName"
-                            value={customerDetails.name}
-                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, name: e.target.value }))}
-                            placeholder="Enter customer name"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="customerPhone">Phone Number</Label>
-                          <Input
-                            id="customerPhone"
-                            value={customerDetails.phone}
-                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, phone: e.target.value }))}
-                            placeholder="Enter phone number"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="customerEmail">Email Address</Label>
-                          <Input
-                            id="customerEmail"
-                            type="email"
-                            value={customerDetails.email}
-                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, email: e.target.value }))}
-                            placeholder="Enter email address"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="customerAddress">Address</Label>
-                          <Input
-                            id="customerAddress"
-                            value={customerDetails.address}
-                            onChange={(e) => setCustomerDetails(prev => ({ ...prev, address: e.target.value }))}
-                            placeholder="Enter address"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Status Tracking Section */}
-                    <div className="space-y-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="w-4 h-4 text-primary" />
-                        <Label className="text-base font-semibold">Production Status</Label>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Track the production workflow from estimate to delivery
-                      </p>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="estimateStatus">Current Status</Label>
-                        <Select value={estimateStatus} onValueChange={setEstimateStatus}>
-                          <SelectTrigger id="estimateStatus">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="quoted">Quoted</SelectItem>
-                            <SelectItem value="approved">Approved</SelectItem>
-                            <SelectItem value="in_production">In Production</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button onClick={handleSave} className="flex-1">
-                        <Save className="w-4 h-4 mr-2" />
-                        {currentEstimateId ? 'Update' : 'Save'} Estimate
-                      </Button>
-                      {currentEstimateId && (
-                        <Button onClick={handleGenerateInvoice} variant="outline" className="flex-1">
-                          <FileText className="w-4 h-4 mr-2" />
-                          Generate Invoice
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <FolderOpen className="w-4 h-4 mr-2" />
-                    Load Estimate
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Saved Estimates</DialogTitle>
-                    <DialogDescription>
-                      Select an estimate to load
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-2">
-                    {estimates.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">
-                        No saved estimates yet
-                      </p>
-                    ) : (
-                      estimates.map((estimate) => (
-                        <div
-                          key={estimate.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                        >
-                          <div className="flex-1">
-                            <h4 className="font-semibold">{estimate.estimate_name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Total Cost: ₹{estimate.total_cost?.toLocaleString('en-IN')} | 
-                              Selling Price: ₹{estimate.final_selling_price?.toLocaleString('en-IN')}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(estimate.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleLoad(estimate)}
-                            >
-                              Load
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDelete(estimate.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
         </div>
 
-        {/* Reference Images Upload */}
-        <Card className="shadow-lg mb-6">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
-            <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-primary" />
-              Reference Images
-            </CardTitle>
-            <CardDescription>
-              Upload customer photos to estimate weight and materials
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-6">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-
-            {referenceImages.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {referenceImages.map((url, index) => (
-                  <div key={index} className="relative group">
-                    <div className="aspect-square overflow-hidden rounded-lg border-2 border-border bg-muted">
-                      <img
-                        src={url}
-                        alt={`Reference ${index + 1}`}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-110"
-                      />
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute -right-2 -top-2 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100 shadow-lg"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Button
-              variant="outline"
-              className="w-full border-dashed border-2 hover:border-primary hover:bg-primary/5"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingImage}
-            >
-              {uploadingImage ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Reference Images
-                </>
-              )}
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button onClick={() => setShowSaveDialog(true)} disabled={!costs.totalCost}>
+            <Save className="mr-2 h-4 w-4" />
+            Save Estimate
+          </Button>
+          <Button onClick={() => setShowLoadDialog(true)} variant="outline">
+            <FolderOpen className="mr-2 h-4 w-4" />
+            Load Estimate
+          </Button>
+          {estimateName && (
+            <Button onClick={handleGenerateInvoice} variant="secondary">
+              <FileText className="mr-2 h-4 w-4" />
+              Generate Invoice
             </Button>
-          </CardContent>
-        </Card>
+          )}
+          {shareToken && (
+            <Button onClick={copyShareLink} variant="outline" size="sm">
+              {copiedToken ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+              {copiedToken ? "Copied!" : "Copy Tracking Link"}
+            </Button>
+          )}
+          <Button onClick={handleReset} variant="ghost" size="sm">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Reset
+          </Button>
+        </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IndianRupee className="w-5 h-5" />
-              Cost Components
-            </CardTitle>
-            <CardDescription>
-              Enter all manufacturing cost components to calculate the total
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Gold Cost Inputs */}
-            <div className="space-y-4 p-4 bg-accent/10 rounded-lg">
-              <div className="flex items-center justify-between">
-                <Label>Weight Entry Mode</Label>
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm ${weightEntryMode === "gross" ? "font-semibold" : "text-muted-foreground"}`}>
-                    Gross Weight
-                  </span>
-                  <Switch
-                    checked={weightEntryMode === "net"}
-                    onCheckedChange={(checked) => setWeightEntryMode(checked ? "net" : "gross")}
+        {/* Save Dialog */}
+        <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Save Estimate</DialogTitle>
+              <DialogDescription>
+                Save this estimate with customer details and tracking options
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="estimate-name">Estimate Name *</Label>
+                <Input
+                  id="estimate-name"
+                  value={estimateName}
+                  onChange={(e) => setEstimateName(e.target.value)}
+                  placeholder="e.g., Diamond Ring - John Doe"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold">Customer Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-name">Customer Name</Label>
+                    <Input
+                      id="customer-name"
+                      value={customerDetails.name}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, name: e.target.value })}
+                      placeholder="Full name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-phone">Phone Number</Label>
+                    <Input
+                      id="customer-phone"
+                      value={customerDetails.phone}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, phone: e.target.value })}
+                      placeholder="+1234567890"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-email">Email</Label>
+                    <Input
+                      id="customer-email"
+                      type="email"
+                      value={customerDetails.email}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, email: e.target.value })}
+                      placeholder="customer@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-address">Address</Label>
+                    <Input
+                      id="customer-address"
+                      value={customerDetails.address}
+                      onChange={(e) => setCustomerDetails({ ...customerDetails, address: e.target.value })}
+                      placeholder="Complete address"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add any additional notes or specifications..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Order Status</Label>
+                <Select value={estimateStatus} onValueChange={setEstimateStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="quoted">Quoted</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="in_production">In Production</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Estimated Completion Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {estimatedCompletionDate ? format(estimatedCompletionDate, "PPP") : "Select date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarPicker
+                      mode="single"
+                      selected={estimatedCompletionDate}
+                      onSelect={setEstimatedCompletionDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex items-center justify-between space-x-2 border rounded-lg p-4">
+                <div className="space-y-0.5">
+                  <Label>Enable Customer Portal</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow customer to track order status with a secure link
+                  </p>
+                </div>
+                <Switch
+                  checked={isCustomerVisible}
+                  onCheckedChange={setIsCustomerVisible}
+                />
+              </div>
+
+              <Button onClick={handleSave} className="w-full">
+                Save Estimate
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Load Dialog */}
+        <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Load Estimate</DialogTitle>
+              <DialogDescription>
+                Select a saved estimate to continue working on
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              {estimates.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No saved estimates found
+                </p>
+              ) : (
+                estimates.map((estimate) => (
+                  <div
+                    key={estimate.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/5 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-medium">{estimate.estimate_name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Created: {new Date(estimate.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleLoad(estimate)} size="sm">
+                        Load
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(estimate.id)}
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Form Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Weight and Purity Inputs */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Weight & Purity</CardTitle>
+              <CardDescription>Enter weights and purity details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <Label>Weight Entry Mode:</Label>
+                <Select value={weightEntryMode} onValueChange={setWeightEntryMode}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gross">Gross Weight</SelectItem>
+                    <SelectItem value="net">Net Weight</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {weightEntryMode === "gross" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="gross-weight">Gross Weight (grams)</Label>
+                  <Input
+                    id="gross-weight"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={formData.grossWeight}
+                    onChange={(e) => handleChange("grossWeight", e.target.value)}
                   />
-                  <span className={`text-sm ${weightEntryMode === "net" ? "font-semibold" : "text-muted-foreground"}`}>
-                    Net Weight
-                  </span>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="net-weight">Net Weight (grams)</Label>
+                  <Input
+                    id="net-weight"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={formData.netWeight}
+                    onChange={(e) => handleChange("netWeight", e.target.value)}
+                  />
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="grossWeight">Gross Weight (grams)</Label>
-                <Input
-                  id="grossWeight"
-                  type="number"
-                  step="0.01"
-                  value={formData.grossWeight || ""}
-                  onChange={(e) => handleChange("grossWeight", e.target.value)}
-                  placeholder="0.00"
-                  disabled={weightEntryMode === "net"}
-                  className={weightEntryMode === "net" ? "bg-muted cursor-not-allowed" : ""}
-                />
-                {weightEntryMode === "gross" && (
-                  <p className="text-xs text-muted-foreground">
-                    Enter gross weight to auto-calculate net weight
-                  </p>
-                )}
-              </div>
               <div className="space-y-2">
-                <Label htmlFor="netWeight">Net Weight (grams)</Label>
+                <Label htmlFor="purity-fraction">Purity Fraction (e.g., 0.76 for 18K)</Label>
                 <Input
-                  id="netWeight"
+                  id="purity-fraction"
                   type="number"
-                  step="0.01"
-                  value={weightEntryMode === "net" ? (formData.netWeight || "") : formData.netWeight.toFixed(3)}
-                  onChange={(e) => handleChange("netWeight", e.target.value)}
-                  placeholder={weightEntryMode === "net" ? "0.00" : "Auto-calculated"}
-                  disabled={weightEntryMode === "gross"}
-                  className={weightEntryMode === "gross" ? "bg-muted cursor-not-allowed" : ""}
-                />
-                {weightEntryMode === "gross" && (
-                  <p className="text-xs text-muted-foreground">
-                    Auto-calculated: Gross Weight - (Diamond + Gemstone weights)
-                  </p>
-                )}
-              </div>
-                <div className="space-y-2">
-                  <Label htmlFor="purityFraction">Purity Fraction</Label>
-                <Input
-                  id="purityFraction"
-                  type="number"
-                  step="0.01"
-                  value={formData.purityFraction || ""}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={formData.purityFraction}
                   onChange={(e) => handleChange("purityFraction", e.target.value)}
-                  placeholder="0.76"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Gold Rate and Charges */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Gold Rate & Charges</CardTitle>
+              <CardDescription>Enter rates and additional charges</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="gold-rate-24k">Gold Rate 24K (per gram)</Label>
+                <Input
+                  id="gold-rate-24k"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.goldRate24k}
+                  onChange={(e) => handleChange("goldRate24k", e.target.value)}
+                  prefix={<IndianRupee className="inline-block mr-1" />}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="making-charges">Making Charges</Label>
+                <Input
+                  id="making-charges"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.makingCharges}
+                  onChange={(e) => handleChange("makingCharges", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cad-design-charges">CAD Design Charges</Label>
+                <Input
+                  id="cad-design-charges"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.cadDesignCharges}
+                  onChange={(e) => handleChange("cadDesignCharges", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="camming-charges">Camming Charges</Label>
+                <Input
+                  id="camming-charges"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.cammingCharges}
+                  onChange={(e) => handleChange("cammingCharges", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="certification-cost">Certification Cost</Label>
+                <Input
+                  id="certification-cost"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.certificationCost}
+                  onChange={(e) => handleChange("certificationCost", e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Diamond Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Diamond Details</CardTitle>
+            <CardDescription>Enter diamond specifications and pricing</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="diamond-per-carat-price">Diamond Price per Carat</Label>
+                <Input
+                  id="diamond-per-carat-price"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.diamondPerCaratPrice}
+                  onChange={(e) => handleChange("diamondPerCaratPrice", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="goldRate24k">24K Gold Rate (₹/gram)</Label>
+                <Label htmlFor="diamond-weight">Diamond Weight (carats)</Label>
                 <Input
-                  id="goldRate24k"
+                  id="diamond-weight"
                   type="number"
-                  step="0.01"
-                  value={formData.goldRate24k || ""}
-                  onChange={(e) => handleChange("goldRate24k", e.target.value)}
-                  placeholder="0.00"
+                  min={0}
+                  step={0.01}
+                  value={formData.diamondWeight}
+                  onChange={(e) => handleChange("diamondWeight", e.target.value)}
                 />
               </div>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="diamond-type">Diamond Type</Label>
+                <Input
+                  id="diamond-type"
+                  value={formData.diamondType}
+                  onChange={(e) => setFormData(prev => ({ ...prev, diamondType: e.target.value }))}
+                />
+              </div>
             </div>
 
-            {/* Other Cost Components */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="makingCharges">Making Charges (₹)</Label>
+                <Label htmlFor="diamond-shape">Diamond Shape</Label>
                 <Input
-                  id="makingCharges"
-                  type="number"
-                  step="0.01"
-                  value={formData.makingCharges || ""}
-                  onChange={(e) => handleChange("makingCharges", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cadDesignCharges">CAD Design Charges (₹)</Label>
-                <Input
-                  id="cadDesignCharges"
-                  type="number"
-                  step="0.01"
-                  value={formData.cadDesignCharges || ""}
-                  onChange={(e) => handleChange("cadDesignCharges", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cammingCharges">Camming/Casting (₹)</Label>
-                <Input
-                  id="cammingCharges"
-                  type="number"
-                  step="0.01"
-                  value={formData.cammingCharges || ""}
-                  onChange={(e) => handleChange("cammingCharges", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="certificationCost">Certification (₹)</Label>
-                <Input
-                  id="certificationCost"
-                  type="number"
-                  step="0.01"
-                  value={formData.certificationCost || ""}
-                  onChange={(e) => handleChange("certificationCost", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="diamondType">Diamond Type</Label>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs bg-popover">
-                        <p className="text-sm">
-                          <strong>Natural Diamonds:</strong> Formed deep in the Earth over billions of years. Typically more expensive and considered traditional.
-                          <br /><br />
-                          <strong>Lab-Grown Diamonds:</strong> Created in controlled laboratory environments. Chemically identical to natural diamonds but more affordable and environmentally friendly.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <Select
-                  value={formData.diamondType}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondType: value }))}
-                >
-                  <SelectTrigger id="diamondType" className="bg-background">
-                    <SelectValue placeholder="Select diamond type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover z-50">
-                    <SelectItem value="natural">Natural Diamond</SelectItem>
-                    <SelectItem value="lab-grown">Lab-Grown Diamond</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="diamondShape">Diamond Shape</Label>
-                <Select
+                  id="diamond-shape"
                   value={formData.diamondShape}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondShape: value }))}
-                >
-                  <SelectTrigger id="diamondShape" className="bg-background">
-                    <SelectValue placeholder="Select shape" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover z-50">
-                    <SelectItem value="round">Round</SelectItem>
-                    <SelectItem value="princess">Princess</SelectItem>
-                    <SelectItem value="cushion">Cushion</SelectItem>
-                    <SelectItem value="oval">Oval</SelectItem>
-                    <SelectItem value="emerald">Emerald</SelectItem>
-                    <SelectItem value="pear">Pear</SelectItem>
-                    <SelectItem value="marquise">Marquise</SelectItem>
-                    <SelectItem value="radiant">Radiant</SelectItem>
-                    <SelectItem value="asscher">Asscher</SelectItem>
-                    <SelectItem value="heart">Heart</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="diamondPerCaratPrice">Diamond Per Carat Price (₹)</Label>
-                <Input
-                  id="diamondPerCaratPrice"
-                  type="number"
-                  step="0.01"
-                  value={formData.diamondPerCaratPrice || ""}
-                  onChange={(e) => handleChange("diamondPerCaratPrice", e.target.value)}
-                  placeholder="0.00"
+                  onChange={(e) => setFormData(prev => ({ ...prev, diamondShape: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="diamondWeight">Diamond Weight (carats)</Label>
+                <Label htmlFor="diamond-color">Diamond Color</Label>
                 <Input
-                  id="diamondWeight"
-                  type="number"
-                  step="0.01"
-                  value={formData.diamondWeight || ""}
-                  onChange={(e) => handleChange("diamondWeight", e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="diamondColor">Diamond Color</Label>
-                <Select
+                  id="diamond-color"
                   value={formData.diamondColor}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondColor: value }))}
-                >
-                  <SelectTrigger id="diamondColor" className="bg-background">
-                    <SelectValue placeholder="Select color grade" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover z-50">
-                    <SelectItem value="D">D (Colorless)</SelectItem>
-                    <SelectItem value="E">E (Colorless)</SelectItem>
-                    <SelectItem value="F">F (Colorless)</SelectItem>
-                    <SelectItem value="G">G (Near Colorless)</SelectItem>
-                    <SelectItem value="H">H (Near Colorless)</SelectItem>
-                    <SelectItem value="I">I (Near Colorless)</SelectItem>
-                    <SelectItem value="J">J (Near Colorless)</SelectItem>
-                    <SelectItem value="K">K (Faint Yellow)</SelectItem>
-                    <SelectItem value="L">L (Faint Yellow)</SelectItem>
-                    <SelectItem value="M">M (Faint Yellow)</SelectItem>
-                    <SelectItem value="N-R">N-R (Very Light Yellow)</SelectItem>
-                    <SelectItem value="S-Z">S-Z (Light Yellow)</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setFormData(prev => ({ ...prev, diamondColor: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="diamondClarity">Diamond Clarity</Label>
-                <Select
+                <Label htmlFor="diamond-clarity">Diamond Clarity</Label>
+                <Input
+                  id="diamond-clarity"
                   value={formData.diamondClarity}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondClarity: value }))}
-                >
-                  <SelectTrigger id="diamondClarity" className="bg-background">
-                    <SelectValue placeholder="Select clarity grade" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover z-50">
-                    <SelectItem value="FL">FL (Flawless)</SelectItem>
-                    <SelectItem value="IF">IF (Internally Flawless)</SelectItem>
-                    <SelectItem value="VVS1">VVS1 (Very Very Slightly Included)</SelectItem>
-                    <SelectItem value="VVS2">VVS2 (Very Very Slightly Included)</SelectItem>
-                    <SelectItem value="VS1">VS1 (Very Slightly Included)</SelectItem>
-                    <SelectItem value="VS2">VS2 (Very Slightly Included)</SelectItem>
-                    <SelectItem value="SI1">SI1 (Slightly Included)</SelectItem>
-                    <SelectItem value="SI2">SI2 (Slightly Included)</SelectItem>
-                    <SelectItem value="I1">I1 (Included)</SelectItem>
-                    <SelectItem value="I2">I2 (Included)</SelectItem>
-                    <SelectItem value="I3">I3 (Included)</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setFormData(prev => ({ ...prev, diamondClarity: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="diamondCertification">Diamond Certification</Label>
+                <Label>Diamond Certification</Label>
                 <Select
                   value={formData.diamondCertification}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, diamondCertification: value }))}
                 >
-                  <SelectTrigger id="diamondCertification" className="bg-background">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select certification" />
                   </SelectTrigger>
-                  <SelectContent className="bg-popover z-50">
-                    <SelectItem value="GIA">GIA (Gemological Institute of America)</SelectItem>
-                    <SelectItem value="IGI">IGI (International Gemological Institute)</SelectItem>
-                    <SelectItem value="AGS">AGS (American Gem Society)</SelectItem>
-                    <SelectItem value="EGL">EGL (European Gemological Laboratory)</SelectItem>
-                    <SelectItem value="HRD">HRD (Hoge Raad voor Diamant)</SelectItem>
-                    <SelectItem value="GSI">GSI (Gemological Science International)</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="GIA">GIA</SelectItem>
+                    <SelectItem value="IGI">IGI</SelectItem>
+                    <SelectItem value="AGS">AGS</SelectItem>
+                    <SelectItem value="EGL">EGL</SelectItem>
+                    <SelectItem value="HRD">HRD</SelectItem>
+                    <SelectItem value="GSI">GSI</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
-                    <SelectItem value="none">No Certification</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              {formData.diamondCertification === 'other' && (
-                <div className="space-y-2">
-                  <Label htmlFor="customCertification">Custom Certification</Label>
+                {formData.diamondCertification === "other" && (
                   <Input
-                    id="customCertification"
-                    type="text"
+                    placeholder="Enter custom certification"
                     value={customCertification}
                     onChange={(e) => setCustomCertification(e.target.value)}
-                    placeholder="Enter certification name"
+                    className="mt-2"
                   />
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gemstone Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Gemstone Details</CardTitle>
+            <CardDescription>Enter gemstone specifications and pricing</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="gemstonePerCaratPrice">Gemstone Per Carat Price (₹)</Label>
+                <Label htmlFor="gemstone-per-carat-price">Gemstone Price per Carat</Label>
                 <Input
-                  id="gemstonePerCaratPrice"
+                  id="gemstone-per-carat-price"
                   type="number"
-                  step="0.01"
-                  value={formData.gemstonePerCaratPrice || ""}
+                  min={0}
+                  step={0.01}
+                  value={formData.gemstonePerCaratPrice}
                   onChange={(e) => handleChange("gemstonePerCaratPrice", e.target.value)}
-                  placeholder="0.00"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gemstoneWeight">Gemstone Weight (carats)</Label>
+                <Label htmlFor="gemstone-weight">Gemstone Weight (carats)</Label>
                 <Input
-                  id="gemstoneWeight"
+                  id="gemstone-weight"
                   type="number"
-                  step="0.01"
-                  value={formData.gemstoneWeight || ""}
+                  min={0}
+                  step={0.01}
+                  value={formData.gemstoneWeight}
                   onChange={(e) => handleChange("gemstoneWeight", e.target.value)}
-                  placeholder="0.00"
                 />
               </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Profit Margin Calculator */}
-            <div className="border-t pt-6 space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-semibold">Profit Margin Calculator</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary/5 rounded-lg">
-                <div className="space-y-2">
-                  <Label htmlFor="profitMargin">Profit Margin (%)</Label>
-                  <Input
-                    id="profitMargin"
-                    type="number"
-                    step="0.1"
-                    value={profitMargin || ""}
-                    onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-                    placeholder="0.0"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Final Selling Price</Label>
-                  <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-lg font-bold text-primary">
-                    ₹{costs.finalSellingPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                </div>
-              </div>
+        {/* Profit Margin and Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Profit & Summary</CardTitle>
+            <CardDescription>Set profit margin and view cost summary</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2 max-w-xs">
+              <Label htmlFor="profit-margin">Profit Margin (%)</Label>
+              <Input
+                id="profit-margin"
+                type="number"
+                min={0}
+                step={0.01}
+                value={profitMargin}
+                onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
+              />
             </div>
 
-            {/* Cost Breakdown */}
-            <div className="border-t pt-6 space-y-4">
-              <h3 className="text-lg font-semibold">Cost Breakdown</h3>
-              <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Gold Cost:</span>
-                  <span className="font-medium">₹{costs.goldCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Making Charges:</span>
-                  <span className="font-medium">₹{formData.makingCharges.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">CAD Design:</span>
-                  <span className="font-medium">₹{formData.cadDesignCharges.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Camming/Casting:</span>
-                  <span className="font-medium">₹{formData.cammingCharges.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Certification:</span>
-                  <span className="font-medium">₹{formData.certificationCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Diamond Cost:</span>
-                  <span className="font-medium">₹{(formData.diamondPerCaratPrice * formData.diamondWeight).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Gemstone Cost:</span>
-                  <span className="font-medium">₹{(formData.gemstonePerCaratPrice * formData.gemstoneWeight).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div className="border-t pt-3 mt-3">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-lg font-bold">Total Manufacturing Cost:</span>
-                    <span className="text-2xl font-bold text-primary">
-                      ₹{costs.totalCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  {profitMargin > 0 && (
-                    <>
-                      <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
-                        <span>Profit ({profitMargin}%):</span>
-                        <span className="font-medium text-green-600">
-                          +₹{costs.profitAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pt-2 border-t">
-                        <span className="text-lg font-bold">Final Selling Price:</span>
-                        <span className="text-2xl font-bold text-green-600">
-                          ₹{costs.finalSellingPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+            <div className="space-y-2">
+              <p><strong>Gold Cost:</strong> ₹{costs.goldCost.toFixed(2)}</p>
+              <p><strong>Total Cost:</strong> ₹{costs.totalCost.toFixed(2)}</p>
+              <p><strong>Profit Amount:</strong> ₹{costs.profitAmount.toFixed(2)}</p>
+              <p><strong>Final Selling Price:</strong> ₹{costs.finalSellingPrice.toFixed(2)}</p>
             </div>
+          </CardContent>
+        </Card>
 
-            <Button onClick={handleReset} variant="outline" className="w-full">
-              Reset Calculator
-            </Button>
+        {/* Reference Images Upload */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Reference Images</CardTitle>
+            <CardDescription>Upload images related to this estimate</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-4">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                ref={fileInputRef}
+                className="hidden"
+                id="image-upload"
+              />
+              <label htmlFor="image-upload">
+                <Button disabled={uploadingImage} variant="outline" size="sm" asChild>
+                  <span>
+                    <Upload className="mr-2 h-4 w-4" />
+                    {uploadingImage ? "Uploading..." : "Upload Images"}
+                  </span>
+                </Button>
+              </label>
+            </div>
+            <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-4">
+              {referenceImages.map((url, index) => (
+                <div key={index} className="relative group rounded overflow-hidden border">
+                  <img src={url} alt={`Reference ${index + 1}`} className="w-full h-24 object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Remove image"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
