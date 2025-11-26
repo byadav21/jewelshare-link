@@ -401,6 +401,7 @@ export type Database = {
           notes: string | null
           profit_margin_percentage: number | null
           purity_fraction: number | null
+          reference_images: string[] | null
           total_cost: number | null
           updated_at: string | null
           user_id: string
@@ -422,6 +423,7 @@ export type Database = {
           notes?: string | null
           profit_margin_percentage?: number | null
           purity_fraction?: number | null
+          reference_images?: string[] | null
           total_cost?: number | null
           updated_at?: string | null
           user_id: string
@@ -443,6 +445,7 @@ export type Database = {
           notes?: string | null
           profit_margin_percentage?: number | null
           purity_fraction?: number | null
+          reference_images?: string[] | null
           total_cost?: number | null
           updated_at?: string | null
           user_id?: string
