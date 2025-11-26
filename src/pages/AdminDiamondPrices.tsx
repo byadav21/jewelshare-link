@@ -23,11 +23,12 @@ const AdminDiamondPrices = () => {
   const { data: prices, isLoading } = useQuery({
     queryKey: ["diamond-prices"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from("diamond_prices")
-        .select("*")
+        .select("*", { count: 'exact' })
         .order("shape", { ascending: true })
-        .order("carat_range_min", { ascending: true });
+        .order("carat_range_min", { ascending: true })
+        .limit(10000);
       
       if (error) throw error;
       return data;
