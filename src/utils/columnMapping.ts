@@ -12,7 +12,7 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
         required: [
           'SKU ID',
           'GEMSTONE NAME',
-          'PRICE_INR',
+          'PRICE INR',
           'STOCK QUANTITY'
         ],
         optional: [
@@ -25,9 +25,9 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
           'SYMMETRY',
           'MEASUREMENT',
           'CERTIFICATION',
-          'IMAGE_URL',
-          'COST_PRICE',
-          'RETAIL_PRICE'
+          'IMAGE URL',
+          'COST PRICE',
+          'RETAIL PRICE'
         ]
       };
     
@@ -40,7 +40,7 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
           'CARAT',
           'COLOR',
           'CLARITY',
-          'PRICE_INR',
+          'PRICE INR',
           'STOCK QUANTITY'
         ],
         optional: [
@@ -53,9 +53,9 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
           'MEASUREMENT',
           'RATIO',
           'LAB',
-          'IMAGE_URL',
-          'COST_PRICE',
-          'RETAIL_PRICE'
+          'IMAGE URL',
+          'COST PRICE',
+          'RETAIL PRICE'
         ]
       };
     
@@ -75,7 +75,7 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
           'METAL TYPE',
           'GEMSTONE',
           'WEIGHT (grams)',
-          'IMAGE_URL',
+          'IMAGE URL',
           'DELIVERY TYPE'
         ]
       };

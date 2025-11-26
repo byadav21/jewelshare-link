@@ -156,21 +156,14 @@ const Import = () => {
         let product: any;
 
         if (selectedProductType === 'Gemstones') {
-          // Debug: Log the row data to see what we're reading
-          console.log('DEBUG Gemstone Row:', index, JSON.stringify(row, null, 2));
-          console.log('DEBUG Row keys:', Object.keys(row));
+          const priceINR = parseNumber(row['PRICE INR'] || row['PRICE_INR'] || row['Price INR'] || row['Price']);
           
-          const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
-          console.log('DEBUG priceINR:', priceINR, 'from', row.PRICE_INR, row['PRICE INR']);
+          // Check if COST PRICE and RETAIL PRICE columns exist in the file
+          const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
+          const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
           
-          // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
-          const hasCostPrice = 'COST_PRICE' in row || 'COST PRICE' in row || 'Cost Price' in row;
-          const hasRetailPrice = 'RETAIL_PRICE' in row || 'RETAIL PRICE' in row || 'Retail Price' in row;
-          
-          const costPriceRaw = hasCostPrice ? parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']) : null;
-          
-          console.log('DEBUG costPriceRaw:', costPriceRaw, 'retailPriceRaw:', retailPriceRaw);
+          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row['COST_PRICE'] || row['Cost Price']) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row['RETAIL_PRICE'] || row['Retail Price']) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
@@ -178,21 +171,19 @@ const Import = () => {
           const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
           const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
           
-          console.log('DEBUG Final prices - cost:', costPrice, 'retail:', retailPrice, 'safePrice:', safePrice);
-          
           product = {
             user_id: user.id,
             sku: row['SKU ID'] || row['SKU'] || `GEM-${index + 1}`,
-            gemstone_name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown',
+            gemstone_name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Ruby',
             gemstone_type: row['GEMSTONE TYPE'] || row['Gemstone Type'] || null,
-            carat_weight: parseNumber(row['CARAT WEIGHT'] || row['Carat Weight']) || null,
-            color: row.COLOR || row['Color'] || null,
-            clarity: row.CLARITY || row['Clarity'] || null,
-            cut: row.CUT || row['Cut'] || null,
-            polish: row.POLISH || row['Polish'] || null,
-            symmetry: row.SYMMETRY || row['Symmetry'] || null,
-            measurement: row.MEASUREMENT || row['Measurement'] || null,
-            certification: row.CERTIFICATION || row['Certification'] || null,
+            carat_weight: parseNumber(row['CARAT WEIGHT'] || row['Carat Weight']),
+            color: row['COLOR'] || row['Color'] || null,
+            clarity: row['CLARITY'] || row['Clarity'] || null,
+            cut: row['CUT'] || row['Cut'] || null,
+            polish: row['POLISH'] || row['Polish'] || null,
+            symmetry: row['SYMMETRY'] || row['Symmetry'] || null,
+            measurement: row['MEASUREMENT'] || row['Measurement'] || null,
+            certification: row['CERTIFICATION'] || row['Certification'] || null,
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
@@ -205,14 +196,14 @@ const Import = () => {
             name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
           };
         } else if (selectedProductType === 'Loose Diamonds') {
-          const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
+          const priceINR = parseNumber(row['PRICE INR'] || row['PRICE_INR'] || row['Price INR'] || row['Price']);
           
-          // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
-          const hasCostPrice = 'COST_PRICE' in row || 'COST PRICE' in row || 'Cost Price' in row;
-          const hasRetailPrice = 'RETAIL_PRICE' in row || 'RETAIL PRICE' in row || 'Retail Price' in row;
+          // Check if COST PRICE and RETAIL PRICE columns exist in the file
+          const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
+          const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
           
-          const costPriceRaw = hasCostPrice ? parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']) : null;
+          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row['COST_PRICE'] || row['Cost Price']) : null;
+          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row['RETAIL_PRICE'] || row['Retail Price']) : null;
           
           // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
