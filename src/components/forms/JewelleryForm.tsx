@@ -78,12 +78,12 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     }
   }, [formData.weight_grams, formData.diamond_weight]);
 
-  // Auto-calculate MAKING charges (MKG)
+  // Auto-calculate MAKING charges (MKG): PER GRAM MAKING CHARGES × GROSS WEIGHT
   useEffect(() => {
-    const netWeight = parseFloat(formData.net_weight) || 0;
+    const grossWeight = parseFloat(formData.weight_grams) || 0;
     
-    if (netWeight > 0 && vendorMakingCharges > 0) {
-      const calculatedMkg = netWeight * vendorMakingCharges;
+    if (grossWeight > 0 && vendorMakingCharges > 0) {
+      const calculatedMkg = grossWeight * vendorMakingCharges;
       if (calculatedMkg.toFixed(2) !== formData.mkg) {
         setFormData((prev: any) => ({
           ...prev,
@@ -91,7 +91,7 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
         }));
       }
     }
-  }, [formData.net_weight, vendorMakingCharges]);
+  }, [formData.weight_grams, vendorMakingCharges]);
 
   // Auto-calculate GOLD value and TOTAL price
   useEffect(() => {
@@ -312,7 +312,7 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
             readOnly
           />
           <p className="text-xs text-muted-foreground">
-            Auto-calculated: Net Weight × {vendorMakingCharges}/g
+            Auto-calculated: Gross Weight × {vendorMakingCharges}/g
           </p>
         </div>
 
