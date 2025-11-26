@@ -17,6 +17,9 @@ import { LooseDiamondsForm } from "@/components/forms/LooseDiamondsForm";
 import { Upload, X, Loader2 } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { useRewardsSystem } from "@/hooks/useRewardsSystem";
+import { jewelleryProductSchema } from "@/lib/validations";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -25,6 +28,7 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{ [key: string]: boolean }>({});
   const [approvedCategories, setApprovedCategories] = useState<string[]>(["Jewellery"]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -36,6 +40,7 @@ const AddProduct = () => {
     gemstone: "",
     gemstone_name: "",
     gemstone_type: "",
+    gemstone_rate: "",
     color: "",
     diamond_color: "",
     clarity: "",
@@ -110,6 +115,52 @@ const AddProduct = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationErrors([]);
+
+    // Validate jewelry products
+    if (formData.product_type === 'Jewellery') {
+      try {
+        jewelleryProductSchema.parse({
+          name: formData.name,
+          description: formData.description || undefined,
+          sku: formData.sku || undefined,
+          category: formData.category || undefined,
+          metal_type: formData.metal_type,
+          gemstone: formData.gemstone || undefined,
+          weight_grams: formData.weight_grams ? parseFloat(formData.weight_grams) : undefined,
+          net_weight: formData.net_weight ? parseFloat(formData.net_weight) : undefined,
+          gold_per_gram_price: formData.gold_per_gram_price ? parseFloat(formData.gold_per_gram_price) : undefined,
+          purity_fraction_used: formData.purity_fraction_used ? parseFloat(formData.purity_fraction_used) : undefined,
+          d_wt_1: formData.d_wt_1 ? parseFloat(formData.d_wt_1) : null,
+          d_wt_2: formData.d_wt_2 ? parseFloat(formData.d_wt_2) : null,
+          diamond_weight: formData.diamond_weight ? parseFloat(formData.diamond_weight) : null,
+          d_rate_1: formData.d_rate_1 ? parseFloat(formData.d_rate_1) : null,
+          pointer_diamond: formData.pointer_diamond ? parseFloat(formData.pointer_diamond) : null,
+          d_value: formData.d_value ? parseFloat(formData.d_value) : null,
+          mkg: formData.mkg ? parseFloat(formData.mkg) : undefined,
+          carat_weight: formData.carat_weight ? parseFloat(formData.carat_weight) : null,
+          gemstone_rate: formData.gemstone_rate ? parseFloat(formData.gemstone_rate) : null,
+          certification_cost: formData.certification_cost ? parseFloat(formData.certification_cost) : null,
+          gemstone_cost: formData.gemstone_cost ? parseFloat(formData.gemstone_cost) : null,
+          cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
+          retail_price: formData.retail_price ? parseFloat(formData.retail_price) : undefined,
+          stock_quantity: parseInt(formData.stock_quantity),
+          delivery_type: formData.delivery_type === 'immediate delivery' ? 'immediate' : formData.delivery_type as 'immediate' | 'scheduled',
+          image_url: formData.image_url || null,
+          image_url_2: formData.image_url_2 || null,
+          image_url_3: formData.image_url_3 || null,
+        });
+      } catch (error: any) {
+        if (error.errors) {
+          const errors = error.errors.map((err: any) => `${err.path.join(' → ')}: ${err.message}`);
+          setValidationErrors(errors);
+          toast.error("Please fix the validation errors below");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -272,6 +323,21 @@ const AddProduct = () => {
               <p className="text-muted-foreground text-sm mt-2">Select a category and fill in the product details</p>
             </CardHeader>
             <CardContent className="pt-6">
+              {/* Validation Errors */}
+              {validationErrors.length > 0 && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="font-semibold mb-2">Please fix the following errors:</div>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {validationErrors.map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Plan Limit Warning */}
               <div className="mb-6">
                 <PlanLimitWarning />
