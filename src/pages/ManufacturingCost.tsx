@@ -42,8 +42,10 @@ const ManufacturingCost = () => {
     cadDesignCharges: 0,
     cammingCharges: 0,
     certificationCost: 0,
-    diamondCost: 0,
-    gemstoneCost: 0,
+    diamondPerCaratPrice: 0,
+    diamondWeight: 0,
+    gemstonePerCaratPrice: 0,
+    gemstoneWeight: 0,
   });
 
   const [profitMargin, setProfitMargin] = useState(0);
@@ -86,6 +88,8 @@ const ManufacturingCost = () => {
   // Calculate costs
   useEffect(() => {
     const goldCost = formData.netWeight * formData.purityFraction * formData.goldRate24k;
+    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
+    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
 
     const totalCost =
       goldCost +
@@ -93,8 +97,8 @@ const ManufacturingCost = () => {
       formData.cadDesignCharges +
       formData.cammingCharges +
       formData.certificationCost +
-      formData.diamondCost +
-      formData.gemstoneCost;
+      diamondCost +
+      gemstoneCost;
 
     const finalSellingPrice = totalCost * (1 + profitMargin / 100);
     const profitAmount = finalSellingPrice - totalCost;
@@ -123,8 +127,10 @@ const ManufacturingCost = () => {
       cadDesignCharges: 0,
       cammingCharges: 0,
       certificationCost: 0,
-      diamondCost: 0,
-      gemstoneCost: 0,
+      diamondPerCaratPrice: 0,
+      diamondWeight: 0,
+      gemstonePerCaratPrice: 0,
+      gemstoneWeight: 0,
     });
     setProfitMargin(0);
     setCurrentEstimateId(null);
@@ -151,15 +157,32 @@ const ManufacturingCost = () => {
       return;
     }
 
+    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
+    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
+
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
-      ...formData,
+      net_weight: formData.netWeight,
+      purity_fraction: formData.purityFraction,
+      gold_rate_24k: formData.goldRate24k,
+      making_charges: formData.makingCharges,
+      cad_design_charges: formData.cadDesignCharges,
+      camming_charges: formData.cammingCharges,
+      certification_cost: formData.certificationCost,
+      diamond_cost: diamondCost,
+      gemstone_cost: gemstoneCost,
       gold_cost: costs.goldCost,
       total_cost: costs.totalCost,
       profit_margin_percentage: profitMargin,
       final_selling_price: costs.finalSellingPrice,
       notes: notes || null,
+      details: {
+        diamond_per_carat_price: formData.diamondPerCaratPrice,
+        diamond_weight: formData.diamondWeight,
+        gemstone_per_carat_price: formData.gemstonePerCaratPrice,
+        gemstone_weight: formData.gemstoneWeight,
+      },
     };
 
     if (currentEstimateId) {
@@ -207,6 +230,7 @@ const ManufacturingCost = () => {
   };
 
   const handleLoad = (estimate: any) => {
+    const details = estimate.details as any;
     setFormData({
       netWeight: estimate.net_weight || 0,
       purityFraction: estimate.purity_fraction || 0.76,
@@ -215,8 +239,10 @@ const ManufacturingCost = () => {
       cadDesignCharges: estimate.cad_design_charges || 0,
       cammingCharges: estimate.camming_charges || 0,
       certificationCost: estimate.certification_cost || 0,
-      diamondCost: estimate.diamond_cost || 0,
-      gemstoneCost: estimate.gemstone_cost || 0,
+      diamondPerCaratPrice: details?.diamond_per_carat_price || 0,
+      diamondWeight: details?.diamond_weight || 0,
+      gemstonePerCaratPrice: details?.gemstone_per_carat_price || 0,
+      gemstoneWeight: details?.gemstone_weight || 0,
     });
     setProfitMargin(estimate.profit_margin_percentage || 0);
     setCurrentEstimateId(estimate.id);
@@ -466,24 +492,46 @@ const ManufacturingCost = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="diamondCost">Diamond Cost (₹)</Label>
+                <Label htmlFor="diamondPerCaratPrice">Diamond Per Carat Price (₹)</Label>
                 <Input
-                  id="diamondCost"
+                  id="diamondPerCaratPrice"
                   type="number"
                   step="0.01"
-                  value={formData.diamondCost || ""}
-                  onChange={(e) => handleChange("diamondCost", e.target.value)}
+                  value={formData.diamondPerCaratPrice || ""}
+                  onChange={(e) => handleChange("diamondPerCaratPrice", e.target.value)}
                   placeholder="0.00"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gemstoneCost">Gemstone Cost (₹)</Label>
+                <Label htmlFor="diamondWeight">Diamond Weight (carats)</Label>
                 <Input
-                  id="gemstoneCost"
+                  id="diamondWeight"
                   type="number"
                   step="0.01"
-                  value={formData.gemstoneCost || ""}
-                  onChange={(e) => handleChange("gemstoneCost", e.target.value)}
+                  value={formData.diamondWeight || ""}
+                  onChange={(e) => handleChange("diamondWeight", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gemstonePerCaratPrice">Gemstone Per Carat Price (₹)</Label>
+                <Input
+                  id="gemstonePerCaratPrice"
+                  type="number"
+                  step="0.01"
+                  value={formData.gemstonePerCaratPrice || ""}
+                  onChange={(e) => handleChange("gemstonePerCaratPrice", e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gemstoneWeight">Gemstone Weight (carats)</Label>
+                <Input
+                  id="gemstoneWeight"
+                  type="number"
+                  step="0.01"
+                  value={formData.gemstoneWeight || ""}
+                  onChange={(e) => handleChange("gemstoneWeight", e.target.value)}
                   placeholder="0.00"
                 />
               </div>
@@ -542,11 +590,11 @@ const ManufacturingCost = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Diamond Cost:</span>
-                  <span className="font-medium">₹{formData.diamondCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-medium">₹{(formData.diamondPerCaratPrice * formData.diamondWeight).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Gemstone Cost:</span>
-                  <span className="font-medium">₹{formData.gemstoneCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-medium">₹{(formData.gemstonePerCaratPrice * formData.gemstoneWeight).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between items-center mb-2">
