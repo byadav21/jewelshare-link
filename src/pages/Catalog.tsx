@@ -225,12 +225,18 @@ const Catalog = () => {
     } else {
       fetchUSDRate();
     }
-    fetchAllProducts();
-    fetchProducts();
-    fetchVendorProfile();
-    fetchApprovedCategories();
-    setupPlanUpgradeListener();
-    setupReferralListener();
+    
+    // Run all queries in parallel for faster loading
+    Promise.all([
+      fetchAllProducts(),
+      fetchProducts(),
+      fetchVendorProfile(),
+      fetchApprovedCategories(),
+    ]).then(() => {
+      // Setup listeners after data is loaded
+      setupPlanUpgradeListener();
+      setupReferralListener();
+    });
   }, []);
   const fetchApprovedCategories = async () => {
     try {
@@ -446,10 +452,17 @@ const Catalog = () => {
         }
       } = await supabase.auth.getUser();
       if (!user) return;
+      
+      // Optimized: only fetch id and product_type for counting, not all columns
       const {
         data,
         error
-      } = await supabase.from("products").select("*").eq("user_id", user.id).is("deleted_at", null);
+      } = await supabase
+        .from("products")
+        .select("id, product_type")
+        .eq("user_id", user.id)
+        .is("deleted_at", null);
+        
       if (error) throw error;
       setAllProducts(data || []);
     } catch (error: any) {
@@ -464,7 +477,13 @@ const Catalog = () => {
         }
       } = await supabase.auth.getUser();
       if (!user) return;
-      let query = supabase.from("products").select("*").eq("user_id", user.id).is("deleted_at", null);
+      
+      // Optimized query: only fetch needed columns and limit results
+      let query = supabase
+        .from("products")
+        .select("id, name, sku, image_url, image_url_2, image_url_3, cost_price, retail_price, stock_quantity, category, metal_type, gemstone, color, diamond_color, clarity, delivery_type, product_type, weight_grams, gemstone_type, carat_weight, cut, diamond_type, shape, carat, polish, symmetry, fluorescence, lab, created_at")
+        .eq("user_id", user.id)
+        .is("deleted_at", null);
 
       // Filter by product type, treating NULL as Jewellery for backward compatibility
       if (selectedProductType === 'Jewellery') {
@@ -472,12 +491,14 @@ const Catalog = () => {
       } else {
         query = query.eq("product_type", selectedProductType);
       }
+      
       const {
         data,
         error
-      } = await query.order("created_at", {
-        ascending: false
-      });
+      } = await query
+        .order("created_at", { ascending: false })
+        .limit(200); // Limit to 200 most recent products for initial load
+        
       if (error) throw error;
       setProducts(data || []);
     } catch (error: any) {
