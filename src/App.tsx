@@ -92,6 +92,10 @@ const AppContent = () => {
         path={ROUTES.IMAGE_DEMO} 
         element={<RouteSuspense><Pages.ImageOptimizationDemo /></RouteSuspense>} 
       />
+      <Route 
+        path={ROUTES.DIAMOND_CALCULATOR} 
+        element={<RouteSuspense><Pages.DiamondCalculator /></RouteSuspense>} 
+      />
 
       {/* Auth-only route (requires login but not approval) */}
       <Route 

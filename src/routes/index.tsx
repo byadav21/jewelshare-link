@@ -20,6 +20,7 @@ export const SharedCatalog = lazy(() => import("@/pages/SharedCatalog"));
 export const CustomOrder = lazy(() => import("@/pages/CustomOrder"));
 export const NotFound = lazy(() => import("@/pages/NotFound"));
 export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizationDemo"));
+export const DiamondCalculator = lazy(() => import("@/pages/DiamondCalculator"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));

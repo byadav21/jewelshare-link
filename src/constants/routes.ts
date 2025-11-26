@@ -12,6 +12,7 @@ export const ROUTES = {
   PRESS: "/press",
   DEMO: "/demo",
   IMAGE_DEMO: "/image-optimization-demo",
+  DIAMOND_CALCULATOR: "/diamond-calculator",
   ABOUT: "/about",
   CONTACT: "/contact",
   AUTH: "/auth",
