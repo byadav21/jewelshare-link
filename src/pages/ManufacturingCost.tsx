@@ -59,6 +59,7 @@ const ManufacturingCost = () => {
   const [copiedToken, setCopiedToken] = useState(false);
   const [guestUsageCount, setGuestUsageCount] = useState(0);
   const [showUsageLimitDialog, setShowUsageLimitDialog] = useState(false);
+  const [vendorProfile, setVendorProfile] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -105,6 +106,7 @@ const ManufacturingCost = () => {
       if (user) {
         // Authenticated users have unlimited access
         fetchEstimates();
+        fetchVendorProfile();
       } else {
         // Check guest usage via backend
         try {
@@ -132,6 +134,24 @@ const ManufacturingCost = () => {
 
     checkUsageAndAuth();
   }, []);
+
+  // Fetch vendor profile for branding
+  const fetchVendorProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('vendor_profiles')
+      .select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country')
+      .eq('user_id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching vendor profile:', error);
+    } else {
+      setVendorProfile(data);
+    }
+  };
 
   // Fetch saved estimates
   const fetchEstimates = async () => {
@@ -321,6 +341,17 @@ const ManufacturingCost = () => {
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
 
+    // Build vendor address string
+    const addressParts = [
+      vendorProfile?.address_line1,
+      vendorProfile?.address_line2,
+      vendorProfile?.city,
+      vendorProfile?.state,
+      vendorProfile?.pincode,
+      vendorProfile?.country,
+    ].filter(Boolean);
+    const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
+
     generateEstimatePDF({
       estimateName,
       estimateDate: new Date().toISOString(),
@@ -354,6 +385,16 @@ const ManufacturingCost = () => {
         diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
         gemstone_weight: formData.gemstoneWeight,
       },
+      vendorBranding: vendorProfile ? {
+        businessName: vendorProfile.business_name,
+        logoUrl: vendorProfile.logo_url,
+        primaryColor: vendorProfile.primary_brand_color,
+        secondaryColor: vendorProfile.secondary_brand_color,
+        tagline: vendorProfile.brand_tagline,
+        email: vendorProfile.email,
+        phone: vendorProfile.phone,
+        address: vendorAddress,
+      } : undefined,
     });
 
     toast({
