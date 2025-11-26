@@ -101,10 +101,13 @@ const DiamondCalculator = () => {
 
     setLoading(true);
     try {
+      // Dual pricing strategy: Round uses Round pricing, all fancy shapes use Pear pricing
+      const lookupShape = shape === "Round" ? "Round" : "Pear";
+      
       const { data, error } = await supabase
         .from("diamond_prices")
         .select("*")
-        .eq("shape", shape)
+        .eq("shape", lookupShape)
         .eq("color_grade", color)
         .eq("clarity_grade", clarity)
         .eq("cut_grade", cut)
@@ -115,7 +118,10 @@ const DiamondCalculator = () => {
       if (error) throw error;
 
       if (!data) {
-        toast.error("No pricing data found for these specifications. Please contact admin to add pricing data.");
+        toast.error(
+          `No pricing data found for ${lookupShape} diamonds with these specifications (${color}/${clarity}/${cut}, ${caratNum}ct). Please contact admin to add pricing data.`,
+          { duration: 5000 }
+        );
         setResult(null);
         return;
       }
