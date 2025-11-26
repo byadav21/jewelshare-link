@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +38,7 @@ import { format } from "date-fns";
 
 const ManufacturingCost = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [estimates, setEstimates] = useState<any[]>([]);
   const [currentEstimateId, setCurrentEstimateId] = useState<string | null>(null);
@@ -54,6 +56,8 @@ const ManufacturingCost = () => {
   const [isCustomerVisible, setIsCustomerVisible] = useState(false);
   const [shareToken, setShareToken] = useState<string>("");
   const [copiedToken, setCopiedToken] = useState(false);
+  const [guestUsageCount, setGuestUsageCount] = useState(0);
+  const [showUsageLimitDialog, setShowUsageLimitDialog] = useState(false);
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -91,12 +95,26 @@ const ManufacturingCost = () => {
     profitAmount: 0,
   });
 
-  // Check auth status
+  // Check auth status and usage limits
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       if (user) {
         fetchEstimates();
+      } else {
+        // Check guest usage count
+        const usageKey = 'manufacturing_estimator_guest_usage';
+        const storedUsage = localStorage.getItem(usageKey);
+        const usage = storedUsage ? parseInt(storedUsage, 10) : 0;
+        
+        if (usage >= 5) {
+          setShowUsageLimitDialog(true);
+        } else {
+          // Increment usage count
+          const newUsage = usage + 1;
+          localStorage.setItem(usageKey, newUsage.toString());
+          setGuestUsageCount(newUsage);
+        }
       }
     });
   }, []);
@@ -597,6 +615,33 @@ const ManufacturingCost = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
+      {/* Guest Usage Limit Dialog */}
+      <Dialog open={showUsageLimitDialog} onOpenChange={setShowUsageLimitDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Usage Limit Reached</DialogTitle>
+            <DialogDescription>
+              You've reached the limit of 5 uses for guest users. Sign in to get unlimited access to the Manufacturing Cost Estimator.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-4">
+            <Button
+              onClick={() => navigate('/auth')}
+              className="flex-1"
+            >
+              Sign In
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              className="flex-1"
+            >
+              Go Home
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <BackToHomeButton />
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header Section */}
@@ -610,6 +655,23 @@ const ManufacturingCost = () => {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Calculate precise manufacturing costs and pricing for your custom jewelry orders
           </p>
+          
+          {/* Guest Usage Counter */}
+          {!user && guestUsageCount > 0 && guestUsageCount < 5 && (
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border">
+              <Info className="h-4 w-4 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Guest Usage: {guestUsageCount}/5 uses.
+                <Button
+                  variant="link"
+                  className="ml-1 p-0 h-auto text-sm underline"
+                  onClick={() => navigate('/auth')}
+                >
+                  Sign in for unlimited access
+                </Button>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
