@@ -31,6 +31,24 @@ const brandThemes = {
     primary: "#1E3A8A",
     secondary: "#991B1B",
   },
+  luxury: {
+    name: "Luxury",
+    description: "Premium gold and black elegance",
+    primary: "#D4AF37",
+    secondary: "#1a1a1a",
+  },
+  minimalist: {
+    name: "Minimalist",
+    description: "Clean grayscale simplicity",
+    primary: "#4B5563",
+    secondary: "#9CA3AF",
+  },
+  vibrant: {
+    name: "Vibrant",
+    description: "Bold and energetic colors",
+    primary: "#EC4899",
+    secondary: "#8B5CF6",
+  },
 };
 
 const VendorProfile = () => {
@@ -432,7 +450,7 @@ const VendorProfile = () => {
                       <Label className="text-sm font-medium mb-3 block">
                         Choose a Brand Theme
                       </Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                         {Object.entries(brandThemes).map(([key, theme]) => (
                           <div
                             key={key}
