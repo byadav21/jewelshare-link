@@ -112,7 +112,12 @@ const Import = () => {
         let product: any;
 
         if (selectedProductType === 'Gemstones') {
+          // Debug: Log the row data to see what we're reading
+          console.log('DEBUG Gemstone Row:', index, JSON.stringify(row, null, 2));
+          console.log('DEBUG Row keys:', Object.keys(row));
+          
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
+          console.log('DEBUG priceINR:', priceINR, 'from', row.PRICE_INR, row['PRICE INR']);
           
           // Check if COST_PRICE and RETAIL_PRICE columns exist in the file
           const hasCostPrice = 'COST_PRICE' in row || 'COST PRICE' in row || 'Cost Price' in row;
@@ -121,11 +126,15 @@ const Import = () => {
           const costPriceRaw = hasCostPrice ? parseNumber(row.COST_PRICE || row['COST PRICE'] || row['Cost Price']) : null;
           const retailPriceRaw = hasRetailPrice ? parseNumber(row.RETAIL_PRICE || row['RETAIL PRICE'] || row['Retail Price']) : null;
           
+          console.log('DEBUG costPriceRaw:', costPriceRaw, 'retailPriceRaw:', retailPriceRaw);
+          
           // Ensure we always have valid prices (minimum 0.01)
           const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
           const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safePrice;
           const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
           const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
+          
+          console.log('DEBUG Final prices - cost:', costPrice, 'retail:', retailPrice, 'safePrice:', safePrice);
           
           product = {
             user_id: user.id,
