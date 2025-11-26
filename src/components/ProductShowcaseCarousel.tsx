@@ -50,6 +50,9 @@ export const ProductShowcaseCarousel = ({ products, usdRate }: ProductShowcaseCa
 
   const currentProduct = featuredProducts[currentIndex];
 
+  // Safety check for currentProduct
+  if (!currentProduct) return null;
+
   return (
     <div className="relative w-full h-[400px] rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5 backdrop-blur-sm border border-border/50">
       {/* Background glow effect */}
