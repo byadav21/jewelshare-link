@@ -114,6 +114,7 @@ const Import = () => {
         if (selectedProductType === 'Gemstones') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
           const priceUSD = priceINR > 0 ? await convertINRtoUSD(priceINR) : null;
+          const finalPrice = priceINR > 0 ? priceINR : 0.01;
           
           product = {
             user_id: user.id,
@@ -131,8 +132,10 @@ const Import = () => {
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
-            price_inr: priceINR > 0 ? priceINR : 0.01,
+            price_inr: finalPrice,
             price_usd: priceUSD,
+            cost_price: finalPrice,
+            retail_price: finalPrice,
             stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
             product_type: 'Gemstones',
             name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
@@ -140,6 +143,7 @@ const Import = () => {
         } else if (selectedProductType === 'Loose Diamonds') {
           const priceINR = parseNumber(row.PRICE_INR || row['PRICE INR'] || row['Price INR'] || row['Price']);
           const priceUSD = priceINR > 0 ? await convertINRtoUSD(priceINR) : null;
+          const finalPrice = priceINR > 0 ? priceINR : 0.01;
           
           product = {
             user_id: user.id,
@@ -161,8 +165,10 @@ const Import = () => {
             image_url: imageUrl || null,
             image_url_2: imageUrl2 || null,
             image_url_3: imageUrl3 || null,
-            price_inr: priceINR > 0 ? priceINR : 0.01,
+            price_inr: finalPrice,
             price_usd: priceUSD,
+            cost_price: finalPrice,
+            retail_price: finalPrice,
             stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
             product_type: 'Loose Diamonds',
             name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,
