@@ -107,15 +107,17 @@ const AppContent = () => {
         } 
       />
       
-      {/* Protected vendor routes (requires login + approval) */}
+      {/* Catalog route (requires login only) */}
       <Route 
         path={ROUTES.CATALOG} 
         element={
-          <ApprovalGuard>
+          <AuthGuard>
             <RouteSuspense><Pages.Catalog /></RouteSuspense>
-          </ApprovalGuard>
+          </AuthGuard>
         } 
       />
+      
+      {/* Protected vendor routes (requires login + approval) */}
       <Route 
         path={ROUTES.ADD_PRODUCT} 
         element={
