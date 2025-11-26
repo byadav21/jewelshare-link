@@ -7,7 +7,9 @@ import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X, Upload, Video, ShoppingCart } from "lucide-react";
+import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X, Upload, Video, ShoppingCart, Sparkles } from "lucide-react";
+import { AutoCategorizationDialog } from "@/components/AutoCategorizationDialog";
+import { analyzeCatalog, CategorySuggestion } from "@/utils/productCategorization";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -59,6 +61,8 @@ const Catalog = () => {
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [autoCategorizationOpen, setAutoCategorizationOpen] = useState(false);
+  const [categorySuggestions, setCategorySuggestions] = useState<CategorySuggestion[]>([]);
   
   // Rewards and milestones
   const { awardPoints } = useRewardsSystem();
@@ -718,6 +722,64 @@ const Catalog = () => {
       toast.error(`Failed to update: ${error.message || 'Unknown error'}`);
     }
   }, [selectedProducts, fetchProducts, fetchAllProducts]);
+
+  const handleAutoCategorizationClick = () => {
+    if (!products || products.length === 0) {
+      toast.info("No products found in catalog");
+      return;
+    }
+    
+    const suggestions = analyzeCatalog(
+      products.map(p => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        category: p.category,
+      }))
+    );
+    
+    if (suggestions.length === 0) {
+      toast.info("No uncategorized products found or all products already have categories");
+      return;
+    }
+    
+    setCategorySuggestions(suggestions);
+    setAutoCategorizationOpen(true);
+  };
+
+  const handleApplyCategorization = async (selectedIds: string[]) => {
+    try {
+      // Group updates by category for efficiency
+      const updatesByCategory = categorySuggestions
+        .filter(s => selectedIds.includes(s.productId))
+        .reduce((acc, s) => {
+          if (!acc[s.suggestedCategory]) {
+            acc[s.suggestedCategory] = [];
+          }
+          acc[s.suggestedCategory].push(s.productId);
+          return acc;
+        }, {} as Record<string, string[]>);
+
+      // Apply updates category by category
+      for (const [category, productIds] of Object.entries(updatesByCategory)) {
+        const { error } = await supabase
+          .from("products")
+          .update({ category })
+          .in("id", productIds);
+
+        if (error) throw error;
+      }
+
+      toast.success(`Successfully categorized ${selectedIds.length} products!`);
+      await fetchProducts();
+      await fetchAllProducts();
+    } catch (error) {
+      console.error("Error applying categorization:", error);
+      toast.error("Failed to apply categorization");
+      throw error;
+    }
+  };
+  
   const toggleProductSelection = useCallback((productId: string) => {
     setSelectedProducts(prev => {
       const newSelected = new Set(prev);
@@ -744,7 +806,7 @@ const Catalog = () => {
       <FloatingQRCodes instagramQrUrl={vendorProfile?.instagram_qr_url} whatsappQrUrl={vendorProfile?.whatsapp_qr_url} />
 
       {/* Quick Actions Menu */}
-      <QuickActionsMenu onExportPDF={exportToPDF} />
+      <QuickActionsMenu onExportPDF={exportToPDF} onAutoCategorize={handleAutoCategorizationClick} />
 
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background relative overflow-hidden">
         {/* Premium Background Effects */}
@@ -1458,6 +1520,13 @@ const Catalog = () => {
         onConfirm={handleDeleteSelected}
         products={selectedProductsData}
         isDeleting={isDeleting}
+      />
+
+      <AutoCategorizationDialog
+        open={autoCategorizationOpen}
+        onOpenChange={setAutoCategorizationOpen}
+        suggestions={categorySuggestions}
+        onApply={handleApplyCategorization}
       />
     </ApprovalGuard>;
 };

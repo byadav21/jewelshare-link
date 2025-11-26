@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Share2, FileDown, Zap, X, ShoppingCart, Trophy } from "lucide-react";
+import { Plus, Share2, FileDown, Zap, X, ShoppingCart, Trophy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
@@ -9,9 +9,11 @@ import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 interface QuickActionsMenuProps {
   onExportPDF: () => void;
+  onAutoCategorize?: () => void;
 }
 export const QuickActionsMenu = ({
-  onExportPDF
+  onExportPDF,
+  onAutoCategorize
 }: QuickActionsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -76,7 +78,18 @@ export const QuickActionsMenu = ({
     iconColor: "text-blue-500",
     disabled: !canAddShareLinks,
     tooltip: !canAddShareLinks ? "Share link limit reached" : undefined
-  }, {
+  }, ...(onAutoCategorize ? [{
+    icon: Sparkles,
+    label: "Auto-Categorize",
+    onClick: () => {
+      onAutoCategorize();
+      setIsOpen(false);
+    },
+    gradient: "from-violet-500/20 to-violet-500/5",
+    iconColor: "text-violet-500",
+    disabled: false,
+    tooltip: "Automatically categorize products"
+  }] : []), {
     icon: ShoppingCart,
     label: "Purchase Inquiries",
     onClick: () => {
