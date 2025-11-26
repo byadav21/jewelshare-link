@@ -51,6 +51,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  Calculator,
 } from "lucide-react";
 
 const Index = () => {
@@ -125,6 +126,11 @@ const Index = () => {
         "Our platform supports loose diamonds, gemstones, and finished jewelry pieces. Each category has specialized fields for specifications like carat weight, clarity, color, certification, metal type, and more. Upload multiple images and detailed descriptions for each piece.",
     },
     {
+      question: "How does the Diamond Price Calculator work?",
+      answer:
+        "Our advanced diamond calculator uses Rapaport-based pricing to estimate diamond values. Simply input the 4Cs (Carat weight, Cut grade, Color grade, Clarity grade) and select the diamond shape. The calculator instantly provides price estimates and allows you to apply custom discounts or markups. Compare up to 4 diamonds side-by-side to help your customers make informed decisions. Authenticated users get unlimited calculations, while guests can perform 5 calculations per day.",
+    },
+    {
       question: "How do video requests work?",
       answer:
         "When customers view your shared catalog, they can request videos of specific products. You'll receive notifications with customer details and can update the request status (pending, fulfilled, declined). Communicate directly via email or WhatsApp.",
@@ -167,11 +173,18 @@ const Index = () => {
       gradient: "from-gemstone-from to-gemstone-to",
     },
     {
+      icon: Calculator,
+      title: "Diamond Price Calculator",
+      description:
+        "Professional diamond pricing tool with Rapaport-based calculations. Estimate diamond values based on the 4Cs (Carat, Cut, Color, Clarity) with support for all shapes and instant price comparisons. Apply custom discounts or markups for accurate pricing.",
+      gradient: "from-diamond-from to-diamond-to",
+    },
+    {
       icon: Video,
       title: "Video Request Management",
       description:
         "Receive and manage video requests from customers. Update status and communicate directly via email or WhatsApp.",
-      gradient: "from-diamond-from to-diamond-to",
+      gradient: "from-gemstone-from to-gemstone-to",
     },
     {
       icon: ShoppingBag,
@@ -185,14 +198,14 @@ const Index = () => {
       title: "Product Interest Analytics",
       description:
         "Track customer interests in specific products. Collect contact details and notes to follow up effectively.",
-      gradient: "from-gemstone-from to-gemstone-to",
+      gradient: "from-diamond-from to-diamond-to",
     },
     {
       icon: Users,
       title: "Team Collaboration",
       description:
         "Add team members with granular permissions. Control access to catalog, products, sharing, and customer data.",
-      gradient: "from-diamond-from to-diamond-to",
+      gradient: "from-gemstone-from to-gemstone-to",
     },
     {
       icon: BarChart3,
@@ -249,8 +262,7 @@ const Index = () => {
                 </span>
               </h1>
               <p className="mb-12 text-xl text-muted-foreground sm:text-2xl leading-relaxed animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                The complete platform for jewelry vendors to showcase inventory, share catalogs with custom pricing, and
-                manage customer inquiries seamlessly.
+                The complete platform for jewelry vendors to showcase inventory, share catalogs with custom pricing, manage customer inquiries, and calculate accurate diamond prices with our professional Rapaport-based calculator.
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in" style={{ animationDelay: "0.3s" }}>
                 <Button 
