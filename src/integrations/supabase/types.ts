@@ -1311,6 +1311,7 @@ export type Database = {
           id: string
           instagram_qr_url: string | null
           logo_url: string | null
+          making_charges_per_gram: number | null
           phone: string | null
           pincode: string | null
           seller_categories: string[] | null
@@ -1336,6 +1337,7 @@ export type Database = {
           id?: string
           instagram_qr_url?: string | null
           logo_url?: string | null
+          making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
           seller_categories?: string[] | null
@@ -1361,6 +1363,7 @@ export type Database = {
           id?: string
           instagram_qr_url?: string | null
           logo_url?: string | null
+          making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
           seller_categories?: string[] | null
