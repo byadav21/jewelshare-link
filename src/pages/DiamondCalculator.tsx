@@ -6,13 +6,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale } from "lucide-react";
+import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale, Download } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface ComparisonItem {
   id: string;
@@ -182,6 +184,120 @@ const DiamondCalculator = () => {
   const clearComparison = () => {
     setComparisonList([]);
     toast.success("Comparison cleared");
+  };
+
+  const exportComparisonToPDF = () => {
+    if (comparisonList.length === 0) {
+      toast.error("No diamonds to export");
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+      
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(40, 40, 40);
+      doc.text("Diamond Comparison Report", pageWidth / 2, 20, { align: "center" });
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: "center" });
+      
+      // Prepare table data
+      const tableHeaders = [
+        "Specification",
+        ...comparisonList.map((_, idx) => `Option ${idx + 1}`)
+      ];
+      
+      const tableData = [
+        ["Carat Weight", ...comparisonList.map(item => item.specs.carat)],
+        ["Shape", ...comparisonList.map(item => item.specs.shape)],
+        ["Color Grade", ...comparisonList.map(item => item.specs.color)],
+        ["Clarity Grade", ...comparisonList.map(item => item.specs.clarity)],
+        ["Cut Grade", ...comparisonList.map(item => item.specs.cut)],
+        ["", ...Array(comparisonList.length).fill("")], // Empty row for spacing
+        ["Price/Carat", ...comparisonList.map(item => 
+          `${item.result.currency} ${item.result.pricePerCarat.toLocaleString()}`
+        )],
+        ["Base Price", ...comparisonList.map(item => 
+          `${item.result.currency} ${item.result.totalPrice.toLocaleString()}`
+        )],
+        ["Adjustment", ...comparisonList.map(item => 
+          item.adjustmentPercentage > 0 
+            ? `${item.adjustmentPercentage.toFixed(1)}% ${item.adjustmentType}`
+            : "None"
+        )],
+        ["Final Price", ...comparisonList.map(item => 
+          `${item.result.currency} ${item.finalPrice.toLocaleString()}`
+        )],
+      ];
+      
+      // Add table
+      autoTable(doc, {
+        startY: 35,
+        head: [tableHeaders],
+        body: tableData,
+        theme: "grid",
+        headStyles: {
+          fillColor: [66, 66, 66],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          halign: "center",
+        },
+        bodyStyles: {
+          halign: "center",
+        },
+        columnStyles: {
+          0: { halign: "left", fontStyle: "bold" },
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+      });
+      
+      // Summary section
+      if (comparisonList.length > 1) {
+        const finalY = (doc as any).lastAutoTable.finalY + 10;
+        
+        doc.setFontSize(14);
+        doc.setTextColor(40, 40, 40);
+        doc.text("Quick Summary", 14, finalY);
+        
+        const lowestPrice = Math.min(...comparisonList.map(item => item.finalPrice));
+        const highestPrice = Math.max(...comparisonList.map(item => item.finalPrice));
+        const priceDiff = highestPrice - lowestPrice;
+        const currency = comparisonList[0].result.currency;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 60);
+        doc.text(`Lowest Price: ${currency} ${lowestPrice.toLocaleString()}`, 14, finalY + 8);
+        doc.text(`Highest Price: ${currency} ${highestPrice.toLocaleString()}`, 14, finalY + 14);
+        doc.text(`Price Difference: ${currency} ${priceDiff.toLocaleString()}`, 14, finalY + 20);
+      }
+      
+      // Footer
+      const pageCount = doc.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          pageWidth / 2,
+          doc.internal.pageSize.height - 10,
+          { align: "center" }
+        );
+      }
+      
+      // Save PDF
+      doc.save(`diamond-comparison-${new Date().getTime()}.pdf`);
+      toast.success("PDF exported successfully!");
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Failed to export PDF");
+    }
   };
 
   const resetCalculator = () => {
@@ -644,7 +760,7 @@ const DiamondCalculator = () => {
             >
               <Card className="shadow-xl border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-card">
                 <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-transparent">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-2xl">
                         <Scale className="h-6 w-6 text-primary" />
@@ -654,13 +770,24 @@ const DiamondCalculator = () => {
                         Compare up to 4 diamond specifications side-by-side
                       </CardDescription>
                     </div>
-                    <Button
-                      onClick={clearComparison}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Clear All
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={exportComparisonToPDF}
+                        variant="default"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        Export PDF
+                      </Button>
+                      <Button
+                        onClick={clearComparison}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Clear All
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
