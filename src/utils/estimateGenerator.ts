@@ -1,6 +1,17 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
+interface VendorBranding {
+  businessName?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  tagline?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 interface EstimateData {
   estimateName: string;
   estimateDate: string;
@@ -26,47 +37,121 @@ interface EstimateData {
   estimatedCompletionDate?: string;
   notes?: string;
   details?: any;
+  vendorBranding?: VendorBranding;
 }
 
 export const generateEstimatePDF = (data: EstimateData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   
-  // Header with decorative styling
-  doc.setFillColor(79, 70, 229);
-  doc.rect(0, 0, pageWidth, 30, 'F');
+  // Parse brand colors or use defaults
+  const primaryColor = data.vendorBranding?.primaryColor || '#4F46E5';
+  const secondaryColor = data.vendorBranding?.secondaryColor || '#8B5CF6';
   
-  doc.setFontSize(24);
+  // Convert hex to RGB
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 79, g: 70, b: 229 };
+  };
+  
+  const primaryRgb = hexToRgb(primaryColor);
+  const secondaryRgb = hexToRgb(secondaryColor);
+  
+  // Header with brand color
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(0, 0, pageWidth, 35, 'F');
+  
+  // Add logo if available
+  if (data.vendorBranding?.logoUrl) {
+    try {
+      // Note: In production, logo should be base64 encoded or loaded via Image object
+      // For now, we'll add a placeholder for the logo space
+      doc.setFillColor(255, 255, 255);
+      doc.rect(14, 8, 20, 20, 'F');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text('LOGO', 24, 19, { align: 'center' });
+    } catch (error) {
+      console.error('Error adding logo:', error);
+    }
+  }
+  
+  // Business name and title
+  doc.setFontSize(data.vendorBranding?.businessName ? 18 : 24);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('JEWELRY MANUFACTURING ESTIMATE', pageWidth / 2, 18, { align: 'center' });
+  const titleY = data.vendorBranding?.logoUrl ? 20 : 15;
+  if (data.vendorBranding?.businessName) {
+    doc.text(data.vendorBranding.businessName.toUpperCase(), pageWidth / 2, titleY, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Manufacturing Estimate', pageWidth / 2, titleY + 6, { align: 'center' });
+  } else {
+    doc.text('JEWELRY MANUFACTURING ESTIMATE', pageWidth / 2, titleY, { align: 'center' });
+  }
+  
+  // Tagline
+  if (data.vendorBranding?.tagline) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.text(data.vendorBranding.tagline, pageWidth / 2, 30, { align: 'center' });
+  }
   
   // Reset text color
+  doc.setTextColor(0, 0, 0);
+  
+  // Vendor contact info
+  let headerY = 45;
+  if (data.vendorBranding?.email || data.vendorBranding?.phone || data.vendorBranding?.address) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    
+    if (data.vendorBranding.phone) {
+      doc.text(`📞 ${data.vendorBranding.phone}`, pageWidth - 14, headerY, { align: 'right' });
+      headerY += 4;
+    }
+    if (data.vendorBranding.email) {
+      doc.text(`✉ ${data.vendorBranding.email}`, pageWidth - 14, headerY, { align: 'right' });
+      headerY += 4;
+    }
+    if (data.vendorBranding.address) {
+      const splitAddress = doc.splitTextToSize(data.vendorBranding.address, 70);
+      doc.text(splitAddress, pageWidth - 14, headerY, { align: 'right' });
+    }
+  }
+  
   doc.setTextColor(0, 0, 0);
   
   // Estimate Details
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Estimate No: ${data.estimateName}`, 14, 40);
-  doc.text(`Date: ${new Date(data.estimateDate).toLocaleDateString()}`, 14, 45);
-  doc.text(`Status: ${data.status.replace('_', ' ').toUpperCase()}`, 14, 50);
+  doc.text(`Estimate No: ${data.estimateName}`, 14, 58);
+  doc.text(`Date: ${new Date(data.estimateDate).toLocaleDateString()}`, 14, 63);
+  doc.text(`Status: ${data.status.replace('_', ' ').toUpperCase()}`, 14, 68);
   
   if (data.estimatedCompletionDate) {
-    doc.text(`Est. Completion: ${new Date(data.estimatedCompletionDate).toLocaleDateString()}`, 14, 55);
+    doc.text(`Est. Completion: ${new Date(data.estimatedCompletionDate).toLocaleDateString()}`, 14, 73);
   }
   
   // Customer Details Section
   if (data.customerName) {
     doc.setFillColor(240, 240, 245);
-    doc.rect(14, 65, pageWidth - 28, 35, 'F');
+    doc.rect(14, 83, pageWidth - 28, 35, 'F');
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('CUSTOMER INFORMATION', 18, 73);
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text('CUSTOMER INFORMATION', 18, 91);
+    doc.setTextColor(0, 0, 0);
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    let yPos = 81;
+    let yPos = 99;
     doc.text(`Name: ${data.customerName}`, 18, yPos);
     if (data.customerPhone) {
       yPos += 5;
@@ -84,12 +169,11 @@ export const generateEstimatePDF = (data: EstimateData) => {
   }
   
   // Product Specifications
-  const specsStartY = data.customerName ? 110 : 70;
+  const specsStartY = data.customerName ? 128 : 88;
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setFillColor(79, 70, 229);
-  doc.setTextColor(79, 70, 229);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
   doc.text('PRODUCT SPECIFICATIONS', 14, specsStartY);
   doc.setTextColor(0, 0, 0);
   
@@ -144,7 +228,7 @@ export const generateEstimatePDF = (data: EstimateData) => {
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(79, 70, 229);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
   doc.text('COST BREAKDOWN', 14, costStartY);
   doc.setTextColor(0, 0, 0);
   
@@ -164,7 +248,7 @@ export const generateEstimatePDF = (data: EstimateData) => {
     body: tableData,
     theme: 'striped',
     headStyles: { 
-      fillColor: [79, 70, 229],
+      fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b],
       fontSize: 11,
       fontStyle: 'bold',
     },
@@ -187,12 +271,12 @@ export const generateEstimatePDF = (data: EstimateData) => {
   doc.text(`₹${((data.finalSellingPrice - data.totalCost)).toFixed(2)}`, pageWidth - 18, finalY + 15, { align: 'right' });
   
   // Draw line
-  doc.setDrawColor(79, 70, 229);
+  doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
   doc.setLineWidth(0.5);
   doc.line(18, finalY + 18, pageWidth - 18, finalY + 18);
   
   doc.setFontSize(14);
-  doc.setTextColor(79, 70, 229);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
   doc.text(`Estimated Price:`, 18, finalY + 25);
   doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, finalY + 25, { align: 'right' });
   doc.setTextColor(0, 0, 0);
@@ -202,7 +286,7 @@ export const generateEstimatePDF = (data: EstimateData) => {
     const notesY = finalY + 40;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
     doc.text('ADDITIONAL NOTES', 14, notesY);
     doc.setTextColor(0, 0, 0);
     

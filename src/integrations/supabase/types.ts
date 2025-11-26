@@ -1434,6 +1434,7 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           awards: string[] | null
+          brand_tagline: string | null
           business_name: string | null
           business_story: string | null
           certifications: string[] | null
@@ -1449,6 +1450,8 @@ export type Database = {
           making_charges_per_gram: number | null
           phone: string | null
           pincode: string | null
+          primary_brand_color: string | null
+          secondary_brand_color: string | null
           seller_categories: string[] | null
           state: string | null
           updated_at: string | null
@@ -1460,6 +1463,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           awards?: string[] | null
+          brand_tagline?: string | null
           business_name?: string | null
           business_story?: string | null
           certifications?: string[] | null
@@ -1475,6 +1479,8 @@ export type Database = {
           making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          primary_brand_color?: string | null
+          secondary_brand_color?: string | null
           seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null
@@ -1486,6 +1492,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           awards?: string[] | null
+          brand_tagline?: string | null
           business_name?: string | null
           business_story?: string | null
           certifications?: string[] | null
@@ -1501,6 +1508,8 @@ export type Database = {
           making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          primary_brand_color?: string | null
+          secondary_brand_color?: string | null
           seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null

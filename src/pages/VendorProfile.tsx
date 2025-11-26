@@ -34,6 +34,9 @@ const VendorProfile = () => {
     certifications: [] as string[],
     awards: [] as string[],
     making_charges_per_gram: "",
+    primary_brand_color: "#4F46E5",
+    secondary_brand_color: "#8B5CF6",
+    brand_tagline: "",
   });
 
   useEffect(() => {
@@ -73,6 +76,9 @@ const VendorProfile = () => {
           certifications: profile.certifications || [],
           awards: profile.awards || [],
           making_charges_per_gram: profile.making_charges_per_gram || "",
+          primary_brand_color: profile.primary_brand_color || "#4F46E5",
+          secondary_brand_color: profile.secondary_brand_color || "#8B5CF6",
+          brand_tagline: profile.brand_tagline || "",
         });
       }
     } catch (error: any) {
@@ -386,6 +392,88 @@ const VendorProfile = () => {
                       >
                         Add Award
                       </Button>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-6 space-y-4">
+                    <h3 className="text-lg font-semibold">Brand Customization for Estimates</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Customize how your estimates and quotes appear to customers
+                    </p>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="brand_tagline">Brand Tagline</Label>
+                      <Input
+                        id="brand_tagline"
+                        value={formData.brand_tagline}
+                        onChange={(e) => setFormData({ ...formData, brand_tagline: e.target.value })}
+                        placeholder="e.g., Crafting Excellence Since 1985"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        This will appear on your estimate PDFs below your business name
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="primary_brand_color">Primary Brand Color</Label>
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            id="primary_brand_color"
+                            type="color"
+                            value={formData.primary_brand_color}
+                            onChange={(e) => setFormData({ ...formData, primary_brand_color: e.target.value })}
+                            className="w-20 h-10"
+                          />
+                          <Input
+                            type="text"
+                            value={formData.primary_brand_color}
+                            onChange={(e) => setFormData({ ...formData, primary_brand_color: e.target.value })}
+                            placeholder="#4F46E5"
+                            className="flex-1"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Used for headers and primary accents in PDFs
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="secondary_brand_color">Secondary Brand Color</Label>
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            id="secondary_brand_color"
+                            type="color"
+                            value={formData.secondary_brand_color}
+                            onChange={(e) => setFormData({ ...formData, secondary_brand_color: e.target.value })}
+                            className="w-20 h-10"
+                          />
+                          <Input
+                            type="text"
+                            value={formData.secondary_brand_color}
+                            onChange={(e) => setFormData({ ...formData, secondary_brand_color: e.target.value })}
+                            placeholder="#8B5CF6"
+                            className="flex-1"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Used for secondary elements and highlights
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 border rounded-lg bg-muted/30">
+                      <p className="text-sm font-medium mb-2">Preview</p>
+                      <div className="flex gap-2">
+                        <div 
+                          className="w-16 h-16 rounded border" 
+                          style={{ backgroundColor: formData.primary_brand_color }}
+                        />
+                        <div 
+                          className="w-16 h-16 rounded border" 
+                          style={{ backgroundColor: formData.secondary_brand_color }}
+                        />
+                      </div>
                     </div>
                   </div>
 
