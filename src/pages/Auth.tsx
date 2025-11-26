@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Gem } from "lucide-react";
 import { PasswordStrength, validatePasswordStrength } from "@/components/PasswordStrength";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { z } from "zod";
 
 
@@ -233,6 +234,9 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute top-4 left-4">
+        <BackToHomeButton variant="ghost" />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
