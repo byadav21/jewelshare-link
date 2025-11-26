@@ -208,7 +208,7 @@ const DiamondCalculator = () => {
                   <Slider
                     id="discount"
                     min={0}
-                    max={50}
+                    max={100}
                     step={1}
                     value={[discount]}
                     onValueChange={(value) => setDiscount(value[0])}
