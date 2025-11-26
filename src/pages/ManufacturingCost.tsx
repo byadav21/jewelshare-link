@@ -5,10 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info } from "lucide-react";
+import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { generateInvoicePDF } from "@/utils/invoiceGenerator";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ const ManufacturingCost = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customCertification, setCustomCertification] = useState("");
   const [weightEntryMode, setWeightEntryMode] = useState<"gross" | "net">("gross");
+  const [estimateStatus, setEstimateStatus] = useState("draft");
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -190,6 +192,58 @@ const ManufacturingCost = () => {
       email: "",
       address: "",
     });
+    setEstimateStatus("draft");
+  };
+
+  const handleGenerateInvoice = () => {
+    if (!estimateName) {
+      toast({
+        title: "Missing Information",
+        description: "Please save the estimate first before generating invoice",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const details = formData;
+    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
+    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
+
+    generateInvoicePDF({
+      estimateName,
+      estimateDate: new Date().toISOString(),
+      status: estimateStatus,
+      customerName: customerDetails.name,
+      customerPhone: customerDetails.phone,
+      customerEmail: customerDetails.email,
+      customerAddress: customerDetails.address,
+      netWeight: formData.netWeight,
+      purityFraction: formData.purityFraction,
+      goldRate24k: formData.goldRate24k,
+      makingCharges: formData.makingCharges,
+      cadDesignCharges: formData.cadDesignCharges,
+      cammingCharges: formData.cammingCharges,
+      certificationCost: formData.certificationCost,
+      diamondCost,
+      gemstoneCost,
+      goldCost: costs.goldCost,
+      totalCost: costs.totalCost,
+      profitMargin,
+      finalSellingPrice: costs.finalSellingPrice,
+      notes,
+      details: {
+        diamond_type: formData.diamondType,
+        diamond_shape: formData.diamondShape,
+        diamond_weight: formData.diamondWeight,
+        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
+        gemstone_weight: formData.gemstoneWeight,
+      },
+    });
+
+    toast({
+      title: "Invoice Generated",
+      description: "Invoice PDF has been downloaded successfully",
+    });
   };
 
   const handleSave = async () => {
@@ -236,6 +290,7 @@ const ManufacturingCost = () => {
       customer_phone: customerDetails.phone || null,
       customer_email: customerDetails.email || null,
       customer_address: customerDetails.address || null,
+      status: estimateStatus,
       details: {
         gross_weight: formData.grossWeight,
         diamond_per_carat_price: formData.diamondPerCaratPrice,
@@ -336,6 +391,7 @@ const ManufacturingCost = () => {
       email: estimate.customer_email || "",
       address: estimate.customer_address || "",
     });
+    setEstimateStatus(estimate.status || "draft");
     setShowLoadDialog(false);
     toast({
       title: "Loaded",
@@ -557,9 +613,46 @@ const ManufacturingCost = () => {
                       </div>
                     </div>
                     
-                    <Button onClick={handleSave} className="w-full">
-                      {currentEstimateId ? 'Update' : 'Save'} Estimate
-                    </Button>
+                    {/* Status Tracking Section */}
+                    <div className="space-y-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-4 h-4 text-primary" />
+                        <Label className="text-base font-semibold">Production Status</Label>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Track the production workflow from estimate to delivery
+                      </p>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="estimateStatus">Current Status</Label>
+                        <Select value={estimateStatus} onValueChange={setEstimateStatus}>
+                          <SelectTrigger id="estimateStatus">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="quoted">Quoted</SelectItem>
+                            <SelectItem value="approved">Approved</SelectItem>
+                            <SelectItem value="in_production">In Production</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button onClick={handleSave} className="flex-1">
+                        <Save className="w-4 h-4 mr-2" />
+                        {currentEstimateId ? 'Update' : 'Save'} Estimate
+                      </Button>
+                      {currentEstimateId && (
+                        <Button onClick={handleGenerateInvoice} variant="outline" className="flex-1">
+                          <FileText className="w-4 h-4 mr-2" />
+                          Generate Invoice
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
