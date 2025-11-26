@@ -20,7 +20,7 @@ const AdminDiamondPrices = () => {
   const [displayCount, setDisplayCount] = useState(100);
   const queryClient = useQueryClient();
 
-  const { data: prices, isLoading } = useQuery({
+  const { data: pricesData, isLoading } = useQuery({
     queryKey: ["diamond-prices"],
     queryFn: async () => {
       const { data, error, count } = await supabase
@@ -31,9 +31,12 @@ const AdminDiamondPrices = () => {
         .limit(10000);
       
       if (error) throw error;
-      return data;
+      return { data, count };
     },
   });
+
+  const prices = pricesData?.data || [];
+  const totalCount = pricesData?.count || 0;
 
   const { data: priceHistory, isLoading: historyLoading } = useQuery({
     queryKey: ["diamond-price-history"],
@@ -376,7 +379,7 @@ const AdminDiamondPrices = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Total Entries</p>
-                  <p className="text-2xl font-bold">{prices?.length || 0}</p>
+                  <p className="text-2xl font-bold">{totalCount}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Unique Shapes</p>
@@ -386,15 +389,15 @@ const AdminDiamondPrices = () => {
                 </div>
               </div>
 
-              <Button
-                onClick={deleteAllPrices}
-                variant="destructive"
-                className="w-full"
-                disabled={!prices || prices.length === 0}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete All Prices
-              </Button>
+                <Button
+                  onClick={deleteAllPrices}
+                  variant="destructive"
+                  className="w-full"
+                  disabled={totalCount === 0}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete All Prices
+                </Button>
             </CardContent>
           </Card>
         </div>
@@ -420,7 +423,7 @@ const AdminDiamondPrices = () => {
               <TabsContent value="current">
                 {isLoading ? (
                   <p className="text-center py-8 text-muted-foreground">Loading...</p>
-                ) : !prices || prices.length === 0 ? (
+                ) : totalCount === 0 ? (
                   <p className="text-center py-8 text-muted-foreground">
                     No pricing data yet. Upload a CSV to get started.
                   </p>
