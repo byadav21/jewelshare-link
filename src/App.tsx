@@ -374,6 +374,14 @@ const AppContent = () => {
           </AdminGuard>
         } 
       />
+      <Route 
+        path={ROUTES.ADMIN_DIAMOND_PRICES} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminDiamondPrices /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
       
       {/* 404 - must be last */}
       <Route 
