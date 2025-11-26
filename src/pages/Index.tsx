@@ -178,7 +178,7 @@ const Index = () => {
       description:
         "Professional diamond pricing tool with Rapaport-based calculations. Estimate diamond values based on the 4Cs (Carat, Cut, Color, Clarity) with support for all shapes and instant price comparisons. Apply custom discounts or markups for accurate pricing.",
       gradient: "from-diamond-from to-diamond-to",
-      link: "/diamond-calculator",
+      link: "/calculators",
     },
     {
       icon: Calculator,
@@ -186,7 +186,7 @@ const Index = () => {
       description:
         "Calculate complete jewelry manufacturing costs including gold, diamonds, gemstones, making charges, CAD design, camming/casting, and certification. Get detailed cost breakdowns for accurate pricing and profitability analysis.",
       gradient: "from-jewellery-from to-jewellery-to",
-      link: "/manufacturing-cost",
+      link: "/calculators",
     },
     {
       icon: Video,
@@ -812,22 +812,10 @@ const Index = () => {
                     className="transition-colors hover:text-foreground"
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate("/diamond-calculator");
+                      navigate("/calculators");
                     }}
                   >
-                    Diamond Calculator
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="#" 
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/manufacturing-cost");
-                    }}
-                  >
-                    Manufacturing Cost
+                    Calculators
                   </a>
                 </li>
                 <li>
