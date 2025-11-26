@@ -115,6 +115,61 @@ export const diamondImportSchema = z.object({
   product_type: z.literal('Loose Diamonds'),
 });
 
+// Jewelry product validation (for add product form)
+export const jewelleryProductSchema = z.object({
+  name: z.string().trim().min(1, "Product name is required").max(200, "Name must be less than 200 characters"),
+  description: z.string().max(1000, "Description must be less than 1000 characters").optional(),
+  sku: z.string().max(100, "SKU must be less than 100 characters").optional(),
+  category: z.string().max(100, "Sub-category must be less than 100 characters").optional(),
+  metal_type: z.string().min(1, "Metal type is required (e.g., 18k Gold, 22k Gold)").max(50),
+  gemstone: z.string().optional(),
+  weight_grams: z.number({
+    required_error: "Gross weight is required",
+    invalid_type_error: "Gross weight must be a number"
+  }).min(0.001, "Gross weight must be greater than 0"),
+  net_weight: z.number({
+    required_error: "Net weight is required (auto-calculated from gross weight)",
+    invalid_type_error: "Net weight must be a number"
+  }).min(0.001, "Net weight must be greater than 0"),
+  gold_per_gram_price: z.number({
+    required_error: "Gold rate per gram is required",
+    invalid_type_error: "Gold rate must be a number"
+  }).min(1, "Gold rate must be greater than 0"),
+  purity_fraction_used: z.number({
+    required_error: "Purity percentage is required (e.g., 76 for 18k)",
+    invalid_type_error: "Purity must be a number"
+  }).min(1, "Purity must be at least 1%").max(100, "Purity cannot exceed 100%"),
+  d_wt_1: z.number().min(0).optional().nullable(),
+  d_wt_2: z.number().min(0).optional().nullable(),
+  diamond_weight: z.number().min(0).optional().nullable(),
+  d_rate_1: z.number().min(0).optional().nullable(),
+  pointer_diamond: z.number().min(0).optional().nullable(),
+  d_value: z.number().min(0).optional().nullable(),
+  mkg: z.number({
+    required_error: "Making charges (MKG) is required (auto-calculated)",
+    invalid_type_error: "Making charges must be a number"
+  }).min(0, "Making charges cannot be negative"),
+  carat_weight: z.number().min(0).optional().nullable(),
+  gemstone_rate: z.number().min(0).optional().nullable(),
+  certification_cost: z.number().min(0).optional().nullable(),
+  gemstone_cost: z.number().min(0).optional().nullable(),
+  cost_price: z.number({
+    required_error: "Cost price is required",
+    invalid_type_error: "Cost price must be a number"
+  }).min(0.01, "Cost price must be greater than 0"),
+  retail_price: z.number({
+    required_error: "Total retail price is required (auto-calculated)",
+    invalid_type_error: "Retail price must be a number"
+  }).min(0.01, "Retail price must be greater than 0"),
+  stock_quantity: z.number().int().min(0, "Stock must be non-negative"),
+  delivery_type: z.enum(['immediate', 'scheduled'], {
+    required_error: "Delivery type is required"
+  }),
+  image_url: z.union([z.string().url().max(500), z.literal(""), z.null()]).optional(),
+  image_url_2: z.union([z.string().url().max(500), z.literal(""), z.null()]).optional(),
+  image_url_3: z.union([z.string().url().max(500), z.literal(""), z.null()]).optional(),
+});
+
 export type CustomOrderFormData = z.infer<typeof customOrderSchema>;
 export type ContactOwnerFormData = z.infer<typeof contactOwnerSchema>;
 export type ProductInterestFormData = z.infer<typeof productInterestSchema>;
@@ -122,3 +177,4 @@ export type VideoRequestFormData = z.infer<typeof videoRequestSchema>;
 export type ProductImportData = z.infer<typeof productImportSchema>;
 export type GemstoneImportData = z.infer<typeof gemstoneImportSchema>;
 export type DiamondImportData = z.infer<typeof diamondImportSchema>;
+export type JewelleryProductData = z.infer<typeof jewelleryProductSchema>;
