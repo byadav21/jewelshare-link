@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 import { CatalogFilters, FilterState } from "@/components/CatalogFilters";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Gem, Plus, LogOut, Share2, FileSpreadsheet, Trash2, Heart, Users, LayoutDashboard, Menu, Building2, Shield, FileDown, Edit, Loader2, X, Upload, Video, ShoppingCart } from "lucide-react";
@@ -32,6 +31,7 @@ import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
 import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import { BrandShowcase } from "@/components/BrandShowcase";
 import { BulkEditDialog } from "@/components/BulkEditDialog";
+import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 const Catalog = () => {
@@ -57,6 +57,8 @@ const Catalog = () => {
   const [referralType, setReferralType] = useState<'team_member' | 'customer'>('team_member');
   const [referredName, setReferredName] = useState("");
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Rewards and milestones
   const { awardPoints } = useRewardsSystem();
@@ -533,6 +535,7 @@ const Catalog = () => {
     return allProducts.filter(p => p.product_type === category).length;
   }, [allProducts]);
   const handleDeleteSelected = useCallback(async () => {
+    setIsDeleting(true);
     try {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
@@ -555,14 +558,28 @@ const Catalog = () => {
       
       toast.success(`${selectedProducts.size} product(s) deleted successfully`);
       setSelectedProducts(new Set());
+      setDeleteDialogOpen(false);
       
       // Refresh both product lists
       await Promise.all([fetchProducts(), fetchAllProducts()]);
     } catch (error: any) {
       console.error("Failed to delete products:", error);
       toast.error(`Failed to delete: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsDeleting(false);
     }
   }, [selectedProducts, fetchProducts, fetchAllProducts]);
+
+  // Get selected products data for delete confirmation
+  const selectedProductsData = useMemo(() => {
+    return products
+      .filter(p => selectedProducts.has(p.id))
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku
+      }));
+  }, [products, selectedProducts]);
 
   const handleBulkUpdate = useCallback(async (updates: Record<string, any>) => {
     if (selectedProducts.size === 0) {
@@ -926,28 +943,14 @@ const Catalog = () => {
                       <Edit className="h-4 w-4 mr-2" />
                       Update ({selectedProducts.size})
                     </Button>
-                    <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete ({selectedProducts.size})
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Selected Products?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete {selectedProducts.size} selected product(s). This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                          Delete Selected
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete ({selectedProducts.size})
+                    </Button>
                   </>}
                 {(permissions.can_view_sessions || isAdmin) && <Button variant="outline" size="sm" onClick={() => navigate("/active-sessions")}>
                     <Shield className="h-4 w-4 mr-2" />
@@ -1396,6 +1399,14 @@ const Catalog = () => {
         onUpdate={handleBulkUpdate}
         selectedCount={selectedProducts.size}
         selectedProductIds={Array.from(selectedProducts)}
+      />
+      
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteSelected}
+        products={selectedProductsData}
+        isDeleting={isDeleting}
       />
     </ApprovalGuard>;
 };
