@@ -31,6 +31,7 @@ import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { ProductShowcaseCarousel } from "@/components/ProductShowcaseCarousel";
 import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import { BrandShowcase } from "@/components/BrandShowcase";
+import { BulkEditDialog } from "@/components/BulkEditDialog";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 const Catalog = () => {
@@ -55,6 +56,7 @@ const Catalog = () => {
   const [showReferralCelebration, setShowReferralCelebration] = useState(false);
   const [referralType, setReferralType] = useState<'team_member' | 'customer'>('team_member');
   const [referredName, setReferredName] = useState("");
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
   
   // Rewards and milestones
   const { awardPoints } = useRewardsSystem();
@@ -561,6 +563,57 @@ const Catalog = () => {
       toast.error(`Failed to delete: ${error.message || 'Unknown error'}`);
     }
   }, [selectedProducts, fetchProducts, fetchAllProducts]);
+
+  const handleBulkUpdate = useCallback(async (updates: Record<string, any>) => {
+    if (selectedProducts.size === 0) {
+      toast.error("No products selected");
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Convert string values to appropriate types
+      const formattedUpdates: Record<string, any> = {};
+      
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === "" || value === null) return;
+        
+        // Numeric fields
+        if (['cost_price', 'retail_price', 'weight_grams', 'stock_quantity', 'dispatches_in_days'].includes(key)) {
+          formattedUpdates[key] = parseFloat(value as string);
+        } else {
+          formattedUpdates[key] = value;
+        }
+      });
+
+      if (Object.keys(formattedUpdates).length === 0) {
+        toast.error("No changes to update");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("products")
+        .update(formattedUpdates)
+        .in("id", Array.from(selectedProducts))
+        .eq("user_id", user.id);
+      
+      if (error) {
+        console.error("Update error:", error);
+        throw error;
+      }
+      
+      toast.success(`${selectedProducts.size} product(s) updated successfully`);
+      setSelectedProducts(new Set());
+      
+      // Refresh product lists
+      await Promise.all([fetchProducts(), fetchAllProducts()]);
+    } catch (error: any) {
+      console.error("Failed to update products:", error);
+      toast.error(`Failed to update: ${error.message || 'Unknown error'}`);
+    }
+  }, [selectedProducts, fetchProducts, fetchAllProducts]);
   const toggleProductSelection = useCallback((productId: string) => {
     setSelectedProducts(prev => {
       const newSelected = new Set(prev);
@@ -813,7 +866,12 @@ const Catalog = () => {
                       <Users className="h-4 w-4 mr-2" />
                       Team
                     </Button>}
-                {(permissions.can_delete_products || isAdmin) && selectedProducts.size > 0 && <AlertDialog>
+                {(permissions.can_delete_products || isAdmin) && selectedProducts.size > 0 && <>
+                    <Button variant="outline" size="sm" onClick={() => setBulkEditOpen(true)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Update ({selectedProducts.size})
+                    </Button>
+                    <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm">
                         <Trash2 className="h-4 w-4 mr-2" />
@@ -834,7 +892,8 @@ const Catalog = () => {
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
-                  </AlertDialog>}
+                  </AlertDialog>
+                  </>}
                 {(permissions.can_view_sessions || isAdmin) && <Button variant="outline" size="sm" onClick={() => navigate("/active-sessions")}>
                     <Shield className="h-4 w-4 mr-2" />
                     Sessions
@@ -1274,6 +1333,13 @@ const Catalog = () => {
         milestoneType={latestMilestone?.milestone_type || ''}
         milestoneValue={latestMilestone?.milestone_value || 0}
         pointsAwarded={latestMilestone?.points_awarded || 0}
+      />
+      
+      <BulkEditDialog
+        open={bulkEditOpen}
+        onOpenChange={setBulkEditOpen}
+        onUpdate={handleBulkUpdate}
+        selectedCount={selectedProducts.size}
       />
     </ApprovalGuard>;
 };
