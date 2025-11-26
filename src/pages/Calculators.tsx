@@ -66,7 +66,13 @@ const Calculators = () => {
         <div className="grid gap-8 md:grid-cols-2 mb-12">
           {calculators.map((calc, index) => (
             <ScrollReveal key={index} delay={0.1 * index} direction="up">
-              <Card className="group relative overflow-hidden border-2 h-full transition-all hover:shadow-2xl hover:shadow-primary/20">
+              <Card 
+                className="group relative overflow-hidden border-2 h-full transition-all hover:shadow-2xl hover:shadow-primary/20 cursor-pointer"
+                onClick={() => {
+                  console.log('Card clicked, navigating to:', calc.path);
+                  navigate(calc.path);
+                }}
+              >
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${calc.gradient} opacity-0 transition-opacity group-hover:opacity-10`}
                   />
@@ -108,8 +114,13 @@ const Calculators = () => {
                     </div>
 
                     <Button
-                      onClick={() => navigate(calc.path)}
-                      className={`w-full bg-gradient-to-r ${calc.gradient} hover:opacity-90 transition-opacity group/btn`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Navigating to:', calc.path);
+                        navigate(calc.path);
+                      }}
+                      className="w-full group/btn"
+                      size="lg"
                     >
                       Launch Calculator
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
