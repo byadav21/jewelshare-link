@@ -403,16 +403,69 @@ const Catalog = () => {
     return allCategories.sort();
   }, [products]);
   
-  // Calculate category counts for better UX
+  // Calculate category counts based on current filters (excluding category filter itself)
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      all: products.length
-    };
-    categories.forEach(cat => {
-      counts[cat] = products.filter(p => p.category === cat).length;
+    // First, filter products by all criteria EXCEPT category
+    const productsMatchingOtherFilters = products.filter(product => {
+      // Search query
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase().trim();
+        const searchableFields = [
+          product.product_type, product.diamond_color, product.d_wt_1?.toString(), 
+          product.d_wt_2?.toString(), product.purity_fraction_used?.toString(), 
+          product.d_rate_1?.toString(), product.pointer_diamond?.toString(), 
+          product.d_value?.toString(), product.mkg?.toString(), 
+          product.certification_cost?.toString(), product.gemstone_cost?.toString(), 
+          product.total_usd?.toString(), product.name, product.category, product.sku, 
+          product.description, product.metal_type, product.gemstone, product.color, 
+          product.clarity, product.weight_grams?.toString(), product.diamond_weight?.toString(), 
+          product.net_weight?.toString(), product.cost_price?.toString(), 
+          product.retail_price?.toString(), product.per_carat_price?.toString(), 
+          product.gold_per_gram_price?.toString()
+        ].filter(Boolean);
+        const matchFound = searchableFields.some(field => field?.toLowerCase().includes(query));
+        if (!matchFound) return false;
+      }
+      
+      // Skip category filter here - we count per category below
+      
+      if (filters.metalType && product.metal_type?.toUpperCase().trim() !== filters.metalType.toUpperCase().trim()) return false;
+      if (filters.minPrice) {
+        const minPrice = parseFloat(filters.minPrice);
+        if (product.retail_price < minPrice) return false;
+      }
+      if (filters.maxPrice) {
+        const maxPrice = parseFloat(filters.maxPrice);
+        if (product.retail_price > maxPrice) return false;
+      }
+      if (filters.diamondColor) {
+        const color = product.gemstone?.split(' ')[0];
+        if (color?.toUpperCase().trim() !== filters.diamondColor.toUpperCase().trim()) return false;
+      }
+      if (filters.diamondClarity) {
+        const clarity = product.gemstone?.split(' ')[1];
+        if (clarity?.toUpperCase().trim() !== filters.diamondClarity.toUpperCase().trim()) return false;
+      }
+      if (filters.deliveryType && product.delivery_type !== filters.deliveryType) return false;
+      
+      return true;
     });
+
+    // Now count how many products in each category match the other filters
+    const counts: Record<string, number> = {
+      all: productsMatchingOtherFilters.length
+    };
+    
+    categories.forEach(cat => {
+      counts[cat] = productsMatchingOtherFilters.filter(p => {
+        const categoryMatch = p.category?.toUpperCase().trim() === cat.toUpperCase().trim();
+        const nameMatch = p.name?.toUpperCase().trim().includes(cat.toUpperCase().trim());
+        return categoryMatch || nameMatch;
+      }).length;
+    });
+    
     return counts;
-  }, [products, categories]);
+  }, [products, categories, filters]);
   
   const metalTypes = useMemo(() => [...new Set(products.map(p => p.metal_type).filter(Boolean))].sort(), [products]);
   const diamondColors = useMemo(() => [...new Set(products.map(p => p.gemstone?.split(' ')[0]).filter(Boolean))].sort(), [products]);
