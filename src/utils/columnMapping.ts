@@ -64,8 +64,7 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
       return {
         required: [
           'PRODUCT',
-          'COST PRICE',
-          'RETAIL PRICE',
+          'TOTAL', // TOTAL is now the main price field (retail price)
           'STOCK QUANTITY'
         ],
         optional: [
@@ -75,7 +74,28 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
           'METAL TYPE',
           'GEMSTONE',
           'WEIGHT (grams)',
-          'IMAGE URL', // Also accepts IMAGE_URL
+          'Diamond Color',
+          'CLARITY',
+          'D.WT 1',
+          'D.WT 2',
+          'T DWT',
+          'G WT',
+          'CS TYPE',
+          'NET WT',
+          'PURITY_FRACTION_USED',
+          'D RATE 1',
+          'Pointer diamond',
+          'D VALUE',
+          'GEMSTONE TYPE',
+          'MKG',
+          'GOLD',
+          'Certification cost',
+          'Gemstone cost',
+          'TOTAL_USD',
+          'Prodcut Type',
+          'IMAGE_URL',
+          'COST PRICE',
+          'RETAIL PRICE',
           'DELIVERY TYPE'
         ]
       };
