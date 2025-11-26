@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.track-product-view]
 verify_jwt = false
 
+[functions.check-guest-usage]
+verify_jwt = false
+
 [functions.manage-session]
 verify_jwt = true
 

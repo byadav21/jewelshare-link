@@ -383,6 +383,30 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_calculator_usage: {
+        Row: {
+          calculator_type: string
+          id: string
+          ip_address: string
+          used_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          calculator_type: string
+          id?: string
+          ip_address: string
+          used_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          calculator_type?: string
+          id?: string
+          ip_address?: string
+          used_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       manufacturing_cost_estimates: {
         Row: {
           cad_design_charges: number | null
