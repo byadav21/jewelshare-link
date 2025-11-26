@@ -500,8 +500,7 @@ const Catalog = () => {
         data,
         error
       } = await query
-        .order("created_at", { ascending: false })
-        .limit(200); // Limit to 200 most recent products for initial load
+        .order("created_at", { ascending: false });
         
       if (error) throw error;
       setProducts(data || []);
