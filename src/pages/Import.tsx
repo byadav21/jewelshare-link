@@ -72,7 +72,7 @@ const Import = () => {
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
+      const jsonData = XLSX.utils.sheet_to_json(worksheet); // Don't skip any rows - read headers correctly
 
       // Detect columns and check for mapping issues
       if (jsonData.length > 0) {
@@ -156,15 +156,7 @@ const Import = () => {
         let product: any;
 
         if (selectedProductType === 'Gemstones') {
-          // DEBUG: Show what keys are in the row
-          console.log('🔍 Row keys:', Object.keys(row));
-          console.log('🔍 Full row:', JSON.stringify(row, null, 2));
-          console.log('🔍 GEMSTONE NAME value:', row['GEMSTONE NAME']);
-          console.log('🔍 PRICE_INR value:', row.PRICE_INR);
-          console.log('🔍 PRICE INR value:', row['PRICE INR']);
-          
           const priceINR = parseNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
-          console.log('🔍 Parsed priceINR:', priceINR);
           
           // Check if COST PRICE and RETAIL PRICE columns exist in the file (handle both underscore and space formats)
           const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
