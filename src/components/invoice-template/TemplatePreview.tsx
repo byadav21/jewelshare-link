@@ -44,11 +44,11 @@ export const TemplatePreview = ({ sections, globalStyling }: TemplatePreviewProp
     
     return (
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-xs">
           <thead>
-            <tr className="border-b-2" style={{ borderColor: globalStyling?.primaryColor }}>
+            <tr style={{ backgroundColor: globalStyling?.secondaryColor || '#FED7AA' }}>
               {visibleFields.map((field: any) => (
-                <th key={field.id} className="text-left py-2 px-3 text-sm font-semibold" style={{ color: globalStyling?.primaryColor }}>
+                <th key={field.id} className="text-center py-2 px-2 font-bold border border-border">
                   {field.customLabel || field.label}
                 </th>
               ))}
@@ -56,15 +56,35 @@ export const TemplatePreview = ({ sections, globalStyling }: TemplatePreviewProp
           </thead>
           <tbody>
             {[1, 2].map((row) => (
-              <tr key={row} className="border-b border-border">
+              <tr key={row} className="border border-border">
                 {visibleFields.map((field: any) => (
-                  <td key={field.id} className="py-3 px-3 text-sm">
+                  <td key={field.id} className="py-2 px-2 text-center border border-border">
                     {field.key === 'itemImage' ? (
-                      <div className="w-12 h-12 rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-xs">
+                      <div className="w-10 h-10 mx-auto rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-[10px]">
                         IMG
                       </div>
                     ) : field.key === 'itemDescription' ? (
-                      <span className="text-muted-foreground text-xs">Sample description</span>
+                      <span className="font-semibold">GOLD CHAIN 916</span>
+                    ) : field.key === 'itemHSN' ? (
+                      <span>7113</span>
+                    ) : field.key === 'grossWeight' ? (
+                      <span>10.00</span>
+                    ) : field.key === 'stoneWeight' ? (
+                      <span>1.00</span>
+                    ) : field.key === 'netWeight' ? (
+                      <span>9.00</span>
+                    ) : field.key === 'vaPercent' ? (
+                      <span>10%</span>
+                    ) : field.key === 'wastage' ? (
+                      <span>0.9</span>
+                    ) : field.key === 'finalWeight' ? (
+                      <span>9.9</span>
+                    ) : field.key === 'rate' ? (
+                      <span>₹4,400.00</span>
+                    ) : field.key === 'makingCharges' ? (
+                      <span>₹500</span>
+                    ) : field.key === 'amount' ? (
+                      <span className="font-semibold">₹43,560</span>
                     ) : (
                       <span>[{field.key}]</span>
                     )}
@@ -114,37 +134,132 @@ export const TemplatePreview = ({ sections, globalStyling }: TemplatePreviewProp
             {section.id === 'line_items' ? (
               renderLineItemsTable(section)
             ) : section.id === 'header' ? (
-              <div className="grid grid-cols-2 gap-6">
-                <div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {section.fields
-                    .filter((f) => f.visible)
-                    .slice(0, 5)
+                    .filter((f) => f.visible && (f.key === 'logo' || f.key === 'businessName' || f.key === 'businessTagline'))
                     .sort((a, b) => a.order - b.order)
                     .map((field) => renderField(field, section))}
                 </div>
-                <div className="text-right">
+                <div className="space-y-2">
+                  {section.fields
+                    .filter((f) => f.visible && ['businessAddress', 'businessPhone', 'businessLandline', 'businessEmail', 'businessGSTN'].includes(f.key))
+                    .sort((a, b) => a.order - b.order)
+                    .map((field) => renderField(field, section))}
+                </div>
+                <div className="space-y-2 text-right">
+                  {section.fields
+                    .filter((f) => f.visible && ['invoiceNumber', 'invoiceDate', 'goldRate', 'silverRate'].includes(f.key))
+                    .sort((a, b) => a.order - b.order)
+                    .map((field) => renderField(field, section))}
+                </div>
+              </div>
+            ) : section.id === 'customer_info' ? (
+              <div className="grid grid-cols-2 gap-6" style={{ backgroundColor: globalStyling?.secondaryColor || '#FED7AA', padding: '12px', borderRadius: '4px' }}>
+                <div className="space-y-2">
                   {section.fields
                     .filter((f) => f.visible)
-                    .slice(5)
+                    .slice(0, 4)
+                    .sort((a, b) => a.order - b.order)
+                    .map((field) => renderField(field, section))}
+                </div>
+                <div className="space-y-2">
+                  {section.fields
+                    .filter((f) => f.visible)
+                    .slice(4)
                     .sort((a, b) => a.order - b.order)
                     .map((field) => renderField(field, section))}
                 </div>
               </div>
             ) : section.id === 'cost_breakdown' ? (
-              <div className="ml-auto max-w-xs space-y-2">
-                {section.fields
-                  .filter((f) => f.visible)
-                  .sort((a, b) => a.order - b.order)
-                  .map((field) => (
-                    <div key={field.id} className="flex justify-between">
-                      <span className={field.key === 'finalSellingPrice' ? 'font-bold' : 'text-muted-foreground'}>
-                        {field.customLabel || field.label}:
-                      </span>
-                      <span className={field.key === 'finalSellingPrice' ? 'font-bold text-lg' : 'font-medium'}>
-                        [{field.key}]
-                      </span>
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-4 p-3 rounded" style={{ backgroundColor: globalStyling?.secondaryColor || '#FED7AA' }}>
+                    <div className="text-center">
+                      <div className="font-bold text-xs">GOLD TOTAL WEIGHT</div>
+                      <div className="text-sm mt-1">9.900</div>
                     </div>
-                  ))}
+                    <div className="text-center">
+                      <div className="font-bold text-xs">SILVER TOTAL WEIGHT</div>
+                      <div className="text-sm mt-1">150.000</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-bold text-xs">TOTAL MC</div>
+                      <div className="text-sm mt-1">₹500.0</div>
+                    </div>
+                  </div>
+                  <div className="border border-border p-3 rounded text-xs space-y-1">
+                    <div className="font-bold mb-2">OLD/EXCHANGE</div>
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div><span className="font-semibold">G.WT</span></div>
+                      <div><span className="font-semibold">PURITY</span></div>
+                      <div><span className="font-semibold">N.WT</span></div>
+                      <div><span className="font-semibold">RATE</span></div>
+                    </div>
+                  </div>
+                  <div className="border border-border p-3 rounded text-xs">
+                    <div className="font-bold mb-2">T&C:</div>
+                    <div className="text-muted-foreground">* Goods once sold will not be taken back.</div>
+                  </div>
+                  <div className="border border-border p-3 rounded text-xs">
+                    <div className="font-bold mb-2">Declaration:</div>
+                    <div className="text-muted-foreground">We declare that this invoice shows the</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-4 gap-2 p-2 text-xs text-center" style={{ backgroundColor: globalStyling?.secondaryColor || '#FED7AA' }}>
+                    <div className="font-bold">GST</div>
+                    <div className="font-bold">CGST</div>
+                    <div className="font-bold">SGST</div>
+                    <div className="font-bold">IGST</div>
+                    <div>3%</div>
+                    <div>₹748.65</div>
+                    <div>₹748.65</div>
+                    <div>0</div>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between py-1 px-2">
+                      <span className="font-semibold">TOTAL AMOUNT</span>
+                      <span className="font-bold">₹49,910</span>
+                    </div>
+                    <div className="flex justify-between py-1 px-2 text-muted-foreground">
+                      <span>Add: Other</span>
+                      <span>-</span>
+                    </div>
+                    <div className="flex justify-between py-1 px-2 text-muted-foreground">
+                      <span>Less: Discount</span>
+                      <span>-</span>
+                    </div>
+                    <div className="flex justify-between py-1 px-2 border-t border-border">
+                      <span className="font-semibold">Taxable Amount</span>
+                      <span className="font-semibold">₹49,910</span>
+                    </div>
+                    <div className="flex justify-between py-1 px-2">
+                      <span>GST Total</span>
+                      <span>₹1,497</span>
+                    </div>
+                    <div className="flex justify-between py-1 px-2">
+                      <span>After Tax</span>
+                      <span>₹51,407</span>
+                    </div>
+                    <div className="flex justify-between py-1 px-2">
+                      <span>Less: O/E Value</span>
+                      <span>-</span>
+                    </div>
+                    <div className="flex justify-between py-2 px-2 border-t-2 border-border" style={{ backgroundColor: globalStyling?.secondaryColor || '#FED7AA' }}>
+                      <span className="font-bold text-base">GRAND TOTAL</span>
+                      <span className="font-bold text-base">₹51,407</span>
+                    </div>
+                  </div>
+                  <div className="border border-border p-2 rounded text-xs mt-4" style={{ backgroundColor: globalStyling?.secondaryColor || '#FED7AA' }}>
+                    <div className="font-bold text-center mb-2">PAYMENT MODE</div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="font-semibold">MODE</div>
+                      <div className="font-semibold">AMOUNT</div>
+                      <div className="font-semibold">REF NO.</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div>
