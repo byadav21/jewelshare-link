@@ -196,8 +196,8 @@ const InvoiceTemplateBuilder = () => {
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
             {id ? "Edit" : "Create"} Invoice Template
           </h1>
-          <p className="text-muted-foreground text-lg">
-            Design your custom invoice layout with drag-and-drop
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Design beautiful, professional invoices with product images, business branding, and customizable layouts - all with simple drag-and-drop
           </p>
         </div>
 

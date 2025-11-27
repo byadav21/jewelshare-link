@@ -48,13 +48,13 @@ export const SortableSection = ({ section, onUpdate, onRemove }: SortableSection
   };
 
   return (
-    <Card ref={setNodeRef} style={style} className="overflow-hidden">
+    <Card ref={setNodeRef} style={{ ...style, borderLeftColor: section.visible ? 'hsl(var(--primary))' : 'hsl(var(--muted))' }} className="overflow-hidden border-l-4">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <button
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing touch-none"
+            className="cursor-grab active:cursor-grabbing touch-none hover:bg-accent rounded p-1 transition-colors"
           >
             <GripVertical className="h-5 w-5 text-muted-foreground" />
           </button>
@@ -64,21 +64,30 @@ export const SortableSection = ({ section, onUpdate, onRemove }: SortableSection
               <Input
                 value={section.title}
                 onChange={(e) => onUpdate(section.id, { title: e.target.value })}
-                className="font-medium"
+                className="font-semibold text-base"
+                placeholder="Section name..."
               />
-              <Badge variant="outline">{section.type}</Badge>
+              <Badge variant={section.type === 'custom' ? 'secondary' : 'outline'}>
+                {section.type.replace('_', ' ')}
+              </Badge>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Switch
-              checked={section.visible}
-              onCheckedChange={(visible) => onUpdate(section.id, { visible })}
-            />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {section.visible ? 'Visible' : 'Hidden'}
+              </span>
+              <Switch
+                checked={section.visible}
+                onCheckedChange={(visible) => onUpdate(section.id, { visible })}
+              />
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setExpanded(!expanded)}
+              className="hover:bg-accent"
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
@@ -87,6 +96,7 @@ export const SortableSection = ({ section, onUpdate, onRemove }: SortableSection
                 variant="ghost"
                 size="sm"
                 onClick={() => onRemove(section.id)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -95,13 +105,17 @@ export const SortableSection = ({ section, onUpdate, onRemove }: SortableSection
         </div>
 
         {expanded && section.fields.length > 0 && (
-          <div className="mt-4 space-y-3 pl-8 border-l-2 border-muted">
+          <div className="mt-4 space-y-3 pl-8 border-l-2 border-primary/20">
+            <p className="text-xs text-muted-foreground mb-2">
+              Configure which fields appear in this section
+            </p>
             {section.fields.map((field) => (
-              <div key={field.id} className="flex items-center gap-3 text-sm">
+              <div key={field.id} className="flex items-center gap-3 text-sm bg-muted/30 rounded-md p-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => toggleFieldVisibility(field.id)}
+                  className={field.visible ? 'text-primary' : 'text-muted-foreground'}
                 >
                   {field.visible ? (
                     <Eye className="h-4 w-4" />
@@ -109,12 +123,12 @@ export const SortableSection = ({ section, onUpdate, onRemove }: SortableSection
                     <EyeOff className="h-4 w-4" />
                   )}
                 </Button>
-                <Label className="flex-1">{field.label}</Label>
+                <Label className="flex-1 font-medium">{field.label}</Label>
                 <Input
                   placeholder="Custom label..."
                   value={field.customLabel || ""}
                   onChange={(e) => updateFieldLabel(field.id, e.target.value)}
-                  className="max-w-[200px]"
+                  className="max-w-[200px] h-8"
                 />
               </div>
             ))}
