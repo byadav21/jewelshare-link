@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Share2, FileDown, Zap, X, ShoppingCart, Trophy, Sparkles } from "lucide-react";
+import { Plus, Share2, FileDown, Zap, X, ShoppingCart, Trophy, Sparkles, FileText, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
@@ -108,6 +108,26 @@ export const QuickActionsMenu = ({
     },
     gradient: "from-yellow-500/20 to-yellow-500/5",
     iconColor: "text-yellow-500",
+    disabled: false
+  }, {
+    icon: FileText,
+    label: "Invoices",
+    onClick: () => {
+      navigate("/invoice-history");
+      setIsOpen(false);
+    },
+    gradient: "from-orange-500/20 to-orange-500/5",
+    iconColor: "text-orange-500",
+    disabled: false
+  }, {
+    icon: History,
+    label: "Estimates",
+    onClick: () => {
+      navigate("/estimate-history");
+      setIsOpen(false);
+    },
+    gradient: "from-cyan-500/20 to-cyan-500/5",
+    iconColor: "text-cyan-500",
     disabled: false
   }, {
     icon: FileDown,
