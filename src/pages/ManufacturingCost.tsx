@@ -380,7 +380,7 @@ const ManufacturingCost = () => {
       description: "Invoice PDF has been downloaded and saved"
     });
   };
-  const handleExportEstimate = () => {
+  const handleExportEstimate = async () => {
     if (!estimateName) {
       toast({
         title: "Missing Information",
@@ -389,6 +389,13 @@ const ManufacturingCost = () => {
       });
       return;
     }
+    
+    // Generate invoice number if not exists
+    let finalInvoiceNumber = invoiceNumber;
+    if (!finalInvoiceNumber) {
+      finalInvoiceNumber = (await generateNextInvoiceNumber()) || "";
+    }
+    
     const details = formData;
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
@@ -396,14 +403,20 @@ const ManufacturingCost = () => {
     // Build vendor address string
     const addressParts = [vendorProfile?.address_line1, vendorProfile?.address_line2, vendorProfile?.city, vendorProfile?.state, vendorProfile?.pincode, vendorProfile?.country].filter(Boolean);
     const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
-    generateEstimatePDF({
+    
+    generateInvoicePDF({
+      invoiceNumber: finalInvoiceNumber,
+      invoiceDate: invoiceDate.toISOString(),
+      paymentDueDate: paymentDueDate?.toISOString(),
+      paymentTerms,
       estimateName,
-      estimateDate: new Date().toISOString(),
       status: estimateStatus,
       customerName: customerDetails.name,
       customerPhone: customerDetails.phone,
       customerEmail: customerDetails.email,
       customerAddress: customerDetails.address,
+      customerGSTIN: customerDetails.gstin,
+      vendorGSTIN: vendorGSTIN,
       netWeight: formData.netWeight,
       grossWeight: formData.grossWeight,
       purityFraction: formData.purityFraction,
@@ -418,8 +431,10 @@ const ManufacturingCost = () => {
       totalCost: costs.totalCost,
       profitMargin,
       finalSellingPrice: costs.finalSellingPrice,
-      estimatedCompletionDate: estimatedCompletionDate?.toISOString(),
       notes,
+      invoiceNotes,
+      template: invoiceTemplate,
+      lineItems: lineItems.length > 0 ? lineItems : undefined,
       details: {
         diamond_type: formData.diamondType,
         diamond_shape: formData.diamondShape,
@@ -440,9 +455,10 @@ const ManufacturingCost = () => {
         address: vendorAddress
       } : undefined
     });
+    
     toast({
-      title: "Estimate Exported",
-      description: "Customer estimate PDF has been downloaded successfully"
+      title: "Invoice Exported",
+      description: "Invoice PDF has been downloaded successfully"
     });
   };
   const handleSaveInvoice = async (generatedInvoiceNumber: string) => {
@@ -875,7 +891,7 @@ const ManufacturingCost = () => {
           </Button>
           <Button onClick={handleExportEstimate} variant="default" disabled={!costs.totalCost}>
             <FileText className="mr-2 h-4 w-4" />
-            Export Estimate
+            Export Invoice
           </Button>
           <Button onClick={() => navigate("/invoice-generator")} variant="secondary">
             <FileText className="mr-2 h-4 w-4" />
