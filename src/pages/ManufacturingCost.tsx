@@ -1043,6 +1043,120 @@ const ManufacturingCost = () => {
           </DialogContent>
         </Dialog>
 
+        {/* Vendor and Customer Details Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Vendor Details (Auto-fetched) */}
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
+              <CardTitle className="text-lg">Vendor Details</CardTitle>
+              <CardDescription>Your business information</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {vendorProfile ? (
+                <div className="space-y-4">
+                  {vendorProfile.logo_url && (
+                    <div className="flex justify-center mb-4">
+                      <img 
+                        src={vendorProfile.logo_url} 
+                        alt="Vendor Logo" 
+                        className="h-20 w-auto object-contain"
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-3 text-sm">
+                    <div className="border-b border-border pb-2">
+                      <p className="font-semibold text-foreground">{vendorProfile.business_name || 'Business Name'}</p>
+                    </div>
+                    {(vendorProfile.address_line1 || vendorProfile.city || vendorProfile.state) && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Address</p>
+                        <p className="text-foreground leading-relaxed">
+                          {[
+                            vendorProfile.address_line1,
+                            vendorProfile.address_line2,
+                            vendorProfile.city,
+                            vendorProfile.state,
+                            vendorProfile.pincode,
+                            vendorProfile.country
+                          ].filter(Boolean).join(', ')}
+                        </p>
+                      </div>
+                    )}
+                    {vendorProfile.phone && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Phone</p>
+                        <p className="text-foreground">{vendorProfile.phone}</p>
+                      </div>
+                    )}
+                    {vendorProfile.email && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Email</p>
+                        <p className="text-foreground">{vendorProfile.email}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground py-4">Loading vendor details...</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Customer Details (Input fields) */}
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-accent/5 to-secondary/5">
+              <CardTitle className="text-lg">Customer Details</CardTitle>
+              <CardDescription>Enter customer information</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="customer-name" className="text-sm font-medium">Customer Name *</Label>
+                  <Input
+                    id="customer-name"
+                    value={customerDetails.name}
+                    onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})}
+                    placeholder="Enter customer name"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customer-phone" className="text-sm font-medium">Phone Number</Label>
+                  <Input
+                    id="customer-phone"
+                    value={customerDetails.phone}
+                    onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})}
+                    placeholder="Enter phone number"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customer-email" className="text-sm font-medium">Email Address</Label>
+                  <Input
+                    id="customer-email"
+                    type="email"
+                    value={customerDetails.email}
+                    onChange={(e) => setCustomerDetails({...customerDetails, email: e.target.value})}
+                    placeholder="Enter email address"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customer-address" className="text-sm font-medium">Address</Label>
+                  <Textarea
+                    id="customer-address"
+                    value={customerDetails.address}
+                    onChange={(e) => setCustomerDetails({...customerDetails, address: e.target.value})}
+                    placeholder="Enter customer address"
+                    className="mt-1.5 min-h-[90px]"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Form Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Weight and Purity Inputs */}
