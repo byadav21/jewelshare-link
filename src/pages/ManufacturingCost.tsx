@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText, Calendar, Copy, Check } from "lucide-react";
+import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText, Calendar, Copy, Check, Building2, User, Coins, Diamond, Gem, Percent } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -1143,7 +1143,7 @@ const ManufacturingCost = () => {
           <Card className="border-primary/20 shadow-sm relative z-10">
             <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
               <CardTitle className="text-lg flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-primary" />
+                <Building2 className="h-5 w-5 text-primary" />
                 Vendor Details
               </CardTitle>
               <CardDescription>Your business information</CardDescription>
@@ -1184,7 +1184,7 @@ const ManufacturingCost = () => {
           <Card className="border-accent/20 shadow-sm relative z-10">
             <CardHeader className="bg-gradient-to-r from-accent/10 to-accent/5 border-b border-accent/10">
               <CardTitle className="text-lg flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-accent" />
+                <User className="h-5 w-5 text-accent" />
                 Customer Details
               </CardTitle>
               <CardDescription>Enter customer information</CardDescription>
@@ -1239,7 +1239,10 @@ const ManufacturingCost = () => {
           {/* Gold Rate and Charges */}
           <Card className="md:col-span-2">
             <CardHeader>
-              <CardTitle>Gold Rate & Charges</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-primary" />
+                Gold Rate & Charges
+              </CardTitle>
               <CardDescription>Enter rates and additional charges</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -1292,7 +1295,10 @@ const ManufacturingCost = () => {
         {/* Invoice Line Items */}
         <Card>
           <CardHeader>
-            <CardTitle>Invoice Line Items</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Invoice Line Items
+            </CardTitle>
             <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
           </CardHeader>
           <CardContent>
