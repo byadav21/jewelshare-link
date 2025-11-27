@@ -35,6 +35,8 @@ import { BrandShowcase } from "@/components/BrandShowcase";
 import { BulkEditDialog } from "@/components/BulkEditDialog";
 import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import { NavLink } from "@/components/NavLink";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 const Catalog = () => {
@@ -871,6 +873,25 @@ const Catalog = () => {
         {/* Back to Home Button */}
         <div className="absolute top-4 left-4 z-20">
           <BackToHomeButton />
+        </div>
+
+        {/* Breadcrumb Navigation */}
+        <div className="relative bg-background/50 backdrop-blur-sm border-b border-border/30 z-10">
+          <div className="container mx-auto px-4 py-3">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <NavLink to="/">Home</NavLink>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Catalog</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
         </div>
 
         {/* Mobile-Optimized Header */}
