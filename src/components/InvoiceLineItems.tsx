@@ -14,7 +14,14 @@ export interface LineItem {
   description: string;
   image_url: string;
   diamond_weight: number;
+  diamond_color: string;
+  diamond_clarity: string;
+  diamond_cut: string;
+  diamond_certification: string;
   gemstone_weight: number;
+  gemstone_type: string;
+  gemstone_color: string;
+  gemstone_clarity: string;
   net_weight: number;
   gross_weight: number;
   diamond_cost: number;
@@ -45,7 +52,14 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
       description: "",
       image_url: "",
       diamond_weight: 0,
+      diamond_color: "",
+      diamond_clarity: "",
+      diamond_cut: "",
+      diamond_certification: "",
       gemstone_weight: 0,
+      gemstone_type: "",
+      gemstone_color: "",
+      gemstone_clarity: "",
       net_weight: 0,
       gross_weight: 0,
       diamond_cost: 0,
@@ -266,6 +280,42 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                     </div>
 
                     <div>
+                      <Label>Diamond Color</Label>
+                      <Input
+                        value={item.diamond_color}
+                        onChange={(e) => updateItem(index, 'diamond_color', e.target.value)}
+                        placeholder="e.g., D, E, F"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Diamond Clarity</Label>
+                      <Input
+                        value={item.diamond_clarity}
+                        onChange={(e) => updateItem(index, 'diamond_clarity', e.target.value)}
+                        placeholder="e.g., VVS1, VS1, SI1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Diamond Cut</Label>
+                      <Input
+                        value={item.diamond_cut}
+                        onChange={(e) => updateItem(index, 'diamond_cut', e.target.value)}
+                        placeholder="e.g., Excellent, Very Good"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Diamond Certification</Label>
+                      <Input
+                        value={item.diamond_certification}
+                        onChange={(e) => updateItem(index, 'diamond_certification', e.target.value)}
+                        placeholder="e.g., GIA, IGI"
+                      />
+                    </div>
+
+                    <div>
                       <Label>Gemstone Weight (ct)</Label>
                       <Input
                         type="number"
@@ -284,6 +334,35 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                         onChange={(e) => updateItem(index, 'gemstone_cost', parseFloat(e.target.value) || 0)}
                       />
                     </div>
+
+                    <div>
+                      <Label>Gemstone Type</Label>
+                      <Input
+                        value={item.gemstone_type}
+                        onChange={(e) => updateItem(index, 'gemstone_type', e.target.value)}
+                        placeholder="e.g., Ruby, Sapphire, Emerald"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Gemstone Color</Label>
+                      <Input
+                        value={item.gemstone_color}
+                        onChange={(e) => updateItem(index, 'gemstone_color', e.target.value)}
+                        placeholder="e.g., Pigeon Blood Red"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Gemstone Clarity</Label>
+                      <Input
+                        value={item.gemstone_clarity}
+                        onChange={(e) => updateItem(index, 'gemstone_clarity', e.target.value)}
+                        placeholder="e.g., Eye Clean, VVS"
+                      />
+                    </div>
+
+                    <div className="col-span-2"></div>
 
                     <div>
                       <Label>Making Charges (₹)</Label>
@@ -349,13 +428,47 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                     )}
                     <div className="flex-1">
                       <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-                      <div className="grid grid-cols-3 gap-2 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Diamond:</span> {item.diamond_weight}ct
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Gemstone:</span> {item.gemstone_weight}ct
-                        </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+                        {item.diamond_weight > 0 && (
+                          <>
+                            <div>
+                              <span className="text-muted-foreground">Diamond:</span> {item.diamond_weight}ct
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Color/Clarity:</span> {item.diamond_color || 'N/A'}/{item.diamond_clarity || 'N/A'}
+                            </div>
+                            {item.diamond_cut && (
+                              <div>
+                                <span className="text-muted-foreground">Cut:</span> {item.diamond_cut}
+                              </div>
+                            )}
+                            {item.diamond_certification && (
+                              <div>
+                                <span className="text-muted-foreground">Cert:</span> {item.diamond_certification}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {item.gemstone_weight > 0 && (
+                          <>
+                            <div>
+                              <span className="text-muted-foreground">Gemstone:</span> {item.gemstone_weight}ct
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Type:</span> {item.gemstone_type || 'N/A'}
+                            </div>
+                            {item.gemstone_color && (
+                              <div>
+                                <span className="text-muted-foreground">Color:</span> {item.gemstone_color}
+                              </div>
+                            )}
+                            {item.gemstone_clarity && (
+                              <div>
+                                <span className="text-muted-foreground">Clarity:</span> {item.gemstone_clarity}
+                              </div>
+                            )}
+                          </>
+                        )}
                         <div>
                           <span className="text-muted-foreground">Gold:</span> {item.net_weight}g
                         </div>
