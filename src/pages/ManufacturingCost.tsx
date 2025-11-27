@@ -590,26 +590,23 @@ const ManufacturingCost = () => {
     }
     fetchEstimates();
   };
-
   const handleSaveAsInvoice = async () => {
     if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please sign in to save invoices",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (!customerDetails.name) {
       toast({
         title: "Customer Details Required",
         description: "Please enter customer name before saving invoice",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     try {
       // Generate invoice number if not exists
       let finalInvoiceNumber = invoiceNumber;
@@ -619,10 +616,9 @@ const ManufacturingCost = () => {
 
       // Save invoice to database
       await handleSaveInvoice(finalInvoiceNumber);
-
       toast({
         title: "Invoice Saved",
-        description: `Invoice ${finalInvoiceNumber} saved successfully`,
+        description: `Invoice ${finalInvoiceNumber} saved successfully`
       });
 
       // Navigate to invoice history
@@ -633,22 +629,20 @@ const ManufacturingCost = () => {
       toast({
         title: "Error",
         description: "Failed to save invoice",
-        variant: "destructive",
+        variant: "destructive"
       });
       console.error("Save invoice error:", error);
     }
   };
-
   const handleExportPDF = async () => {
     if (!customerDetails.name) {
       toast({
         title: "Customer Details Required",
         description: "Please enter customer name before exporting PDF",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     try {
       // Generate invoice number if not exists
       let finalInvoiceNumber = invoiceNumber;
@@ -656,21 +650,12 @@ const ManufacturingCost = () => {
         finalInvoiceNumber = (await generateNextInvoiceNumber()) || "";
         setInvoiceNumber(finalInvoiceNumber);
       }
-
       const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
       const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
 
       // Build vendor address string
-      const addressParts = [
-        vendorProfile?.address_line1,
-        vendorProfile?.address_line2,
-        vendorProfile?.city,
-        vendorProfile?.state,
-        vendorProfile?.pincode,
-        vendorProfile?.country,
-      ].filter(Boolean);
+      const addressParts = [vendorProfile?.address_line1, vendorProfile?.address_line2, vendorProfile?.city, vendorProfile?.state, vendorProfile?.pincode, vendorProfile?.country].filter(Boolean);
       const vendorAddress = addressParts.length > 0 ? addressParts.join(", ") : undefined;
-
       const invoiceData: InvoiceData = {
         invoiceNumber: finalInvoiceNumber,
         invoiceDate: invoiceDate.toISOString(),
@@ -718,37 +703,30 @@ const ManufacturingCost = () => {
           diamond_shape: formData.diamondShape,
           diamond_color: formData.diamondColor,
           diamond_clarity: formData.diamondClarity,
-          diamond_certification:
-            formData.diamondCertification === "other"
-              ? customCertification
-              : formData.diamondCertification,
-          gemstone_weight: formData.gemstoneWeight,
+          diamond_certification: formData.diamondCertification === "other" ? customCertification : formData.diamondCertification,
+          gemstone_weight: formData.gemstoneWeight
         },
-        vendorBranding: vendorProfile
-          ? {
-              name: vendorProfile.business_name,
-              logo: vendorProfile.logo_url,
-              primaryColor: vendorProfile.primary_brand_color,
-              secondaryColor: vendorProfile.secondary_brand_color,
-              tagline: vendorProfile.brand_tagline,
-              email: vendorProfile.email,
-              phone: vendorProfile.phone,
-              address: vendorAddress,
-            }
-          : undefined,
+        vendorBranding: vendorProfile ? {
+          name: vendorProfile.business_name,
+          logo: vendorProfile.logo_url,
+          primaryColor: vendorProfile.primary_brand_color,
+          secondaryColor: vendorProfile.secondary_brand_color,
+          tagline: vendorProfile.brand_tagline,
+          email: vendorProfile.email,
+          phone: vendorProfile.phone,
+          address: vendorAddress
+        } : undefined
       };
-
       generateInvoicePDF(invoiceData);
-
       toast({
         title: "Invoice Exported",
-        description: "Invoice PDF downloaded successfully",
+        description: "Invoice PDF downloaded successfully"
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to export PDF",
-        variant: "destructive",
+        variant: "destructive"
       });
       console.error("Export PDF error:", error);
     }
@@ -1128,50 +1106,27 @@ const ManufacturingCost = () => {
         <Card className="border-primary/20 shadow-lg">
           <CardContent className="p-6">
             <div className="flex flex-wrap gap-4 justify-center">
-              <Button
-                onClick={() => setShowSaveDialog(true)}
-                size="lg"
-                variant="outline"
-                className="gap-2"
-              >
+              <Button onClick={() => setShowSaveDialog(true)} size="lg" variant="outline" className="gap-2">
                 <Save className="h-5 w-5" />
                 Save Estimate
               </Button>
 
-              <Button
-                onClick={() => setShowLoadDialog(true)}
-                size="lg"
-                variant="outline"
-                className="gap-2"
-              >
+              <Button onClick={() => setShowLoadDialog(true)} size="lg" variant="outline" className="gap-2">
                 <FolderOpen className="h-5 w-5" />
                 Load Estimate
               </Button>
 
-              <Button
-                onClick={handleSaveAsInvoice}
-                size="lg"
-                className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
+              <Button onClick={handleSaveAsInvoice} size="lg" className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
                 <FileText className="h-5 w-5" />
                 Save Invoice
               </Button>
 
-              <Button
-                onClick={handleExportPDF}
-                size="lg"
-                className="gap-2 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70"
-              >
+              <Button onClick={handleExportPDF} size="lg" className="gap-2 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70">
                 <FileText className="h-5 w-5" />
                 Export PDF
               </Button>
 
-              <Button
-                onClick={() => navigate("/invoice-history")}
-                size="lg"
-                variant="secondary"
-                className="gap-2"
-              >
+              <Button onClick={() => navigate("/invoice-history")} size="lg" variant="secondary" className="gap-2">
                 <FolderOpen className="h-5 w-5" />
                 View Saved Invoices
               </Button>
@@ -1528,25 +1483,13 @@ const ManufacturingCost = () => {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="making-charges" className="text-sm">Making Charges</Label>
-                <Input id="making-charges" type="number" min={0} step={0.01} value={formData.makingCharges} onChange={e => handleChange("makingCharges", e.target.value)} />
-              </div>
+              
 
-              <div className="space-y-1">
-                <Label htmlFor="cad-design-charges" className="text-sm">CAD Design Charges</Label>
-                <Input id="cad-design-charges" type="number" min={0} step={0.01} value={formData.cadDesignCharges} onChange={e => handleChange("cadDesignCharges", e.target.value)} />
-              </div>
+              
 
-              <div className="space-y-1">
-                <Label htmlFor="camming-charges" className="text-sm">Camming Charges</Label>
-                <Input id="camming-charges" type="number" min={0} step={0.01} value={formData.cammingCharges} onChange={e => handleChange("cammingCharges", e.target.value)} />
-              </div>
+              
 
-              <div className="space-y-1">
-                <Label htmlFor="certification-cost" className="text-sm">Certification Cost</Label>
-                <Input id="certification-cost" type="number" min={0} step={0.01} value={formData.certificationCost} onChange={e => handleChange("certificationCost", e.target.value)} />
-              </div>
+              
             </CardContent>
           </Card>
         </div>
