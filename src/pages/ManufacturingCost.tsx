@@ -83,11 +83,19 @@ const ManufacturingCost = () => {
     gstin: ""
   });
   const [vendorGSTIN, setVendorGSTIN] = useState("");
+  const [sgstPercentage, setSgstPercentage] = useState(9);
+  const [cgstPercentage, setCgstPercentage] = useState(9);
+  const [shippingCharges, setShippingCharges] = useState(0);
+  const [exchangeRate, setExchangeRate] = useState(83); // USD to INR rate
   const [costs, setCosts] = useState({
     goldCost: 0,
     totalCost: 0,
     finalSellingPrice: 0,
-    profitAmount: 0
+    profitAmount: 0,
+    sgstAmount: 0,
+    cgstAmount: 0,
+    grandTotal: 0,
+    totalInUSD: 0
   });
 
   // Check auth status and usage limits
@@ -200,13 +208,28 @@ const ManufacturingCost = () => {
     const totalCost = goldCost + formData.makingCharges + formData.cadDesignCharges + formData.cammingCharges + formData.certificationCost + diamondCost + gemstoneCost;
     const finalSellingPrice = totalCost * (1 + profitMargin / 100);
     const profitAmount = finalSellingPrice - totalCost;
+    
+    // Calculate GST
+    const sgstAmount = (finalSellingPrice * sgstPercentage) / 100;
+    const cgstAmount = (finalSellingPrice * cgstPercentage) / 100;
+    
+    // Calculate grand total with GST and shipping
+    const grandTotal = finalSellingPrice + sgstAmount + cgstAmount + shippingCharges;
+    
+    // Calculate USD equivalent
+    const totalInUSD = grandTotal / exchangeRate;
+    
     setCosts({
       goldCost: parseFloat(goldCost.toFixed(2)),
       totalCost: parseFloat(totalCost.toFixed(2)),
       finalSellingPrice: parseFloat(finalSellingPrice.toFixed(2)),
-      profitAmount: parseFloat(profitAmount.toFixed(2))
+      profitAmount: parseFloat(profitAmount.toFixed(2)),
+      sgstAmount: parseFloat(sgstAmount.toFixed(2)),
+      cgstAmount: parseFloat(cgstAmount.toFixed(2)),
+      grandTotal: parseFloat(grandTotal.toFixed(2)),
+      totalInUSD: parseFloat(totalInUSD.toFixed(2))
     });
-  }, [formData, profitMargin]);
+  }, [formData, profitMargin, sgstPercentage, cgstPercentage, shippingCharges, exchangeRate]);
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -252,6 +275,10 @@ const ManufacturingCost = () => {
     setIsCustomerVisible(false);
     setShareToken("");
     setLineItems([]);
+    setSgstPercentage(9);
+    setCgstPercentage(9);
+    setShippingCharges(0);
+    setExchangeRate(83);
   };
   const copyShareLink = () => {
     if (!shareToken) {
@@ -350,6 +377,13 @@ const ManufacturingCost = () => {
       totalCost: costs.totalCost,
       profitMargin,
       finalSellingPrice: costs.finalSellingPrice,
+      sgstPercentage,
+      cgstPercentage,
+      sgstAmount: costs.sgstAmount,
+      cgstAmount: costs.cgstAmount,
+      shippingCharges,
+      exchangeRate,
+      grandTotal: costs.grandTotal,
       notes,
       invoiceNotes,
       template: invoiceTemplate,
@@ -424,6 +458,13 @@ const ManufacturingCost = () => {
       totalCost: costs.totalCost,
       profitMargin,
       finalSellingPrice: costs.finalSellingPrice,
+      sgstPercentage,
+      cgstPercentage,
+      sgstAmount: costs.sgstAmount,
+      cgstAmount: costs.cgstAmount,
+      shippingCharges,
+      exchangeRate,
+      grandTotal: costs.grandTotal,
       notes,
       invoiceNotes,
       template: invoiceTemplate,
@@ -505,7 +546,11 @@ const ManufacturingCost = () => {
         gemstone_per_carat_price: formData.gemstonePerCaratPrice,
         gemstone_weight: formData.gemstoneWeight,
         vendor_gstin: vendorGSTIN || null,
-        customer_gstin: customerDetails.gstin || null
+        customer_gstin: customerDetails.gstin || null,
+        sgst_percentage: sgstPercentage,
+        cgst_percentage: cgstPercentage,
+        shipping_charges: shippingCharges,
+        exchange_rate: exchangeRate
       }
     };
     if (currentEstimateId) {
@@ -581,7 +626,13 @@ const ManufacturingCost = () => {
         diamond_clarity: formData.diamondClarity,
         diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
         gemstone_per_carat_price: formData.gemstonePerCaratPrice,
-        gemstone_weight: formData.gemstoneWeight
+        gemstone_weight: formData.gemstoneWeight,
+        vendor_gstin: vendorGSTIN || null,
+        customer_gstin: customerDetails.gstin || null,
+        sgst_percentage: sgstPercentage,
+        cgst_percentage: cgstPercentage,
+        shipping_charges: shippingCharges,
+        exchange_rate: exchangeRate
       }
     };
     if (currentEstimateId) {
@@ -712,8 +763,13 @@ const ManufacturingCost = () => {
       phone: estimate.customer_phone || "",
       email: estimate.customer_email || "",
       address: estimate.customer_address || "",
-      gstin: ""
+      gstin: details?.customer_gstin || ""
     });
+    setVendorGSTIN(details?.vendor_gstin || "");
+    setSgstPercentage(details?.sgst_percentage || 9);
+    setCgstPercentage(details?.cgst_percentage || 9);
+    setShippingCharges(details?.shipping_charges || 0);
+    setExchangeRate(details?.exchange_rate || 83);
     setLineItems(estimate.line_items || []);
     setEstimateStatus(estimate.status || "draft");
     setEstimatedCompletionDate(estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined);
@@ -1247,6 +1303,111 @@ const ManufacturingCost = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Tax, Shipping & Currency Section */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Percent className="h-5 w-5 text-primary" />
+              Tax, Shipping & Currency
+            </CardTitle>
+            <CardDescription>Configure GST, shipping charges, and currency conversion</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="sgst" className="text-sm">SGST (%)</Label>
+                <Input 
+                  id="sgst" 
+                  type="number" 
+                  min={0} 
+                  max={100}
+                  step={0.1} 
+                  value={sgstPercentage} 
+                  onChange={(e) => setSgstPercentage(parseFloat(e.target.value) || 0)} 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="cgst" className="text-sm">CGST (%)</Label>
+                <Input 
+                  id="cgst" 
+                  type="number" 
+                  min={0} 
+                  max={100}
+                  step={0.1} 
+                  value={cgstPercentage} 
+                  onChange={(e) => setCgstPercentage(parseFloat(e.target.value) || 0)} 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="shipping" className="text-sm">Shipping Charges (₹)</Label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="shipping" 
+                    type="number" 
+                    min={0} 
+                    step={0.01} 
+                    value={shippingCharges} 
+                    onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)} 
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="exchange-rate" className="text-sm">Exchange Rate (USD to INR)</Label>
+                <Input 
+                  id="exchange-rate" 
+                  type="number" 
+                  min={0} 
+                  step={0.01} 
+                  value={exchangeRate} 
+                  onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} 
+                />
+              </div>
+            </div>
+
+            {/* Cost Breakdown Display */}
+            <div className="border-t pt-4 space-y-3">
+              <h4 className="font-semibold text-sm text-muted-foreground">Cost Breakdown</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Subtotal (Before Tax):</span>
+                  <span className="font-semibold">₹{costs.finalSellingPrice.toLocaleString('en-IN')}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">SGST ({sgstPercentage}%):</span>
+                  <span className="font-semibold">₹{costs.sgstAmount.toLocaleString('en-IN')}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">CGST ({cgstPercentage}%):</span>
+                  <span className="font-semibold">₹{costs.cgstAmount.toLocaleString('en-IN')}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Shipping Charges:</span>
+                  <span className="font-semibold">₹{shippingCharges.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div className="border-t pt-3 mt-3">
+                <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
+                  <span className="font-bold text-lg">Grand Total (INR):</span>
+                  <span className="font-bold text-xl text-primary">₹{costs.grandTotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-accent/10 rounded-lg mt-2">
+                  <span className="font-semibold">Equivalent (USD):</span>
+                  <span className="font-semibold text-lg text-accent">${costs.totalInUSD.toLocaleString('en-US')}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Diamond Details */}
         <Card>
