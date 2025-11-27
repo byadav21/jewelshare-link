@@ -6,8 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, FileText, Download, Eye, ArrowLeft } from "lucide-react";
+import { Search, FileText, Download, Eye, ArrowLeft, Trash2 } from "lucide-react";
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -37,6 +47,8 @@ const InvoiceHistory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
 
   useEffect(() => {
     fetchInvoices();
@@ -102,9 +114,13 @@ const InvoiceHistory = () => {
         .from("manufacturing_cost_estimates")
         .select("*")
         .eq("id", invoice.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!estimateRaw) {
+        toast.error("Invoice not found");
+        return;
+      }
       
       const estimate = estimateRaw as any;
 
@@ -112,10 +128,21 @@ const InvoiceHistory = () => {
         .from("vendor_profiles")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       const estimateDetails = estimate.details || {};
       const estimateLineItems = estimate.line_items || [];
+
+      // Build vendor address
+      const addressParts = [
+        profile?.address_line1,
+        profile?.address_line2,
+        profile?.city,
+        profile?.state,
+        profile?.pincode,
+        profile?.country
+      ].filter(Boolean);
+      const vendorAddress = addressParts.join(", ");
 
       const invoiceData = {
         invoiceNumber: estimate.invoice_number,
@@ -144,26 +171,63 @@ const InvoiceHistory = () => {
         totalCost: estimate.total_cost,
         profitMargin: estimate.profit_margin_percentage,
         finalSellingPrice: estimate.final_selling_price,
+        gstMode: estimateDetails.gst_mode,
+        sgstPercentage: estimateDetails.sgst_percentage,
+        cgstPercentage: estimateDetails.cgst_percentage,
+        igstPercentage: estimateDetails.igst_percentage,
+        sgstAmount: estimateDetails.sgst_amount,
+        cgstAmount: estimateDetails.cgst_amount,
+        igstAmount: estimateDetails.igst_amount,
+        shippingCharges: estimateDetails.shipping_charges,
+        shippingZone: estimateDetails.shipping_zone,
+        exchangeRate: estimateDetails.exchange_rate,
+        grandTotal: estimateDetails.grand_total,
         invoiceNotes: estimate.invoice_notes,
         lineItems: estimateLineItems,
         details: estimateDetails,
         vendorBranding: profile ? {
-          businessName: profile.business_name,
-          logoUrl: profile.logo_url,
+          name: profile.business_name,
+          logo: profile.logo_url,
           primaryColor: profile.primary_brand_color,
           secondaryColor: profile.secondary_brand_color,
           tagline: profile.brand_tagline,
           email: profile.email,
           phone: profile.phone,
-          address: `${profile.address_line1 || ""} ${profile.address_line2 || ""} ${profile.city || ""} ${profile.state || ""} ${profile.pincode || ""}`.trim(),
+          address: vendorAddress
         } : undefined,
       };
 
-      generateInvoicePDF(invoiceData);
+      await generateInvoicePDF(invoiceData);
       toast.success("Invoice downloaded successfully");
     } catch (error: any) {
       toast.error("Failed to regenerate invoice");
       console.error("Error regenerating invoice:", error);
+    }
+  };
+
+  const handleDeleteClick = (invoice: Invoice) => {
+    setInvoiceToDelete(invoice);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!invoiceToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .delete()
+        .eq("id", invoiceToDelete.id);
+
+      if (error) throw error;
+
+      toast.success("Invoice deleted successfully");
+      setDeleteDialogOpen(false);
+      setInvoiceToDelete(null);
+      fetchInvoices(); // Refresh the list
+    } catch (error: any) {
+      toast.error("Failed to delete invoice");
+      console.error("Error deleting invoice:", error);
     }
   };
 
@@ -285,7 +349,7 @@ const InvoiceHistory = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2">
                           <Button
                             variant="outline"
                             size="default"
@@ -303,6 +367,14 @@ const InvoiceHistory = () => {
                             <Download className="h-4 w-4 mr-2 transition-transform group-hover/btn:translate-y-0.5" />
                             Export PDF
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDeleteClick(invoice)}
+                            className="group/btn hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 transition-transform group-hover/btn:scale-110" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -312,6 +384,27 @@ const InvoiceHistory = () => {
             )}
           </CardContent>
         </Card>
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete invoice <strong>{invoiceToDelete?.invoice_number}</strong>? 
+                This will permanently remove this invoice from your records. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete Invoice
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
