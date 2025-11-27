@@ -250,6 +250,12 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   let currentY = customerSectionY + 5;
   
   if (data.lineItems && data.lineItems.length > 0) {
+    // Check if we need a new page
+    if (currentY > doc.internal.pageSize.getHeight() - 100) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
@@ -384,6 +390,12 @@ const generateDetailedInvoice = (data: InvoiceData) => {
       currentY += 15;
     });
   } else {
+    // Check if we need a new page
+    if (currentY > doc.internal.pageSize.getHeight() - 100) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
     // Original single-item specifications (fallback)
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -482,23 +494,120 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   const finalY = currentY;
   
   // Calculate height based on content
-  const hasGst = (data.gstMode === 'sgst_cgst' && (data.sgstAmount || data.cgstAmount)) || 
-                 (data.gstMode === 'igst' && data.igstAmount);
+  const hasGst = (data.gstMode === 'sgst_cgst' && ((data.sgstAmount && data.sgstAmount > 0) || (data.cgstAmount && data.cgstAmount > 0))) || 
+                 (data.gstMode === 'igst' && data.igstAmount && data.igstAmount > 0);
   const hasShipping = data.shippingCharges && data.shippingCharges > 0;
-  const hasGrandTotal = data.grandTotal !== undefined;
-  const hasCurrency = data.exchangeRate && data.exchangeRate > 0;
+  const hasGrandTotal = data.grandTotal !== undefined && data.grandTotal > 0;
+  const hasCurrency = data.exchangeRate && data.exchangeRate > 0 && hasGrandTotal;
   
-  const baseHeight = 35;
-  const gstHeight = hasGst ? (data.gstMode === 'sgst_cgst' ? 10 : 5) : 0;
-  const shippingHeight = hasShipping ? 5 : 0;
-  const grandTotalHeight = hasGrandTotal ? 10 : 0;
+  const baseHeight = 40;
+  const gstHeight = hasGst ? (data.gstMode === 'sgst_cgst' ? 12 : 7) : 0;
+  const shippingHeight = hasShipping ? 7 : 0;
+  const grandTotalHeight = hasGrandTotal ? 12 : 0;
   const currencyHeight = hasCurrency ? 8 : 0;
   const totalSectionHeight = baseHeight + gstHeight + shippingHeight + grandTotalHeight + currencyHeight;
   
-  doc.setFillColor(245, 245, 250);
-  doc.rect(14, finalY, pageWidth - 28, totalSectionHeight, 'F');
+  // Check if we need a new page for totals section
+  if (finalY + totalSectionHeight > doc.internal.pageSize.getHeight() - 80) {
+    doc.addPage();
+    currentY = 20;
+    const newFinalY = currentY;
+    doc.setFillColor(245, 245, 250);
+    doc.rect(14, newFinalY, pageWidth - 28, totalSectionHeight, 'F');
+    
+    renderTotalsSection(doc, newFinalY, data, primaryRgb, pageWidth, hasGst, hasShipping, hasGrandTotal, hasCurrency);
+    currentY = newFinalY + totalSectionHeight + 5;
+  } else {
+    doc.setFillColor(245, 245, 250);
+    doc.rect(14, finalY, pageWidth - 28, totalSectionHeight, 'F');
+    
+    renderTotalsSection(doc, finalY, data, primaryRgb, pageWidth, hasGst, hasShipping, hasGrandTotal, hasCurrency);
+    currentY = finalY + totalSectionHeight + 5;
+  }
   
-  let lineY = finalY + 8;
+  // Invoice Notes Section  
+  if (data.invoiceNotes) {
+    if (currentY > doc.internal.pageSize.getHeight() - 60) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text('INVOICE NOTES', 14, currentY);
+    doc.setTextColor(0, 0, 0);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const splitNotes = doc.splitTextToSize(data.invoiceNotes, pageWidth - 28);
+    doc.text(splitNotes, 14, currentY + 6);
+    currentY += 6 + (splitNotes.length * 5) + 5;
+  }
+  
+  // Payment Instructions (on new page if needed)
+  if (currentY > doc.internal.pageSize.getHeight() - 70) {
+    doc.addPage();
+    currentY = 20;
+  }
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('PAYMENT INFORMATION', 14, currentY);
+  doc.setTextColor(0, 0, 0);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Please make payment within the specified terms.', 14, currentY + 5);
+  doc.text('For payment inquiries, contact us at the details above.', 14, currentY + 9);
+  currentY += 20;
+  
+  // Terms & Conditions
+  if (currentY > doc.internal.pageSize.getHeight() - 40) {
+    doc.addPage();
+    currentY = 20;
+  }
+  
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Terms & Conditions:', 14, currentY);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.text('• Payment must be received by the due date to avoid late fees.', 14, currentY + 4);
+  doc.text('• All prices are final and include applicable taxes unless otherwise stated.', 14, currentY + 7);
+  doc.text('• This invoice is valid for the amounts and items listed above.', 14, currentY + 10);
+  
+  // Footer
+  const footerY = doc.internal.pageSize.getHeight() - 10;
+  doc.setFontSize(8);
+  doc.setTextColor(128, 128, 128);
+  doc.text(
+    `Invoice generated on ${new Date().toLocaleString()}`,
+    pageWidth / 2,
+    footerY,
+    { align: 'center' }
+  );
+  
+  // Save PDF
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+  doc.save(fileName);
+};
+
+// Helper function to render totals section
+const renderTotalsSection = (
+  doc: jsPDF,
+  startY: number,
+  data: InvoiceData,
+  primaryRgb: { r: number; g: number; b: number },
+  pageWidth: number,
+  hasGst: boolean,
+  hasShipping: boolean,
+  hasGrandTotal: boolean,
+  hasCurrency: boolean
+) => {
+  let lineY = startY + 8;
   
   // Subtotal
   doc.setFontSize(11);
@@ -577,66 +686,10 @@ const generateDetailedInvoice = (data: InvoiceData) => {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100, 100, 100);
-    const usdAmount = (data.grandTotal / data.exchangeRate).toFixed(2);
-    doc.text(`Equivalent: $${usdAmount} USD (Rate: ${data.exchangeRate})`, 18, lineY);
+    const usdAmount = (data.grandTotal / (data.exchangeRate || 1)).toFixed(2);
+    doc.text(`Equivalent: $${usdAmount} USD (Exchange Rate: ₹${data.exchangeRate})`, 18, lineY);
     doc.setTextColor(0, 0, 0);
   }
-  
-  
-  // Invoice Notes Section
-  if (data.invoiceNotes) {
-    const notesY = finalY + totalSectionHeight + 10;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-    doc.text('INVOICE NOTES', 14, notesY);
-    doc.setTextColor(0, 0, 0);
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const splitNotes = doc.splitTextToSize(data.invoiceNotes, pageWidth - 28);
-    doc.text(splitNotes, 14, notesY + 6);
-  }
-  
-  // Payment Instructions
-  const paymentY = doc.internal.pageSize.getHeight() - 50;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('PAYMENT INFORMATION', 14, paymentY);
-  doc.setTextColor(0, 0, 0);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('Please make payment within the specified terms.', 14, paymentY + 5);
-  doc.text('For payment inquiries, contact us at the details above.', 14, paymentY + 9);
-  
-  // Terms & Conditions
-  const termsY = doc.internal.pageSize.getHeight() - 30;
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Terms & Conditions:', 14, termsY);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.text('• Payment must be received by the due date to avoid late fees.', 14, termsY + 4);
-  doc.text('• All prices are final and include applicable taxes unless otherwise stated.', 14, termsY + 7);
-  doc.text('• This invoice is valid for the amounts and items listed above.', 14, termsY + 10);
-  
-  // Footer
-  const footerY = doc.internal.pageSize.getHeight() - 10;
-  doc.setFontSize(8);
-  doc.setTextColor(128, 128, 128);
-  doc.text(
-    `Invoice generated on ${new Date().toLocaleString()}`,
-    pageWidth / 2,
-    footerY,
-    { align: 'center' }
-  );
-  
-  // Save PDF
-  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
-  doc.save(fileName);
 };
 
 const generateSummaryInvoice = (data: InvoiceData) => {
