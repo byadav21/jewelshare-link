@@ -101,14 +101,6 @@ const AppContent = () => {
         path={ROUTES.MANUFACTURING_COST} 
         element={<RouteSuspense><Pages.ManufacturingCost /></RouteSuspense>} 
       />
-      <Route 
-        path={ROUTES.INVOICE_HISTORY} 
-        element={<RouteSuspense><InvoiceRoutes.InvoiceHistory /></RouteSuspense>} 
-      />
-      <Route 
-        path={ROUTES.ESTIMATE_HISTORY} 
-        element={<RouteSuspense><InvoiceRoutes.EstimateHistory /></RouteSuspense>} 
-      />
       <Route
         path={ROUTES.INVOICE_GENERATOR} 
         element={<RouteSuspense><InvoiceRoutes.InvoiceGenerator /></RouteSuspense>} 
@@ -246,6 +238,22 @@ const AppContent = () => {
         element={
           <ApprovalGuard>
             <RouteSuspense><Pages.Rewards /></RouteSuspense>
+          </ApprovalGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.INVOICE_HISTORY} 
+        element={
+          <ApprovalGuard>
+            <RouteSuspense><InvoiceRoutes.InvoiceHistory /></RouteSuspense>
+          </ApprovalGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ESTIMATE_HISTORY} 
+        element={
+          <ApprovalGuard>
+            <RouteSuspense><InvoiceRoutes.EstimateHistory /></RouteSuspense>
           </ApprovalGuard>
         } 
       />
