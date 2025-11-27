@@ -212,25 +212,23 @@ const ManufacturingCost = () => {
     const totalCost = goldCost + formData.makingCharges + formData.cadDesignCharges + formData.cammingCharges + formData.certificationCost + diamondCost + gemstoneCost;
     const finalSellingPrice = totalCost * (1 + profitMargin / 100);
     const profitAmount = finalSellingPrice - totalCost;
-    
+
     // Calculate GST based on mode
     let sgstAmount = 0;
     let cgstAmount = 0;
     let igstAmount = 0;
-    
     if (gstMode === 'sgst_cgst') {
-      sgstAmount = (finalSellingPrice * sgstPercentage) / 100;
-      cgstAmount = (finalSellingPrice * cgstPercentage) / 100;
+      sgstAmount = finalSellingPrice * sgstPercentage / 100;
+      cgstAmount = finalSellingPrice * cgstPercentage / 100;
     } else {
-      igstAmount = (finalSellingPrice * igstPercentage) / 100;
+      igstAmount = finalSellingPrice * igstPercentage / 100;
     }
-    
+
     // Calculate grand total with GST and shipping
     const grandTotal = finalSellingPrice + sgstAmount + cgstAmount + igstAmount + shippingCharges;
-    
+
     // Calculate USD equivalent
     const totalInUSD = grandTotal / exchangeRate;
-    
     setCosts({
       goldCost: parseFloat(goldCost.toFixed(2)),
       totalCost: parseFloat(totalCost.toFixed(2)),
@@ -1352,25 +1350,13 @@ const ManufacturingCost = () => {
               <Label className="text-sm font-semibold">GST Type</Label>
               <div className="flex gap-4">
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="sgst-cgst-mode"
-                    checked={gstMode === 'sgst_cgst'}
-                    onChange={() => setGstMode('sgst_cgst')}
-                    className="h-4 w-4"
-                  />
+                  <input type="radio" id="sgst-cgst-mode" checked={gstMode === 'sgst_cgst'} onChange={() => setGstMode('sgst_cgst')} className="h-4 w-4" />
                   <Label htmlFor="sgst-cgst-mode" className="text-sm cursor-pointer">
                     SGST + CGST (Intra-State)
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="igst-mode"
-                    checked={gstMode === 'igst'}
-                    onChange={() => setGstMode('igst')}
-                    className="h-4 w-4"
-                  />
+                  <input type="radio" id="igst-mode" checked={gstMode === 'igst'} onChange={() => setGstMode('igst')} className="h-4 w-4" />
                   <Label htmlFor="igst-mode" className="text-sm cursor-pointer">
                     IGST (Inter-State)
                   </Label>
@@ -1382,135 +1368,51 @@ const ManufacturingCost = () => {
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Quick GST Rate Selection</Label>
               <div className="flex flex-wrap gap-2">
-                {[0, 3, 5, 12, 18, 28].map((rate) => (
-                  <Button
-                    key={rate}
-                    type="button"
-                    variant={
-                      (gstMode === 'sgst_cgst' && sgstPercentage === rate / 2) ||
-                      (gstMode === 'igst' && igstPercentage === rate)
-                        ? 'default'
-                        : 'outline'
-                    }
-                    size="sm"
-                    onClick={() => {
-                      if (gstMode === 'sgst_cgst') {
-                        setSgstPercentage(rate / 2);
-                        setCgstPercentage(rate / 2);
-                      } else {
-                        setIgstPercentage(rate);
-                      }
-                    }}
-                  >
+                {[0, 3, 5, 12, 18, 28].map(rate => <Button key={rate} type="button" variant={gstMode === 'sgst_cgst' && sgstPercentage === rate / 2 || gstMode === 'igst' && igstPercentage === rate ? 'default' : 'outline'} size="sm" onClick={() => {
+                if (gstMode === 'sgst_cgst') {
+                  setSgstPercentage(rate / 2);
+                  setCgstPercentage(rate / 2);
+                } else {
+                  setIgstPercentage(rate);
+                }
+              }}>
                     {rate}%
-                  </Button>
-                ))}
+                  </Button>)}
               </div>
             </div>
 
             {/* GST Input Fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {gstMode === 'sgst_cgst' ? (
-                <>
+              {gstMode === 'sgst_cgst' ? <>
                   <div className="space-y-1">
                     <Label htmlFor="sgst" className="text-sm">SGST (%)</Label>
-                    <Input 
-                      id="sgst" 
-                      type="number" 
-                      min={0} 
-                      max={100}
-                      step={0.1} 
-                      value={sgstPercentage} 
-                      onChange={(e) => setSgstPercentage(parseFloat(e.target.value) || 0)} 
-                    />
+                    <Input id="sgst" type="number" min={0} max={100} step={0.1} value={sgstPercentage} onChange={e => setSgstPercentage(parseFloat(e.target.value) || 0)} />
                   </div>
 
                   <div className="space-y-1">
                     <Label htmlFor="cgst" className="text-sm">CGST (%)</Label>
-                    <Input 
-                      id="cgst" 
-                      type="number" 
-                      min={0} 
-                      max={100}
-                      step={0.1} 
-                      value={cgstPercentage} 
-                      onChange={(e) => setCgstPercentage(parseFloat(e.target.value) || 0)} 
-                    />
+                    <Input id="cgst" type="number" min={0} max={100} step={0.1} value={cgstPercentage} onChange={e => setCgstPercentage(parseFloat(e.target.value) || 0)} />
                   </div>
-                </>
-              ) : (
-                <div className="space-y-1 md:col-span-2">
+                </> : <div className="space-y-1 md:col-span-2">
                   <Label htmlFor="igst" className="text-sm">IGST (%)</Label>
-                  <Input 
-                    id="igst" 
-                    type="number" 
-                    min={0} 
-                    max={100}
-                    step={0.1} 
-                    value={igstPercentage} 
-                    onChange={(e) => setIgstPercentage(parseFloat(e.target.value) || 0)} 
-                  />
-                </div>
-              )}
+                  <Input id="igst" type="number" min={0} max={100} step={0.1} value={igstPercentage} onChange={e => setIgstPercentage(parseFloat(e.target.value) || 0)} />
+                </div>}
 
               <div className="space-y-1">
                 <Label htmlFor="exchange-rate" className="text-sm">Exchange Rate (USD to INR)</Label>
-                <Input 
-                  id="exchange-rate" 
-                  type="number" 
-                  min={0} 
-                  step={0.01} 
-                  value={exchangeRate} 
-                  onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} 
-                />
+                <Input id="exchange-rate" type="number" min={0} step={0.01} value={exchangeRate} onChange={e => setExchangeRate(parseFloat(e.target.value) || 0)} />
               </div>
             </div>
 
             {/* Shipping Zone Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="shipping-zone" className="text-sm font-semibold">Shipping Zone</Label>
-              <Select
-                value={shippingZone}
-                onValueChange={(value) => {
-                  setShippingZone(value);
-                  // Auto-set shipping charges based on zone
-                  const zoneCharges: { [key: string]: number } = {
-                    'local': 0,
-                    'state': 150,
-                    'metro': 250,
-                    'national': 400,
-                    'international': 1500
-                  };
-                  setShippingCharges(zoneCharges[value] || 0);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="local">Local Delivery (Free)</SelectItem>
-                  <SelectItem value="state">Within State (₹150)</SelectItem>
-                  <SelectItem value="metro">Metro Cities (₹250)</SelectItem>
-                  <SelectItem value="national">National (₹400)</SelectItem>
-                  <SelectItem value="international">International (₹1,500)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            
 
             {/* Manual Shipping Charges Override */}
             <div className="space-y-1">
               <Label htmlFor="shipping" className="text-sm">Shipping Charges (₹) - Manual Override</Label>
               <div className="relative">
                 <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="shipping" 
-                  type="number" 
-                  min={0} 
-                  step={0.01} 
-                  value={shippingCharges} 
-                  onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)} 
-                  className="pl-9"
-                />
+                <Input id="shipping" type="number" min={0} step={0.01} value={shippingCharges} onChange={e => setShippingCharges(parseFloat(e.target.value) || 0)} className="pl-9" />
               </div>
             </div>
 
@@ -1523,8 +1425,7 @@ const ManufacturingCost = () => {
                   <span className="font-semibold">₹{costs.finalSellingPrice.toLocaleString('en-IN')}</span>
                 </div>
                 
-                {gstMode === 'sgst_cgst' ? (
-                  <>
+                {gstMode === 'sgst_cgst' ? <>
                     <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
                       <span className="text-muted-foreground">SGST ({sgstPercentage}%):</span>
                       <span className="font-semibold">₹{costs.sgstAmount.toLocaleString('en-IN')}</span>
@@ -1534,13 +1435,10 @@ const ManufacturingCost = () => {
                       <span className="text-muted-foreground">CGST ({cgstPercentage}%):</span>
                       <span className="font-semibold">₹{costs.cgstAmount.toLocaleString('en-IN')}</span>
                     </div>
-                  </>
-                ) : (
-                  <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                  </> : <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
                     <span className="text-muted-foreground">IGST ({igstPercentage}%):</span>
                     <span className="font-semibold">₹{costs.igstAmount.toLocaleString('en-IN')}</span>
-                  </div>
-                )}
+                  </div>}
                 
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Shipping ({shippingZone}):</span>
