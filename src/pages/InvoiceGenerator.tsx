@@ -181,6 +181,46 @@ const InvoiceGenerator = () => {
     toast.success("Estimate loaded successfully");
   };
 
+  const loadSampleData = async () => {
+    setEstimateName("Diamond Engagement Ring Order");
+    setCustomerName("Priya Sharma");
+    setCustomerPhone("+91 98765 43210");
+    setCustomerEmail("priya.sharma@example.com");
+    setCustomerAddress("123 MG Road, Bangalore, Karnataka 560001, India");
+    
+    setNetWeight(8.5);
+    setGrossWeight(10.2);
+    setPurityFraction(0.76);
+    setGoldRate24k(6500);
+    setMakingCharges(15300);
+    setCadDesignCharges(5000);
+    setCammingCharges(2000);
+    setCertificationCost(3000);
+    setDiamondCost(125000);
+    setGemstoneCost(8000);
+    
+    const goldCostCalc = 8.5 * 0.76 * 6500;
+    setGoldCost(goldCostCalc);
+    
+    const totalCostCalc = goldCostCalc + 15300 + 5000 + 2000 + 3000 + 125000 + 8000;
+    setTotalCost(totalCostCalc);
+    
+    setProfitMargin(20);
+    const sellingPriceCalc = totalCostCalc * 1.2;
+    setFinalSellingPrice(sellingPriceCalc);
+    
+    setInvoiceNotes("Payment accepted via bank transfer or UPI. 50% advance required before production. Remaining 50% due upon completion.");
+    setPaymentTerms("Net 30");
+    
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 30);
+    setPaymentDueDate(dueDate);
+    
+    await generateNextInvoiceNumber();
+    
+    toast.success("Sample data loaded successfully!");
+  };
+
   const handleGenerateInvoice = async () => {
     if (!estimateName) {
       toast.error("Please enter an estimate/order name");
@@ -306,6 +346,10 @@ const InvoiceGenerator = () => {
         </div>
 
         <div className="flex flex-wrap gap-3 justify-center">
+          <Button onClick={loadSampleData} variant="default" className="bg-gradient-to-r from-primary to-accent">
+            <Download className="mr-2 h-4 w-4" />
+            Load Sample Data
+          </Button>
           <Button onClick={() => setShowEstimateDialog(true)} variant="outline">
             <Plus className="mr-2 h-4 w-4" />
             Load from Estimate
