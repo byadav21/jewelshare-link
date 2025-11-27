@@ -51,6 +51,8 @@ interface InvoiceData {
   customerPhone?: string;
   customerEmail?: string;
   customerAddress?: string;
+  customerGSTIN?: string;
+  vendorGSTIN?: string;
   netWeight: number;
   grossWeight?: number;
   purityFraction: number;
@@ -158,11 +160,15 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   
   // Vendor contact info (right side)
   let headerY = 50;
-  if (data.vendorBranding?.email || data.vendorBranding?.phone || data.vendorBranding?.address) {
+  if (data.vendorBranding?.email || data.vendorBranding?.phone || data.vendorBranding?.address || data.vendorGSTIN) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
     
+    if (data.vendorGSTIN) {
+      doc.text(`GSTIN: ${data.vendorGSTIN}`, pageWidth - 14, headerY, { align: 'right' });
+      headerY += 4;
+    }
     if (data.vendorBranding.phone) {
       doc.text(`📞 ${data.vendorBranding.phone}`, pageWidth - 14, headerY, { align: 'right' });
       headerY += 4;
@@ -208,6 +214,10 @@ const generateDetailedInvoice = (data: InvoiceData) => {
     doc.setFont('helvetica', 'normal');
     let yPos = customerSectionY + 16;
     doc.text(`${data.customerName}`, 18, yPos);
+    if (data.customerGSTIN) {
+      yPos += 5;
+      doc.text(`GSTIN: ${data.customerGSTIN}`, 18, yPos);
+    }
     if (data.customerPhone) {
       yPos += 5;
       doc.text(`Phone: ${data.customerPhone}`, 18, yPos);

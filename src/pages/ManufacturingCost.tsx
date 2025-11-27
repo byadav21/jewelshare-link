@@ -76,8 +76,10 @@ const ManufacturingCost = () => {
     name: "",
     phone: "",
     email: "",
-    address: ""
+    address: "",
+    gstin: ""
   });
+  const [vendorGSTIN, setVendorGSTIN] = useState("");
   const [costs, setCosts] = useState({
     goldCost: 0,
     totalCost: 0,
@@ -238,8 +240,10 @@ const ManufacturingCost = () => {
       name: "",
       phone: "",
       email: "",
-      address: ""
+      address: "",
+      gstin: ""
     });
+    setVendorGSTIN("");
     setEstimateStatus("draft");
     setEstimatedCompletionDate(undefined);
     setIsCustomerVisible(false);
@@ -327,6 +331,8 @@ const ManufacturingCost = () => {
       customerPhone: customerDetails.phone,
       customerEmail: customerDetails.email,
       customerAddress: customerDetails.address,
+      customerGSTIN: customerDetails.gstin,
+      vendorGSTIN: vendorGSTIN,
       netWeight: formData.netWeight,
       grossWeight: formData.grossWeight,
       purityFraction: formData.purityFraction,
@@ -365,9 +371,13 @@ const ManufacturingCost = () => {
         address: vendorAddress
       } : undefined
     });
+    
+    // Save/update the estimate with invoice generated flag
+    await handleSaveInvoice(finalInvoiceNumber);
+    
     toast({
       title: "Invoice Generated",
-      description: "Invoice PDF has been downloaded successfully"
+      description: "Invoice PDF has been downloaded and saved"
     });
   };
   const handleExportEstimate = () => {
@@ -435,6 +445,70 @@ const ManufacturingCost = () => {
       description: "Customer estimate PDF has been downloaded successfully"
     });
   };
+  const handleSaveInvoice = async (generatedInvoiceNumber: string) => {
+    if (!user) return;
+    
+    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
+    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
+    const estimateData = {
+      user_id: user.id,
+      estimate_name: estimateName,
+      net_weight: formData.netWeight,
+      purity_fraction: formData.purityFraction,
+      gold_rate_24k: formData.goldRate24k,
+      making_charges: formData.makingCharges,
+      cad_design_charges: formData.cadDesignCharges,
+      camming_charges: formData.cammingCharges,
+      certification_cost: formData.certificationCost,
+      diamond_cost: diamondCost,
+      gemstone_cost: gemstoneCost,
+      gold_cost: costs.goldCost,
+      total_cost: costs.totalCost,
+      profit_margin_percentage: profitMargin,
+      final_selling_price: costs.finalSellingPrice,
+      notes: notes || null,
+      reference_images: referenceImages,
+      customer_name: customerDetails.name || null,
+      customer_phone: customerDetails.phone || null,
+      customer_email: customerDetails.email || null,
+      customer_address: customerDetails.address || null,
+      status: estimateStatus,
+      estimated_completion_date: estimatedCompletionDate?.toISOString() || null,
+      is_customer_visible: isCustomerVisible,
+      invoice_number: generatedInvoiceNumber,
+      invoice_date: invoiceDate.toISOString(),
+      payment_terms: paymentTerms,
+      payment_due_date: paymentDueDate?.toISOString() || null,
+      invoice_notes: invoiceNotes || null,
+      is_invoice_generated: true,
+      line_items: (lineItems.length > 0 ? lineItems : []) as any,
+      details: {
+        gross_weight: formData.grossWeight,
+        diamond_per_carat_price: formData.diamondPerCaratPrice,
+        diamond_weight: formData.diamondWeight,
+        diamond_type: formData.diamondType,
+        diamond_shape: formData.diamondShape,
+        diamond_color: formData.diamondColor,
+        diamond_clarity: formData.diamondClarity,
+        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
+        gemstone_per_carat_price: formData.gemstonePerCaratPrice,
+        gemstone_weight: formData.gemstoneWeight,
+        vendor_gstin: vendorGSTIN || null,
+        customer_gstin: customerDetails.gstin || null
+      }
+    };
+
+    if (currentEstimateId) {
+      await supabase.from('manufacturing_cost_estimates').update(estimateData).eq('id', currentEstimateId);
+    } else {
+      const { data } = await supabase.from('manufacturing_cost_estimates').insert([estimateData]).select();
+      if (data && data[0]) {
+        setCurrentEstimateId(data[0].id);
+      }
+    }
+    fetchEstimates();
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast({
@@ -484,7 +558,7 @@ const ManufacturingCost = () => {
       payment_terms: paymentTerms,
       payment_due_date: paymentDueDate?.toISOString() || null,
       invoice_notes: invoiceNotes || null,
-      is_invoice_generated: !!invoiceNumber,
+      is_invoice_generated: false,
       line_items: (lineItems.length > 0 ? lineItems : []) as any,
       details: {
         gross_weight: formData.grossWeight,
@@ -626,8 +700,10 @@ const ManufacturingCost = () => {
       name: estimate.customer_name || "",
       phone: estimate.customer_phone || "",
       email: estimate.customer_email || "",
-      address: estimate.customer_address || ""
+      address: estimate.customer_address || "",
+      gstin: ""
     });
+    setLineItems(estimate.line_items || []);
     setEstimateStatus(estimate.status || "draft");
     setEstimatedCompletionDate(estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined);
     setIsCustomerVisible(estimate.is_customer_visible || false);
@@ -804,6 +880,10 @@ const ManufacturingCost = () => {
           <Button onClick={() => navigate("/invoice-generator")} variant="secondary">
             <FileText className="mr-2 h-4 w-4" />
             Create Invoice
+          </Button>
+          <Button onClick={() => navigate("/invoice-history")} variant="outline">
+            <FileText className="mr-2 h-4 w-4" />
+            Invoice History
           </Button>
           {shareToken && <Button onClick={copyShareLink} variant="outline" size="sm">
               {copiedToken ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
@@ -1070,10 +1150,20 @@ const ManufacturingCost = () => {
                         <p className="text-xs text-muted-foreground mb-1">Phone</p>
                         <p className="text-foreground">{vendorProfile.phone}</p>
                       </div>}
-                    {vendorProfile.email && <div>
+                  {vendorProfile.email && <div>
                         <p className="text-xs text-muted-foreground mb-1">Email</p>
                         <p className="text-foreground">{vendorProfile.email}</p>
                       </div>}
+                    <div>
+                      <Label htmlFor="vendor-gstin" className="text-xs text-muted-foreground mb-1">GSTIN (Optional)</Label>
+                      <Input 
+                        id="vendor-gstin" 
+                        value={vendorGSTIN} 
+                        onChange={e => setVendorGSTIN(e.target.value)} 
+                        placeholder="Enter GSTIN" 
+                        className="mt-1.5"
+                      />
+                    </div>
                   </div>
                 </div> : <p className="text-sm text-muted-foreground py-4">Loading vendor details...</p>}
             </CardContent>
@@ -1114,6 +1204,19 @@ const ManufacturingCost = () => {
                   ...customerDetails,
                   address: e.target.value
                 })} placeholder="Enter customer address" className="mt-1.5 min-h-[90px]" rows={3} />
+                </div>
+                <div>
+                  <Label htmlFor="customer-gstin" className="text-sm font-medium">GSTIN (Optional)</Label>
+                  <Input 
+                    id="customer-gstin" 
+                    value={customerDetails.gstin} 
+                    onChange={e => setCustomerDetails({
+                      ...customerDetails,
+                      gstin: e.target.value
+                    })} 
+                    placeholder="Enter customer GSTIN" 
+                    className="mt-1.5"
+                  />
                 </div>
               </div>
             </CardContent>

@@ -98,19 +98,24 @@ const InvoiceHistory = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: estimate, error } = await supabase
+      const { data: estimateRaw, error } = await supabase
         .from("manufacturing_cost_estimates")
         .select("*")
         .eq("id", invoice.id)
         .single();
 
       if (error) throw error;
+      
+      const estimate = estimateRaw as any;
 
       const { data: profile } = await supabase
         .from("vendor_profiles")
         .select("*")
         .eq("user_id", user.id)
         .single();
+
+      const estimateDetails = estimate.details || {};
+      const estimateLineItems = estimate.line_items || [];
 
       const invoiceData = {
         invoiceNumber: estimate.invoice_number,
@@ -123,6 +128,8 @@ const InvoiceHistory = () => {
         customerPhone: estimate.customer_phone,
         customerEmail: estimate.customer_email,
         customerAddress: estimate.customer_address,
+        customerGSTIN: estimateDetails.customer_gstin,
+        vendorGSTIN: estimateDetails.vendor_gstin,
         netWeight: estimate.net_weight,
         grossWeight: estimate.net_weight,
         purityFraction: estimate.purity_fraction,
@@ -138,6 +145,8 @@ const InvoiceHistory = () => {
         profitMargin: estimate.profit_margin_percentage,
         finalSellingPrice: estimate.final_selling_price,
         invoiceNotes: estimate.invoice_notes,
+        lineItems: estimateLineItems,
+        details: estimateDetails,
         vendorBranding: profile ? {
           businessName: profile.business_name,
           logoUrl: profile.logo_url,
