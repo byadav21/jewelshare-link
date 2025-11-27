@@ -875,36 +875,7 @@ const ManufacturingCost = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-3 justify-center">
-          <Button onClick={() => setShowSaveDialog(true)} disabled={!costs.totalCost}>
-            <Save className="mr-2 h-4 w-4" />
-            Save Invoice
-          </Button>
-          <Button onClick={() => setShowLoadDialog(true)} variant="outline">
-            <FolderOpen className="mr-2 h-4 w-4" />
-            Load Estimate
-          </Button>
-          <Button onClick={handleExportEstimate} variant="default" disabled={!costs.totalCost}>Create Invoice<FileText className="mr-2 h-4 w-4" />
-            Export Invoice
-          </Button>
-          
-          <Button onClick={() => navigate("/estimate-history")} variant="outline">
-            <FileText className="mr-2 h-4 w-4" />
-            Estimate History
-          </Button>
-          <Button onClick={() => navigate("/invoice-history")} variant="outline">
-            <FileText className="mr-2 h-4 w-4" />
-            Invoice History
-          </Button>
-          {shareToken && <Button onClick={copyShareLink} variant="outline" size="sm">
-              {copiedToken ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-              {copiedToken ? "Copied!" : "Copy Tracking Link"}
-            </Button>}
-          <Button onClick={handleReset} variant="ghost" size="sm">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Reset
-          </Button>
-        </div>
+        
 
         {/* Save Dialog */}
         <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
