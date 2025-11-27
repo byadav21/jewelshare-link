@@ -36,6 +36,7 @@ interface LineItem {
   cad_design_charges: number;
   camming_charges: number;
   subtotal: number;
+  weight_mode?: 'gross' | 'net';
 }
 
 interface InvoiceData {

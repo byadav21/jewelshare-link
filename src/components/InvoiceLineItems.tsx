@@ -32,6 +32,7 @@ export interface LineItem {
   cad_design_charges: number;
   camming_charges: number;
   subtotal: number;
+  weight_mode: 'gross' | 'net';
 }
 
 interface InvoiceLineItemsProps {
@@ -70,6 +71,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
       cad_design_charges: 0,
       camming_charges: 0,
       subtotal: 0,
+      weight_mode: 'gross',
     };
     onChange([...items, newItem]);
     setEditingIndex(items.length);
@@ -79,8 +81,15 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
     const updatedItems = [...items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     
-    // Auto-calculate gold cost and subtotal
     const item = updatedItems[index];
+    
+    // Auto-calculate net weight if in gross weight mode
+    if (item.weight_mode === 'gross' && (field === 'gross_weight' || field === 'diamond_weight' || field === 'gemstone_weight')) {
+      const totalStoneWeight = (item.diamond_weight + item.gemstone_weight) / 5;
+      item.net_weight = Math.max(0, item.gross_weight - totalStoneWeight);
+    }
+    
+    // Auto-calculate gold cost and subtotal
     item.gold_cost = item.net_weight * purityFraction * goldRate24k;
     item.subtotal = 
       item.gold_cost +
@@ -239,25 +248,66 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                       </div>
                     </div>
 
-                    <div>
-                      <Label>Gross Weight (g)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.gross_weight}
-                        onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
-                      />
+                    <div className="col-span-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <Label>Weight Entry Mode</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateItem(index, 'weight_mode', item.weight_mode === 'gross' ? 'net' : 'gross')}
+                        >
+                          {item.weight_mode === 'gross' ? 'Gross Weight Mode' : 'Net Weight Mode'}
+                        </Button>
+                      </div>
                     </div>
 
-                    <div>
-                      <Label>Net Weight (g)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.net_weight}
-                        onChange={(e) => updateItem(index, 'net_weight', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
+                    {item.weight_mode === 'gross' ? (
+                      <>
+                        <div>
+                          <Label>Gross Weight (g)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.gross_weight}
+                            onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Net Weight (g) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.net_weight}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <Label>Gross Weight (g)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.gross_weight}
+                            onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Net Weight (g)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.net_weight}
+                            onChange={(e) => updateItem(index, 'net_weight', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                      </>
+                    )}
 
                     <div>
                       <Label>Diamond Weight (ct)</Label>
