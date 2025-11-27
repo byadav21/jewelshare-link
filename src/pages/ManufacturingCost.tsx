@@ -1259,19 +1259,6 @@ const ManufacturingCost = () => {
                   />
                 </div>
               )}
-
-              <div className="space-y-2">
-                <Label htmlFor="purity-fraction">Purity Fraction (e.g., 0.76 for 18K)</Label>
-                <Input
-                  id="purity-fraction"
-                  type="number"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={formData.purityFraction}
-                  onChange={(e) => handleChange("purityFraction", e.target.value)}
-                />
-              </div>
             </CardContent>
           </Card>
 
