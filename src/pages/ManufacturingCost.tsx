@@ -878,7 +878,7 @@ const ManufacturingCost = () => {
         <div className="flex flex-wrap gap-3 justify-center">
           <Button onClick={() => setShowSaveDialog(true)} disabled={!costs.totalCost}>
             <Save className="mr-2 h-4 w-4" />
-            Save Estimate
+            Save Invoice
           </Button>
           <Button onClick={() => setShowLoadDialog(true)} variant="outline">
             <FolderOpen className="mr-2 h-4 w-4" />
