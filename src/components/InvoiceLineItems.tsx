@@ -15,6 +15,7 @@ export interface LineItem {
   description: string;
   image_url: string;
   diamond_weight: number;
+  diamond_per_carat_price: number;
   diamond_color: string;
   diamond_clarity: string;
   diamond_cut: string;
@@ -55,6 +56,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
       description: "",
       image_url: "",
       diamond_weight: 0,
+      diamond_per_carat_price: 0,
       diamond_color: "",
       diamond_clarity: "",
       diamond_cut: "",
@@ -90,6 +92,11 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
     if (item.weight_mode === 'gross' && (field === 'gross_weight' || field === 'diamond_weight' || field === 'gemstone_weight')) {
       const totalStoneWeight = (item.diamond_weight + item.gemstone_weight) / 5;
       item.net_weight = Math.max(0, item.gross_weight - totalStoneWeight);
+    }
+    
+    // Auto-calculate diamond cost from weight × per carat price
+    if (field === 'diamond_weight' || field === 'diamond_per_carat_price') {
+      item.diamond_cost = item.diamond_weight * item.diamond_per_carat_price;
     }
     
     // Auto-calculate gold cost and subtotal using item's own purity fraction
@@ -348,12 +355,23 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                     </div>
 
                     <div>
-                      <Label>Diamond Cost (₹)</Label>
+                      <Label>Diamond Per Carat Price (₹/ct)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={item.diamond_per_carat_price}
+                        onChange={(e) => updateItem(index, 'diamond_per_carat_price', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Diamond Cost (₹) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
                       <Input
                         type="number"
                         step="0.01"
                         value={item.diamond_cost}
-                        onChange={(e) => updateItem(index, 'diamond_cost', parseFloat(e.target.value) || 0)}
+                        disabled
+                        className="bg-muted"
                       />
                     </div>
 
