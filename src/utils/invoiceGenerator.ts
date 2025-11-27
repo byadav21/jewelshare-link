@@ -18,7 +18,14 @@ interface LineItem {
   description: string;
   image_url: string;
   diamond_weight: number;
+  diamond_color: string;
+  diamond_clarity: string;
+  diamond_cut: string;
+  diamond_certification: string;
   gemstone_weight: number;
+  gemstone_type: string;
+  gemstone_color: string;
+  gemstone_clarity: string;
   net_weight: number;
   gross_weight: number;
   diamond_cost: number;
@@ -267,12 +274,41 @@ const generateDetailedInvoice = (data: InvoiceData) => {
       currentY = Math.max(currentY + 35, itemStartY + (item.image_url ? 35 : 25));
       
       // Item specifications table
-      const itemSpecs = [
+      const itemSpecs: any[] = [
         ['Gross Weight', `${item.gross_weight} g`],
         ['Net Weight', `${item.net_weight} g`],
-        ['Diamond Weight', `${item.diamond_weight} ct`],
-        ['Gemstone Weight', `${item.gemstone_weight} ct`],
       ];
+      
+      // Add diamond details if present
+      if (item.diamond_weight > 0) {
+        itemSpecs.push(['Diamond Weight', `${item.diamond_weight} ct`]);
+        if (item.diamond_color) {
+          itemSpecs.push(['Diamond Color', item.diamond_color]);
+        }
+        if (item.diamond_clarity) {
+          itemSpecs.push(['Diamond Clarity', item.diamond_clarity]);
+        }
+        if (item.diamond_cut) {
+          itemSpecs.push(['Diamond Cut', item.diamond_cut]);
+        }
+        if (item.diamond_certification) {
+          itemSpecs.push(['Diamond Certification', item.diamond_certification]);
+        }
+      }
+      
+      // Add gemstone details if present
+      if (item.gemstone_weight > 0) {
+        itemSpecs.push(['Gemstone Weight', `${item.gemstone_weight} ct`]);
+        if (item.gemstone_type) {
+          itemSpecs.push(['Gemstone Type', item.gemstone_type]);
+        }
+        if (item.gemstone_color) {
+          itemSpecs.push(['Gemstone Color', item.gemstone_color]);
+        }
+        if (item.gemstone_clarity) {
+          itemSpecs.push(['Gemstone Clarity', item.gemstone_clarity]);
+        }
+      }
       
       (doc as any).autoTable({
         startY: currentY,
