@@ -881,6 +881,10 @@ const ManufacturingCost = () => {
             <FileText className="mr-2 h-4 w-4" />
             Create Invoice
           </Button>
+          <Button onClick={() => navigate("/estimate-history")} variant="outline">
+            <FileText className="mr-2 h-4 w-4" />
+            Estimate History
+          </Button>
           <Button onClick={() => navigate("/invoice-history")} variant="outline">
             <FileText className="mr-2 h-4 w-4" />
             Invoice History

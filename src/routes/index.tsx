@@ -25,6 +25,7 @@ export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"))
 export const Calculators = lazy(() => import("@/pages/Calculators"));
 export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 export const InvoiceHistory = lazy(() => import("@/pages/InvoiceHistory"));
+export const EstimateHistory = lazy(() => import("@/pages/EstimateHistory"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));
