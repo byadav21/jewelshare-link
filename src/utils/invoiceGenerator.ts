@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 interface VendorBranding {
   businessName?: string;
@@ -322,7 +322,7 @@ const generateDetailedInvoice = (data: InvoiceData) => {
         }
       }
       
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: currentY,
         body: itemSpecs,
         theme: 'plain',
@@ -347,7 +347,7 @@ const generateDetailedInvoice = (data: InvoiceData) => {
         ['Gemstone Cost', `₹${item.gemstone_cost.toFixed(2)}`],
       ];
       
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: currentY,
         body: itemCosts,
         theme: 'plain',
@@ -412,7 +412,7 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   }
   
   if (specsData.length > 0) {
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: currentY + 5,
       body: specsData,
       theme: 'plain',
@@ -449,7 +449,7 @@ const generateDetailedInvoice = (data: InvoiceData) => {
     ['Gemstone Cost', `₹${data.gemstoneCost.toFixed(2)}`],
   ];
   
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: costStartY + 5,
     head: [['Description', 'Amount']],
     body: tableData,
@@ -599,7 +599,7 @@ const generateSummaryInvoice = (data: InvoiceData) => {
     ['Certification', `₹${data.certificationCost.toFixed(2)}`],
   ];
   
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: 100,
     head: [['Item', 'Amount']],
     body: summaryData,
@@ -830,7 +830,7 @@ const generateTraditionalInvoice = (data: InvoiceData) => {
     ['Certification', '', `₹${data.certificationCost.toFixed(2)}`],
   ];
   
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: yPos,
     head: [['Description', '', 'Amount']],
     body: tableData,
@@ -971,7 +971,7 @@ const generateModernInvoice = (data: InvoiceData) => {
     ['Certification', `₹${data.certificationCost.toFixed(2)}`],
   ];
   
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: yPos,
     body: tableData,
     theme: 'plain',
@@ -1159,7 +1159,7 @@ const generateLuxuryInvoice = (data: InvoiceData) => {
     ['Authentication Certificate', `₹${data.certificationCost.toFixed(2)}`],
   ];
   
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: yPos,
     body: tableData,
     theme: 'plain',
