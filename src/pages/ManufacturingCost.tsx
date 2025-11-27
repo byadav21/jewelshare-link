@@ -1052,53 +1052,30 @@ const ManufacturingCost = () => {
               <CardDescription>Your business information</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              {vendorProfile ? (
-                <div className="space-y-4">
-                  {vendorProfile.logo_url && (
-                    <div className="flex justify-center mb-4">
-                      <img 
-                        src={vendorProfile.logo_url} 
-                        alt="Vendor Logo" 
-                        className="h-20 w-auto object-contain"
-                      />
-                    </div>
-                  )}
+              {vendorProfile ? <div className="space-y-4">
+                  {vendorProfile.logo_url && <div className="flex justify-center mb-4">
+                      <img src={vendorProfile.logo_url} alt="Vendor Logo" className="h-20 w-auto object-contain" />
+                    </div>}
                   <div className="space-y-3 text-sm">
                     <div className="border-b border-border pb-2">
                       <p className="font-semibold text-foreground">{vendorProfile.business_name || 'Business Name'}</p>
                     </div>
-                    {(vendorProfile.address_line1 || vendorProfile.city || vendorProfile.state) && (
-                      <div>
+                    {(vendorProfile.address_line1 || vendorProfile.city || vendorProfile.state) && <div>
                         <p className="text-xs text-muted-foreground mb-1">Address</p>
                         <p className="text-foreground leading-relaxed">
-                          {[
-                            vendorProfile.address_line1,
-                            vendorProfile.address_line2,
-                            vendorProfile.city,
-                            vendorProfile.state,
-                            vendorProfile.pincode,
-                            vendorProfile.country
-                          ].filter(Boolean).join(', ')}
+                          {[vendorProfile.address_line1, vendorProfile.address_line2, vendorProfile.city, vendorProfile.state, vendorProfile.pincode, vendorProfile.country].filter(Boolean).join(', ')}
                         </p>
-                      </div>
-                    )}
-                    {vendorProfile.phone && (
-                      <div>
+                      </div>}
+                    {vendorProfile.phone && <div>
                         <p className="text-xs text-muted-foreground mb-1">Phone</p>
                         <p className="text-foreground">{vendorProfile.phone}</p>
-                      </div>
-                    )}
-                    {vendorProfile.email && (
-                      <div>
+                      </div>}
+                    {vendorProfile.email && <div>
                         <p className="text-xs text-muted-foreground mb-1">Email</p>
                         <p className="text-foreground">{vendorProfile.email}</p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground py-4">Loading vendor details...</p>
-              )}
+                </div> : <p className="text-sm text-muted-foreground py-4">Loading vendor details...</p>}
             </CardContent>
           </Card>
 
@@ -1112,45 +1089,31 @@ const ManufacturingCost = () => {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="customer-name" className="text-sm font-medium">Customer Name *</Label>
-                  <Input
-                    id="customer-name"
-                    value={customerDetails.name}
-                    onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})}
-                    placeholder="Enter customer name"
-                    className="mt-1.5"
-                  />
+                  <Input id="customer-name" value={customerDetails.name} onChange={e => setCustomerDetails({
+                  ...customerDetails,
+                  name: e.target.value
+                })} placeholder="Enter customer name" className="mt-1.5" />
                 </div>
                 <div>
                   <Label htmlFor="customer-phone" className="text-sm font-medium">Phone Number</Label>
-                  <Input
-                    id="customer-phone"
-                    value={customerDetails.phone}
-                    onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})}
-                    placeholder="Enter phone number"
-                    className="mt-1.5"
-                  />
+                  <Input id="customer-phone" value={customerDetails.phone} onChange={e => setCustomerDetails({
+                  ...customerDetails,
+                  phone: e.target.value
+                })} placeholder="Enter phone number" className="mt-1.5" />
                 </div>
                 <div>
                   <Label htmlFor="customer-email" className="text-sm font-medium">Email Address</Label>
-                  <Input
-                    id="customer-email"
-                    type="email"
-                    value={customerDetails.email}
-                    onChange={(e) => setCustomerDetails({...customerDetails, email: e.target.value})}
-                    placeholder="Enter email address"
-                    className="mt-1.5"
-                  />
+                  <Input id="customer-email" type="email" value={customerDetails.email} onChange={e => setCustomerDetails({
+                  ...customerDetails,
+                  email: e.target.value
+                })} placeholder="Enter email address" className="mt-1.5" />
                 </div>
                 <div>
                   <Label htmlFor="customer-address" className="text-sm font-medium">Address</Label>
-                  <Textarea
-                    id="customer-address"
-                    value={customerDetails.address}
-                    onChange={(e) => setCustomerDetails({...customerDetails, address: e.target.value})}
-                    placeholder="Enter customer address"
-                    className="mt-1.5 min-h-[90px]"
-                    rows={3}
-                  />
+                  <Textarea id="customer-address" value={customerDetails.address} onChange={e => setCustomerDetails({
+                  ...customerDetails,
+                  address: e.target.value
+                })} placeholder="Enter customer address" className="mt-1.5 min-h-[90px]" rows={3} />
                 </div>
               </div>
             </CardContent>
@@ -1207,37 +1170,13 @@ const ManufacturingCost = () => {
         </Card>
 
         {/* Gemstone Details */}
-        <Card>
-          
-          
-        </Card>
+        
 
         {/* Profit Margin and Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Profit & Summary</CardTitle>
-            <CardDescription>Set profit margin and view cost summary</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2 max-w-xs">
-              <Label htmlFor="profit-margin">Profit Margin (%)</Label>
-              <Input id="profit-margin" type="number" min={0} step={0.01} value={profitMargin} onChange={e => setProfitMargin(parseFloat(e.target.value) || 0)} />
-            </div>
-
-            <div className="space-y-2">
-              <p><strong>Gold Cost:</strong> ₹{costs.goldCost.toFixed(2)}</p>
-              <p><strong>Total Cost:</strong> ₹{costs.totalCost.toFixed(2)}</p>
-              <p><strong>Profit Amount:</strong> ₹{costs.profitAmount.toFixed(2)}</p>
-              <p><strong>Final Selling Price:</strong> ₹{costs.finalSellingPrice.toFixed(2)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        
 
         {/* Reference Images Upload */}
-        <Card>
-          
-          
-        </Card>
+        
 
         {/* Invoice Line Items */}
         <Card>
