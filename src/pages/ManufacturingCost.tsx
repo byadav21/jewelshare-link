@@ -573,9 +573,13 @@ const ManufacturingCost = () => {
         sgst_percentage: sgstPercentage,
         cgst_percentage: cgstPercentage,
         igst_percentage: igstPercentage,
+        sgst_amount: costs.sgstAmount,
+        cgst_amount: costs.cgstAmount,
+        igst_amount: costs.igstAmount,
         shipping_charges: shippingCharges,
         shipping_zone: shippingZone,
-        exchange_rate: exchangeRate
+        exchange_rate: exchangeRate,
+        grand_total: costs.grandTotal
       }
     };
     if (currentEstimateId) {
