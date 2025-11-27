@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -248,66 +249,78 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                       </div>
                     </div>
 
-                    <div className="col-span-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <Label>Weight Entry Mode</Label>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateItem(index, 'weight_mode', item.weight_mode === 'gross' ? 'net' : 'gross')}
-                        >
-                          {item.weight_mode === 'gross' ? 'Gross Weight Mode' : 'Net Weight Mode'}
-                        </Button>
+                    <div className="col-span-2 space-y-4 p-4 border rounded-lg bg-card">
+                      <div>
+                        <h4 className="font-semibold text-base mb-1">Weight & Purity</h4>
+                        <p className="text-sm text-muted-foreground">Enter weights and purity details</p>
                       </div>
+
+                      <div>
+                        <Label className="mb-2 block">Weight Entry Mode:</Label>
+                        <Select
+                          value={item.weight_mode}
+                          onValueChange={(value: 'gross' | 'net') => updateItem(index, 'weight_mode', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gross">Gross Weight Mode (Auto-calculate Net Weight)</SelectItem>
+                            <SelectItem value="net">Net Weight Mode (Direct Entry)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {item.weight_mode === 'gross' ? (
+                        <>
+                          <div>
+                            <Label>Gross Weight (grams)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={item.gross_weight}
+                              onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
+                              className="mt-1.5"
+                            />
+                          </div>
+
+                          <div>
+                            <Label>Net Weight (grams) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={item.net_weight}
+                              disabled
+                              className="mt-1.5 bg-muted"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <Label>Gross Weight (grams)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={item.gross_weight}
+                              onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
+                              className="mt-1.5"
+                            />
+                          </div>
+
+                          <div>
+                            <Label>Net Weight (grams)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={item.net_weight}
+                              onChange={(e) => updateItem(index, 'net_weight', parseFloat(e.target.value) || 0)}
+                              className="mt-1.5"
+                            />
+                          </div>
+                        </>
+                      )}
                     </div>
-
-                    {item.weight_mode === 'gross' ? (
-                      <>
-                        <div>
-                          <Label>Gross Weight (g)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={item.gross_weight}
-                            onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Net Weight (g) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={item.net_weight}
-                            disabled
-                            className="bg-muted"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div>
-                          <Label>Gross Weight (g)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={item.gross_weight}
-                            onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Net Weight (g)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={item.net_weight}
-                            onChange={(e) => updateItem(index, 'net_weight', parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-                      </>
-                    )}
 
                     <div>
                       <Label>Diamond Weight (ct)</Label>
