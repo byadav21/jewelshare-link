@@ -496,7 +496,7 @@ const Index = () => {
         </ScrollReveal>
 
         <ScrollReveal delay={0.1}>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
               <ScrollReveal key={index} delay={0.1 * index} direction="up">
                 <TiltCard maxTilt={8} scale={1.05}>
