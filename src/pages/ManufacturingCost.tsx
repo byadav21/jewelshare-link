@@ -13,33 +13,16 @@ import { useToast } from "@/hooks/use-toast";
 import { InvoiceLineItems, type LineItem } from "@/components/InvoiceLineItems";
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
 import { generateEstimatePDF } from "@/utils/estimateGenerator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-
 const ManufacturingCost = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [estimates, setEstimates] = useState<any[]>([]);
@@ -69,7 +52,6 @@ const ManufacturingCost = () => {
   const [invoiceNotes, setInvoiceNotes] = useState("");
   const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal'>('detailed');
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  
   const [formData, setFormData] = useState({
     grossWeight: 0,
     netWeight: 0,
@@ -87,31 +69,31 @@ const ManufacturingCost = () => {
     diamondClarity: "",
     diamondCertification: "none",
     gemstonePerCaratPrice: 0,
-    gemstoneWeight: 0,
+    gemstoneWeight: 0
   });
-
   const [profitMargin, setProfitMargin] = useState(0);
-
   const [customerDetails, setCustomerDetails] = useState({
     name: "",
     phone: "",
     email: "",
-    address: "",
+    address: ""
   });
-
   const [costs, setCosts] = useState({
     goldCost: 0,
     totalCost: 0,
     finalSellingPrice: 0,
-    profitAmount: 0,
+    profitAmount: 0
   });
 
   // Check auth status and usage limits
   useEffect(() => {
     const checkUsageAndAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       setUser(user);
-      
       if (user) {
         // Authenticated users have unlimited access
         fetchEstimates();
@@ -119,16 +101,19 @@ const ManufacturingCost = () => {
       } else {
         // Check guest usage via backend
         try {
-          const { data, error } = await supabase.functions.invoke('check-guest-usage', {
-            body: { calculatorType: 'manufacturing' }
+          const {
+            data,
+            error
+          } = await supabase.functions.invoke('check-guest-usage', {
+            body: {
+              calculatorType: 'manufacturing'
+            }
           });
-
           if (error) {
             console.error("Error checking guest usage:", error);
             // Fallback to allowing access if backend check fails
             return;
           }
-
           if (!data.allowed) {
             setShowUsageLimitDialog(true);
           } else {
@@ -140,21 +125,21 @@ const ManufacturingCost = () => {
         }
       }
     };
-
     checkUsageAndAuth();
   }, []);
 
   // Fetch vendor profile for branding and auto-populate pricing
   const fetchVendorProfile = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: {
+        user
+      }
+    } = await supabase.auth.getUser();
     if (!user) return;
-
-    const { data, error } = await supabase
-      .from('vendor_profiles')
-      .select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
+    const {
+      data,
+      error
+    } = await supabase.from('vendor_profiles').select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram').eq('user_id', user.id).maybeSingle();
     if (error) {
       console.error('Error fetching vendor profile:', error);
     } else if (data) {
@@ -163,22 +148,25 @@ const ManufacturingCost = () => {
       setFormData(prev => ({
         ...prev,
         goldRate24k: data.gold_rate_24k_per_gram || 0,
-        makingCharges: data.making_charges_per_gram || 0,
+        makingCharges: data.making_charges_per_gram || 0
       }));
     }
   };
 
   // Fetch saved estimates
   const fetchEstimates = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: {
+        user
+      }
+    } = await supabase.auth.getUser();
     if (!user) return;
-
-    const { data, error } = await supabase
-      .from('manufacturing_cost_estimates')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
+    const {
+      data,
+      error
+    } = await supabase.from('manufacturing_cost_estimates').select('*').eq('user_id', user.id).order('created_at', {
+      ascending: false
+    });
     if (error) {
       console.error('Error fetching estimates:', error);
     } else {
@@ -192,10 +180,9 @@ const ManufacturingCost = () => {
       const diamondWeightGrams = formData.diamondWeight / 5;
       const gemstoneWeightGrams = formData.gemstoneWeight / 5;
       const calculatedNetWeight = formData.grossWeight - diamondWeightGrams - gemstoneWeightGrams;
-      
       setFormData(prev => ({
         ...prev,
-        netWeight: Math.max(0, calculatedNetWeight),
+        netWeight: Math.max(0, calculatedNetWeight)
       }));
     }
   }, [weightEntryMode, formData.grossWeight, formData.diamondWeight, formData.gemstoneWeight]);
@@ -205,34 +192,22 @@ const ManufacturingCost = () => {
     const goldCost = formData.netWeight * formData.purityFraction * formData.goldRate24k;
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
-
-    const totalCost =
-      goldCost +
-      formData.makingCharges +
-      formData.cadDesignCharges +
-      formData.cammingCharges +
-      formData.certificationCost +
-      diamondCost +
-      gemstoneCost;
-
+    const totalCost = goldCost + formData.makingCharges + formData.cadDesignCharges + formData.cammingCharges + formData.certificationCost + diamondCost + gemstoneCost;
     const finalSellingPrice = totalCost * (1 + profitMargin / 100);
     const profitAmount = finalSellingPrice - totalCost;
-
     setCosts({
       goldCost: parseFloat(goldCost.toFixed(2)),
       totalCost: parseFloat(totalCost.toFixed(2)),
       finalSellingPrice: parseFloat(finalSellingPrice.toFixed(2)),
-      profitAmount: parseFloat(profitAmount.toFixed(2)),
+      profitAmount: parseFloat(profitAmount.toFixed(2))
     });
   }, [formData, profitMargin]);
-
   const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [field]: parseFloat(value) || 0,
+      [field]: parseFloat(value) || 0
     }));
   };
-
   const handleReset = () => {
     setFormData({
       grossWeight: 0,
@@ -251,7 +226,7 @@ const ManufacturingCost = () => {
       diamondClarity: "",
       diamondCertification: "none",
       gemstonePerCaratPrice: 0,
-      gemstoneWeight: 0,
+      gemstoneWeight: 0
     });
     setProfitMargin(0);
     setCurrentEstimateId(null);
@@ -263,7 +238,7 @@ const ManufacturingCost = () => {
       name: "",
       phone: "",
       email: "",
-      address: "",
+      address: ""
     });
     setEstimateStatus("draft");
     setEstimatedCompletionDate(undefined);
@@ -271,45 +246,41 @@ const ManufacturingCost = () => {
     setShareToken("");
     setLineItems([]);
   };
-
   const copyShareLink = () => {
     if (!shareToken) {
       toast({
         title: "No Tracking Link",
         description: "Please save the estimate first to generate a tracking link",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     const trackingUrl = `${window.location.origin}/order-tracking/${shareToken}`;
     navigator.clipboard.writeText(trackingUrl);
     setCopiedToken(true);
     setTimeout(() => setCopiedToken(false), 2000);
     toast({
       title: "Link Copied",
-      description: "Customer tracking link copied to clipboard",
+      description: "Customer tracking link copied to clipboard"
     });
   };
-
   const generateNextInvoiceNumber = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data, error } = await supabase
-        .from("manufacturing_cost_estimates")
-        .select("invoice_number")
-        .eq("user_id", user.id)
-        .not("invoice_number", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
+      const {
+        data,
+        error
+      } = await supabase.from("manufacturing_cost_estimates").select("invoice_number").eq("user_id", user.id).not("invoice_number", "is", null).order("created_at", {
+        ascending: false
+      }).limit(1);
       if (error) throw error;
-
       const currentYear = new Date().getFullYear();
       let nextNumber = 1;
-
       if (data && data.length > 0) {
         const lastInvoice = data[0].invoice_number;
         const match = lastInvoice.match(/(\d+)$/);
@@ -317,7 +288,6 @@ const ManufacturingCost = () => {
           nextNumber = parseInt(match[1]) + 1;
         }
       }
-
       const newInvoiceNumber = `${invoicePrefix}-${currentYear}-${String(nextNumber).padStart(3, '0')}`;
       setInvoiceNumber(newInvoiceNumber);
       return newInvoiceNumber;
@@ -326,37 +296,26 @@ const ManufacturingCost = () => {
       return `${invoicePrefix}-${new Date().getFullYear()}-001`;
     }
   };
-
   const handleGenerateInvoice = async () => {
     if (!estimateName) {
       toast({
         title: "Missing Information",
         description: "Please enter estimate name before generating invoice",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     let finalInvoiceNumber = invoiceNumber;
     if (!finalInvoiceNumber) {
-      finalInvoiceNumber = await generateNextInvoiceNumber() || "";
+      finalInvoiceNumber = (await generateNextInvoiceNumber()) || "";
     }
-
     const details = formData;
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
 
     // Build vendor address string
-    const addressParts = [
-      vendorProfile?.address_line1,
-      vendorProfile?.address_line2,
-      vendorProfile?.city,
-      vendorProfile?.state,
-      vendorProfile?.pincode,
-      vendorProfile?.country,
-    ].filter(Boolean);
+    const addressParts = [vendorProfile?.address_line1, vendorProfile?.address_line2, vendorProfile?.city, vendorProfile?.state, vendorProfile?.pincode, vendorProfile?.country].filter(Boolean);
     const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
-
     generateInvoicePDF({
       invoiceNumber: finalInvoiceNumber,
       invoiceDate: invoiceDate.toISOString(),
@@ -393,7 +352,7 @@ const ManufacturingCost = () => {
         diamond_color: formData.diamondColor,
         diamond_clarity: formData.diamondClarity,
         diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
-        gemstone_weight: formData.gemstoneWeight,
+        gemstone_weight: formData.gemstoneWeight
       },
       vendorBranding: vendorProfile ? {
         businessName: vendorProfile.business_name,
@@ -403,41 +362,30 @@ const ManufacturingCost = () => {
         tagline: vendorProfile.brand_tagline,
         email: vendorProfile.email,
         phone: vendorProfile.phone,
-        address: vendorAddress,
-      } : undefined,
+        address: vendorAddress
+      } : undefined
     });
-
     toast({
       title: "Invoice Generated",
-      description: "Invoice PDF has been downloaded successfully",
+      description: "Invoice PDF has been downloaded successfully"
     });
   };
-
   const handleExportEstimate = () => {
     if (!estimateName) {
       toast({
         title: "Missing Information",
         description: "Please enter an estimate name before exporting",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     const details = formData;
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
 
     // Build vendor address string
-    const addressParts = [
-      vendorProfile?.address_line1,
-      vendorProfile?.address_line2,
-      vendorProfile?.city,
-      vendorProfile?.state,
-      vendorProfile?.pincode,
-      vendorProfile?.country,
-    ].filter(Boolean);
+    const addressParts = [vendorProfile?.address_line1, vendorProfile?.address_line2, vendorProfile?.city, vendorProfile?.state, vendorProfile?.pincode, vendorProfile?.country].filter(Boolean);
     const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
-
     generateEstimatePDF({
       estimateName,
       estimateDate: new Date().toISOString(),
@@ -469,7 +417,7 @@ const ManufacturingCost = () => {
         diamond_color: formData.diamondColor,
         diamond_clarity: formData.diamondClarity,
         diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
-        gemstone_weight: formData.gemstoneWeight,
+        gemstone_weight: formData.gemstoneWeight
       },
       vendorBranding: vendorProfile ? {
         businessName: vendorProfile.business_name,
@@ -479,38 +427,33 @@ const ManufacturingCost = () => {
         tagline: vendorProfile.brand_tagline,
         email: vendorProfile.email,
         phone: vendorProfile.phone,
-        address: vendorAddress,
-      } : undefined,
+        address: vendorAddress
+      } : undefined
     });
-
     toast({
       title: "Estimate Exported",
-      description: "Customer estimate PDF has been downloaded successfully",
+      description: "Customer estimate PDF has been downloaded successfully"
     });
   };
-
   const handleSave = async () => {
     if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please sign in to save estimates",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (!estimateName.trim()) {
       toast({
         title: "Name Required",
         description: "Please enter a name for this estimate",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
-
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
@@ -553,35 +496,29 @@ const ManufacturingCost = () => {
         diamond_clarity: formData.diamondClarity,
         diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
         gemstone_per_carat_price: formData.gemstonePerCaratPrice,
-        gemstone_weight: formData.gemstoneWeight,
-      },
+        gemstone_weight: formData.gemstoneWeight
+      }
     };
-
     if (currentEstimateId) {
       // Get previous status for comparison
       const previousEstimate = estimates.find(e => e.id === currentEstimateId);
       const previousStatus = previousEstimate?.status;
-      
-      const { error, data } = await supabase
-        .from('manufacturing_cost_estimates')
-        .update(estimateData)
-        .eq('id', currentEstimateId)
-        .select();
-
+      const {
+        error,
+        data
+      } = await supabase.from('manufacturing_cost_estimates').update(estimateData).eq('id', currentEstimateId).select();
       if (error) {
         toast({
           title: "Error",
           description: "Failed to update estimate",
-          variant: "destructive",
+          variant: "destructive"
         });
       } else {
         if (data && data[0]) {
           setShareToken(data[0].share_token);
-          
+
           // Send email notification if status changed and customer details exist
-          if (data[0].status !== previousStatus && 
-              data[0].customer_email && 
-              data[0].is_customer_visible) {
+          if (data[0].status !== previousStatus && data[0].customer_email && data[0].is_customer_visible) {
             try {
               await supabase.functions.invoke('notify-order-status', {
                 body: {
@@ -590,8 +527,8 @@ const ManufacturingCost = () => {
                   customerEmail: data[0].customer_email,
                   status: data[0].status,
                   estimatedCompletionDate: data[0].estimated_completion_date,
-                  shareToken: data[0].share_token,
-                },
+                  shareToken: data[0].share_token
+                }
               });
               console.log('Order status notification sent');
             } catch (emailError) {
@@ -602,28 +539,27 @@ const ManufacturingCost = () => {
         }
         toast({
           title: "Success",
-          description: "Estimate updated successfully",
+          description: "Estimate updated successfully"
         });
         fetchEstimates();
         setShowSaveDialog(false);
       }
     } else {
-      const { error, data } = await supabase
-        .from('manufacturing_cost_estimates')
-        .insert([estimateData])
-        .select();
-
+      const {
+        error,
+        data
+      } = await supabase.from('manufacturing_cost_estimates').insert([estimateData]).select();
       if (error) {
         toast({
           title: "Error",
           description: "Failed to save estimate",
-          variant: "destructive",
+          variant: "destructive"
         });
       } else {
         if (data && data[0]) {
           setShareToken(data[0].share_token);
           setCurrentEstimateId(data[0].id);
-          
+
           // Send initial email notification if customer details exist and visible
           if (data[0].customer_email && data[0].is_customer_visible) {
             try {
@@ -634,8 +570,8 @@ const ManufacturingCost = () => {
                   customerEmail: data[0].customer_email,
                   status: data[0].status,
                   estimatedCompletionDate: data[0].estimated_completion_date,
-                  shareToken: data[0].share_token,
-                },
+                  shareToken: data[0].share_token
+                }
               });
               console.log('Initial order notification sent');
             } catch (emailError) {
@@ -646,19 +582,17 @@ const ManufacturingCost = () => {
         }
         toast({
           title: "Success",
-          description: "Estimate saved successfully",
+          description: "Estimate saved successfully"
         });
         fetchEstimates();
         setShowSaveDialog(false);
       }
     }
   };
-
   const handleLoad = (estimate: any) => {
     const details = estimate.details as any;
     const certValue = details?.diamond_certification || "";
     const knownCerts = ["GIA", "IGI", "AGS", "EGL", "HRD", "GSI", "none"];
-    
     setFormData({
       grossWeight: details?.gross_weight || 0,
       netWeight: estimate.net_weight || 0,
@@ -674,17 +608,15 @@ const ManufacturingCost = () => {
       diamondShape: details?.diamond_shape || "",
       diamondColor: details?.diamond_color || "",
       diamondClarity: details?.diamond_clarity || "",
-      diamondCertification: knownCerts.includes(certValue) ? certValue : (certValue ? "other" : "none"),
+      diamondCertification: knownCerts.includes(certValue) ? certValue : certValue ? "other" : "none",
       gemstonePerCaratPrice: details?.gemstone_per_carat_price || 0,
-      gemstoneWeight: details?.gemstone_weight || 0,
+      gemstoneWeight: details?.gemstone_weight || 0
     });
-    
     if (certValue && !knownCerts.includes(certValue)) {
       setCustomCertification(certValue);
     } else {
       setCustomCertification("");
     }
-    
     setProfitMargin(estimate.profit_margin_percentage || 0);
     setCurrentEstimateId(estimate.id);
     setEstimateName(estimate.estimate_name);
@@ -694,12 +626,10 @@ const ManufacturingCost = () => {
       name: estimate.customer_name || "",
       phone: estimate.customer_phone || "",
       email: estimate.customer_email || "",
-      address: estimate.customer_address || "",
+      address: estimate.customer_address || ""
     });
     setEstimateStatus(estimate.status || "draft");
-    setEstimatedCompletionDate(
-      estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined
-    );
+    setEstimatedCompletionDate(estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined);
     setIsCustomerVisible(estimate.is_customer_visible || false);
     setShareToken(estimate.share_token || "");
     setInvoiceNumber(estimate.invoice_number || "");
@@ -710,26 +640,23 @@ const ManufacturingCost = () => {
     setShowLoadDialog(false);
     toast({
       title: "Loaded",
-      description: `Estimate "${estimate.estimate_name}" loaded successfully`,
+      description: `Estimate "${estimate.estimate_name}" loaded successfully`
     });
   };
-
   const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from('manufacturing_cost_estimates')
-      .delete()
-      .eq('id', id);
-
+    const {
+      error
+    } = await supabase.from('manufacturing_cost_estimates').delete().eq('id', id);
     if (error) {
       toast({
         title: "Error",
         description: "Failed to delete estimate",
-        variant: "destructive",
+        variant: "destructive"
       });
     } else {
       toast({
         title: "Deleted",
-        description: "Estimate deleted successfully",
+        description: "Estimate deleted successfully"
       });
       fetchEstimates();
       if (currentEstimateId === id) {
@@ -737,77 +664,71 @@ const ManufacturingCost = () => {
       }
     }
   };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
     try {
       setUploadingImage(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         toast({
           title: "Authentication Required",
           description: "Please sign in to upload images.",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
-
       const uploadedUrls: string[] = [];
-
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        
         if (!file.type.startsWith("image/")) {
           toast({
             title: "Invalid File Type",
             description: `${file.name} is not an image file.`,
-            variant: "destructive",
+            variant: "destructive"
           });
           continue;
         }
-
         if (file.size > 5 * 1024 * 1024) {
           toast({
             title: "File Too Large",
             description: `${file.name} exceeds 5MB limit.`,
-            variant: "destructive",
+            variant: "destructive"
           });
           continue;
         }
-
         const fileExt = file.name.split(".").pop();
         const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-        const { data, error } = await supabase.storage
-          .from("manufacturing-estimates")
-          .upload(fileName, file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
+        const {
+          data,
+          error
+        } = await supabase.storage.from("manufacturing-estimates").upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
         if (error) throw error;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from("manufacturing-estimates")
-          .getPublicUrl(data.path);
-
+        const {
+          data: {
+            publicUrl
+          }
+        } = supabase.storage.from("manufacturing-estimates").getPublicUrl(data.path);
         uploadedUrls.push(publicUrl);
       }
-
       setReferenceImages([...referenceImages, ...uploadedUrls]);
-      
       toast({
         title: "Images Uploaded",
-        description: `${uploadedUrls.length} image(s) uploaded successfully.`,
+        description: `${uploadedUrls.length} image(s) uploaded successfully.`
       });
     } catch (error) {
       console.error("Upload error:", error);
       toast({
         title: "Upload Failed",
         description: "Failed to upload images. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setUploadingImage(false);
@@ -816,13 +737,10 @@ const ManufacturingCost = () => {
       }
     }
   };
-
   const removeImage = (index: number) => {
     setReferenceImages(referenceImages.filter((_, i) => i !== index));
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
       {/* Guest Usage Limit Dialog */}
       <Dialog open={showUsageLimitDialog} onOpenChange={setShowUsageLimitDialog}>
         <DialogContent>
@@ -833,17 +751,10 @@ const ManufacturingCost = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-4">
-            <Button
-              onClick={() => navigate('/auth')}
-              className="flex-1"
-            >
+            <Button onClick={() => navigate('/auth')} className="flex-1">
               Sign In
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/')}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={() => navigate('/')} className="flex-1">
               Go Home
             </Button>
           </div>
@@ -865,21 +776,15 @@ const ManufacturingCost = () => {
           </p>
           
           {/* Guest Usage Counter */}
-          {!user && guestUsageCount > 0 && guestUsageCount < 5 && (
-            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border">
+          {!user && guestUsageCount > 0 && guestUsageCount < 5 && <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border">
               <Info className="h-4 w-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 Guest Usage: {guestUsageCount}/5 uses (resets in 24 hours).
-                <Button
-                  variant="link"
-                  className="ml-1 p-0 h-auto text-sm underline"
-                  onClick={() => navigate('/auth')}
-                >
+                <Button variant="link" className="ml-1 p-0 h-auto text-sm underline" onClick={() => navigate('/auth')}>
                   Sign in for unlimited access
                 </Button>
               </p>
-            </div>
-          )}
+            </div>}
         </div>
 
         {/* Action Buttons */}
@@ -900,12 +805,10 @@ const ManufacturingCost = () => {
             <FileText className="mr-2 h-4 w-4" />
             Create Invoice
           </Button>
-          {shareToken && (
-            <Button onClick={copyShareLink} variant="outline" size="sm">
+          {shareToken && <Button onClick={copyShareLink} variant="outline" size="sm">
               {copiedToken ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
               {copiedToken ? "Copied!" : "Copy Tracking Link"}
-            </Button>
-          )}
+            </Button>}
           <Button onClick={handleReset} variant="ghost" size="sm">
             <Trash2 className="mr-2 h-4 w-4" />
             Reset
@@ -924,12 +827,7 @@ const ManufacturingCost = () => {
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="estimate-name">Estimate Name *</Label>
-                <Input
-                  id="estimate-name"
-                  value={estimateName}
-                  onChange={(e) => setEstimateName(e.target.value)}
-                  placeholder="e.g., Diamond Ring - John Doe"
-                />
+                <Input id="estimate-name" value={estimateName} onChange={e => setEstimateName(e.target.value)} placeholder="e.g., Diamond Ring - John Doe" />
               </div>
 
               <div className="space-y-4">
@@ -937,53 +835,38 @@ const ManufacturingCost = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="customer-name">Customer Name</Label>
-                    <Input
-                      id="customer-name"
-                      value={customerDetails.name}
-                      onChange={(e) => setCustomerDetails({ ...customerDetails, name: e.target.value })}
-                      placeholder="Full name"
-                    />
+                    <Input id="customer-name" value={customerDetails.name} onChange={e => setCustomerDetails({
+                    ...customerDetails,
+                    name: e.target.value
+                  })} placeholder="Full name" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="customer-phone">Phone Number</Label>
-                    <Input
-                      id="customer-phone"
-                      value={customerDetails.phone}
-                      onChange={(e) => setCustomerDetails({ ...customerDetails, phone: e.target.value })}
-                      placeholder="+1234567890"
-                    />
+                    <Input id="customer-phone" value={customerDetails.phone} onChange={e => setCustomerDetails({
+                    ...customerDetails,
+                    phone: e.target.value
+                  })} placeholder="+1234567890" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="customer-email">Email</Label>
-                    <Input
-                      id="customer-email"
-                      type="email"
-                      value={customerDetails.email}
-                      onChange={(e) => setCustomerDetails({ ...customerDetails, email: e.target.value })}
-                      placeholder="customer@example.com"
-                    />
+                    <Input id="customer-email" type="email" value={customerDetails.email} onChange={e => setCustomerDetails({
+                    ...customerDetails,
+                    email: e.target.value
+                  })} placeholder="customer@example.com" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="customer-address">Address</Label>
-                    <Input
-                      id="customer-address"
-                      value={customerDetails.address}
-                      onChange={(e) => setCustomerDetails({ ...customerDetails, address: e.target.value })}
-                      placeholder="Complete address"
-                    />
+                    <Input id="customer-address" value={customerDetails.address} onChange={e => setCustomerDetails({
+                    ...customerDetails,
+                    address: e.target.value
+                  })} placeholder="Complete address" />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add any additional notes or specifications..."
-                  rows={3}
-                />
+                <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add any additional notes or specifications..." rows={3} />
               </div>
 
               <div className="space-y-2">
@@ -1013,12 +896,7 @@ const ManufacturingCost = () => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <CalendarPicker
-                      mode="single"
-                      selected={estimatedCompletionDate}
-                      onSelect={setEstimatedCompletionDate}
-                      initialFocus
-                    />
+                    <CalendarPicker mode="single" selected={estimatedCompletionDate} onSelect={setEstimatedCompletionDate} initialFocus />
                   </PopoverContent>
                 </Popover>
               </div>
@@ -1030,10 +908,7 @@ const ManufacturingCost = () => {
                     Allow customer to track order status with a secure link
                   </p>
                 </div>
-                <Switch
-                  checked={isCustomerVisible}
-                  onCheckedChange={setIsCustomerVisible}
-                />
+                <Switch checked={isCustomerVisible} onCheckedChange={setIsCustomerVisible} />
               </div>
 
               {/* Invoice Section */}
@@ -1049,29 +924,14 @@ const ManufacturingCost = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="invoice-prefix">Invoice Prefix</Label>
-                    <Input
-                      id="invoice-prefix"
-                      value={invoicePrefix}
-                      onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
-                      placeholder="INV"
-                    />
+                    <Input id="invoice-prefix" value={invoicePrefix} onChange={e => setInvoicePrefix(e.target.value.toUpperCase())} placeholder="INV" />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="invoice-number">Invoice Number</Label>
                     <div className="flex gap-2">
-                      <Input
-                        id="invoice-number"
-                        value={invoiceNumber}
-                        onChange={(e) => setInvoiceNumber(e.target.value)}
-                        placeholder="Auto-generated"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={generateNextInvoiceNumber}
-                        size="sm"
-                      >
+                      <Input id="invoice-number" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} placeholder="Auto-generated" />
+                      <Button type="button" variant="outline" onClick={generateNextInvoiceNumber} size="sm">
                         Auto
                       </Button>
                     </div>
@@ -1087,12 +947,7 @@ const ManufacturingCost = () => {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <CalendarPicker
-                          mode="single"
-                          selected={invoiceDate}
-                          onSelect={(date) => date && setInvoiceDate(date)}
-                          initialFocus
-                        />
+                        <CalendarPicker mode="single" selected={invoiceDate} onSelect={date => date && setInvoiceDate(date)} initialFocus />
                       </PopoverContent>
                     </Popover>
                   </div>
@@ -1123,12 +978,7 @@ const ManufacturingCost = () => {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <CalendarPicker
-                          mode="single"
-                          selected={paymentDueDate}
-                          onSelect={setPaymentDueDate}
-                          initialFocus
-                        />
+                        <CalendarPicker mode="single" selected={paymentDueDate} onSelect={setPaymentDueDate} initialFocus />
                       </PopoverContent>
                     </Popover>
                   </div>
@@ -1150,13 +1000,7 @@ const ManufacturingCost = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="invoice-notes">Invoice Notes</Label>
-                  <Textarea
-                    id="invoice-notes"
-                    value={invoiceNotes}
-                    onChange={(e) => setInvoiceNotes(e.target.value)}
-                    placeholder="Add payment instructions or special terms..."
-                    rows={3}
-                  />
+                  <Textarea id="invoice-notes" value={invoiceNotes} onChange={e => setInvoiceNotes(e.target.value)} placeholder="Add payment instructions or special terms..." rows={3} />
                 </div>
               </div>
 
@@ -1177,16 +1021,9 @@ const ManufacturingCost = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
-              {estimates.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+              {estimates.length === 0 ? <p className="text-center text-muted-foreground py-8">
                   No saved estimates found
-                </p>
-              ) : (
-                estimates.map((estimate) => (
-                  <div
-                    key={estimate.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/5 transition-colors"
-                  >
+                </p> : estimates.map(estimate => <div key={estimate.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/5 transition-colors">
                     <div className="flex-1">
                       <h4 className="font-medium">{estimate.estimate_name}</h4>
                       <p className="text-sm text-muted-foreground">
@@ -1197,17 +1034,11 @@ const ManufacturingCost = () => {
                       <Button onClick={() => handleLoad(estimate)} size="sm">
                         Load
                       </Button>
-                      <Button
-                        onClick={() => handleDelete(estimate.id)}
-                        variant="ghost"
-                        size="sm"
-                      >
+                      <Button onClick={() => handleDelete(estimate.id)} variant="ghost" size="sm">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                ))
-              )}
+                  </div>)}
             </div>
           </DialogContent>
         </Dialog>
@@ -1215,52 +1046,7 @@ const ManufacturingCost = () => {
         {/* Form Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Weight and Purity Inputs */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Weight & Purity</CardTitle>
-              <CardDescription>Enter weights and purity details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <Label>Weight Entry Mode:</Label>
-                <Select value={weightEntryMode} onValueChange={(value) => setWeightEntryMode(value as "gross" | "net")}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gross">Gross Weight</SelectItem>
-                    <SelectItem value="net">Net Weight</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {weightEntryMode === "gross" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="gross-weight">Gross Weight (grams)</Label>
-                  <Input
-                    id="gross-weight"
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={formData.grossWeight}
-                    onChange={(e) => handleChange("grossWeight", e.target.value)}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="net-weight">Net Weight (grams)</Label>
-                  <Input
-                    id="net-weight"
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={formData.netWeight}
-                    onChange={(e) => handleChange("netWeight", e.target.value)}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          
 
           {/* Gold Rate and Charges */}
           <Card>
@@ -1273,64 +1059,28 @@ const ManufacturingCost = () => {
                 <Label htmlFor="gold-rate-24k">Gold Rate 24K (per gram)</Label>
                 <div className="relative">
                   <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="gold-rate-24k"
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={formData.goldRate24k}
-                    onChange={(e) => handleChange("goldRate24k", e.target.value)}
-                    className="pl-9"
-                  />
+                  <Input id="gold-rate-24k" type="number" min={0} step={0.01} value={formData.goldRate24k} onChange={e => handleChange("goldRate24k", e.target.value)} className="pl-9" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="making-charges">Making Charges</Label>
-                <Input
-                  id="making-charges"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.makingCharges}
-                  onChange={(e) => handleChange("makingCharges", e.target.value)}
-                />
+                <Input id="making-charges" type="number" min={0} step={0.01} value={formData.makingCharges} onChange={e => handleChange("makingCharges", e.target.value)} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="cad-design-charges">CAD Design Charges</Label>
-                <Input
-                  id="cad-design-charges"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.cadDesignCharges}
-                  onChange={(e) => handleChange("cadDesignCharges", e.target.value)}
-                />
+                <Input id="cad-design-charges" type="number" min={0} step={0.01} value={formData.cadDesignCharges} onChange={e => handleChange("cadDesignCharges", e.target.value)} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="camming-charges">Camming Charges</Label>
-                <Input
-                  id="camming-charges"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.cammingCharges}
-                  onChange={(e) => handleChange("cammingCharges", e.target.value)}
-                />
+                <Input id="camming-charges" type="number" min={0} step={0.01} value={formData.cammingCharges} onChange={e => handleChange("cammingCharges", e.target.value)} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="certification-cost">Certification Cost</Label>
-                <Input
-                  id="certification-cost"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.certificationCost}
-                  onChange={(e) => handleChange("certificationCost", e.target.value)}
-                />
+                <Input id="certification-cost" type="number" min={0} step={0.01} value={formData.certificationCost} onChange={e => handleChange("certificationCost", e.target.value)} />
               </div>
             </CardContent>
           </Card>
@@ -1338,134 +1088,14 @@ const ManufacturingCost = () => {
 
         {/* Diamond Details */}
         <Card>
-          <CardHeader>
-            <CardTitle>Diamond Details</CardTitle>
-            <CardDescription>Enter diamond specifications and pricing</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="diamond-per-carat-price">Diamond Price per Carat</Label>
-                <Input
-                  id="diamond-per-carat-price"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.diamondPerCaratPrice}
-                  onChange={(e) => handleChange("diamondPerCaratPrice", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="diamond-weight">Diamond Weight (carats)</Label>
-                <Input
-                  id="diamond-weight"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.diamondWeight}
-                  onChange={(e) => handleChange("diamondWeight", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="diamond-type">Diamond Type</Label>
-                <Input
-                  id="diamond-type"
-                  value={formData.diamondType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, diamondType: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="diamond-shape">Diamond Shape</Label>
-                <Input
-                  id="diamond-shape"
-                  value={formData.diamondShape}
-                  onChange={(e) => setFormData(prev => ({ ...prev, diamondShape: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="diamond-color">Diamond Color</Label>
-                <Input
-                  id="diamond-color"
-                  value={formData.diamondColor}
-                  onChange={(e) => setFormData(prev => ({ ...prev, diamondColor: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="diamond-clarity">Diamond Clarity</Label>
-                <Input
-                  id="diamond-clarity"
-                  value={formData.diamondClarity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, diamondClarity: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Diamond Certification</Label>
-                <Select
-                  value={formData.diamondCertification}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, diamondCertification: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select certification" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="GIA">GIA</SelectItem>
-                    <SelectItem value="IGI">IGI</SelectItem>
-                    <SelectItem value="AGS">AGS</SelectItem>
-                    <SelectItem value="EGL">EGL</SelectItem>
-                    <SelectItem value="HRD">HRD</SelectItem>
-                    <SelectItem value="GSI">GSI</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                {formData.diamondCertification === "other" && (
-                  <Input
-                    placeholder="Enter custom certification"
-                    value={customCertification}
-                    onChange={(e) => setCustomCertification(e.target.value)}
-                    className="mt-2"
-                  />
-                )}
-              </div>
-            </div>
-          </CardContent>
+          
+          
         </Card>
 
         {/* Gemstone Details */}
         <Card>
-          <CardHeader>
-            <CardTitle>Gemstone Details</CardTitle>
-            <CardDescription>Enter gemstone specifications and pricing</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="gemstone-per-carat-price">Gemstone Price per Carat</Label>
-                <Input
-                  id="gemstone-per-carat-price"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.gemstonePerCaratPrice}
-                  onChange={(e) => handleChange("gemstonePerCaratPrice", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gemstone-weight">Gemstone Weight (carats)</Label>
-                <Input
-                  id="gemstone-weight"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.gemstoneWeight}
-                  onChange={(e) => handleChange("gemstoneWeight", e.target.value)}
-                />
-              </div>
-            </div>
-          </CardContent>
+          
+          
         </Card>
 
         {/* Profit Margin and Summary */}
@@ -1477,14 +1107,7 @@ const ManufacturingCost = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2 max-w-xs">
               <Label htmlFor="profit-margin">Profit Margin (%)</Label>
-              <Input
-                id="profit-margin"
-                type="number"
-                min={0}
-                step={0.01}
-                value={profitMargin}
-                onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-              />
+              <Input id="profit-margin" type="number" min={0} step={0.01} value={profitMargin} onChange={e => setProfitMargin(parseFloat(e.target.value) || 0)} />
             </div>
 
             <div className="space-y-2">
@@ -1498,46 +1121,8 @@ const ManufacturingCost = () => {
 
         {/* Reference Images Upload */}
         <Card>
-          <CardHeader>
-            <CardTitle>Reference Images</CardTitle>
-            <CardDescription>Upload images related to this estimate</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                ref={fileInputRef}
-                className="hidden"
-                id="image-upload"
-              />
-              <label htmlFor="image-upload">
-                <Button disabled={uploadingImage} variant="outline" size="sm" asChild>
-                  <span>
-                    <Upload className="mr-2 h-4 w-4" />
-                    {uploadingImage ? "Uploading..." : "Upload Images"}
-                  </span>
-                </Button>
-              </label>
-            </div>
-            <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-4">
-              {referenceImages.map((url, index) => (
-                <div key={index} className="relative group rounded overflow-hidden border">
-                  <img src={url} alt={`Reference ${index + 1}`} className="w-full h-24 object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="Remove image"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
+          
+          
         </Card>
 
         {/* Invoice Line Items */}
@@ -1547,17 +1132,10 @@ const ManufacturingCost = () => {
             <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
           </CardHeader>
           <CardContent>
-            <InvoiceLineItems
-              items={lineItems}
-              onChange={setLineItems}
-              goldRate24k={formData.goldRate24k}
-              purityFraction={formData.purityFraction}
-            />
+            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} />
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ManufacturingCost;
