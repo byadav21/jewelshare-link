@@ -28,6 +28,7 @@ interface LineItem {
   gemstone_clarity: string;
   net_weight: number;
   gross_weight: number;
+  purity_fraction: number;
   diamond_cost: number;
   gemstone_cost: number;
   gold_cost: number;

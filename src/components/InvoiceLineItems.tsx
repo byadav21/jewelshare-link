@@ -25,6 +25,7 @@ export interface LineItem {
   gemstone_clarity: string;
   net_weight: number;
   gross_weight: number;
+  purity_fraction: number;
   diamond_cost: number;
   gemstone_cost: number;
   gold_cost: number;
@@ -64,6 +65,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
       gemstone_clarity: "",
       net_weight: 0,
       gross_weight: 0,
+      purity_fraction: purityFraction,
       diamond_cost: 0,
       gemstone_cost: 0,
       gold_cost: 0,
@@ -90,8 +92,8 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
       item.net_weight = Math.max(0, item.gross_weight - totalStoneWeight);
     }
     
-    // Auto-calculate gold cost and subtotal
-    item.gold_cost = item.net_weight * purityFraction * goldRate24k;
+    // Auto-calculate gold cost and subtotal using item's own purity fraction
+    item.gold_cost = item.net_weight * item.purity_fraction * goldRate24k;
     item.subtotal = 
       item.gold_cost +
       item.making_charges +
@@ -320,6 +322,19 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                           </div>
                         </>
                       )}
+
+                      <div>
+                        <Label>Purity Fraction (e.g., 0.76 for 18K)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="1"
+                          value={item.purity_fraction}
+                          onChange={(e) => updateItem(index, 'purity_fraction', parseFloat(e.target.value) || 0)}
+                          className="mt-1.5"
+                        />
+                      </div>
                     </div>
 
                     <div>
