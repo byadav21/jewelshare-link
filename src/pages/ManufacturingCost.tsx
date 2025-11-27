@@ -1228,7 +1228,7 @@ const ManufacturingCost = () => {
           
 
           {/* Gold Rate and Charges */}
-          <Card>
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Gold Rate & Charges</CardTitle>
               <CardDescription>Enter rates and additional charges</CardDescription>
