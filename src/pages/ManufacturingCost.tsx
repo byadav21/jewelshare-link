@@ -11,8 +11,9 @@ import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InvoiceLineItems, type LineItem } from "@/components/InvoiceLineItems";
-import { generateInvoicePDF } from "@/utils/invoiceGenerator";
+import { generateInvoicePDF, type InvoiceData } from "@/utils/invoiceGenerator";
 import { generateEstimatePDF } from "@/utils/estimateGenerator";
+import { InvoicePreviewDialog } from "@/components/InvoicePreviewDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -52,6 +53,8 @@ const ManufacturingCost = () => {
   const [invoiceNotes, setInvoiceNotes] = useState("");
   const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal'>('detailed');
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
+  const [showInvoicePreview, setShowInvoicePreview] = useState(false);
+  const [previewInvoiceData, setPreviewInvoiceData] = useState<InvoiceData | null>(null);
   const [formData, setFormData] = useState({
     grossWeight: 0,
     netWeight: 0,
@@ -361,8 +364,8 @@ const ManufacturingCost = () => {
         gemstone_weight: formData.gemstoneWeight
       },
       vendorBranding: vendorProfile ? {
-        businessName: vendorProfile.business_name,
-        logoUrl: vendorProfile.logo_url,
+        name: vendorProfile.business_name,
+        logo: vendorProfile.logo_url,
         primaryColor: vendorProfile.primary_brand_color,
         secondaryColor: vendorProfile.secondary_brand_color,
         tagline: vendorProfile.brand_tagline,
@@ -399,12 +402,11 @@ const ManufacturingCost = () => {
     const details = formData;
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
-
     // Build vendor address string
     const addressParts = [vendorProfile?.address_line1, vendorProfile?.address_line2, vendorProfile?.city, vendorProfile?.state, vendorProfile?.pincode, vendorProfile?.country].filter(Boolean);
     const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
     
-    generateInvoicePDF({
+    const invoiceData: InvoiceData = {
       invoiceNumber: finalInvoiceNumber,
       invoiceDate: invoiceDate.toISOString(),
       paymentDueDate: paymentDueDate?.toISOString(),
@@ -420,14 +422,14 @@ const ManufacturingCost = () => {
       netWeight: formData.netWeight,
       grossWeight: formData.grossWeight,
       purityFraction: formData.purityFraction,
-      goldRate24k: formData.goldRate24k,
+      goldRate24k: vendorProfile?.gold_rate_24k_per_gram || formData.goldRate24k,
+      goldCost: costs.goldCost,
       makingCharges: formData.makingCharges,
       cadDesignCharges: formData.cadDesignCharges,
       cammingCharges: formData.cammingCharges,
       certificationCost: formData.certificationCost,
-      diamondCost,
-      gemstoneCost,
-      goldCost: costs.goldCost,
+      diamondCost: diamondCost,
+      gemstoneCost: gemstoneCost,
       totalCost: costs.totalCost,
       profitMargin,
       finalSellingPrice: costs.finalSellingPrice,
@@ -438,28 +440,32 @@ const ManufacturingCost = () => {
       details: {
         diamond_type: formData.diamondType,
         diamond_shape: formData.diamondShape,
-        diamond_weight: formData.diamondWeight,
         diamond_color: formData.diamondColor,
-        diamond_clarity: formData.diamondClarity,
-        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
-        gemstone_weight: formData.gemstoneWeight
+        diamond_clarity: formData.diamondClarity
       },
       vendorBranding: vendorProfile ? {
-        businessName: vendorProfile.business_name,
-        logoUrl: vendorProfile.logo_url,
-        primaryColor: vendorProfile.primary_brand_color,
-        secondaryColor: vendorProfile.secondary_brand_color,
-        tagline: vendorProfile.brand_tagline,
-        email: vendorProfile.email,
+        name: vendorProfile.business_name || "",
+        logo: vendorProfile.logo_url,
         phone: vendorProfile.phone,
+        email: vendorProfile.email,
         address: vendorAddress
       } : undefined
-    });
+    };
     
-    toast({
-      title: "Invoice Exported",
-      description: "Invoice PDF has been downloaded successfully"
-    });
+    // Show preview dialog instead of immediately downloading
+    setPreviewInvoiceData(invoiceData);
+    setShowInvoicePreview(true);
+  };
+
+  const handleConfirmDownload = () => {
+    if (previewInvoiceData) {
+      generateInvoicePDF(previewInvoiceData);
+      setShowInvoicePreview(false);
+      toast({
+        title: "Invoice Exported",
+        description: "Invoice PDF has been downloaded successfully"
+      });
+    }
   };
   const handleSaveInvoice = async (generatedInvoiceNumber: string) => {
     if (!user) return;
@@ -1312,6 +1318,13 @@ const ManufacturingCost = () => {
           </CardContent>
         </Card>
       </div>
+
+      <InvoicePreviewDialog
+        open={showInvoicePreview}
+        onOpenChange={setShowInvoicePreview}
+        invoiceData={previewInvoiceData}
+        onConfirmDownload={handleConfirmDownload}
+      />
     </div>;
 };
 export default ManufacturingCost;
