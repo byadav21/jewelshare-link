@@ -374,10 +374,9 @@ const ManufacturingCost = () => {
         address: vendorAddress
       } : undefined
     });
-    
+
     // Save/update the estimate with invoice generated flag
     await handleSaveInvoice(finalInvoiceNumber);
-    
     toast({
       title: "Invoice Generated",
       description: "Invoice PDF has been downloaded and saved"
@@ -392,20 +391,18 @@ const ManufacturingCost = () => {
       });
       return;
     }
-    
+
     // Generate invoice number if not exists
     let finalInvoiceNumber = invoiceNumber;
     if (!finalInvoiceNumber) {
       finalInvoiceNumber = (await generateNextInvoiceNumber()) || "";
     }
-    
     const details = formData;
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
     // Build vendor address string
     const addressParts = [vendorProfile?.address_line1, vendorProfile?.address_line2, vendorProfile?.city, vendorProfile?.state, vendorProfile?.pincode, vendorProfile?.country].filter(Boolean);
     const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
-    
     const invoiceData: InvoiceData = {
       invoiceNumber: finalInvoiceNumber,
       invoiceDate: invoiceDate.toISOString(),
@@ -451,12 +448,11 @@ const ManufacturingCost = () => {
         address: vendorAddress
       } : undefined
     };
-    
+
     // Show preview dialog instead of immediately downloading
     setPreviewInvoiceData(invoiceData);
     setShowInvoicePreview(true);
   };
-
   const handleConfirmDownload = () => {
     if (previewInvoiceData) {
       generateInvoicePDF(previewInvoiceData);
@@ -469,7 +465,6 @@ const ManufacturingCost = () => {
   };
   const handleSaveInvoice = async (generatedInvoiceNumber: string) => {
     if (!user) return;
-    
     const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
     const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
     const estimateData = {
@@ -519,18 +514,18 @@ const ManufacturingCost = () => {
         customer_gstin: customerDetails.gstin || null
       }
     };
-
     if (currentEstimateId) {
       await supabase.from('manufacturing_cost_estimates').update(estimateData).eq('id', currentEstimateId);
     } else {
-      const { data } = await supabase.from('manufacturing_cost_estimates').insert([estimateData]).select();
+      const {
+        data
+      } = await supabase.from('manufacturing_cost_estimates').insert([estimateData]).select();
       if (data && data[0]) {
         setCurrentEstimateId(data[0].id);
       }
     }
     fetchEstimates();
   };
-
   const handleSave = async () => {
     if (!user) {
       toast({
@@ -895,14 +890,10 @@ const ManufacturingCost = () => {
             <FolderOpen className="mr-2 h-4 w-4" />
             Load Estimate
           </Button>
-          <Button onClick={handleExportEstimate} variant="default" disabled={!costs.totalCost}>
-            <FileText className="mr-2 h-4 w-4" />
+          <Button onClick={handleExportEstimate} variant="default" disabled={!costs.totalCost}>Create Invoice<FileText className="mr-2 h-4 w-4" />
             Export Invoice
           </Button>
-          <Button onClick={() => navigate("/invoice-generator")} variant="secondary">
-            <FileText className="mr-2 h-4 w-4" />
-            Create Invoice
-          </Button>
+          
           <Button onClick={() => navigate("/estimate-history")} variant="outline">
             <FileText className="mr-2 h-4 w-4" />
             Estimate History
@@ -1182,13 +1173,7 @@ const ManufacturingCost = () => {
                       </div>}
                     <div>
                       <Label htmlFor="vendor-gstin" className="text-xs text-muted-foreground mb-1">GSTIN (Optional)</Label>
-                      <Input 
-                        id="vendor-gstin" 
-                        value={vendorGSTIN} 
-                        onChange={e => setVendorGSTIN(e.target.value)} 
-                        placeholder="Enter GSTIN" 
-                        className="mt-1.5"
-                      />
+                      <Input id="vendor-gstin" value={vendorGSTIN} onChange={e => setVendorGSTIN(e.target.value)} placeholder="Enter GSTIN" className="mt-1.5" />
                     </div>
                   </div>
                 </div> : <p className="text-sm text-muted-foreground py-4">Loading vendor details...</p>}
@@ -1233,16 +1218,10 @@ const ManufacturingCost = () => {
                 </div>
                 <div>
                   <Label htmlFor="customer-gstin" className="text-sm font-medium">GSTIN (Optional)</Label>
-                  <Input 
-                    id="customer-gstin" 
-                    value={customerDetails.gstin} 
-                    onChange={e => setCustomerDetails({
-                      ...customerDetails,
-                      gstin: e.target.value
-                    })} 
-                    placeholder="Enter customer GSTIN" 
-                    className="mt-1.5"
-                  />
+                  <Input id="customer-gstin" value={customerDetails.gstin} onChange={e => setCustomerDetails({
+                  ...customerDetails,
+                  gstin: e.target.value
+                })} placeholder="Enter customer GSTIN" className="mt-1.5" />
                 </div>
               </div>
             </CardContent>
@@ -1319,12 +1298,7 @@ const ManufacturingCost = () => {
         </Card>
       </div>
 
-      <InvoicePreviewDialog
-        open={showInvoicePreview}
-        onOpenChange={setShowInvoicePreview}
-        invoiceData={previewInvoiceData}
-        onConfirmDownload={handleConfirmDownload}
-      />
+      <InvoicePreviewDialog open={showInvoicePreview} onOpenChange={setShowInvoicePreview} invoiceData={previewInvoiceData} onConfirmDownload={handleConfirmDownload} />
     </div>;
 };
 export default ManufacturingCost;
