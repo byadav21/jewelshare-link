@@ -18,6 +18,7 @@ import { StylingControls } from "@/components/invoice-template/StylingControls";
 import { InvoiceTemplate, InvoiceTemplateData, TemplateSection, DEFAULT_SECTIONS } from "@/types/invoiceTemplate";
 import { LogoUpload } from "@/components/LogoUpload";
 import { MediaUpload } from "@/components/MediaUpload";
+import { ProductImageGallery } from "@/components/invoice-template/ProductImageGallery";
 
 const InvoiceTemplateBuilder = () => {
   const navigate = useNavigate();
@@ -37,6 +38,12 @@ const InvoiceTemplateBuilder = () => {
     pageMargin: 20,
     logoUrl: "",
   });
+  const [productImages, setProductImages] = useState<Array<{
+    id: string;
+    url: string;
+    name: string;
+    isDefault?: boolean;
+  }>>([]);
 
   useEffect(() => {
     checkAuth();
@@ -79,6 +86,7 @@ const InvoiceTemplateBuilder = () => {
       setIsDefault(data.is_default);
       const templateData = data.template_data as unknown as InvoiceTemplateData;
       setSections(templateData.sections || DEFAULT_SECTIONS);
+      setProductImages(templateData.productImages || []);
       if (templateData.globalStyling) {
         setGlobalStyling({
           primaryColor: templateData.globalStyling.primaryColor || "#4F46E5",
@@ -147,6 +155,7 @@ const InvoiceTemplateBuilder = () => {
       template_data: {
         sections,
         globalStyling,
+        productImages,
       } as unknown as any,
       is_default: isDefault,
     };
@@ -259,6 +268,11 @@ const InvoiceTemplateBuilder = () => {
               onUpdate={setGlobalStyling}
             />
 
+            <ProductImageGallery
+              images={productImages}
+              onUpdate={setProductImages}
+            />
+
             {/* Sections */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -303,6 +317,7 @@ const InvoiceTemplateBuilder = () => {
                 <TemplatePreview
                   sections={sections}
                   globalStyling={globalStyling}
+                  productImages={productImages}
                 />
               </CardContent>
             </Card>
