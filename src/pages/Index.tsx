@@ -240,7 +240,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       {/* Animated background elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-jewellery-from/10 rounded-full blur-3xl animate-pulse" />
@@ -498,7 +498,7 @@ const Index = () => {
         <ScrollReveal delay={0.1}>
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
-              <ScrollReveal key={index} delay={0.1 * index} direction="up">
+              <ScrollReveal key={index} delay={0.05 * (index % 4)} direction="up">
                 <TiltCard maxTilt={8} scale={1.05}>
                   <Card 
                     className={`group relative overflow-hidden border-2 h-full transition-all hover:shadow-lg hover:shadow-primary/10 ${feature.link ? 'cursor-pointer' : ''}`}
@@ -515,7 +515,7 @@ const Index = () => {
                           icon={feature.icon} 
                           className="h-6 w-6 text-white" 
                           animation={index % 4 === 0 ? "pulse" : index % 4 === 1 ? "rotate" : index % 4 === 2 ? "bounce" : "scale"}
-                          delay={0.1 * index}
+                          delay={0.05 * (index % 4)}
                         />
                       </div>
                       <CardTitle className="text-xl flex items-center justify-between">
