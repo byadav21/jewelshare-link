@@ -34,6 +34,7 @@ import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import { BrandShowcase } from "@/components/BrandShowcase";
 import { BulkEditDialog } from "@/components/BulkEditDialog";
 import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 const Catalog = () => {
@@ -866,6 +867,12 @@ const Catalog = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
+        
+        {/* Back to Home Button */}
+        <div className="absolute top-4 left-4 z-20">
+          <BackToHomeButton />
+        </div>
+
         {/* Mobile-Optimized Header */}
         <header className="relative border-b border-border/50 bg-card/95 backdrop-blur-xl shadow-xl z-10">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 pointer-events-none" />
