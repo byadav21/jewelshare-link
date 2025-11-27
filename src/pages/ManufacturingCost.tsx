@@ -1137,12 +1137,15 @@ const ManufacturingCost = () => {
         {/* Vendor and Customer Details Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Vendor Details (Auto-fetched) */}
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
-              <CardTitle className="text-lg">Vendor Details</CardTitle>
+          <Card className="border-primary/20 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                Vendor Details
+              </CardTitle>
               <CardDescription>Your business information</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 bg-primary/5">
               {vendorProfile ? <div className="space-y-4">
                   {vendorProfile.logo_url && <div className="flex justify-center mb-4">
                       <img src={vendorProfile.logo_url} alt="Vendor Logo" className="h-20 w-auto object-contain" />
@@ -1175,12 +1178,15 @@ const ManufacturingCost = () => {
           </Card>
 
           {/* Customer Details (Input fields) */}
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-accent/5 to-secondary/5">
-              <CardTitle className="text-lg">Customer Details</CardTitle>
+          <Card className="border-accent/20 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-accent/10 to-accent/5 border-b border-accent/10">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-accent" />
+                Customer Details
+              </CardTitle>
               <CardDescription>Enter customer information</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 bg-accent/5">
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="customer-name" className="text-sm font-medium">Customer Name *</Label>
