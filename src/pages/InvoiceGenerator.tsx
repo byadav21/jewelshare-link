@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { FileText, Calendar, Plus, History, Download } from "lucide-react";
+import { FileText, Calendar, Plus, History, Download, Sparkles } from "lucide-react";
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import {
@@ -181,6 +181,22 @@ const InvoiceGenerator = () => {
     toast.success("Estimate loaded successfully");
   };
 
+  const loadJewelryTemplate = () => {
+    if (!vendorProfile) {
+      toast.error("Please complete your vendor profile first");
+      return;
+    }
+
+    // Auto-populate from vendor profile
+    setGoldRate24k(vendorProfile.gold_rate_24k_per_gram || 0);
+    setMakingCharges(vendorProfile.making_charges_per_gram || 0);
+    
+    // Generate next invoice number automatically
+    generateNextInvoiceNumber();
+    
+    toast.success("Jewelry template loaded with your profile data");
+  };
+
   const loadSampleData = async () => {
     setEstimateName("Diamond Engagement Ring Order");
     setCustomerName("Priya Sharma");
@@ -346,7 +362,11 @@ const InvoiceGenerator = () => {
         </div>
 
         <div className="flex flex-wrap gap-3 justify-center">
-          <Button onClick={loadSampleData} variant="default" className="bg-gradient-to-r from-primary to-accent">
+          <Button onClick={loadJewelryTemplate} variant="default" className="bg-gradient-to-r from-primary to-accent">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Use Jewelry Template
+          </Button>
+          <Button onClick={loadSampleData} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Load Sample Data
           </Button>
