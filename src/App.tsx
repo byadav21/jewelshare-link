@@ -18,6 +18,7 @@ import { usePWA } from "@/hooks/usePWA";
 
 // Lazy-loaded page imports
 import * as Pages from "@/routes";
+import * as InvoiceRoutes from "@/routes/invoiceRoutes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,11 +103,23 @@ const AppContent = () => {
       />
       <Route 
         path={ROUTES.INVOICE_HISTORY} 
-        element={<RouteSuspense><Pages.InvoiceHistory /></RouteSuspense>} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceHistory /></RouteSuspense>} 
       />
       <Route 
         path={ROUTES.INVOICE_GENERATOR} 
-        element={<RouteSuspense><Pages.InvoiceGenerator /></RouteSuspense>} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceGenerator /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INVOICE_TEMPLATES} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceTemplates /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INVOICE_TEMPLATE_BUILDER} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceTemplateBuilder /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INVOICE_TEMPLATE_BUILDER_EDIT} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceTemplateBuilder /></RouteSuspense>} 
       />
       <Route 
         path={ROUTES.CALCULATORS} 
