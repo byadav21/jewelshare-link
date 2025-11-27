@@ -99,26 +99,67 @@ const formatCurrency = (amount: number) => {
   }).format(amount).replace('₹', '₹ ');
 };
 
-export const generateInvoicePDF = (data: InvoiceData) => {
+// Helper function to load image as base64 with CORS handling
+const loadImageAsBase64 = async (url: string): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve(null);
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/jpeg', 0.95);
+        resolve(dataURL);
+      } catch (error) {
+        console.error('Error converting image to base64:', error);
+        resolve(null);
+      }
+    };
+    
+    img.onerror = () => {
+      console.error('Failed to load image:', url);
+      resolve(null);
+    };
+    
+    // Add timestamp to prevent caching issues
+    const separator = url.includes('?') ? '&' : '?';
+    img.src = `${url}${separator}_t=${Date.now()}`;
+    
+    // Timeout after 3 seconds
+    setTimeout(() => resolve(null), 3000);
+  });
+};
+
+export const generateInvoicePDF = async (data: InvoiceData) => {
   const template = data.template || 'detailed';
   
   switch (template) {
     case 'summary':
-      return generateSummaryInvoice(data);
+      return await generateSummaryInvoice(data);
     case 'minimal':
-      return generateMinimalInvoice(data);
+      return await generateMinimalInvoice(data);
     case 'traditional':
-      return generateTraditionalInvoice(data);
+      return await generateTraditionalInvoice(data);
     case 'modern':
-      return generateModernInvoice(data);
+      return await generateModernInvoice(data);
     case 'luxury':
-      return generateLuxuryInvoice(data);
+      return await generateLuxuryInvoice(data);
     default:
-      return generateDetailedInvoice(data);
+      return await generateDetailedInvoice(data);
   }
 };
 
-const generateDetailedInvoice = (data: InvoiceData) => {
+const generateDetailedInvoice = async (data: InvoiceData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -150,23 +191,36 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   doc.setFillColor(accentRgb.r, accentRgb.g, accentRgb.b);
   doc.rect(0, 48, pageWidth, 2, 'F');
   
-  // Logo section with professional styling
+  // Logo section with professional styling and actual logo embedding
   if (data.vendorBranding?.logo) {
+    // Create logo container with shadow effect
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(16, 10, 30, 30, 3, 3, 'F');
+    
+    // Logo shadow/border
+    doc.setDrawColor(230, 230, 235);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(16, 10, 30, 30, 3, 3, 'S');
+    
     try {
-      // Enhanced logo container with shadow effect
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(16, 10, 30, 30, 3, 3, 'F');
+      // Load and embed the actual logo
+      const logoBase64 = await loadImageAsBase64(data.vendorBranding.logo);
       
-      // Logo shadow
-      doc.setDrawColor(0, 0, 0, 0.1);
-      doc.setLineWidth(0.5);
-      doc.roundedRect(16, 10, 30, 30, 3, 3, 'S');
-      
+      if (logoBase64) {
+        // Add the logo image to PDF with proper sizing and centering
+        doc.addImage(logoBase64, 'JPEG', 18, 12, 26, 26, undefined, 'FAST');
+      } else {
+        // Fallback to placeholder text if image loading fails
+        doc.setFontSize(7);
+        doc.setTextColor(150, 150, 150);
+        doc.text('LOGO', 31, 26.5, { align: 'center' });
+      }
+    } catch (error) {
+      console.error('Error processing logo:', error);
+      // Fallback: show placeholder
       doc.setFontSize(7);
       doc.setTextColor(150, 150, 150);
       doc.text('LOGO', 31, 26.5, { align: 'center' });
-    } catch (error) {
-      console.error('Error adding logo:', error);
     }
   }
   
@@ -885,7 +939,7 @@ const renderTotalsSection = (
   }
 };
 
-const generateSummaryInvoice = (data: InvoiceData) => {
+const generateSummaryInvoice = async (data: InvoiceData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   
@@ -962,7 +1016,7 @@ const generateSummaryInvoice = (data: InvoiceData) => {
   doc.save(fileName);
 };
 
-const generateMinimalInvoice = (data: InvoiceData) => {
+const generateMinimalInvoice = async (data: InvoiceData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   
@@ -1023,7 +1077,7 @@ const generateMinimalInvoice = (data: InvoiceData) => {
 };
 
 // Traditional Template - Classic serif style with ornate borders
-const generateTraditionalInvoice = (data: InvoiceData) => {
+const generateTraditionalInvoice = async (data: InvoiceData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -1224,7 +1278,7 @@ const generateTraditionalInvoice = (data: InvoiceData) => {
 };
 
 // Modern Template - Clean minimalist design
-const generateModernInvoice = (data: InvoiceData) => {
+const generateModernInvoice = async (data: InvoiceData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   
@@ -1371,7 +1425,7 @@ const generateModernInvoice = (data: InvoiceData) => {
 };
 
 // Luxury Template - Premium elegant design with gold accents
-const generateLuxuryInvoice = (data: InvoiceData) => {
+const generateLuxuryInvoice = async (data: InvoiceData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

@@ -717,7 +717,7 @@ const ManufacturingCost = () => {
           address: vendorAddress
         } : undefined
       };
-      generateInvoicePDF(invoiceData);
+      await generateInvoicePDF(invoiceData);
       toast({
         title: "Invoice Exported",
         description: "Invoice PDF downloaded successfully"

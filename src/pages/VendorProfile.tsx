@@ -214,7 +214,7 @@ const VendorProfile = () => {
                       currentImage={formData.logo_url}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Automatically cropped and optimized to 500×500px WebP format
+                      Automatically cropped and optimized to 500×500px WebP format. Your logo will appear on PDF invoices and shared catalogs.
                     </p>
                   </div>
 
