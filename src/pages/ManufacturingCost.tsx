@@ -383,14 +383,8 @@ const ManufacturingCost = () => {
     });
   };
   const handleExportEstimate = async () => {
-    if (!estimateName) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter an estimate name before exporting",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Use default name if estimate name is not provided
+    const finalEstimateName = estimateName || `Estimate ${format(new Date(), 'dd-MMM-yyyy HH:mm')}`;
 
     // Generate invoice number if not exists
     let finalInvoiceNumber = invoiceNumber;
@@ -408,7 +402,7 @@ const ManufacturingCost = () => {
       invoiceDate: invoiceDate.toISOString(),
       paymentDueDate: paymentDueDate?.toISOString(),
       paymentTerms,
-      estimateName,
+      estimateName: finalEstimateName,
       status: estimateStatus,
       customerName: customerDetails.name,
       customerPhone: customerDetails.phone,
