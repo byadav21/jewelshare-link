@@ -1233,32 +1233,32 @@ const ManufacturingCost = () => {
               <CardTitle>Gold Rate & Charges</CardTitle>
               <CardDescription>Enter rates and additional charges</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="gold-rate-24k">Gold Rate 24K (per gram)</Label>
+            <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="gold-rate-24k" className="text-sm">Gold Rate 24K (per gram)</Label>
                 <div className="relative">
                   <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input id="gold-rate-24k" type="number" min={0} step={0.01} value={formData.goldRate24k} onChange={e => handleChange("goldRate24k", e.target.value)} className="pl-9" />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="making-charges">Making Charges</Label>
+              <div className="space-y-1">
+                <Label htmlFor="making-charges" className="text-sm">Making Charges</Label>
                 <Input id="making-charges" type="number" min={0} step={0.01} value={formData.makingCharges} onChange={e => handleChange("makingCharges", e.target.value)} />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cad-design-charges">CAD Design Charges</Label>
+              <div className="space-y-1">
+                <Label htmlFor="cad-design-charges" className="text-sm">CAD Design Charges</Label>
                 <Input id="cad-design-charges" type="number" min={0} step={0.01} value={formData.cadDesignCharges} onChange={e => handleChange("cadDesignCharges", e.target.value)} />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="camming-charges">Camming Charges</Label>
+              <div className="space-y-1">
+                <Label htmlFor="camming-charges" className="text-sm">Camming Charges</Label>
                 <Input id="camming-charges" type="number" min={0} step={0.01} value={formData.cammingCharges} onChange={e => handleChange("cammingCharges", e.target.value)} />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="certification-cost">Certification Cost</Label>
+              <div className="space-y-1">
+                <Label htmlFor="certification-cost" className="text-sm">Certification Cost</Label>
                 <Input id="certification-cost" type="number" min={0} step={0.01} value={formData.certificationCost} onChange={e => handleChange("certificationCost", e.target.value)} />
               </div>
             </CardContent>
