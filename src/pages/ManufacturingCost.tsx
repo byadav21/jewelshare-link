@@ -83,9 +83,12 @@ const ManufacturingCost = () => {
     gstin: ""
   });
   const [vendorGSTIN, setVendorGSTIN] = useState("");
+  const [gstMode, setGstMode] = useState<'sgst_cgst' | 'igst'>('sgst_cgst');
   const [sgstPercentage, setSgstPercentage] = useState(9);
   const [cgstPercentage, setCgstPercentage] = useState(9);
+  const [igstPercentage, setIgstPercentage] = useState(18);
   const [shippingCharges, setShippingCharges] = useState(0);
+  const [shippingZone, setShippingZone] = useState('local');
   const [exchangeRate, setExchangeRate] = useState(83); // USD to INR rate
   const [costs, setCosts] = useState({
     goldCost: 0,
@@ -94,6 +97,7 @@ const ManufacturingCost = () => {
     profitAmount: 0,
     sgstAmount: 0,
     cgstAmount: 0,
+    igstAmount: 0,
     grandTotal: 0,
     totalInUSD: 0
   });
@@ -209,12 +213,20 @@ const ManufacturingCost = () => {
     const finalSellingPrice = totalCost * (1 + profitMargin / 100);
     const profitAmount = finalSellingPrice - totalCost;
     
-    // Calculate GST
-    const sgstAmount = (finalSellingPrice * sgstPercentage) / 100;
-    const cgstAmount = (finalSellingPrice * cgstPercentage) / 100;
+    // Calculate GST based on mode
+    let sgstAmount = 0;
+    let cgstAmount = 0;
+    let igstAmount = 0;
+    
+    if (gstMode === 'sgst_cgst') {
+      sgstAmount = (finalSellingPrice * sgstPercentage) / 100;
+      cgstAmount = (finalSellingPrice * cgstPercentage) / 100;
+    } else {
+      igstAmount = (finalSellingPrice * igstPercentage) / 100;
+    }
     
     // Calculate grand total with GST and shipping
-    const grandTotal = finalSellingPrice + sgstAmount + cgstAmount + shippingCharges;
+    const grandTotal = finalSellingPrice + sgstAmount + cgstAmount + igstAmount + shippingCharges;
     
     // Calculate USD equivalent
     const totalInUSD = grandTotal / exchangeRate;
@@ -226,10 +238,11 @@ const ManufacturingCost = () => {
       profitAmount: parseFloat(profitAmount.toFixed(2)),
       sgstAmount: parseFloat(sgstAmount.toFixed(2)),
       cgstAmount: parseFloat(cgstAmount.toFixed(2)),
+      igstAmount: parseFloat(igstAmount.toFixed(2)),
       grandTotal: parseFloat(grandTotal.toFixed(2)),
       totalInUSD: parseFloat(totalInUSD.toFixed(2))
     });
-  }, [formData, profitMargin, sgstPercentage, cgstPercentage, shippingCharges, exchangeRate]);
+  }, [formData, profitMargin, gstMode, sgstPercentage, cgstPercentage, igstPercentage, shippingCharges, exchangeRate]);
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -275,9 +288,12 @@ const ManufacturingCost = () => {
     setIsCustomerVisible(false);
     setShareToken("");
     setLineItems([]);
+    setGstMode('sgst_cgst');
     setSgstPercentage(9);
     setCgstPercentage(9);
+    setIgstPercentage(18);
     setShippingCharges(0);
+    setShippingZone('local');
     setExchangeRate(83);
   };
   const copyShareLink = () => {
@@ -377,11 +393,15 @@ const ManufacturingCost = () => {
       totalCost: costs.totalCost,
       profitMargin,
       finalSellingPrice: costs.finalSellingPrice,
+      gstMode,
       sgstPercentage,
       cgstPercentage,
+      igstPercentage,
       sgstAmount: costs.sgstAmount,
       cgstAmount: costs.cgstAmount,
+      igstAmount: costs.igstAmount,
       shippingCharges,
+      shippingZone,
       exchangeRate,
       grandTotal: costs.grandTotal,
       notes,
@@ -458,11 +478,15 @@ const ManufacturingCost = () => {
       totalCost: costs.totalCost,
       profitMargin,
       finalSellingPrice: costs.finalSellingPrice,
+      gstMode,
       sgstPercentage,
       cgstPercentage,
+      igstPercentage,
       sgstAmount: costs.sgstAmount,
       cgstAmount: costs.cgstAmount,
+      igstAmount: costs.igstAmount,
       shippingCharges,
+      shippingZone,
       exchangeRate,
       grandTotal: costs.grandTotal,
       notes,
@@ -547,9 +571,12 @@ const ManufacturingCost = () => {
         gemstone_weight: formData.gemstoneWeight,
         vendor_gstin: vendorGSTIN || null,
         customer_gstin: customerDetails.gstin || null,
+        gst_mode: gstMode,
         sgst_percentage: sgstPercentage,
         cgst_percentage: cgstPercentage,
+        igst_percentage: igstPercentage,
         shipping_charges: shippingCharges,
+        shipping_zone: shippingZone,
         exchange_rate: exchangeRate
       }
     };
@@ -629,9 +656,12 @@ const ManufacturingCost = () => {
         gemstone_weight: formData.gemstoneWeight,
         vendor_gstin: vendorGSTIN || null,
         customer_gstin: customerDetails.gstin || null,
+        gst_mode: gstMode,
         sgst_percentage: sgstPercentage,
         cgst_percentage: cgstPercentage,
+        igst_percentage: igstPercentage,
         shipping_charges: shippingCharges,
+        shipping_zone: shippingZone,
         exchange_rate: exchangeRate
       }
     };
@@ -766,9 +796,12 @@ const ManufacturingCost = () => {
       gstin: details?.customer_gstin || ""
     });
     setVendorGSTIN(details?.vendor_gstin || "");
+    setGstMode(details?.gst_mode || 'sgst_cgst');
     setSgstPercentage(details?.sgst_percentage || 9);
     setCgstPercentage(details?.cgst_percentage || 9);
+    setIgstPercentage(details?.igst_percentage || 18);
     setShippingCharges(details?.shipping_charges || 0);
+    setShippingZone(details?.shipping_zone || 'local');
     setExchangeRate(details?.exchange_rate || 83);
     setLineItems(estimate.line_items || []);
     setEstimateStatus(estimate.status || "draft");
@@ -1314,48 +1347,111 @@ const ManufacturingCost = () => {
             <CardDescription>Configure GST, shipping charges, and currency conversion</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="sgst" className="text-sm">SGST (%)</Label>
-                <Input 
-                  id="sgst" 
-                  type="number" 
-                  min={0} 
-                  max={100}
-                  step={0.1} 
-                  value={sgstPercentage} 
-                  onChange={(e) => setSgstPercentage(parseFloat(e.target.value) || 0)} 
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="cgst" className="text-sm">CGST (%)</Label>
-                <Input 
-                  id="cgst" 
-                  type="number" 
-                  min={0} 
-                  max={100}
-                  step={0.1} 
-                  value={cgstPercentage} 
-                  onChange={(e) => setCgstPercentage(parseFloat(e.target.value) || 0)} 
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="shipping" className="text-sm">Shipping Charges (₹)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="shipping" 
-                    type="number" 
-                    min={0} 
-                    step={0.01} 
-                    value={shippingCharges} 
-                    onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)} 
-                    className="pl-9"
+            {/* GST Mode Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">GST Type</Label>
+              <div className="flex gap-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="sgst-cgst-mode"
+                    checked={gstMode === 'sgst_cgst'}
+                    onChange={() => setGstMode('sgst_cgst')}
+                    className="h-4 w-4"
                   />
+                  <Label htmlFor="sgst-cgst-mode" className="text-sm cursor-pointer">
+                    SGST + CGST (Intra-State)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="igst-mode"
+                    checked={gstMode === 'igst'}
+                    onChange={() => setGstMode('igst')}
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor="igst-mode" className="text-sm cursor-pointer">
+                    IGST (Inter-State)
+                  </Label>
                 </div>
               </div>
+            </div>
+
+            {/* GST Rate Presets */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Quick GST Rate Selection</Label>
+              <div className="flex flex-wrap gap-2">
+                {[0, 3, 5, 12, 18, 28].map((rate) => (
+                  <Button
+                    key={rate}
+                    type="button"
+                    variant={
+                      (gstMode === 'sgst_cgst' && sgstPercentage === rate / 2) ||
+                      (gstMode === 'igst' && igstPercentage === rate)
+                        ? 'default'
+                        : 'outline'
+                    }
+                    size="sm"
+                    onClick={() => {
+                      if (gstMode === 'sgst_cgst') {
+                        setSgstPercentage(rate / 2);
+                        setCgstPercentage(rate / 2);
+                      } else {
+                        setIgstPercentage(rate);
+                      }
+                    }}
+                  >
+                    {rate}%
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* GST Input Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {gstMode === 'sgst_cgst' ? (
+                <>
+                  <div className="space-y-1">
+                    <Label htmlFor="sgst" className="text-sm">SGST (%)</Label>
+                    <Input 
+                      id="sgst" 
+                      type="number" 
+                      min={0} 
+                      max={100}
+                      step={0.1} 
+                      value={sgstPercentage} 
+                      onChange={(e) => setSgstPercentage(parseFloat(e.target.value) || 0)} 
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="cgst" className="text-sm">CGST (%)</Label>
+                    <Input 
+                      id="cgst" 
+                      type="number" 
+                      min={0} 
+                      max={100}
+                      step={0.1} 
+                      value={cgstPercentage} 
+                      onChange={(e) => setCgstPercentage(parseFloat(e.target.value) || 0)} 
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-1 md:col-span-2">
+                  <Label htmlFor="igst" className="text-sm">IGST (%)</Label>
+                  <Input 
+                    id="igst" 
+                    type="number" 
+                    min={0} 
+                    max={100}
+                    step={0.1} 
+                    value={igstPercentage} 
+                    onChange={(e) => setIgstPercentage(parseFloat(e.target.value) || 0)} 
+                  />
+                </div>
+              )}
 
               <div className="space-y-1">
                 <Label htmlFor="exchange-rate" className="text-sm">Exchange Rate (USD to INR)</Label>
@@ -1370,6 +1466,54 @@ const ManufacturingCost = () => {
               </div>
             </div>
 
+            {/* Shipping Zone Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="shipping-zone" className="text-sm font-semibold">Shipping Zone</Label>
+              <Select
+                value={shippingZone}
+                onValueChange={(value) => {
+                  setShippingZone(value);
+                  // Auto-set shipping charges based on zone
+                  const zoneCharges: { [key: string]: number } = {
+                    'local': 0,
+                    'state': 150,
+                    'metro': 250,
+                    'national': 400,
+                    'international': 1500
+                  };
+                  setShippingCharges(zoneCharges[value] || 0);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="local">Local Delivery (Free)</SelectItem>
+                  <SelectItem value="state">Within State (₹150)</SelectItem>
+                  <SelectItem value="metro">Metro Cities (₹250)</SelectItem>
+                  <SelectItem value="national">National (₹400)</SelectItem>
+                  <SelectItem value="international">International (₹1,500)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Manual Shipping Charges Override */}
+            <div className="space-y-1">
+              <Label htmlFor="shipping" className="text-sm">Shipping Charges (₹) - Manual Override</Label>
+              <div className="relative">
+                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  id="shipping" 
+                  type="number" 
+                  min={0} 
+                  step={0.01} 
+                  value={shippingCharges} 
+                  onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)} 
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
             {/* Cost Breakdown Display */}
             <div className="border-t pt-4 space-y-3">
               <h4 className="font-semibold text-sm text-muted-foreground">Cost Breakdown</h4>
@@ -1379,18 +1523,27 @@ const ManufacturingCost = () => {
                   <span className="font-semibold">₹{costs.finalSellingPrice.toLocaleString('en-IN')}</span>
                 </div>
                 
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                  <span className="text-muted-foreground">SGST ({sgstPercentage}%):</span>
-                  <span className="font-semibold">₹{costs.sgstAmount.toLocaleString('en-IN')}</span>
-                </div>
+                {gstMode === 'sgst_cgst' ? (
+                  <>
+                    <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                      <span className="text-muted-foreground">SGST ({sgstPercentage}%):</span>
+                      <span className="font-semibold">₹{costs.sgstAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                      <span className="text-muted-foreground">CGST ({cgstPercentage}%):</span>
+                      <span className="font-semibold">₹{costs.cgstAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                    <span className="text-muted-foreground">IGST ({igstPercentage}%):</span>
+                    <span className="font-semibold">₹{costs.igstAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
                 
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                  <span className="text-muted-foreground">CGST ({cgstPercentage}%):</span>
-                  <span className="font-semibold">₹{costs.cgstAmount.toLocaleString('en-IN')}</span>
-                </div>
-                
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                  <span className="text-muted-foreground">Shipping Charges:</span>
+                  <span className="text-muted-foreground">Shipping ({shippingZone}):</span>
                   <span className="font-semibold">₹{shippingCharges.toLocaleString('en-IN')}</span>
                 </div>
               </div>
