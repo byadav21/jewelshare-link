@@ -12,6 +12,25 @@ interface VendorBranding {
   address?: string;
 }
 
+interface LineItem {
+  id: string;
+  item_name: string;
+  description: string;
+  image_url: string;
+  diamond_weight: number;
+  gemstone_weight: number;
+  net_weight: number;
+  gross_weight: number;
+  diamond_cost: number;
+  gemstone_cost: number;
+  gold_cost: number;
+  making_charges: number;
+  certification_cost: number;
+  cad_design_charges: number;
+  camming_charges: number;
+  subtotal: number;
+}
+
 interface InvoiceData {
   invoiceNumber: string;
   invoiceDate: string;
@@ -42,6 +61,7 @@ interface InvoiceData {
   details?: any;
   vendorBranding?: VendorBranding;
   template?: 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
+  lineItems?: LineItem[];
 }
 
 type InvoiceTemplate = 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
@@ -195,14 +215,121 @@ const generateDetailedInvoice = (data: InvoiceData) => {
     customerSectionY += 40;
   }
   
-  // Product Specifications
-  const specsStartY = customerSectionY + 5;
+  // Line Items Section (if provided)
+  let currentY = customerSectionY + 5;
   
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('PRODUCT SPECIFICATIONS', 14, specsStartY);
-  doc.setTextColor(0, 0, 0);
+  if (data.lineItems && data.lineItems.length > 0) {
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text('INVOICE LINE ITEMS', 14, currentY);
+    doc.setTextColor(0, 0, 0);
+    currentY += 5;
+    
+    // Render each line item
+    data.lineItems.forEach((item, index) => {
+      // Check if we need a new page
+      if (currentY > doc.internal.pageSize.getHeight() - 50) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      // Item header with image
+      const itemStartY = currentY;
+      
+      if (item.image_url) {
+        try {
+          doc.setFillColor(245, 245, 250);
+          doc.rect(14, currentY, 30, 30, 'F');
+          doc.setFontSize(7);
+          doc.setTextColor(150, 150, 150);
+          doc.text('[Image]', 29, currentY + 17, { align: 'center' });
+        } catch (error) {
+          console.error('Error adding item image:', error);
+        }
+      }
+      
+      // Item details
+      const detailsX = item.image_url ? 48 : 18;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${index + 1}. ${item.item_name}`, detailsX, currentY + 5);
+      
+      if (item.description) {
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 100, 100);
+        const descLines = doc.splitTextToSize(item.description, pageWidth - detailsX - 20);
+        doc.text(descLines, detailsX, currentY + 11);
+      }
+      
+      currentY = Math.max(currentY + 35, itemStartY + (item.image_url ? 35 : 25));
+      
+      // Item specifications table
+      const itemSpecs = [
+        ['Gross Weight', `${item.gross_weight} g`],
+        ['Net Weight', `${item.net_weight} g`],
+        ['Diamond Weight', `${item.diamond_weight} ct`],
+        ['Gemstone Weight', `${item.gemstone_weight} ct`],
+      ];
+      
+      (doc as any).autoTable({
+        startY: currentY,
+        body: itemSpecs,
+        theme: 'plain',
+        styles: { fontSize: 9, cellPadding: 2 },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 40 },
+          1: { cellWidth: 'auto' },
+        },
+        margin: { left: 18, right: 14 },
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 2;
+      
+      // Item cost breakdown
+      const itemCosts = [
+        ['Gold Cost', `₹${item.gold_cost.toFixed(2)}`],
+        ['Making Charges', `₹${item.making_charges.toFixed(2)}`],
+        ['CAD Design', `₹${item.cad_design_charges.toFixed(2)}`],
+        ['Camming', `₹${item.camming_charges.toFixed(2)}`],
+        ['Certification', `₹${item.certification_cost.toFixed(2)}`],
+        ['Diamond Cost', `₹${item.diamond_cost.toFixed(2)}`],
+        ['Gemstone Cost', `₹${item.gemstone_cost.toFixed(2)}`],
+      ];
+      
+      (doc as any).autoTable({
+        startY: currentY,
+        body: itemCosts,
+        theme: 'plain',
+        styles: { fontSize: 9, cellPadding: 2 },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 'auto', halign: 'right' },
+        },
+        margin: { left: 18, right: 14 },
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 3;
+      
+      // Item subtotal
+      doc.setFillColor(245, 245, 250);
+      doc.rect(14, currentY, pageWidth - 28, 8, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Item Subtotal:', 18, currentY + 5.5);
+      doc.text(`₹${item.subtotal.toFixed(2)}`, pageWidth - 18, currentY + 5.5, { align: 'right' });
+      
+      currentY += 15;
+    });
+  } else {
+    // Original single-item specifications (fallback)
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text('PRODUCT SPECIFICATIONS', 14, currentY);
+    doc.setTextColor(0, 0, 0);
   
   const specsData = [];
   if (data.grossWeight) {
@@ -238,7 +365,7 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   
   if (specsData.length > 0) {
     (doc as any).autoTable({
-      startY: specsStartY + 5,
+      startY: currentY + 5,
       body: specsData,
       theme: 'plain',
       styles: { fontSize: 10 },
@@ -248,10 +375,15 @@ const generateDetailedInvoice = (data: InvoiceData) => {
       },
       margin: { left: 14, right: 14 },
     });
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+  } else {
+    currentY += 10;
+  }
   }
   
-  // Cost Breakdown Table
-  const costStartY = specsData.length > 0 ? (doc as any).lastAutoTable.finalY + 15 : specsStartY + 10;
+  // Cost Breakdown Table (only if no line items)
+  if (!data.lineItems || data.lineItems.length === 0) {
+  const costStartY = currentY;
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
@@ -283,8 +415,11 @@ const generateDetailedInvoice = (data: InvoiceData) => {
     margin: { left: 14, right: 14 },
   });
   
+  currentY = (doc as any).lastAutoTable.finalY + 10;
+  }
+  
   // Total Section
-  const finalY = (doc as any).lastAutoTable.finalY + 10;
+  const finalY = currentY;
   
   doc.setFillColor(245, 245, 250);
   doc.rect(14, finalY, pageWidth - 28, 35, 'F');

@@ -10,6 +10,7 @@ import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, 
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { InvoiceLineItems, type LineItem } from "@/components/InvoiceLineItems";
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
 import { generateEstimatePDF } from "@/utils/estimateGenerator";
 import {
@@ -67,6 +68,7 @@ const ManufacturingCost = () => {
   const [paymentDueDate, setPaymentDueDate] = useState<Date>();
   const [invoiceNotes, setInvoiceNotes] = useState("");
   const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal'>('detailed');
+  const [lineItems, setLineItems] = useState<LineItem[]>([]);
   
   const [formData, setFormData] = useState({
     grossWeight: 0,
@@ -261,6 +263,7 @@ const ManufacturingCost = () => {
     setEstimatedCompletionDate(undefined);
     setIsCustomerVisible(false);
     setShareToken("");
+    setLineItems([]);
   };
 
   const copyShareLink = () => {
@@ -376,6 +379,7 @@ const ManufacturingCost = () => {
       notes,
       invoiceNotes,
       template: invoiceTemplate,
+      lineItems: lineItems.length > 0 ? lineItems : undefined,
       details: {
         diamond_type: formData.diamondType,
         diamond_shape: formData.diamondShape,
@@ -532,6 +536,7 @@ const ManufacturingCost = () => {
       payment_due_date: paymentDueDate?.toISOString() || null,
       invoice_notes: invoiceNotes || null,
       is_invoice_generated: !!invoiceNumber,
+      line_items: (lineItems.length > 0 ? lineItems : []) as any,
       details: {
         gross_weight: formData.grossWeight,
         diamond_per_carat_price: formData.diamondPerCaratPrice,
@@ -1539,6 +1544,22 @@ const ManufacturingCost = () => {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Invoice Line Items */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Invoice Line Items</CardTitle>
+            <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <InvoiceLineItems
+              items={lineItems}
+              onChange={setLineItems}
+              goldRate24k={formData.goldRate24k}
+              purityFraction={formData.purityFraction}
+            />
           </CardContent>
         </Card>
       </div>

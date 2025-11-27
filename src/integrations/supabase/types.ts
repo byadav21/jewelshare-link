@@ -481,6 +481,7 @@ export type Database = {
           invoice_number: string | null
           is_customer_visible: boolean | null
           is_invoice_generated: boolean | null
+          line_items: Json | null
           making_charges: number | null
           net_weight: number | null
           notes: string | null
@@ -517,6 +518,7 @@ export type Database = {
           invoice_number?: string | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
+          line_items?: Json | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
@@ -553,6 +555,7 @@ export type Database = {
           invoice_number?: string | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
+          line_items?: Json | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
