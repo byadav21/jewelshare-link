@@ -40,6 +40,7 @@ export interface InvoiceTemplateData {
     secondaryColor?: string;
     fontFamily?: string;
     pageMargin?: number;
+    logoUrl?: string;
   };
 }
 

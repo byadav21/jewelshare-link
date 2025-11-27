@@ -16,6 +16,8 @@ import { SortableSection } from "@/components/invoice-template/SortableSection";
 import { TemplatePreview } from "@/components/invoice-template/TemplatePreview";
 import { StylingControls } from "@/components/invoice-template/StylingControls";
 import { InvoiceTemplate, InvoiceTemplateData, TemplateSection, DEFAULT_SECTIONS } from "@/types/invoiceTemplate";
+import { LogoUpload } from "@/components/LogoUpload";
+import { MediaUpload } from "@/components/MediaUpload";
 
 const InvoiceTemplateBuilder = () => {
   const navigate = useNavigate();
@@ -33,6 +35,7 @@ const InvoiceTemplateBuilder = () => {
     secondaryColor: "#8B5CF6",
     fontFamily: "Arial",
     pageMargin: 20,
+    logoUrl: "",
   });
 
   useEffect(() => {
@@ -82,6 +85,7 @@ const InvoiceTemplateBuilder = () => {
           secondaryColor: templateData.globalStyling.secondaryColor || "#8B5CF6",
           fontFamily: templateData.globalStyling.fontFamily || "Arial",
           pageMargin: templateData.globalStyling.pageMargin || 20,
+          logoUrl: templateData.globalStyling.logoUrl || "",
         });
       }
     }
@@ -232,6 +236,21 @@ const InvoiceTemplateBuilder = () => {
                   <Label>Set as Default Template</Label>
                   <Switch checked={isDefault} onCheckedChange={setIsDefault} />
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Business Logo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LogoUpload
+                  onUploadComplete={(url) => setGlobalStyling({ ...globalStyling, logoUrl: url })}
+                  currentImage={globalStyling.logoUrl}
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Upload your company logo to appear on the invoice header
+                </p>
               </CardContent>
             </Card>
 

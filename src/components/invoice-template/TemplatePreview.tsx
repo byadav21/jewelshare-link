@@ -8,6 +8,7 @@ interface TemplatePreviewProps {
     secondaryColor?: string;
     fontFamily?: string;
     pageMargin?: number;
+    logoUrl?: string;
   };
 }
 
@@ -15,11 +16,29 @@ export const TemplatePreview = ({ sections, globalStyling }: TemplatePreviewProp
   const visibleSections = sections.filter((s) => s.visible).sort((a, b) => a.order - b.order);
 
   const renderField = (field: any, section: any) => {
-    if (field.key === 'logo' || field.key === 'itemImage') {
+    if (field.key === 'logo') {
+      return (
+        <div className="flex items-center gap-2 mb-2">
+          {globalStyling?.logoUrl ? (
+            <img 
+              src={globalStyling.logoUrl} 
+              alt="Business Logo" 
+              className="w-20 h-20 object-contain rounded border border-border"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-xs">
+              Logo
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    if (field.key === 'itemImage') {
       return (
         <div className="flex items-center gap-2 mb-2">
           <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-xs">
-            Logo
+            Product
           </div>
         </div>
       );
