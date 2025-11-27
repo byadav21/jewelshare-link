@@ -243,3 +243,87 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
     XLSX.writeFile(wb, 'jewellery_import_template.xlsx');
   }
 };
+
+// Invoice Template Presets
+import { InvoiceTemplateData, DEFAULT_SECTIONS } from "@/types/invoiceTemplate";
+
+export const PRE_DESIGNED_TEMPLATES = {
+  modern: {
+    name: "Modern Professional",
+    description: "Clean, contemporary design with bold accents and minimal styling",
+    template_data: {
+      sections: DEFAULT_SECTIONS.map(section => ({
+        ...section,
+        styling: {
+          ...section.styling,
+          backgroundColor: section.type === 'header' ? 'hsl(var(--primary) / 0.05)' : 'transparent',
+          borderColor: 'hsl(var(--border))',
+          borderWidth: section.type === 'header' ? 0 : 1,
+          padding: 20,
+        }
+      })),
+      globalStyling: {
+        primaryColor: "hsl(221, 83%, 53%)",
+        secondaryColor: "hsl(262, 83%, 58%)",
+        fontFamily: "Inter, sans-serif",
+        pageMargin: 24,
+        logoUrl: "",
+      },
+      productImages: [],
+    } as InvoiceTemplateData,
+  },
+  traditional: {
+    name: "Traditional Classic",
+    description: "Timeless, formal layout with structured sections and elegant borders",
+    template_data: {
+      sections: DEFAULT_SECTIONS.map(section => ({
+        ...section,
+        styling: {
+          ...section.styling,
+          backgroundColor: 'transparent',
+          borderColor: 'hsl(var(--foreground) / 0.2)',
+          borderWidth: 2,
+          padding: 16,
+        }
+      })),
+      globalStyling: {
+        primaryColor: "hsl(220, 13%, 18%)",
+        secondaryColor: "hsl(215, 16%, 47%)",
+        fontFamily: "Georgia, serif",
+        pageMargin: 32,
+        logoUrl: "",
+      },
+      productImages: [],
+    } as InvoiceTemplateData,
+  },
+  luxury: {
+    name: "Luxury Premium",
+    description: "Elegant, high-end design with gold accents and sophisticated styling",
+    template_data: {
+      sections: DEFAULT_SECTIONS.map(section => ({
+        ...section,
+        styling: {
+          ...section.styling,
+          backgroundColor: section.type === 'header' 
+            ? 'hsl(43, 74%, 49% / 0.08)' 
+            : section.type === 'cost_breakdown'
+            ? 'hsl(43, 74%, 49% / 0.03)'
+            : 'transparent',
+          borderColor: 'hsl(43, 74%, 49% / 0.3)',
+          borderWidth: section.type === 'header' || section.type === 'cost_breakdown' ? 2 : 1,
+          padding: 24,
+        }
+      })),
+      globalStyling: {
+        primaryColor: "hsl(43, 74%, 49%)",
+        secondaryColor: "hsl(220, 13%, 18%)",
+        fontFamily: "Playfair Display, serif",
+        pageMargin: 28,
+        logoUrl: "",
+      },
+      productImages: [],
+    } as InvoiceTemplateData,
+  },
+};
+
+export type TemplateTheme = keyof typeof PRE_DESIGNED_TEMPLATES;

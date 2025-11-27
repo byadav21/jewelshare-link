@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Copy, Star, StarOff } from "lucide-react";
+import { Plus, Edit, Trash2, Copy, Star, StarOff, Sparkles } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { PRE_DESIGNED_TEMPLATES, TemplateTheme } from "@/utils/generateTemplate";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -118,6 +119,31 @@ const InvoiceTemplates = () => {
     }
   };
 
+  const createFromTemplate = async (theme: TemplateTheme) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const templateConfig = PRE_DESIGNED_TEMPLATES[theme];
+    
+    const { error } = await supabase
+      .from("invoice_templates")
+      .insert({
+        user_id: user.id,
+        name: templateConfig.name,
+        description: templateConfig.description,
+        template_data: templateConfig.template_data as unknown as any,
+        is_default: templates.length === 0,
+      });
+
+    if (error) {
+      toast.error("Failed to create template");
+      console.error(error);
+    } else {
+      toast.success(`${templateConfig.name} template created`);
+      fetchTemplates();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -138,23 +164,59 @@ const InvoiceTemplates = () => {
           </p>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading templates...</p>
+        {/* Pre-Designed Templates */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold text-foreground">Start with a Pre-Designed Template</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {Object.entries(PRE_DESIGNED_TEMPLATES).map(([key, template]) => (
+              <Card 
+                key={key} 
+                className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50"
+                onClick={() => createFromTemplate(key as TemplateTheme)}
+              >
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg">{template.name}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {template.description}
+                  </p>
+                  <Button variant="outline" className="w-full" onClick={(e) => {
+                    e.stopPropagation();
+                    createFromTemplate(key as TemplateTheme);
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Use This Template
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        ) : templates.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
-                No templates yet. Create your first custom invoice template!
-              </p>
-              <Button onClick={() => navigate("/invoice-template-builder")}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Template
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
+        </div>
+
+        {/* User's Custom Templates */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold text-foreground">Your Custom Templates</h2>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading templates...</p>
+            </div>
+          ) : templates.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-muted-foreground mb-4">
+                  No custom templates yet. Start with a pre-designed template above or create from scratch!
+                </p>
+                <Button onClick={() => navigate("/invoice-template-builder")}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create from Scratch
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {templates.map((template) => (
               <Card key={template.id} className="hover:shadow-lg transition-shadow">
@@ -221,7 +283,8 @@ const InvoiceTemplates = () => {
               </Card>
             ))}
           </div>
-        )}
+          )}
+        </div>
 
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent>
