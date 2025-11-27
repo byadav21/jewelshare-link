@@ -1135,9 +1135,12 @@ const ManufacturingCost = () => {
         </Dialog>
 
         {/* Vendor and Customer Details Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Vertical Separator - only visible on md+ screens */}
+          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-border to-transparent transform -translate-x-1/2" />
+          
           {/* Vendor Details (Auto-fetched) */}
-          <Card className="border-primary/20 shadow-sm">
+          <Card className="border-primary/20 shadow-sm relative z-10">
             <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
               <CardTitle className="text-lg flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
@@ -1178,7 +1181,7 @@ const ManufacturingCost = () => {
           </Card>
 
           {/* Customer Details (Input fields) */}
-          <Card className="border-accent/20 shadow-sm">
+          <Card className="border-accent/20 shadow-sm relative z-10">
             <CardHeader className="bg-gradient-to-r from-accent/10 to-accent/5 border-b border-accent/10">
               <CardTitle className="text-lg flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-accent" />
