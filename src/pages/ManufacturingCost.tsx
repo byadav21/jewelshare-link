@@ -590,6 +590,169 @@ const ManufacturingCost = () => {
     }
     fetchEstimates();
   };
+
+  const handleSaveAsInvoice = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to save invoices",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!customerDetails.name) {
+      toast({
+        title: "Customer Details Required",
+        description: "Please enter customer name before saving invoice",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Generate invoice number if not exists
+      let finalInvoiceNumber = invoiceNumber;
+      if (!finalInvoiceNumber) {
+        finalInvoiceNumber = (await generateNextInvoiceNumber()) || "";
+      }
+
+      // Save invoice to database
+      await handleSaveInvoice(finalInvoiceNumber);
+
+      toast({
+        title: "Invoice Saved",
+        description: `Invoice ${finalInvoiceNumber} saved successfully`,
+      });
+
+      // Navigate to invoice history
+      setTimeout(() => {
+        navigate("/invoice-history");
+      }, 1000);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to save invoice",
+        variant: "destructive",
+      });
+      console.error("Save invoice error:", error);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!customerDetails.name) {
+      toast({
+        title: "Customer Details Required",
+        description: "Please enter customer name before exporting PDF",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Generate invoice number if not exists
+      let finalInvoiceNumber = invoiceNumber;
+      if (!finalInvoiceNumber) {
+        finalInvoiceNumber = (await generateNextInvoiceNumber()) || "";
+        setInvoiceNumber(finalInvoiceNumber);
+      }
+
+      const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
+      const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
+
+      // Build vendor address string
+      const addressParts = [
+        vendorProfile?.address_line1,
+        vendorProfile?.address_line2,
+        vendorProfile?.city,
+        vendorProfile?.state,
+        vendorProfile?.pincode,
+        vendorProfile?.country,
+      ].filter(Boolean);
+      const vendorAddress = addressParts.length > 0 ? addressParts.join(", ") : undefined;
+
+      const invoiceData: InvoiceData = {
+        invoiceNumber: finalInvoiceNumber,
+        invoiceDate: invoiceDate.toISOString(),
+        paymentDueDate: paymentDueDate?.toISOString(),
+        paymentTerms,
+        estimateName: estimateName || `Invoice ${format(new Date(), "dd-MMM-yyyy")}`,
+        status: estimateStatus,
+        customerName: customerDetails.name,
+        customerPhone: customerDetails.phone,
+        customerEmail: customerDetails.email,
+        customerAddress: customerDetails.address,
+        customerGSTIN: customerDetails.gstin,
+        vendorGSTIN: vendorGSTIN,
+        netWeight: formData.netWeight,
+        grossWeight: formData.grossWeight,
+        purityFraction: formData.purityFraction,
+        goldRate24k: vendorProfile?.gold_rate_24k_per_gram || formData.goldRate24k,
+        goldCost: costs.goldCost,
+        makingCharges: formData.makingCharges,
+        cadDesignCharges: formData.cadDesignCharges,
+        cammingCharges: formData.cammingCharges,
+        certificationCost: formData.certificationCost,
+        diamondCost: diamondCost,
+        gemstoneCost: gemstoneCost,
+        totalCost: costs.totalCost,
+        profitMargin,
+        finalSellingPrice: costs.finalSellingPrice,
+        gstMode,
+        sgstPercentage,
+        cgstPercentage,
+        igstPercentage,
+        sgstAmount: costs.sgstAmount,
+        cgstAmount: costs.cgstAmount,
+        igstAmount: costs.igstAmount,
+        shippingCharges,
+        shippingZone,
+        exchangeRate,
+        grandTotal: costs.grandTotal,
+        notes,
+        invoiceNotes,
+        template: invoiceTemplate,
+        lineItems: lineItems.length > 0 ? lineItems : undefined,
+        details: {
+          diamond_type: formData.diamondType,
+          diamond_shape: formData.diamondShape,
+          diamond_color: formData.diamondColor,
+          diamond_clarity: formData.diamondClarity,
+          diamond_certification:
+            formData.diamondCertification === "other"
+              ? customCertification
+              : formData.diamondCertification,
+          gemstone_weight: formData.gemstoneWeight,
+        },
+        vendorBranding: vendorProfile
+          ? {
+              name: vendorProfile.business_name,
+              logo: vendorProfile.logo_url,
+              primaryColor: vendorProfile.primary_brand_color,
+              secondaryColor: vendorProfile.secondary_brand_color,
+              tagline: vendorProfile.brand_tagline,
+              email: vendorProfile.email,
+              phone: vendorProfile.phone,
+              address: vendorAddress,
+            }
+          : undefined,
+      };
+
+      generateInvoicePDF(invoiceData);
+
+      toast({
+        title: "Invoice Exported",
+        description: "Invoice PDF downloaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to export PDF",
+        variant: "destructive",
+      });
+      console.error("Export PDF error:", error);
+    }
+  };
   const handleSave = async () => {
     if (!user) {
       toast({
@@ -962,6 +1125,59 @@ const ManufacturingCost = () => {
         </div>
 
         {/* Action Buttons */}
+        <Card className="border-primary/20 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button
+                onClick={() => setShowSaveDialog(true)}
+                size="lg"
+                variant="outline"
+                className="gap-2"
+              >
+                <Save className="h-5 w-5" />
+                Save Estimate
+              </Button>
+
+              <Button
+                onClick={() => setShowLoadDialog(true)}
+                size="lg"
+                variant="outline"
+                className="gap-2"
+              >
+                <FolderOpen className="h-5 w-5" />
+                Load Estimate
+              </Button>
+
+              <Button
+                onClick={handleSaveAsInvoice}
+                size="lg"
+                className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              >
+                <FileText className="h-5 w-5" />
+                Save Invoice
+              </Button>
+
+              <Button
+                onClick={handleExportPDF}
+                size="lg"
+                className="gap-2 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70"
+              >
+                <FileText className="h-5 w-5" />
+                Export PDF
+              </Button>
+
+              <Button
+                onClick={() => navigate("/invoice-history")}
+                size="lg"
+                variant="secondary"
+                className="gap-2"
+              >
+                <FolderOpen className="h-5 w-5" />
+                View Saved Invoices
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
         
 
         {/* Save Dialog */}
