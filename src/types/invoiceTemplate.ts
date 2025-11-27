@@ -42,6 +42,12 @@ export interface InvoiceTemplateData {
     pageMargin?: number;
     logoUrl?: string;
   };
+  productImages?: Array<{
+    id: string;
+    url: string;
+    name: string;
+    isDefault?: boolean;
+  }>;
 }
 
 export interface InvoiceTemplate {

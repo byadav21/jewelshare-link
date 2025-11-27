@@ -10,10 +10,17 @@ interface TemplatePreviewProps {
     pageMargin?: number;
     logoUrl?: string;
   };
+  productImages?: Array<{
+    id: string;
+    url: string;
+    name: string;
+    isDefault?: boolean;
+  }>;
 }
 
-export const TemplatePreview = ({ sections, globalStyling }: TemplatePreviewProps) => {
+export const TemplatePreview = ({ sections, globalStyling, productImages = [] }: TemplatePreviewProps) => {
   const visibleSections = sections.filter((s) => s.visible).sort((a, b) => a.order - b.order);
+  const defaultProductImage = productImages.find(img => img.isDefault) || productImages[0];
 
   const renderField = (field: any, section: any) => {
     if (field.key === 'logo') {
@@ -37,9 +44,17 @@ export const TemplatePreview = ({ sections, globalStyling }: TemplatePreviewProp
     if (field.key === 'itemImage') {
       return (
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-xs">
-            Product
-          </div>
+          {defaultProductImage ? (
+            <img 
+              src={defaultProductImage.url} 
+              alt="Product" 
+              className="w-16 h-16 object-cover rounded border border-border"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-xs">
+              Product
+            </div>
+          )}
         </div>
       );
     }
@@ -79,9 +94,17 @@ export const TemplatePreview = ({ sections, globalStyling }: TemplatePreviewProp
                 {visibleFields.map((field: any) => (
                   <td key={field.id} className="py-2 px-2 text-center border border-border">
                     {field.key === 'itemImage' ? (
-                      <div className="w-10 h-10 mx-auto rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-[10px]">
-                        IMG
-                      </div>
+                      defaultProductImage ? (
+                        <img 
+                          src={defaultProductImage.url} 
+                          alt="Product" 
+                          className="w-12 h-12 mx-auto object-cover rounded border border-border"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 mx-auto rounded border border-border flex items-center justify-center bg-muted text-muted-foreground text-[10px]">
+                          IMG
+                        </div>
+                      )
                     ) : field.key === 'itemDescription' ? (
                       <span className="font-semibold">GOLD CHAIN 916</span>
                     ) : field.key === 'itemHSN' ? (
