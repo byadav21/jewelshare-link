@@ -42,10 +42,10 @@ export const CookieConsent = () => {
             <CardContent className="p-4 md:p-6">
               <button
                 onClick={handleClose}
-                className="absolute right-2 top-2 rounded-full p-1 transition-colors hover:bg-muted"
+                className="absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full p-2 transition-colors hover:bg-muted md:h-8 md:w-8 md:p-1"
                 aria-label="Close banner"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5 md:h-4 md:w-4" />
               </button>
               
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
