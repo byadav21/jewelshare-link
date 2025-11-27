@@ -18,6 +18,7 @@ export interface LineItem {
   description: string;
   image_url: string;
   diamond_weight: number;
+  diamond_per_carat_price: number;
   diamond_color: string;
   diamond_clarity: string;
   diamond_cut: string;
@@ -67,6 +68,13 @@ export interface InvoiceData {
   totalCost: number;
   profitMargin: number;
   finalSellingPrice: number;
+  sgstPercentage?: number;
+  cgstPercentage?: number;
+  sgstAmount?: number;
+  cgstAmount?: number;
+  shippingCharges?: number;
+  exchangeRate?: number;
+  grandTotal?: number;
   notes?: string;
   invoiceNotes?: string;
   details?: any;
