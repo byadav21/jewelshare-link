@@ -90,7 +90,7 @@ export const exportCatalogToPDF = (
   // Add date, exchange rate, and gold rate
   doc.setFontSize(9);
   doc.text(
-    `Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = ₹${usdRate.toFixed(2)} | Gold Rate (24K): ₹${goldRate.toLocaleString('en-IN')}/g`,
+    `Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = Rs.${usdRate.toFixed(2)} | Gold Rate (24K): Rs.${goldRate.toLocaleString('en-IN')}/g`,
     pageWidth / 2,
     45,
     { align: "center" }
@@ -132,14 +132,14 @@ export const exportCatalogToPDF = (
       'GROSS\nWT (g)', 
       'NET\nWT (g)', 
       'PURITY\n%', 
-      'D RATE 1\n(₹/ct)', 
+      'D RATE 1\n(Rs/ct)', 
       'POINTER\nDIAMOND', 
-      'D VALUE\n(₹)',
+      'D VALUE\n(Rs)',
       'GEMSTONE\nTYPE',
-      'MKG\n(₹)',
-      'CERT\nCOST (₹)',
-      'GEM\nCOST (₹)',
-      'TOTAL\n(₹)',
+      'MKG\n(Rs)',
+      'CERT\nCOST (Rs)',
+      'GEM\nCOST (Rs)',
+      'TOTAL\n(Rs)',
       'TOTAL\n(USD)'
     ]],
     body: tableData,
@@ -190,7 +190,7 @@ export const exportCatalogToPDF = (
     tableWidth: 'auto',
     didParseCell: function(data: any) {
       if (data.column.index === 17 && data.section === 'body') {
-        data.cell.text = [`₹ ${data.cell.text[0]}`];
+        data.cell.text = [`Rs. ${data.cell.text[0]}`];
       }
       if (data.column.index === 18 && data.section === 'body') {
         data.cell.text = [`$ ${data.cell.text[0]}`];
@@ -203,7 +203,7 @@ export const exportCatalogToPDF = (
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text(
-    `Total: ₹${totalINR.toLocaleString('en-IN')} | $${totalUSD.toFixed(2)} USD`,
+    `Total: Rs.${totalINR.toLocaleString('en-IN')} | $${totalUSD.toFixed(2)} USD`,
     pageWidth / 2,
     finalY + 10,
     { align: "center" }

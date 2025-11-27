@@ -89,14 +89,13 @@ export interface InvoiceData {
 
 type InvoiceTemplate = 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
 
-// Helper function for consistent currency formatting
+// Helper function for consistent currency formatting (PDF-safe)
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+  const formatted = amount.toLocaleString('en-IN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(amount).replace('₹', '₹ ');
+  });
+  return `Rs. ${formatted}`;
 };
 
 // Helper function to load image as base64 with CORS handling
@@ -279,14 +278,14 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
       contactY += 8;
     }
     if (data.vendorBranding.phone) {
-      doc.text(`📞 ${data.vendorBranding.phone}`, pageWidth - 76, contactY);
+      doc.text(`Tel: ${data.vendorBranding.phone}`, pageWidth - 76, contactY);
       contactY += 4.5;
     }
     if (data.vendorBranding.email) {
       const email = data.vendorBranding.email.length > 25 ? 
         data.vendorBranding.email.substring(0, 22) + '...' : 
         data.vendorBranding.email;
-      doc.text(`✉ ${email}`, pageWidth - 76, contactY);
+      doc.text(`Email: ${email}`, pageWidth - 76, contactY);
       contactY += 4.5;
     }
     if (data.vendorBranding.address && contactY < headerY + 28) {
@@ -401,11 +400,11 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
       leftColY += 5;
     }
     if (data.customerPhone) {
-      doc.text(`📞 ${data.customerPhone}`, 20, leftColY);
+      doc.text(`Tel: ${data.customerPhone}`, 20, leftColY);
       leftColY += 5;
     }
     if (data.customerEmail) {
-      const emailLines = doc.splitTextToSize(`✉ ${data.customerEmail}`, midPoint - 25);
+      const emailLines = doc.splitTextToSize(`Email: ${data.customerEmail}`, midPoint - 25);
       doc.text(emailLines, 20, leftColY);
       leftColY += (emailLines.length * 4);
     }
@@ -785,9 +784,9 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  doc.text('• Payment must be received by the due date to avoid late fees.', 14, currentY + 4);
-  doc.text('• All prices are final and include applicable taxes unless otherwise stated.', 14, currentY + 7);
-  doc.text('• This invoice is valid for the amounts and items listed above.', 14, currentY + 10);
+  doc.text('- Payment must be received by the due date to avoid late fees.', 14, currentY + 4);
+  doc.text('- All prices are final and include applicable taxes unless otherwise stated.', 14, currentY + 7);
+  doc.text('- This invoice is valid for the amounts and items listed above.', 14, currentY + 10);
   
   // Footer
   const footerY = doc.internal.pageSize.getHeight() - 10;
@@ -934,7 +933,7 @@ const renderTotalsSection = (
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100, 100, 110);
     const usdAmount = (data.grandTotal / (data.exchangeRate || 1)).toFixed(2);
-    doc.text(`Equivalent: $${usdAmount} USD @ ₹${data.exchangeRate}/USD`, 20, lineY);
+    doc.text(`Equivalent: $${usdAmount} USD @ Rs.${data.exchangeRate}/USD`, 20, lineY);
     doc.setTextColor(40, 40, 50);
   }
 };
@@ -985,10 +984,10 @@ const generateSummaryInvoice = async (data: InvoiceData) => {
   
   // Summary table
   const summaryData = [
-    ['Gold Cost', `₹${data.goldCost.toFixed(2)}`],
-    ['Making & Design', `₹${(data.makingCharges + data.cadDesignCharges + data.cammingCharges).toFixed(2)}`],
-    ['Stones & Gems', `₹${(data.diamondCost + data.gemstoneCost).toFixed(2)}`],
-    ['Certification', `₹${data.certificationCost.toFixed(2)}`],
+    ['Gold Cost', `Rs. ${data.goldCost.toFixed(2)}`],
+    ['Making & Design', `Rs. ${(data.makingCharges + data.cadDesignCharges + data.cammingCharges).toFixed(2)}`],
+    ['Stones & Gems', `Rs. ${(data.diamondCost + data.gemstoneCost).toFixed(2)}`],
+    ['Certification', `Rs. ${data.certificationCost.toFixed(2)}`],
   ];
   
   autoTable(doc, {
@@ -1008,7 +1007,7 @@ const generateSummaryInvoice = async (data: InvoiceData) => {
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text(`TOTAL: ₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, finalY + 13, { align: 'right' });
+  doc.text(`TOTAL: Rs. ${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, finalY + 13, { align: 'right' });
   
   doc.setTextColor(0, 0, 0);
   
@@ -1058,7 +1057,7 @@ const generateMinimalInvoice = async (data: InvoiceData) => {
   doc.setFontSize(36);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth / 2, yPos, { align: 'center' });
+  doc.text(`Rs. ${data.finalSellingPrice.toFixed(2)}`, pageWidth / 2, yPos, { align: 'center' });
   
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(10);
@@ -1214,12 +1213,12 @@ const generateTraditionalInvoice = async (data: InvoiceData) => {
   // Cost breakdown table
   yPos += 25;
   const tableData = [
-    ['Gold Cost', '', `₹${data.goldCost.toFixed(2)}`],
-    ['Diamond Cost', '', `₹${data.diamondCost.toFixed(2)}`],
-    ['Gemstone Cost', '', `₹${data.gemstoneCost.toFixed(2)}`],
-    ['Making Charges', '', `₹${data.makingCharges.toFixed(2)}`],
-    ['Design & CAD', '', `₹${data.cadDesignCharges.toFixed(2)}`],
-    ['Certification', '', `₹${data.certificationCost.toFixed(2)}`],
+    ['Gold Cost', '', `Rs. ${data.goldCost.toFixed(2)}`],
+    ['Diamond Cost', '', `Rs. ${data.diamondCost.toFixed(2)}`],
+    ['Gemstone Cost', '', `Rs. ${data.gemstoneCost.toFixed(2)}`],
+    ['Making Charges', '', `Rs. ${data.makingCharges.toFixed(2)}`],
+    ['Design & CAD', '', `Rs. ${data.cadDesignCharges.toFixed(2)}`],
+    ['Certification', '', `Rs. ${data.certificationCost.toFixed(2)}`],
   ];
   
   autoTable(doc, {
@@ -1256,7 +1255,7 @@ const generateTraditionalInvoice = async (data: InvoiceData) => {
   doc.setFont('times', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
   doc.text('TOTAL:', pageWidth - 85, totalY + 13);
-  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 25, totalY + 13, { align: 'right' });
+  doc.text(`Rs. ${data.finalSellingPrice.toFixed(2)}`, pageWidth - 25, totalY + 13, { align: 'right' });
   
   // Payment terms
   const footerY = pageHeight - 35;
@@ -1356,11 +1355,11 @@ const generateModernInvoice = async (data: InvoiceData) => {
   // Items table - ultra clean
   yPos += 25;
   const tableData = [
-    ['Gold & Metal Work', `₹${data.goldCost.toFixed(2)}`],
-    ['Precious Stones', `₹${(data.diamondCost + data.gemstoneCost).toFixed(2)}`],
-    ['Craftsmanship', `₹${data.makingCharges.toFixed(2)}`],
-    ['Design & Finishing', `₹${(data.cadDesignCharges + data.cammingCharges).toFixed(2)}`],
-    ['Certification', `₹${data.certificationCost.toFixed(2)}`],
+    ['Gold & Metal Work', `Rs. ${data.goldCost.toFixed(2)}`],
+    ['Precious Stones', `Rs. ${(data.diamondCost + data.gemstoneCost).toFixed(2)}`],
+    ['Craftsmanship', `Rs. ${data.makingCharges.toFixed(2)}`],
+    ['Design & Finishing', `Rs. ${(data.cadDesignCharges + data.cammingCharges).toFixed(2)}`],
+    ['Certification', `Rs. ${data.certificationCost.toFixed(2)}`],
   ];
   
   autoTable(doc, {
@@ -1406,7 +1405,7 @@ const generateModernInvoice = async (data: InvoiceData) => {
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 20, totalY + 10, { align: 'right' });
+  doc.text(`Rs. ${data.finalSellingPrice.toFixed(2)}`, pageWidth - 20, totalY + 10, { align: 'right' });
   
   // Footer - minimal
   const footerY = doc.internal.pageSize.getHeight() - 20;
@@ -1542,13 +1541,13 @@ const generateLuxuryInvoice = async (data: InvoiceData) => {
   // Itemized costs table
   yPos += 40;
   const tableData = [
-    ['Fine Gold Workmanship', `₹${data.goldCost.toFixed(2)}`],
-    ['Precious Diamond Selection', `₹${data.diamondCost.toFixed(2)}`],
-    ['Gemstone Accents', `₹${data.gemstoneCost.toFixed(2)}`],
-    ['Master Craftsmanship', `₹${data.makingCharges.toFixed(2)}`],
-    ['Bespoke Design Services', `₹${data.cadDesignCharges.toFixed(2)}`],
-    ['Finishing & Polish', `₹${data.cammingCharges.toFixed(2)}`],
-    ['Authentication Certificate', `₹${data.certificationCost.toFixed(2)}`],
+    ['Fine Gold Workmanship', `Rs. ${data.goldCost.toFixed(2)}`],
+    ['Precious Diamond Selection', `Rs. ${data.diamondCost.toFixed(2)}`],
+    ['Gemstone Accents', `Rs. ${data.gemstoneCost.toFixed(2)}`],
+    ['Master Craftsmanship', `Rs. ${data.makingCharges.toFixed(2)}`],
+    ['Bespoke Design Services', `Rs. ${data.cadDesignCharges.toFixed(2)}`],
+    ['Finishing & Polish', `Rs. ${data.cammingCharges.toFixed(2)}`],
+    ['Authentication Certificate', `Rs. ${data.certificationCost.toFixed(2)}`],
   ];
   
   autoTable(doc, {
@@ -1590,7 +1589,7 @@ const generateLuxuryInvoice = async (data: InvoiceData) => {
   
   doc.setFontSize(18);
   doc.setTextColor(255, 255, 255);
-  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 105, totalY + 17);
+  doc.text(`Rs. ${data.finalSellingPrice.toFixed(2)}`, pageWidth - 105, totalY + 17);
   
   // Elegant footer
   const footerY = pageHeight - 30;
@@ -1608,7 +1607,7 @@ const generateLuxuryInvoice = async (data: InvoiceData) => {
     doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
     let contactText = '';
     if (data.vendorBranding.phone) contactText += data.vendorBranding.phone;
-    if (data.vendorBranding.phone && data.vendorBranding.email) contactText += ' • ';
+    if (data.vendorBranding.phone && data.vendorBranding.email) contactText += ' | ';
     if (data.vendorBranding.email) contactText += data.vendorBranding.email;
     doc.text(contactText, pageWidth / 2, footerY + 12, { align: 'center' });
   }
