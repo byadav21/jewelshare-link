@@ -291,8 +291,8 @@ const InvoiceGenerator = () => {
       invoiceNotes,
       template: invoiceTemplate,
       vendorBranding: vendorProfile ? {
-        businessName: vendorProfile.business_name,
-        logoUrl: vendorProfile.logo_url,
+        name: vendorProfile.business_name,
+        logo: vendorProfile.logo_url,
         primaryColor: vendorProfile.primary_brand_color,
         secondaryColor: vendorProfile.secondary_brand_color,
         tagline: vendorProfile.brand_tagline,

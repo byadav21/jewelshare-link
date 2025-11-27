@@ -1,9 +1,9 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-interface VendorBranding {
-  businessName?: string;
-  logoUrl?: string;
+export interface VendorBranding {
+  name?: string;
+  logo?: string;
   primaryColor?: string;
   secondaryColor?: string;
   tagline?: string;
@@ -12,7 +12,7 @@ interface VendorBranding {
   address?: string;
 }
 
-interface LineItem {
+export interface LineItem {
   id: string;
   item_name: string;
   description: string;
@@ -40,7 +40,7 @@ interface LineItem {
   weight_mode?: 'gross' | 'net';
 }
 
-interface InvoiceData {
+export interface InvoiceData {
   invoiceNumber: string;
   invoiceDate: string;
   paymentDueDate?: string;
@@ -122,7 +122,7 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   doc.rect(0, 0, pageWidth, 40, 'F');
   
   // Add logo placeholder
-  if (data.vendorBranding?.logoUrl) {
+  if (data.vendorBranding?.logo) {
     try {
       doc.setFillColor(255, 255, 255);
       doc.rect(14, 8, 20, 20, 'F');
@@ -135,12 +135,12 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   }
   
   // Business name and INVOICE title
-  doc.setFontSize(data.vendorBranding?.businessName ? 20 : 28);
+  doc.setFontSize(data.vendorBranding?.name ? 20 : 28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  const titleY = data.vendorBranding?.logoUrl ? 20 : 18;
-  if (data.vendorBranding?.businessName) {
-    doc.text(data.vendorBranding.businessName.toUpperCase(), pageWidth / 2, titleY, { align: 'center' });
+  const titleY = data.vendorBranding?.logo ? 20 : 18;
+  if (data.vendorBranding?.name) {
+    doc.text(data.vendorBranding.name.toUpperCase(), pageWidth / 2, titleY, { align: 'center' });
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('INVOICE', pageWidth / 2, titleY + 8, { align: 'center' });
@@ -726,7 +726,7 @@ const generateTraditionalInvoice = (data: InvoiceData) => {
   doc.setFontSize(32);
   doc.setFont('times', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text(data.vendorBranding?.businessName || 'FINE JEWELERS', pageWidth / 2, yPos, { align: 'center' });
+  doc.text(data.vendorBranding?.name || 'FINE JEWELERS', pageWidth / 2, yPos, { align: 'center' });
   
   // Tagline with decorative line
   if (data.vendorBranding?.tagline) {
@@ -914,7 +914,7 @@ const generateModernInvoice = (data: InvoiceData) => {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
-  doc.text(data.vendorBranding?.businessName?.toUpperCase() || 'JEWELERS', 20, 15);
+  doc.text(data.vendorBranding?.name?.toUpperCase() || 'JEWELERS', 20, 15);
   
   // INVOICE - large and minimal
   doc.setFontSize(48);
@@ -1073,7 +1073,7 @@ const generateLuxuryInvoice = (data: InvoiceData) => {
   doc.setFontSize(28);
   doc.setFont('times', 'bold');
   doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
-  doc.text(data.vendorBranding?.businessName?.toUpperCase() || 'PRESTIGE JEWELERS', pageWidth / 2, yPos, { align: 'center' });
+  doc.text(data.vendorBranding?.name?.toUpperCase() || 'PRESTIGE JEWELERS', pageWidth / 2, yPos, { align: 'center' });
   
   // Tagline with gold
   if (data.vendorBranding?.tagline) {
