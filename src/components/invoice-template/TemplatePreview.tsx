@@ -106,15 +106,43 @@ export const TemplatePreview = ({ sections, globalStyling, productImages = [] }:
                         </div>
                       )
                     ) : field.key === 'itemDescription' ? (
-                      <span className="font-semibold">GOLD CHAIN 916</span>
+                      <span className="font-semibold">Diamond Ring 18K</span>
                     ) : field.key === 'itemHSN' ? (
                       <span>7113</span>
                     ) : field.key === 'grossWeight' ? (
-                      <span>10.00</span>
+                      <span>10.50</span>
+                    ) : field.key === 'diamondWeight' ? (
+                      <span>1.25</span>
+                    ) : field.key === 'diamondPerCarat' ? (
+                      <span>₹25,000</span>
+                    ) : field.key === 'diamondCost' ? (
+                      <span className="font-semibold">₹31,250</span>
                     ) : field.key === 'stoneWeight' ? (
-                      <span>1.00</span>
+                      <span>0.50</span>
+                    ) : field.key === 'stonePerCarat' ? (
+                      <span>₹5,000</span>
+                    ) : field.key === 'stoneCost' ? (
+                      <span className="font-semibold">₹2,500</span>
                     ) : field.key === 'netWeight' ? (
-                      <span>9.00</span>
+                      <span>8.50</span>
+                    ) : field.key === 'goldRate' ? (
+                      <span>₹6,500</span>
+                    ) : field.key === 'goldCost' ? (
+                      <span className="font-semibold">₹55,250</span>
+                    ) : field.key === 'makingChargesPerGram' ? (
+                      <span>₹800</span>
+                    ) : field.key === 'totalMaking' ? (
+                      <span className="font-semibold">₹6,800</span>
+                    ) : field.key === 'cadCharges' ? (
+                      <span>₹2,000</span>
+                    ) : field.key === 'cammingCharges' ? (
+                      <span>₹1,500</span>
+                    ) : field.key === 'certification' ? (
+                      <span>₹3,000</span>
+                    ) : field.key === 'tax' ? (
+                      <span>₹3,090</span>
+                    ) : field.key === 'shipping' ? (
+                      <span>₹500</span>
                     ) : field.key === 'vaPercent' ? (
                       <span>10%</span>
                     ) : field.key === 'wastage' ? (
@@ -126,7 +154,7 @@ export const TemplatePreview = ({ sections, globalStyling, productImages = [] }:
                     ) : field.key === 'makingCharges' ? (
                       <span>₹500</span>
                     ) : field.key === 'amount' ? (
-                      <span className="font-semibold">₹43,560</span>
+                      <span className="font-semibold text-primary">₹1,05,890</span>
                     ) : (
                       <span>[{field.key}]</span>
                     )}
