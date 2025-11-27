@@ -15,6 +15,7 @@ export const ROUTES = {
   DIAMOND_CALCULATOR: "/diamond-calculator",
   MANUFACTURING_COST: "/manufacturing-cost",
   INVOICE_HISTORY: "/invoice-history",
+  ESTIMATE_HISTORY: "/estimate-history",
   INVOICE_GENERATOR: "/invoice-generator",
   INVOICE_TEMPLATES: "/invoice-templates",
   INVOICE_TEMPLATE_BUILDER: "/invoice-template-builder",
