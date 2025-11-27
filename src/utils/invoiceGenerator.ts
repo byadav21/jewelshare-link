@@ -68,11 +68,15 @@ export interface InvoiceData {
   totalCost: number;
   profitMargin: number;
   finalSellingPrice: number;
+  gstMode?: 'sgst_cgst' | 'igst';
   sgstPercentage?: number;
   cgstPercentage?: number;
+  igstPercentage?: number;
   sgstAmount?: number;
   cgstAmount?: number;
+  igstAmount?: number;
   shippingCharges?: number;
+  shippingZone?: string;
   exchangeRate?: number;
   grandTotal?: number;
   notes?: string;
@@ -474,34 +478,114 @@ const generateDetailedInvoice = (data: InvoiceData) => {
   currentY = (doc as any).lastAutoTable.finalY + 10;
   }
   
-  // Total Section
+  // Total Section with GST and Shipping
   const finalY = currentY;
   
-  doc.setFillColor(245, 245, 250);
-  doc.rect(14, finalY, pageWidth - 28, 35, 'F');
+  // Calculate height based on content
+  const hasGst = (data.gstMode === 'sgst_cgst' && (data.sgstAmount || data.cgstAmount)) || 
+                 (data.gstMode === 'igst' && data.igstAmount);
+  const hasShipping = data.shippingCharges && data.shippingCharges > 0;
+  const hasGrandTotal = data.grandTotal !== undefined;
+  const hasCurrency = data.exchangeRate && data.exchangeRate > 0;
   
+  const baseHeight = 35;
+  const gstHeight = hasGst ? (data.gstMode === 'sgst_cgst' ? 10 : 5) : 0;
+  const shippingHeight = hasShipping ? 5 : 0;
+  const grandTotalHeight = hasGrandTotal ? 10 : 0;
+  const currencyHeight = hasCurrency ? 8 : 0;
+  const totalSectionHeight = baseHeight + gstHeight + shippingHeight + grandTotalHeight + currencyHeight;
+  
+  doc.setFillColor(245, 245, 250);
+  doc.rect(14, finalY, pageWidth - 28, totalSectionHeight, 'F');
+  
+  let lineY = finalY + 8;
+  
+  // Subtotal
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Subtotal:`, 18, finalY + 8);
-  doc.text(`₹${data.totalCost.toFixed(2)}`, pageWidth - 18, finalY + 8, { align: 'right' });
+  doc.text(`Subtotal:`, 18, lineY);
+  doc.text(`₹${data.totalCost.toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+  lineY += 7;
   
-  doc.text(`Profit Margin (${data.profitMargin}%):`, 18, finalY + 15);
-  doc.text(`₹${((data.finalSellingPrice - data.totalCost)).toFixed(2)}`, pageWidth - 18, finalY + 15, { align: 'right' });
+  // Profit Margin
+  doc.text(`Profit Margin (${data.profitMargin}%):`, 18, lineY);
+  doc.text(`₹${((data.finalSellingPrice - data.totalCost)).toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+  lineY += 7;
   
-  // Draw line
-  doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.setLineWidth(0.5);
-  doc.line(18, finalY + 20, pageWidth - 18, finalY + 20);
+  // Amount before tax
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Amount (Before Tax):`, 18, lineY);
+  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+  lineY += 7;
   
-  doc.setFontSize(14);
-  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text(`TOTAL AMOUNT DUE:`, 18, finalY + 28);
-  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, finalY + 28, { align: 'right' });
-  doc.setTextColor(0, 0, 0);
+  // GST breakdown
+  if (hasGst) {
+    if (data.gstMode === 'sgst_cgst') {
+      doc.text(`SGST (${data.sgstPercentage || 0}%):`, 18, lineY);
+      doc.text(`₹${(data.sgstAmount || 0).toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+      lineY += 5;
+      
+      doc.text(`CGST (${data.cgstPercentage || 0}%):`, 18, lineY);
+      doc.text(`₹${(data.cgstAmount || 0).toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+      lineY += 5;
+    } else {
+      doc.text(`IGST (${data.igstPercentage || 0}%):`, 18, lineY);
+      doc.text(`₹${(data.igstAmount || 0).toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+      lineY += 5;
+    }
+  }
+  
+  // Shipping charges
+  if (hasShipping) {
+    doc.text(`Shipping Charges${data.shippingZone ? ` (${data.shippingZone})` : ''}:`, 18, lineY);
+    doc.text(`₹${data.shippingCharges.toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+    lineY += 5;
+  }
+  
+  // Draw line before grand total
+  if (hasGrandTotal) {
+    doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.setLineWidth(0.5);
+    doc.line(18, lineY, pageWidth - 18, lineY);
+    lineY += 5;
+    
+    // Grand Total
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text(`GRAND TOTAL (INR):`, 18, lineY);
+    doc.text(`₹${data.grandTotal.toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+    lineY += 5;
+    doc.setTextColor(0, 0, 0);
+  } else {
+    // Draw line before final total
+    doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.setLineWidth(0.5);
+    doc.line(18, lineY, pageWidth - 18, lineY);
+    lineY += 5;
+    
+    doc.setFontSize(14);
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text(`TOTAL AMOUNT DUE:`, 18, lineY);
+    doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, lineY, { align: 'right' });
+    lineY += 5;
+    doc.setTextColor(0, 0, 0);
+  }
+  
+  // Currency conversion
+  if (hasCurrency && data.grandTotal) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 100, 100);
+    const usdAmount = (data.grandTotal / data.exchangeRate).toFixed(2);
+    doc.text(`Equivalent: $${usdAmount} USD (Rate: ${data.exchangeRate})`, 18, lineY);
+    doc.setTextColor(0, 0, 0);
+  }
+  
   
   // Invoice Notes Section
   if (data.invoiceNotes) {
-    const notesY = finalY + 45;
+    const notesY = finalY + totalSectionHeight + 10;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
