@@ -41,22 +41,28 @@ interface InvoiceData {
   invoiceNotes?: string;
   details?: any;
   vendorBranding?: VendorBranding;
-  template?: 'detailed' | 'summary' | 'minimal';
+  template?: 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
 }
 
-type InvoiceTemplate = 'detailed' | 'summary' | 'minimal';
+type InvoiceTemplate = 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
 
 export const generateInvoicePDF = (data: InvoiceData) => {
   const template = data.template || 'detailed';
   
-  if (template === 'summary') {
-    return generateSummaryInvoice(data);
-  } else if (template === 'minimal') {
-    return generateMinimalInvoice(data);
+  switch (template) {
+    case 'summary':
+      return generateSummaryInvoice(data);
+    case 'minimal':
+      return generateMinimalInvoice(data);
+    case 'traditional':
+      return generateTraditionalInvoice(data);
+    case 'modern':
+      return generateModernInvoice(data);
+    case 'luxury':
+      return generateLuxuryInvoice(data);
+    default:
+      return generateDetailedInvoice(data);
   }
-  
-  // Default to detailed template
-  return generateDetailedInvoice(data);
 };
 
 const generateDetailedInvoice = (data: InvoiceData) => {
@@ -492,5 +498,546 @@ const generateMinimalInvoice = (data: InvoiceData) => {
   }
   
   const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.pdf`;
+  doc.save(fileName);
+};
+
+// Traditional Template - Classic serif style with ornate borders
+const generateTraditionalInvoice = (data: InvoiceData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  const primaryColor = data.vendorBranding?.primaryColor || '#2C1810';
+  const goldAccent = '#8B7355';
+  
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 44, g: 24, b: 16 };
+  };
+  
+  const primaryRgb = hexToRgb(primaryColor);
+  const goldRgb = hexToRgb(goldAccent);
+  
+  // Ornate border
+  doc.setDrawColor(goldRgb.r, goldRgb.g, goldRgb.b);
+  doc.setLineWidth(2);
+  doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+  doc.setLineWidth(0.5);
+  doc.rect(12, 12, pageWidth - 24, pageHeight - 24);
+  
+  // Decorative corner elements
+  doc.setFillColor(goldRgb.r, goldRgb.g, goldRgb.b);
+  [
+    [15, 15], [pageWidth - 15, 15],
+    [15, pageHeight - 15], [pageWidth - 15, pageHeight - 15]
+  ].forEach(([x, y]) => {
+    doc.circle(x, y, 2, 'F');
+  });
+  
+  // Header with business name
+  let yPos = 30;
+  doc.setFontSize(32);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text(data.vendorBranding?.businessName || 'FINE JEWELERS', pageWidth / 2, yPos, { align: 'center' });
+  
+  // Tagline with decorative line
+  if (data.vendorBranding?.tagline) {
+    yPos += 8;
+    doc.setFontSize(11);
+    doc.setFont('times', 'italic');
+    doc.setTextColor(goldRgb.r, goldRgb.g, goldRgb.b);
+    doc.text(data.vendorBranding.tagline, pageWidth / 2, yPos, { align: 'center' });
+  }
+  
+  // Decorative separator line
+  yPos += 10;
+  doc.setDrawColor(goldRgb.r, goldRgb.g, goldRgb.b);
+  doc.setLineWidth(0.5);
+  const lineMargin = 40;
+  doc.line(lineMargin, yPos, pageWidth - lineMargin, yPos);
+  doc.circle(pageWidth / 2, yPos, 1, 'F');
+  
+  // INVOICE title
+  yPos += 12;
+  doc.setFontSize(24);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('INVOICE', pageWidth / 2, yPos, { align: 'center' });
+  
+  // Invoice details box
+  yPos += 15;
+  doc.setFillColor(250, 248, 245);
+  doc.rect(20, yPos, (pageWidth - 40) / 2 - 5, 30, 'F');
+  
+  doc.setFontSize(10);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('Invoice Number:', 25, yPos + 8);
+  doc.setFont('times', 'normal');
+  doc.text(data.invoiceNumber, 25, yPos + 14);
+  
+  doc.setFont('times', 'bold');
+  doc.text('Date:', 25, yPos + 20);
+  doc.setFont('times', 'normal');
+  doc.text(new Date(data.invoiceDate).toLocaleDateString(), 25, yPos + 26);
+  
+  // Vendor contact box
+  doc.setFillColor(250, 248, 245);
+  doc.rect(pageWidth / 2 + 5, yPos, (pageWidth - 40) / 2 - 5, 30, 'F');
+  
+  doc.setFont('times', 'bold');
+  let contactY = yPos + 8;
+  if (data.vendorBranding?.phone) {
+    doc.text('Tel:', pageWidth / 2 + 10, contactY);
+    doc.setFont('times', 'normal');
+    doc.text(data.vendorBranding.phone, pageWidth / 2 + 25, contactY);
+    contactY += 6;
+  }
+  if (data.vendorBranding?.email) {
+    doc.setFont('times', 'bold');
+    doc.text('Email:', pageWidth / 2 + 10, contactY);
+    doc.setFont('times', 'normal');
+    const emailText = doc.splitTextToSize(data.vendorBranding.email, 60);
+    doc.text(emailText, pageWidth / 2 + 25, contactY);
+  }
+  
+  // Customer details
+  yPos += 40;
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(goldRgb.r, goldRgb.g, goldRgb.b);
+  doc.text('BILL TO', 20, yPos);
+  
+  yPos += 6;
+  doc.setDrawColor(goldRgb.r, goldRgb.g, goldRgb.b);
+  doc.line(20, yPos, 80, yPos);
+  
+  yPos += 8;
+  doc.setFont('times', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  if (data.customerName) doc.text(data.customerName, 20, yPos);
+  if (data.customerPhone) {
+    yPos += 5;
+    doc.text(data.customerPhone, 20, yPos);
+  }
+  if (data.customerEmail) {
+    yPos += 5;
+    doc.text(data.customerEmail, 20, yPos);
+  }
+  if (data.customerAddress) {
+    yPos += 5;
+    const addressLines = doc.splitTextToSize(data.customerAddress, 70);
+    doc.text(addressLines, 20, yPos);
+  }
+  
+  // Cost breakdown table
+  yPos += 25;
+  const tableData = [
+    ['Gold Cost', '', `₹${data.goldCost.toFixed(2)}`],
+    ['Diamond Cost', '', `₹${data.diamondCost.toFixed(2)}`],
+    ['Gemstone Cost', '', `₹${data.gemstoneCost.toFixed(2)}`],
+    ['Making Charges', '', `₹${data.makingCharges.toFixed(2)}`],
+    ['Design & CAD', '', `₹${data.cadDesignCharges.toFixed(2)}`],
+    ['Certification', '', `₹${data.certificationCost.toFixed(2)}`],
+  ];
+  
+  (doc as any).autoTable({
+    startY: yPos,
+    head: [['Description', '', 'Amount']],
+    body: tableData,
+    theme: 'plain',
+    styles: { 
+      font: 'times',
+      fontSize: 10,
+      textColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b],
+    },
+    headStyles: { 
+      fillColor: [goldRgb.r, goldRgb.g, goldRgb.b],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'left',
+    },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { cellWidth: 'auto' },
+      2: { cellWidth: 40, halign: 'right' },
+    },
+    margin: { left: 20, right: 20 },
+  });
+  
+  // Total section with decorative box
+  const totalY = (doc as any).lastAutoTable.finalY + 10;
+  doc.setDrawColor(goldRgb.r, goldRgb.g, goldRgb.b);
+  doc.setLineWidth(1.5);
+  doc.rect(pageWidth - 90, totalY, 70, 20);
+  
+  doc.setFontSize(14);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('TOTAL:', pageWidth - 85, totalY + 13);
+  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 25, totalY + 13, { align: 'right' });
+  
+  // Payment terms
+  const footerY = pageHeight - 35;
+  doc.setFontSize(9);
+  doc.setFont('times', 'italic');
+  doc.setTextColor(goldRgb.r, goldRgb.g, goldRgb.b);
+  doc.text('Payment Terms:', 20, footerY);
+  doc.setFont('times', 'normal');
+  doc.text(data.paymentTerms || 'Net 30', 20, footerY + 5);
+  
+  if (data.invoiceNotes) {
+    doc.text('Notes:', 20, footerY + 12);
+    const notes = doc.splitTextToSize(data.invoiceNotes, pageWidth - 45);
+    doc.text(notes, 20, footerY + 17);
+  }
+  
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_Traditional.pdf`;
+  doc.save(fileName);
+};
+
+// Modern Template - Clean minimalist design
+const generateModernInvoice = (data: InvoiceData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  const primaryColor = data.vendorBranding?.primaryColor || '#000000';
+  const accentColor = data.vendorBranding?.secondaryColor || '#6366F1';
+  
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+  };
+  
+  const primaryRgb = hexToRgb(primaryColor);
+  const accentRgb = hexToRgb(accentColor);
+  
+  // Minimal header with thin accent line
+  doc.setDrawColor(accentRgb.r, accentRgb.g, accentRgb.b);
+  doc.setLineWidth(3);
+  doc.line(0, 25, pageWidth, 25);
+  
+  // Business name - ultra minimal
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text(data.vendorBranding?.businessName?.toUpperCase() || 'JEWELERS', 20, 15);
+  
+  // INVOICE - large and minimal
+  doc.setFontSize(48);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('INVOICE', 20, 50);
+  
+  // Invoice details - clean alignment
+  let yPos = 65;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text('NUMBER', 20, yPos);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text(data.invoiceNumber, 55, yPos);
+  
+  yPos += 6;
+  doc.setTextColor(100, 100, 100);
+  doc.text('DATE', 20, yPos);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text(new Date(data.invoiceDate).toLocaleDateString(), 55, yPos);
+  
+  if (data.paymentDueDate) {
+    yPos += 6;
+    doc.setTextColor(100, 100, 100);
+    doc.text('DUE', 20, yPos);
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text(new Date(data.paymentDueDate).toLocaleDateString(), 55, yPos);
+  }
+  
+  // Customer info - right aligned
+  yPos = 65;
+  if (data.customerName) {
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text('BILL TO', pageWidth - 20, yPos, { align: 'right' });
+    yPos += 6;
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text(data.customerName, pageWidth - 20, yPos, { align: 'right' });
+    if (data.customerEmail) {
+      yPos += 5;
+      doc.setFontSize(8);
+      doc.text(data.customerEmail, pageWidth - 20, yPos, { align: 'right' });
+    }
+  }
+  
+  // Items table - ultra clean
+  yPos += 25;
+  const tableData = [
+    ['Gold & Metal Work', `₹${data.goldCost.toFixed(2)}`],
+    ['Precious Stones', `₹${(data.diamondCost + data.gemstoneCost).toFixed(2)}`],
+    ['Craftsmanship', `₹${data.makingCharges.toFixed(2)}`],
+    ['Design & Finishing', `₹${(data.cadDesignCharges + data.cammingCharges).toFixed(2)}`],
+    ['Certification', `₹${data.certificationCost.toFixed(2)}`],
+  ];
+  
+  (doc as any).autoTable({
+    startY: yPos,
+    body: tableData,
+    theme: 'plain',
+    styles: { 
+      fontSize: 10,
+      textColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b],
+      cellPadding: { top: 4, bottom: 4, left: 0, right: 0 },
+    },
+    columnStyles: {
+      0: { cellWidth: 130, fontStyle: 'normal' },
+      1: { cellWidth: 50, halign: 'right', fontStyle: 'bold' },
+    },
+    margin: { left: 20, right: 20 },
+    didDrawCell: (data: any) => {
+      // Draw thin separator lines
+      if (data.row.index < tableData.length - 1) {
+        doc.setDrawColor(230, 230, 230);
+        doc.setLineWidth(0.1);
+        doc.line(
+          data.cell.x,
+          data.cell.y + data.cell.height,
+          data.cell.x + data.cell.width,
+          data.cell.y + data.cell.height
+        );
+      }
+    },
+  });
+  
+  // Total - bold and clean
+  const totalY = (doc as any).lastAutoTable.finalY + 15;
+  doc.setDrawColor(accentRgb.r, accentRgb.g, accentRgb.b);
+  doc.setLineWidth(2);
+  doc.line(20, totalY, pageWidth - 20, totalY);
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text('TOTAL', 20, totalY + 10);
+  
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 20, totalY + 10, { align: 'right' });
+  
+  // Footer - minimal
+  const footerY = doc.internal.pageSize.getHeight() - 20;
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.setFont('helvetica', 'normal');
+  if (data.vendorBranding?.email) {
+    doc.text(data.vendorBranding.email, 20, footerY);
+  }
+  if (data.vendorBranding?.phone) {
+    doc.text(data.vendorBranding.phone, pageWidth - 20, footerY, { align: 'right' });
+  }
+  
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_Modern.pdf`;
+  doc.save(fileName);
+};
+
+// Luxury Template - Premium elegant design with gold accents
+const generateLuxuryInvoice = (data: InvoiceData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  // Luxury color palette
+  const deepPurple = { r: 25, g: 20, b: 40 };
+  const gold = { r: 212, g: 175, b: 55 };
+  const cream = { r: 250, g: 248, b: 240 };
+  
+  // Elegant background
+  doc.setFillColor(cream.r, cream.g, cream.b);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  
+  // Top gold accent bar
+  doc.setFillColor(gold.r, gold.g, gold.b);
+  doc.rect(0, 0, pageWidth, 8, 'F');
+  
+  // Ornamental corners
+  doc.setDrawColor(gold.r, gold.g, gold.b);
+  doc.setLineWidth(1);
+  const cornerSize = 15;
+  // Top left
+  doc.line(15, 15, 15 + cornerSize, 15);
+  doc.line(15, 15, 15, 15 + cornerSize);
+  // Top right
+  doc.line(pageWidth - 15, 15, pageWidth - 15 - cornerSize, 15);
+  doc.line(pageWidth - 15, 15, pageWidth - 15, 15 + cornerSize);
+  // Bottom left
+  doc.line(15, pageHeight - 15, 15 + cornerSize, pageHeight - 15);
+  doc.line(15, pageHeight - 15, 15, pageHeight - 15 - cornerSize);
+  // Bottom right
+  doc.line(pageWidth - 15, pageHeight - 15, pageWidth - 15 - cornerSize, pageHeight - 15);
+  doc.line(pageWidth - 15, pageHeight - 15, pageWidth - 15, pageHeight - 15 - cornerSize);
+  
+  // Business name with luxury styling
+  let yPos = 35;
+  doc.setFontSize(28);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
+  doc.text(data.vendorBranding?.businessName?.toUpperCase() || 'PRESTIGE JEWELERS', pageWidth / 2, yPos, { align: 'center' });
+  
+  // Tagline with gold
+  if (data.vendorBranding?.tagline) {
+    yPos += 8;
+    doc.setFontSize(10);
+    doc.setFont('times', 'italic');
+    doc.setTextColor(gold.r, gold.g, gold.b);
+    doc.text(data.vendorBranding.tagline, pageWidth / 2, yPos, { align: 'center' });
+  }
+  
+  // Decorative divider
+  yPos += 10;
+  doc.setDrawColor(gold.r, gold.g, gold.b);
+  doc.setLineWidth(0.5);
+  doc.line(60, yPos, pageWidth - 60, yPos);
+  // Small diamond shapes
+  doc.setFillColor(gold.r, gold.g, gold.b);
+  [70, pageWidth / 2, pageWidth - 70].forEach(x => {
+    doc.circle(x, yPos, 0.8, 'F');
+  });
+  
+  // INVOICE title
+  yPos += 12;
+  doc.setFontSize(20);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
+  doc.text('INVOICE', pageWidth / 2, yPos, { align: 'center' });
+  
+  // Elegant info boxes
+  yPos += 15;
+  // Left box - Invoice details
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(gold.r, gold.g, gold.b);
+  doc.setLineWidth(0.5);
+  doc.rect(25, yPos, 75, 28, 'FD');
+  
+  doc.setFontSize(9);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(gold.r, gold.g, gold.b);
+  doc.text('INVOICE NO.', 30, yPos + 7);
+  doc.setFont('times', 'normal');
+  doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
+  doc.text(data.invoiceNumber, 30, yPos + 12);
+  
+  doc.setFont('times', 'bold');
+  doc.setTextColor(gold.r, gold.g, gold.b);
+  doc.text('DATE', 30, yPos + 19);
+  doc.setFont('times', 'normal');
+  doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
+  doc.text(new Date(data.invoiceDate).toLocaleDateString(), 30, yPos + 24);
+  
+  // Right box - Customer details
+  doc.setFillColor(255, 255, 255);
+  doc.rect(pageWidth - 100, yPos, 75, 28, 'FD');
+  
+  doc.setFont('times', 'bold');
+  doc.setTextColor(gold.r, gold.g, gold.b);
+  doc.text('ESTEEMED CLIENT', pageWidth - 95, yPos + 7);
+  doc.setFont('times', 'normal');
+  doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
+  if (data.customerName) {
+    doc.text(data.customerName, pageWidth - 95, yPos + 13);
+  }
+  if (data.customerPhone) {
+    doc.setFontSize(8);
+    doc.text(data.customerPhone, pageWidth - 95, yPos + 18);
+  }
+  if (data.customerEmail) {
+    doc.setFontSize(7);
+    const emailText = doc.splitTextToSize(data.customerEmail, 70);
+    doc.text(emailText, pageWidth - 95, yPos + 23);
+  }
+  
+  // Itemized costs table
+  yPos += 40;
+  const tableData = [
+    ['Fine Gold Workmanship', `₹${data.goldCost.toFixed(2)}`],
+    ['Precious Diamond Selection', `₹${data.diamondCost.toFixed(2)}`],
+    ['Gemstone Accents', `₹${data.gemstoneCost.toFixed(2)}`],
+    ['Master Craftsmanship', `₹${data.makingCharges.toFixed(2)}`],
+    ['Bespoke Design Services', `₹${data.cadDesignCharges.toFixed(2)}`],
+    ['Finishing & Polish', `₹${data.cammingCharges.toFixed(2)}`],
+    ['Authentication Certificate', `₹${data.certificationCost.toFixed(2)}`],
+  ];
+  
+  (doc as any).autoTable({
+    startY: yPos,
+    body: tableData,
+    theme: 'plain',
+    styles: { 
+      font: 'times',
+      fontSize: 10,
+      textColor: [deepPurple.r, deepPurple.g, deepPurple.b],
+      cellPadding: { top: 3, bottom: 3 },
+    },
+    columnStyles: {
+      0: { cellWidth: 130, fontStyle: 'italic' },
+      1: { cellWidth: 45, halign: 'right', fontStyle: 'bold' },
+    },
+    margin: { left: 25, right: 25 },
+    didDrawCell: (data: any) => {
+      doc.setDrawColor(gold.r, gold.g, gold.b);
+      doc.setLineWidth(0.1);
+      doc.line(
+        data.cell.x,
+        data.cell.y + data.cell.height,
+        data.cell.x + data.cell.width,
+        data.cell.y + data.cell.height
+      );
+    },
+  });
+  
+  // Grand total section with luxury styling
+  const totalY = (doc as any).lastAutoTable.finalY + 15;
+  doc.setFillColor(deepPurple.r, deepPurple.g, deepPurple.b);
+  doc.rect(pageWidth - 110, totalY, 85, 22, 'F');
+  
+  doc.setFontSize(11);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(gold.r, gold.g, gold.b);
+  doc.text('TOTAL INVESTMENT', pageWidth - 105, totalY + 8);
+  
+  doc.setFontSize(18);
+  doc.setTextColor(255, 255, 255);
+  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 105, totalY + 17);
+  
+  // Elegant footer
+  const footerY = pageHeight - 30;
+  doc.setDrawColor(gold.r, gold.g, gold.b);
+  doc.setLineWidth(0.3);
+  doc.line(25, footerY, pageWidth - 25, footerY);
+  
+  doc.setFontSize(8);
+  doc.setFont('times', 'italic');
+  doc.setTextColor(gold.r, gold.g, gold.b);
+  doc.text('Thank you for choosing exceptional luxury', pageWidth / 2, footerY + 6, { align: 'center' });
+  
+  if (data.vendorBranding?.phone || data.vendorBranding?.email) {
+    doc.setFontSize(7);
+    doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
+    let contactText = '';
+    if (data.vendorBranding.phone) contactText += data.vendorBranding.phone;
+    if (data.vendorBranding.phone && data.vendorBranding.email) contactText += ' • ';
+    if (data.vendorBranding.email) contactText += data.vendorBranding.email;
+    doc.text(contactText, pageWidth / 2, footerY + 12, { align: 'center' });
+  }
+  
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_Luxury.pdf`;
   doc.save(fileName);
 };

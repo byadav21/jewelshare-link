@@ -42,7 +42,7 @@ const InvoiceGenerator = () => {
   const [paymentTerms, setPaymentTerms] = useState("Net 30");
   const [paymentDueDate, setPaymentDueDate] = useState<Date>();
   const [invoiceNotes, setInvoiceNotes] = useState("");
-  const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal'>('detailed');
+  const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury'>('detailed');
   const [estimateName, setEstimateName] = useState("");
   
   // Customer details
@@ -484,9 +484,12 @@ const InvoiceGenerator = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="detailed">Detailed</SelectItem>
-                    <SelectItem value="summary">Summary</SelectItem>
-                    <SelectItem value="minimal">Minimal</SelectItem>
+                    <SelectItem value="detailed">Detailed - Comprehensive Breakdown</SelectItem>
+                    <SelectItem value="summary">Summary - Quick Overview</SelectItem>
+                    <SelectItem value="minimal">Minimal - Essential Only</SelectItem>
+                    <SelectItem value="traditional">Traditional - Classic Serif Style</SelectItem>
+                    <SelectItem value="modern">Modern - Clean Minimalist</SelectItem>
+                    <SelectItem value="luxury">Luxury - Premium Elegant</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
