@@ -1181,36 +1181,36 @@ const ManufacturingCost = () => {
               <CardDescription>Enter customer information</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-1">
                   <Label htmlFor="customer-name" className="text-sm font-medium">Customer Name *</Label>
                   <Input id="customer-name" value={customerDetails.name} onChange={e => setCustomerDetails({
                   ...customerDetails,
                   name: e.target.value
                 })} placeholder="Enter customer name" className="mt-1.5" />
                 </div>
-                <div>
+                <div className="space-y-1">
                   <Label htmlFor="customer-phone" className="text-sm font-medium">Phone Number</Label>
                   <Input id="customer-phone" value={customerDetails.phone} onChange={e => setCustomerDetails({
                   ...customerDetails,
                   phone: e.target.value
                 })} placeholder="Enter phone number" className="mt-1.5" />
                 </div>
-                <div>
+                <div className="space-y-1">
                   <Label htmlFor="customer-email" className="text-sm font-medium">Email Address</Label>
                   <Input id="customer-email" type="email" value={customerDetails.email} onChange={e => setCustomerDetails({
                   ...customerDetails,
                   email: e.target.value
                 })} placeholder="Enter email address" className="mt-1.5" />
                 </div>
-                <div>
+                <div className="space-y-1">
                   <Label htmlFor="customer-address" className="text-sm font-medium">Address</Label>
                   <Textarea id="customer-address" value={customerDetails.address} onChange={e => setCustomerDetails({
                   ...customerDetails,
                   address: e.target.value
-                })} placeholder="Enter customer address" className="mt-1.5 min-h-[90px]" rows={3} />
+                })} placeholder="Enter customer address" className="mt-1.5 min-h-[60px]" rows={2} />
                 </div>
-                <div>
+                <div className="space-y-1">
                   <Label htmlFor="customer-gstin" className="text-sm font-medium">GSTIN (Optional)</Label>
                   <Input id="customer-gstin" value={customerDetails.gstin} onChange={e => setCustomerDetails({
                   ...customerDetails,
