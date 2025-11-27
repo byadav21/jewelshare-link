@@ -6,8 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, FileText, Download, Eye, ArrowLeft, Trash2 } from "lucide-react";
+import { Search, FileText, Download, Eye, ArrowLeft, Trash2, Mail, CheckSquare, Square, Calendar } from "lucide-react";
 import { generateInvoicePDF } from "@/utils/invoiceGenerator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -49,6 +53,10 @@ const InvoiceHistory = () => {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   useEffect(() => {
     fetchInvoices();
@@ -56,7 +64,7 @@ const InvoiceHistory = () => {
 
   useEffect(() => {
     filterInvoices();
-  }, [searchTerm, statusFilter, invoices]);
+  }, [searchTerm, statusFilter, invoices, dateFrom, dateTo]);
 
   const fetchInvoices = async () => {
     try {
@@ -102,7 +110,135 @@ const InvoiceHistory = () => {
       filtered = filtered.filter((invoice) => invoice.status === statusFilter);
     }
 
+    if (dateFrom) {
+      filtered = filtered.filter((invoice) => new Date(invoice.invoice_date) >= dateFrom);
+    }
+
+    if (dateTo) {
+      filtered = filtered.filter((invoice) => new Date(invoice.invoice_date) <= dateTo);
+    }
+
     setFilteredInvoices(filtered);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedInvoices.size === filteredInvoices.length) {
+      setSelectedInvoices(new Set());
+    } else {
+      setSelectedInvoices(new Set(filteredInvoices.map(inv => inv.id)));
+    }
+  };
+
+  const toggleSelectInvoice = (invoiceId: string) => {
+    const newSelected = new Set(selectedInvoices);
+    if (newSelected.has(invoiceId)) {
+      newSelected.delete(invoiceId);
+    } else {
+      newSelected.add(invoiceId);
+    }
+    setSelectedInvoices(newSelected);
+  };
+
+  const handleBulkExport = async () => {
+    if (selectedInvoices.size === 0) {
+      toast.error("Please select invoices to export");
+      return;
+    }
+
+    setBulkActionLoading(true);
+    try {
+      for (const invoiceId of selectedInvoices) {
+        const invoice = invoices.find(inv => inv.id === invoiceId);
+        if (invoice) {
+          await handleRegenerateInvoice(invoice);
+          await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between downloads
+        }
+      }
+      toast.success(`Exported ${selectedInvoices.size} invoices`);
+    } catch (error) {
+      toast.error("Failed to export some invoices");
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkEmail = async () => {
+    if (selectedInvoices.size === 0) {
+      toast.error("Please select invoices to email");
+      return;
+    }
+
+    setBulkActionLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("vendor_profiles")
+        .select("business_name, email")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      let successCount = 0;
+      for (const invoiceId of selectedInvoices) {
+        const invoice = invoices.find(inv => inv.id === invoiceId);
+        if (invoice && invoice.customer_email) {
+          try {
+            const { error } = await supabase.functions.invoke("send-invoice-email", {
+              body: {
+                to: invoice.customer_email,
+                customerName: invoice.customer_name,
+                invoiceNumber: invoice.invoice_number,
+                amount: invoice.final_selling_price,
+                vendorName: profile?.business_name || "Your Vendor",
+                vendorEmail: profile?.email || "vendor@example.com",
+              },
+            });
+
+            if (!error) successCount++;
+          } catch (err) {
+            console.error(`Failed to send email for ${invoice.invoice_number}:`, err);
+          }
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Sent ${successCount} of ${selectedInvoices.size} emails`);
+      } else {
+        toast.error("Failed to send emails");
+      }
+    } catch (error) {
+      toast.error("Failed to send emails");
+      console.error(error);
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkStatusUpdate = async (newStatus: string) => {
+    if (selectedInvoices.size === 0) {
+      toast.error("Please select invoices to update");
+      return;
+    }
+
+    setBulkActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .update({ status: newStatus })
+        .in("id", Array.from(selectedInvoices));
+
+      if (error) throw error;
+
+      toast.success(`Updated ${selectedInvoices.size} invoices to ${newStatus}`);
+      setSelectedInvoices(new Set());
+      fetchInvoices();
+    } catch (error) {
+      toast.error("Failed to update invoices");
+      console.error(error);
+    } finally {
+      setBulkActionLoading(false);
+    }
   };
 
   const handleRegenerateInvoice = async (invoice: Invoice) => {
@@ -262,29 +398,129 @@ const InvoiceHistory = () => {
             </div>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by invoice number, customer name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by invoice number, customer name or email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="quoted">Quoted</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="in_production">In Production</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="quoted">Quoted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="in_production">In Production</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
+
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                <div className="flex gap-2 flex-wrap">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {dateFrom ? format(dateFrom, "MMM dd, yyyy") : "From Date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <CalendarComponent
+                        mode="single"
+                        selected={dateFrom}
+                        onSelect={setDateFrom}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {dateTo ? format(dateTo, "MMM dd, yyyy") : "To Date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <CalendarComponent
+                        mode="single"
+                        selected={dateTo}
+                        onSelect={setDateTo}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {(dateFrom || dateTo) && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setDateFrom(undefined);
+                        setDateTo(undefined);
+                      }}
+                    >
+                      Clear Dates
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {selectedInvoices.size > 0 && (
+                <div className="flex flex-wrap gap-2 items-center p-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <span className="text-sm font-medium">
+                    {selectedInvoices.size} selected
+                  </span>
+                  <div className="flex gap-2 ml-auto flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleBulkExport}
+                      disabled={bulkActionLoading}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export All
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleBulkEmail}
+                      disabled={bulkActionLoading}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Email All
+                    </Button>
+                    <Select onValueChange={handleBulkStatusUpdate}>
+                      <SelectTrigger className="w-[140px] h-9">
+                        <SelectValue placeholder="Update Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="quoted">Quoted</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="in_production">In Production</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedInvoices(new Set())}
+                    >
+                      Clear Selection
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {loading ? (
@@ -306,6 +542,17 @@ const InvoiceHistory = () => {
               </div>
             ) : (
               <div className="space-y-4">
+                {filteredInvoices.length > 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <Checkbox
+                      checked={selectedInvoices.size === filteredInvoices.length}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <span className="text-sm font-medium">
+                      Select All ({filteredInvoices.length})
+                    </span>
+                  </div>
+                )}
                 {filteredInvoices.map((invoice) => (
                   <Card 
                     key={invoice.id} 
@@ -313,7 +560,13 @@ const InvoiceHistory = () => {
                   >
                     <CardContent className="p-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-3 flex-1">
+                        <div className="flex items-start gap-3 flex-1">
+                          <Checkbox
+                            checked={selectedInvoices.has(invoice.id)}
+                            onCheckedChange={() => toggleSelectInvoice(invoice.id)}
+                            className="mt-1"
+                          />
+                          <div className="space-y-3 flex-1">
                           <div className="flex items-center gap-3 flex-wrap">
                             <div className="flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-lg">
                               <FileText className="h-4 w-4 text-primary" />
@@ -349,7 +602,8 @@ const InvoiceHistory = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        </div>
+                        <div className="flex gap-2 md:ml-3">
                           <Button
                             variant="outline"
                             size="default"
