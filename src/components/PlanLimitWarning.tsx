@@ -6,7 +6,7 @@ import { AlertTriangle, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface PlanLimits {
-  subscription_plan: 'starter' | 'professional' | 'enterprise';
+  subscription_plan: 'starter' | 'professional' | 'enterprise' | 'essentials';
   max_products: number;
   max_share_links: number;
   max_team_members: number;

@@ -1386,6 +1386,7 @@ export type Database = {
           plan_updated_at: string | null
           plan_updated_by: string | null
           subscription_plan: Database["public"]["Enums"]["subscription_plan"]
+          trial_ends_at: string | null
           updated_at: string | null
           user_id: string
         }
@@ -1417,6 +1418,7 @@ export type Database = {
           plan_updated_at?: string | null
           plan_updated_by?: string | null
           subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
+          trial_ends_at?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -1448,6 +1450,7 @@ export type Database = {
           plan_updated_at?: string | null
           plan_updated_by?: string | null
           subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
+          trial_ends_at?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -1748,7 +1751,11 @@ export type Database = {
     Enums: {
       app_role: "admin" | "team_member"
       approval_status: "pending" | "approved" | "rejected"
-      subscription_plan: "starter" | "professional" | "enterprise"
+      subscription_plan:
+        | "starter"
+        | "professional"
+        | "enterprise"
+        | "essentials"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1878,7 +1885,12 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "team_member"],
       approval_status: ["pending", "approved", "rejected"],
-      subscription_plan: ["starter", "professional", "enterprise"],
+      subscription_plan: [
+        "starter",
+        "professional",
+        "enterprise",
+        "essentials",
+      ],
     },
   },
 } as const

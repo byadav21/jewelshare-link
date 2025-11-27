@@ -19,6 +19,7 @@ import { NewsletterSubscription } from "@/components/NewsletterSubscription";
 import { CookieConsent } from "@/components/CookieConsent";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ScratchCard } from "@/components/ScratchCard";
+import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -57,6 +58,51 @@ import {
 const Index = () => {
   const navigate = useNavigate();
   const [showScratchCard, setShowScratchCard] = useState(false);
+  const [vendorName, setVendorName] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication and fetch vendor name
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setIsAuthenticated(true);
+        // Fetch vendor profile to get business name
+        const { data: profile } = await supabase
+          .from("vendor_profiles")
+          .select("business_name")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        if (profile?.business_name) {
+          setVendorName(profile.business_name);
+        }
+      }
+    };
+    
+    checkAuth();
+    
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        const { data: profile } = await supabase
+          .from("vendor_profiles")
+          .select("business_name")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        if (profile?.business_name) {
+          setVendorName(profile.business_name);
+        }
+      } else {
+        setIsAuthenticated(false);
+        setVendorName(null);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Show scratch card after a short delay on first visit
   useEffect(() => {
@@ -258,6 +304,13 @@ const Index = () => {
         <div className="container relative mx-auto px-4 py-32 sm:py-40">
           <ScrollReveal>
             <div className="mx-auto max-w-4xl text-center">
+              {isAuthenticated && vendorName && (
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary/10 px-6 py-3 text-base backdrop-blur-sm animate-fade-in">
+                  <span className="font-semibold text-primary">
+                    Hello, {vendorName}! 👋
+                  </span>
+                </div>
+              )}
               <div className="mb-8 inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary/5 px-6 py-3 text-sm backdrop-blur-sm animate-fade-in">
                 <Sparkles className="h-5 w-5 text-primary animate-pulse" />
                 <span className="font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -274,22 +327,36 @@ const Index = () => {
                 The complete platform for jewelry vendors to showcase inventory, share catalogs with custom pricing, manage customer inquiries, and calculate accurate diamond prices with our professional Rapaport-based calculator.
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in" style={{ animationDelay: "0.3s" }}>
-                <Button 
-                  size="lg" 
-                  className="group h-14 gap-2 px-10 text-lg font-semibold shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-gradient-to-r from-primary to-accent" 
-                  onClick={() => navigate("/catalog")}
-                >
-                  Access Catalog
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-14 px-10 text-lg font-semibold border-2 hover:bg-primary/5 transition-all duration-300" 
-                  onClick={() => navigate("/auth")}
-                >
-                  Sign In
-                </Button>
+                {!isAuthenticated ? (
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="group h-14 gap-2 px-10 text-lg font-semibold shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-gradient-to-r from-gemstone-from to-gemstone-to" 
+                      onClick={() => navigate("/auth?plan=essentials")}
+                    >
+                      <Calculator className="h-5 w-5" />
+                      Free Calculator Access
+                      <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="h-14 px-10 text-lg font-semibold border-2 hover:bg-primary/5 transition-all duration-300" 
+                      onClick={() => navigate("/auth")}
+                    >
+                      Full Catalog Access
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    size="lg" 
+                    className="group h-14 gap-2 px-10 text-lg font-semibold shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-gradient-to-r from-primary to-accent" 
+                    onClick={() => navigate("/catalog")}
+                  >
+                    Access Catalog
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                )}
               </div>
             </div>
           </ScrollReveal>

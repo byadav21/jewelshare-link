@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PlanLimits {
-  subscription_plan: 'starter' | 'professional' | 'enterprise';
+  subscription_plan: 'starter' | 'professional' | 'enterprise' | 'essentials';
   max_products: number;
   max_share_links: number;
   max_team_members: number;

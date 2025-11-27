@@ -35,7 +35,7 @@ interface VendorPermissions {
   can_view_sessions: boolean;
   can_manage_sessions: boolean;
   max_active_sessions: number;
-  subscription_plan?: 'starter' | 'professional' | 'enterprise';
+  subscription_plan?: 'starter' | 'professional' | 'enterprise' | 'essentials';
   max_products?: number;
   max_share_links?: number;
   max_team_members?: number;
