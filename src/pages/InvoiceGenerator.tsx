@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import { format } from "date-fns";
 
 const InvoiceGenerator = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [estimates, setEstimates] = useState<any[]>([]);
@@ -79,8 +80,14 @@ const InvoiceGenerator = () => {
       return;
     }
     setUser(user);
-    fetchVendorProfile();
-    fetchEstimates();
+    await fetchVendorProfile();
+    await fetchEstimates();
+    
+    // Check if we should auto-load an estimate
+    const estimateId = searchParams.get('estimate');
+    if (estimateId) {
+      await loadEstimateById(estimateId);
+    }
   };
 
   const fetchVendorProfile = async () => {
@@ -152,6 +159,27 @@ const InvoiceGenerator = () => {
     }
   };
 
+  const loadEstimateById = async (estimateId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('manufacturing_cost_estimates')
+        .select('*')
+        .eq('id', estimateId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        loadFromEstimate(data);
+        await generateNextInvoiceNumber();
+        toast.success("Estimate loaded and ready to convert to invoice");
+      }
+    } catch (error) {
+      console.error('Error loading estimate:', error);
+      toast.error('Failed to load estimate');
+    }
+  };
+
   const loadFromEstimate = (estimate: any) => {
     setEstimateName(estimate.estimate_name);
     setCustomerName(estimate.customer_name || "");
@@ -178,7 +206,6 @@ const InvoiceGenerator = () => {
     }
     
     setShowEstimateDialog(false);
-    toast.success("Estimate loaded successfully");
   };
 
   const loadJewelryTemplate = () => {
@@ -302,40 +329,60 @@ const InvoiceGenerator = () => {
       } : undefined,
     });
 
-    // Save to database
+    // Save to database or update existing estimate
     try {
-      const { error } = await supabase
-        .from('manufacturing_cost_estimates')
-        .insert({
-          user_id: user.id,
-          estimate_name: estimateName,
-          invoice_number: finalInvoiceNumber,
-          invoice_date: invoiceDate.toISOString(),
-          payment_terms: paymentTerms,
-          payment_due_date: paymentDueDate?.toISOString(),
-          invoice_notes: invoiceNotes,
-          is_invoice_generated: true,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          customer_email: customerEmail,
-          customer_address: customerAddress,
-          net_weight: netWeight,
-          purity_fraction: purityFraction,
-          gold_rate_24k: goldRate24k,
-          making_charges: makingCharges,
-          cad_design_charges: cadDesignCharges,
-          camming_charges: cammingCharges,
-          certification_cost: certificationCost,
-          diamond_cost: diamondCost,
-          gemstone_cost: gemstoneCost,
-          gold_cost: goldCost,
-          total_cost: totalCost,
-          profit_margin_percentage: profitMargin,
-          final_selling_price: finalSellingPrice,
-          status: 'draft',
-        });
+      const estimateId = searchParams.get('estimate');
+      
+      if (estimateId) {
+        // Update existing estimate to mark it as having an invoice generated
+        const { error } = await supabase
+          .from('manufacturing_cost_estimates')
+          .update({
+            invoice_number: finalInvoiceNumber,
+            invoice_date: invoiceDate.toISOString(),
+            payment_terms: paymentTerms,
+            payment_due_date: paymentDueDate?.toISOString(),
+            invoice_notes: invoiceNotes,
+            is_invoice_generated: true,
+          })
+          .eq('id', estimateId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Create new invoice record
+        const { error } = await supabase
+          .from('manufacturing_cost_estimates')
+          .insert({
+            user_id: user.id,
+            estimate_name: estimateName,
+            invoice_number: finalInvoiceNumber,
+            invoice_date: invoiceDate.toISOString(),
+            payment_terms: paymentTerms,
+            payment_due_date: paymentDueDate?.toISOString(),
+            invoice_notes: invoiceNotes,
+            is_invoice_generated: true,
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            customer_email: customerEmail,
+            customer_address: customerAddress,
+            net_weight: netWeight,
+            purity_fraction: purityFraction,
+            gold_rate_24k: goldRate24k,
+            making_charges: makingCharges,
+            cad_design_charges: cadDesignCharges,
+            camming_charges: cammingCharges,
+            certification_cost: certificationCost,
+            diamond_cost: diamondCost,
+            gemstone_cost: gemstoneCost,
+            gold_cost: goldCost,
+            total_cost: totalCost,
+            profit_margin_percentage: profitMargin,
+            final_selling_price: finalSellingPrice,
+            status: 'draft',
+          });
+
+        if (error) throw error;
+      }
       
       toast.success("Invoice generated and saved successfully");
     } catch (error: any) {

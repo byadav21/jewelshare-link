@@ -96,7 +96,7 @@ const EstimateHistory = () => {
   };
 
   const handleConvertToInvoice = (estimateId: string) => {
-    navigate(`/manufacturing-cost?estimate=${estimateId}&createInvoice=true`);
+    navigate(`/invoice-generator?estimate=${estimateId}`);
   };
 
   return (
