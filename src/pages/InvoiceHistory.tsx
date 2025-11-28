@@ -41,7 +41,7 @@ interface Invoice {
   status: string;
   invoice_status: string | null;
   payment_date: string | null;
-  payment_due_date: string;
+  payment_due_date: string | null;
   estimate_name: string;
   created_at: string;
   last_reminder_sent_at: string | null;
