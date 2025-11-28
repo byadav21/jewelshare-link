@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,40 +18,21 @@ interface PaymentReminderRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-    
-    // Parse request body
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch (parseError) {
-      console.error("Failed to parse request body:", parseError);
-      return new Response(
-        JSON.stringify({ error: "Invalid request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
     const {
-      invoiceId,
       customerEmail,
       customerName,
       invoiceNumber,
       amount,
       dueDate,
       daysOverdue = 0,
-    }: PaymentReminderRequest = requestBody;
+    }: PaymentReminderRequest = await req.json();
 
-    console.log("Sending payment reminder:", { invoiceId, customerEmail, invoiceNumber });
+    console.log("Sending payment reminder:", { customerEmail, invoiceNumber });
 
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is not configured");
@@ -114,7 +92,6 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
 
-    // Send email using Resend API directly
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -135,12 +112,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResult = await emailResponse.json();
-
-    // Update last_reminder_sent_at timestamp
-    await supabase
-      .from("manufacturing_cost_estimates")
-      .update({ last_reminder_sent_at: new Date().toISOString() })
-      .eq("id", invoiceId);
 
     console.log("Payment reminder sent successfully:", emailResult);
 
