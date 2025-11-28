@@ -95,7 +95,6 @@ export const useVendorPermissions = () => {
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            console.log('Permissions updated in realtime:', payload);
             const newData = payload.new as any;
             setPermissions({
               can_view_catalog: newData.can_view_catalog,

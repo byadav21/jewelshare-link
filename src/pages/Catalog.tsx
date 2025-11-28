@@ -856,7 +856,7 @@ const Catalog = () => {
   }, [navigate]);
   return <ApprovalGuard>
       {/* Daily Gold Rate Prompt */}
-      <GoldRateDialog currentGoldRate={goldRate} onUpdate={handleUpdateGoldRate} onSkip={() => console.log("Gold rate update skipped")} />
+      <GoldRateDialog currentGoldRate={goldRate} onUpdate={handleUpdateGoldRate} onSkip={() => {}} />
 
       {/* Floating QR Codes */}
       <FloatingQRCodes instagramQrUrl={vendorProfile?.instagram_qr_url} whatsappQrUrl={vendorProfile?.whatsapp_qr_url} />

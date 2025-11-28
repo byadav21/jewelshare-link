@@ -175,11 +175,7 @@ export default function ImageOptimizationDemo() {
               <CardContent>
                 <OptimizedImageUpload
                   onUpload={async (file, metadata) => {
-                    console.log("Original size:", (file.size / 1024).toFixed(0), "KB");
-                    console.log("Optimized size:", (metadata.optimized.size / 1024).toFixed(0), "KB");
-                    console.log("Dimensions:", metadata.width, "x", metadata.height);
-                    console.log("Variants:", Object.keys(metadata.variants || {}));
-                    console.log("Placeholder:", metadata.placeholder?.slice(0, 50) + "...");
+                    // Image upload successful
                   }}
                   maxSizeMB={10}
                   generateVariants
