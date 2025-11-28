@@ -68,8 +68,6 @@ const Demo = () => {
                     className="bg-gradient-to-r from-category-jewellery to-category-gemstone"
                     onClick={() => {
                       // Placeholder for video play functionality
-                      // In production, this would trigger a video player
-                      console.log("Play video");
                     }}
                   >
                     <Play className="mr-2 h-5 w-5" />

@@ -109,7 +109,6 @@ const Calculators = () => {
               <Card 
                 className="group relative overflow-hidden border-2 h-full transition-all hover:shadow-2xl hover:shadow-primary/20 cursor-pointer"
                 onClick={() => {
-                  console.log('Card clicked, navigating to:', calc.path);
                   navigate(calc.path);
                 }}
               >
@@ -157,7 +156,6 @@ const Calculators = () => {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log('Navigating to:', calc.path);
                           navigate(calc.path);
                         }}
                         className="w-full group/btn"

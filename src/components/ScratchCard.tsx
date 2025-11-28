@@ -244,7 +244,6 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
           rewardValue,
         },
       });
-      console.log("Follow-up email sent successfully");
     } catch (error) {
       console.error("Error sending follow-up email:", error);
     }

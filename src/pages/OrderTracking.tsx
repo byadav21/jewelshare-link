@@ -88,7 +88,6 @@ export default function OrderTracking() {
           filter: `share_token=eq.${token}`,
         },
         (payload) => {
-          console.log('Order updated:', payload);
           setOrder(payload.new as OrderDetails);
           toast.success('Order status updated!');
         }
