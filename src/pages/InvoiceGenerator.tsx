@@ -344,6 +344,7 @@ const InvoiceGenerator = () => {
             payment_due_date: paymentDueDate?.toISOString(),
             invoice_notes: invoiceNotes,
             is_invoice_generated: true,
+            invoice_status: "pending",
           })
           .eq('id', estimateId);
 
@@ -361,6 +362,7 @@ const InvoiceGenerator = () => {
             payment_due_date: paymentDueDate?.toISOString(),
             invoice_notes: invoiceNotes,
             is_invoice_generated: true,
+            invoice_status: "pending",
             customer_name: customerName,
             customer_phone: customerPhone,
             customer_email: customerEmail,

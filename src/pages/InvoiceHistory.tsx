@@ -39,9 +39,12 @@ interface Invoice {
   customer_phone: string;
   final_selling_price: number;
   status: string;
+  invoice_status: string | null;
+  payment_date: string | null;
   payment_due_date: string;
   estimate_name: string;
   created_at: string;
+  last_reminder_sent_at: string | null;
 }
 
 const InvoiceHistory = () => {
@@ -50,6 +53,7 @@ const InvoiceHistory = () => {
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
@@ -64,7 +68,7 @@ const InvoiceHistory = () => {
 
   useEffect(() => {
     filterInvoices();
-  }, [searchTerm, statusFilter, invoices, dateFrom, dateTo]);
+  }, [searchTerm, statusFilter, paymentStatusFilter, invoices, dateFrom, dateTo]);
 
   const fetchInvoices = async () => {
     try {
@@ -108,6 +112,10 @@ const InvoiceHistory = () => {
 
     if (statusFilter !== "all") {
       filtered = filtered.filter((invoice) => invoice.status === statusFilter);
+    }
+
+    if (paymentStatusFilter !== "all") {
+      filtered = filtered.filter((invoice) => invoice.invoice_status === paymentStatusFilter);
     }
 
     if (dateFrom) {
@@ -238,6 +246,65 @@ const InvoiceHistory = () => {
       console.error(error);
     } finally {
       setBulkActionLoading(false);
+    }
+  };
+
+  const handlePaymentStatusUpdate = async (invoiceId: string, newPaymentStatus: string) => {
+    try {
+      const updateData: any = { invoice_status: newPaymentStatus };
+      if (newPaymentStatus === "paid") {
+        updateData.payment_date = new Date().toISOString();
+      } else if (newPaymentStatus === "pending" || newPaymentStatus === "cancelled") {
+        updateData.payment_date = null;
+      }
+
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .update(updateData)
+        .eq("id", invoiceId);
+
+      if (error) throw error;
+
+      toast.success(`Payment status updated to ${newPaymentStatus}`);
+      fetchInvoices();
+    } catch (error: any) {
+      console.error("Error updating payment status:", error);
+      toast.error("Failed to update payment status");
+    }
+  };
+
+  const handleSendPaymentReminder = async (invoice: Invoice) => {
+    if (!invoice.customer_email) {
+      toast.error("No customer email available");
+      return;
+    }
+
+    try {
+      const dueDate = new Date(invoice.payment_due_date || invoice.created_at);
+      const today = new Date();
+      const daysOverdue = invoice.invoice_status === "overdue" 
+        ? Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+
+      const { error } = await supabase.functions.invoke("send-payment-reminder", {
+        body: {
+          invoiceId: invoice.id,
+          customerEmail: invoice.customer_email,
+          customerName: invoice.customer_name,
+          invoiceNumber: invoice.invoice_number,
+          amount: invoice.final_selling_price || 0,
+          dueDate: invoice.payment_due_date,
+          daysOverdue,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Payment reminder sent successfully");
+      fetchInvoices();
+    } catch (error: any) {
+      console.error("Error sending payment reminder:", error);
+      toast.error("Failed to send payment reminder");
     }
   };
 
@@ -422,6 +489,18 @@ const InvoiceHistory = () => {
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                  <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Payment status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Payments</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
@@ -567,41 +646,93 @@ const InvoiceHistory = () => {
                             className="mt-1"
                           />
                           <div className="space-y-3 flex-1">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <div className="flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-lg">
-                              <FileText className="h-4 w-4 text-primary" />
-                              <h3 className="font-bold text-lg">{invoice.invoice_number}</h3>
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <div className="flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-lg">
+                                <FileText className="h-4 w-4 text-primary" />
+                                <h3 className="font-bold text-lg">{invoice.invoice_number}</h3>
+                              </div>
+                              <Badge 
+                                variant={invoice.status === "completed" ? "default" : "secondary"}
+                                className="capitalize"
+                              >
+                                {invoice.status?.replace("_", " ")}
+                              </Badge>
+                              <Badge 
+                                variant={
+                                  invoice.invoice_status === "paid" 
+                                    ? "default" 
+                                    : invoice.invoice_status === "overdue" 
+                                    ? "destructive" 
+                                    : "outline"
+                                }
+                                className="text-xs capitalize"
+                              >
+                                {invoice.invoice_status || "pending"}
+                              </Badge>
                             </div>
-                            <Badge 
-                              variant={invoice.status === "completed" ? "default" : "secondary"}
-                              className="capitalize"
-                            >
-                              {invoice.status?.replace("_", " ")}
-                            </Badge>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="font-medium text-muted-foreground">Customer:</span>
-                              <span className="text-foreground">{invoice.customer_name}</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium text-muted-foreground">Customer:</span>
+                                <span className="text-foreground">{invoice.customer_name}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium text-muted-foreground">Date:</span>
+                                <span className="text-foreground">
+                                  {new Date(invoice.invoice_date).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                  })}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium text-muted-foreground">Due Date:</span>
+                                <span className="text-foreground">
+                                  {format(new Date(invoice.payment_due_date || invoice.created_at), "MMM dd, yyyy")}
+                                </span>
+                              </div>
+                              {invoice.payment_date && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="font-medium text-muted-foreground">Paid:</span>
+                                  <span className="text-green-600 font-medium">
+                                    {format(new Date(invoice.payment_date), "MMM dd, yyyy")}
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="font-medium text-muted-foreground">Date:</span>
-                              <span className="text-foreground">
-                                {new Date(invoice.invoice_date).toLocaleDateString('en-US', { 
-                                  year: 'numeric', 
-                                  month: 'short', 
-                                  day: 'numeric' 
-                                })}
+                            <div className="flex items-baseline gap-2 pt-1">
+                              <span className="text-sm font-medium text-muted-foreground">Amount:</span>
+                              <span className="text-2xl font-bold text-primary">
+                                ₹{invoice.final_selling_price?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </span>
                             </div>
+                            <div className="flex flex-wrap gap-2 pt-2">
+                              <Select 
+                                value={invoice.invoice_status || "pending"}
+                                onValueChange={(value) => handlePaymentStatusUpdate(invoice.id, value)}
+                              >
+                                <SelectTrigger className="w-[150px] h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="paid">Paid</SelectItem>
+                                  <SelectItem value="overdue">Overdue</SelectItem>
+                                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {invoice.invoice_status !== "paid" && invoice.customer_email && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleSendPaymentReminder(invoice)}
+                                >
+                                  <Mail className="h-4 w-4 mr-2" />
+                                  Send Reminder
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-baseline gap-2 pt-1">
-                            <span className="text-sm font-medium text-muted-foreground">Amount:</span>
-                            <span className="text-2xl font-bold text-primary">
-                              ₹{invoice.final_selling_price?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </span>
-                          </div>
-                        </div>
                         </div>
                         <div className="flex gap-2 md:ml-3">
                           <Button
