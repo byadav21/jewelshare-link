@@ -21,12 +21,29 @@ interface PaymentReminderRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    
+    // Parse request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error("Failed to parse request body:", parseError);
+      return new Response(
+        JSON.stringify({ error: "Invalid request body" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     const {
       invoiceId,
       customerEmail,
@@ -35,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
       amount,
       dueDate,
       daysOverdue = 0,
-    }: PaymentReminderRequest = await req.json();
+    }: PaymentReminderRequest = requestBody;
 
     console.log("Sending payment reminder:", { invoiceId, customerEmail, invoiceNumber });
 
