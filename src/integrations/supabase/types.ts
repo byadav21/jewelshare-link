@@ -479,12 +479,15 @@ export type Database = {
           invoice_date: string | null
           invoice_notes: string | null
           invoice_number: string | null
+          invoice_status: string | null
           is_customer_visible: boolean | null
           is_invoice_generated: boolean | null
+          last_reminder_sent_at: string | null
           line_items: Json | null
           making_charges: number | null
           net_weight: number | null
           notes: string | null
+          payment_date: string | null
           payment_due_date: string | null
           payment_terms: string | null
           profit_margin_percentage: number | null
@@ -516,12 +519,15 @@ export type Database = {
           invoice_date?: string | null
           invoice_notes?: string | null
           invoice_number?: string | null
+          invoice_status?: string | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
+          last_reminder_sent_at?: string | null
           line_items?: Json | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
+          payment_date?: string | null
           payment_due_date?: string | null
           payment_terms?: string | null
           profit_margin_percentage?: number | null
@@ -553,12 +559,15 @@ export type Database = {
           invoice_date?: string | null
           invoice_notes?: string | null
           invoice_number?: string | null
+          invoice_status?: string | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
+          last_reminder_sent_at?: string | null
           line_items?: Json | null
           making_charges?: number | null
           net_weight?: number | null
           notes?: string | null
+          payment_date?: string | null
           payment_due_date?: string | null
           payment_terms?: string | null
           profit_margin_percentage?: number | null
