@@ -55,7 +55,6 @@ export function NotificationBell() {
           filter: 'status=eq.pending'
         },
         () => {
-          console.log('Comment notification received');
           fetchCounts();
         }
       )
