@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.notify-order-status]
 verify_jwt = false
+
+[functions.send-payment-reminder]
+verify_jwt = false
+
+[functions.check-overdue-invoices]
+verify_jwt = false
