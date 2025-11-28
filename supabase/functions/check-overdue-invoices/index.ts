@@ -72,13 +72,8 @@ const handler = async (req: Request): Promise<Response> => {
           }
 
           try {
-            const response = await fetch(`${supabaseUrl}/functions/v1/send-payment-reminder`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${supabaseServiceRoleKey}`,
-              },
-              body: JSON.stringify({
+            const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
+              body: {
                 invoiceId: invoice.id,
                 customerEmail: invoice.customer_email,
                 customerName: invoice.customer_name,
@@ -86,16 +81,16 @@ const handler = async (req: Request): Promise<Response> => {
                 amount: invoice.final_selling_price || invoice.total_cost || 0,
                 dueDate: invoice.payment_due_date,
                 daysOverdue,
-              }),
+              },
             });
 
-            if (!response.ok) {
-              console.error(`Failed to send reminder for invoice ${invoice.invoice_number}`);
+            if (error) {
+              console.error(`Failed to send reminder for invoice ${invoice.invoice_number}:`, error);
             } else {
               console.log(`Sent reminder for invoice ${invoice.invoice_number}`);
             }
 
-            return response;
+            return data;
           } catch (error) {
             console.error(`Error sending reminder for invoice ${invoice.invoice_number}:`, error);
             return null;
