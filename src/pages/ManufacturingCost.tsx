@@ -993,7 +993,8 @@ const ManufacturingCost = () => {
   const removeImage = (index: number) => {
     setReferenceImages(referenceImages.filter((_, i) => i !== index));
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
       {/* Guest Usage Limit Dialog */}
       <Dialog open={showUsageLimitDialog} onOpenChange={setShowUsageLimitDialog}>
         <DialogContent>
@@ -1864,6 +1865,7 @@ const ManufacturingCost = () => {
 
       <InvoicePreviewDialog open={showInvoicePreview} onOpenChange={setShowInvoicePreview} invoiceData={previewInvoiceData} onConfirmDownload={handleConfirmDownload} />
     </div>
+  );
 };
 
 export default ManufacturingCost;
