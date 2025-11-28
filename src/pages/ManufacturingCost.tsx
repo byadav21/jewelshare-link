@@ -1863,6 +1863,7 @@ const ManufacturingCost = () => {
       </div>
 
       <InvoicePreviewDialog open={showInvoicePreview} onOpenChange={setShowInvoicePreview} invoiceData={previewInvoiceData} onConfirmDownload={handleConfirmDownload} />
-    </div>;
+    </div>
 };
+
 export default ManufacturingCost;
