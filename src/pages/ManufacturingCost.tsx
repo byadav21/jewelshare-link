@@ -736,24 +736,18 @@ const ManufacturingCost = () => {
     }
   };
   const handleSave = async () => {
-    if (!user) {
+    if (!estimateName) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to save estimates",
+        title: "Missing Information",
+        description: "Please enter estimate name",
         variant: "destructive"
       });
       return;
     }
-    if (!estimateName.trim()) {
-      toast({
-        title: "Name Required",
-        description: "Please enter a name for this estimate",
-        variant: "destructive"
-      });
-      return;
-    }
-    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
-    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
@@ -764,41 +758,36 @@ const ManufacturingCost = () => {
       cad_design_charges: formData.cadDesignCharges,
       camming_charges: formData.cammingCharges,
       certification_cost: formData.certificationCost,
-      diamond_cost: diamondCost,
-      gemstone_cost: gemstoneCost,
+      diamond_cost: formData.diamondPerCaratPrice * formData.diamondWeight,
+      gemstone_cost: formData.gemstonePerCaratPrice * formData.gemstoneWeight,
       gold_cost: costs.goldCost,
       total_cost: costs.totalCost,
       profit_margin_percentage: profitMargin,
       final_selling_price: costs.finalSellingPrice,
-      notes: notes || null,
+      notes,
       reference_images: referenceImages,
-      customer_name: customerDetails.name || null,
-      customer_phone: customerDetails.phone || null,
-      customer_email: customerDetails.email || null,
-      customer_address: customerDetails.address || null,
+      customer_name: customerDetails.name,
+      customer_phone: customerDetails.phone,
+      customer_email: customerDetails.email,
+      customer_address: customerDetails.address,
       status: estimateStatus,
-      estimated_completion_date: estimatedCompletionDate?.toISOString() || null,
+      estimated_completion_date: estimatedCompletionDate?.toISOString(),
       is_customer_visible: isCustomerVisible,
-      invoice_number: invoiceNumber || null,
-      invoice_date: invoiceDate.toISOString(),
-      payment_terms: paymentTerms,
-      payment_due_date: paymentDueDate?.toISOString() || null,
-      invoice_notes: invoiceNotes || null,
+      share_token: shareToken || undefined,
+      line_items: lineItems.length > 0 ? (lineItems as any) : null,
       is_invoice_generated: false,
-      line_items: (lineItems.length > 0 ? lineItems : []) as any,
       details: {
         gross_weight: formData.grossWeight,
-        diamond_per_carat_price: formData.diamondPerCaratPrice,
-        diamond_weight: formData.diamondWeight,
         diamond_type: formData.diamondType,
         diamond_shape: formData.diamondShape,
+        diamond_weight: formData.diamondWeight,
         diamond_color: formData.diamondColor,
         diamond_clarity: formData.diamondClarity,
-        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
-        gemstone_per_carat_price: formData.gemstonePerCaratPrice,
+        diamond_per_carat_price: formData.diamondPerCaratPrice,
         gemstone_weight: formData.gemstoneWeight,
-        vendor_gstin: vendorGSTIN || null,
-        customer_gstin: customerDetails.gstin || null,
+        gemstone_per_carat_price: formData.gemstonePerCaratPrice,
+        customer_gstin: customerDetails.gstin,
+        vendor_gstin: vendorGSTIN,
         gst_mode: gstMode,
         sgst_percentage: sgstPercentage,
         cgst_percentage: cgstPercentage,
@@ -808,94 +797,39 @@ const ManufacturingCost = () => {
         exchange_rate: exchangeRate
       }
     };
+
+    let result;
     if (currentEstimateId) {
-      // Get previous status for comparison
-      const previousEstimate = estimates.find(e => e.id === currentEstimateId);
-      const previousStatus = previousEstimate?.status;
-      const {
-        error,
-        data
-      } = await supabase.from('manufacturing_cost_estimates').update(estimateData).eq('id', currentEstimateId).select();
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update estimate",
-          variant: "destructive"
-        });
-      } else {
-        if (data && data[0]) {
-          setShareToken(data[0].share_token);
-
-          // Send email notification if status changed and customer details exist
-          if (data[0].status !== previousStatus && data[0].customer_email && data[0].is_customer_visible) {
-            try {
-              await supabase.functions.invoke('notify-order-status', {
-                body: {
-                  estimateId: data[0].id,
-                  customerName: data[0].customer_name,
-                  customerEmail: data[0].customer_email,
-                  status: data[0].status,
-                  estimatedCompletionDate: data[0].estimated_completion_date,
-                  shareToken: data[0].share_token
-                }
-              });
-              console.log('Order status notification sent');
-            } catch (emailError) {
-              console.error('Failed to send email notification:', emailError);
-              // Don't fail the save operation if email fails
-            }
-          }
-        }
-        toast({
-          title: "Success",
-          description: "Estimate updated successfully"
-        });
-        fetchEstimates();
-        setShowSaveDialog(false);
-      }
+      result = await supabase
+        .from('manufacturing_cost_estimates')
+        .update(estimateData)
+        .eq('id', currentEstimateId);
     } else {
-      const {
-        error,
-        data
-      } = await supabase.from('manufacturing_cost_estimates').insert([estimateData]).select();
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to save estimate",
-          variant: "destructive"
-        });
-      } else {
-        if (data && data[0]) {
-          setShareToken(data[0].share_token);
-          setCurrentEstimateId(data[0].id);
-
-          // Send initial email notification if customer details exist and visible
-          if (data[0].customer_email && data[0].is_customer_visible) {
-            try {
-              await supabase.functions.invoke('notify-order-status', {
-                body: {
-                  estimateId: data[0].id,
-                  customerName: data[0].customer_name,
-                  customerEmail: data[0].customer_email,
-                  status: data[0].status,
-                  estimatedCompletionDate: data[0].estimated_completion_date,
-                  shareToken: data[0].share_token
-                }
-              });
-              console.log('Initial order notification sent');
-            } catch (emailError) {
-              console.error('Failed to send email notification:', emailError);
-              // Don't fail the save operation if email fails
-            }
-          }
-        }
-        toast({
-          title: "Success",
-          description: "Estimate saved successfully"
-        });
-        fetchEstimates();
-        setShowSaveDialog(false);
+      result = await supabase
+        .from('manufacturing_cost_estimates')
+        .insert(estimateData)
+        .select()
+        .single();
+      
+      if (result.data) {
+        setCurrentEstimateId(result.data.id);
+        setShareToken(result.data.share_token);
       }
+    }
+
+    if (result.error) {
+      toast({
+        title: "Error",
+        description: "Failed to save estimate",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Saved",
+        description: currentEstimateId ? "Estimate updated successfully" : "Estimate saved successfully"
+      });
+      fetchEstimates();
+      setShowSaveDialog(false);
     }
   };
   const handleLoad = (estimate: any) => {
@@ -1082,16 +1016,16 @@ const ManufacturingCost = () => {
 
       <BackToHomeButton />
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header Section */}
+        {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full mb-4">
             <Calculator className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient">
-            Manufacturing Cost Estimator
+            Estimate Generator
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Calculate precise manufacturing costs and pricing for your custom jewelry orders
+            Create detailed manufacturing cost estimates for jewelry quotes and pricing
           </p>
           
           {/* Guest Usage Counter */}
@@ -1120,19 +1054,19 @@ const ManufacturingCost = () => {
                 Load Estimate
               </Button>
 
-              <Button onClick={handleSaveAsInvoice} size="lg" className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
+              <Button onClick={handleExportPDF} size="lg" className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
                 <FileText className="h-5 w-5" />
-                Save Invoice
+                Export Estimate PDF
               </Button>
 
-              <Button onClick={handleExportPDF} size="lg" className="gap-2 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70">
-                <FileText className="h-5 w-5" />
-                Export PDF
-              </Button>
-
-              <Button onClick={() => navigate("/invoice-history")} size="lg" variant="secondary" className="gap-2">
+              <Button onClick={() => navigate("/estimate-history")} size="lg" variant="secondary" className="gap-2">
                 <FolderOpen className="h-5 w-5" />
-                View Saved Invoices
+                View Estimate History
+              </Button>
+
+              <Button onClick={() => navigate("/invoice-generator")} size="lg" variant="secondary" className="gap-2">
+                <FileText className="h-5 w-5" />
+                Create Invoice
               </Button>
             </div>
           </CardContent>
@@ -1145,13 +1079,13 @@ const ManufacturingCost = () => {
             <DialogHeader>
               <DialogTitle>Save Estimate</DialogTitle>
               <DialogDescription>
-                Save this estimate with customer details and tracking options
+                Save this manufacturing cost estimate with customer details and tracking options
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="estimate-name">Estimate Name *</Label>
-                <Input id="estimate-name" value={estimateName} onChange={e => setEstimateName(e.target.value)} placeholder="e.g., Diamond Ring - John Doe" />
+                <Input id="estimate-name" value={estimateName} onChange={e => setEstimateName(e.target.value)} placeholder="e.g., Diamond Ring Quote - John Doe" />
               </div>
 
               <div className="space-y-4">
@@ -1235,134 +1169,10 @@ const ManufacturingCost = () => {
                 <Switch checked={isCustomerVisible} onCheckedChange={setIsCustomerVisible} />
               </div>
 
-              {/* Invoice Section */}
-              <div className="border-t pt-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-lg">Invoice Details</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Configure invoice information for PDF generation
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="invoice-prefix">Invoice Prefix</Label>
-                    <Input id="invoice-prefix" value={invoicePrefix} onChange={e => setInvoicePrefix(e.target.value.toUpperCase())} placeholder="INV" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="invoice-number">Invoice Number</Label>
-                    <div className="flex gap-2">
-                      <Input id="invoice-number" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} placeholder="Auto-generated" />
-                      <Button type="button" variant="outline" onClick={generateNextInvoiceNumber} size="sm">
-                        Auto
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Invoice Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-left font-normal">
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {format(invoiceDate, "PPP")}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <CalendarPicker mode="single" selected={invoiceDate} onSelect={date => date && setInvoiceDate(date)} initialFocus />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Payment Terms</Label>
-                    <Select value={paymentTerms} onValueChange={setPaymentTerms}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Due on Receipt">Due on Receipt</SelectItem>
-                        <SelectItem value="Net 15">Net 15</SelectItem>
-                        <SelectItem value="Net 30">Net 30</SelectItem>
-                        <SelectItem value="Net 45">Net 45</SelectItem>
-                        <SelectItem value="Net 60">Net 60</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Payment Due Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-left font-normal">
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {paymentDueDate ? format(paymentDueDate, "PPP") : "Select date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <CalendarPicker mode="single" selected={paymentDueDate} onSelect={setPaymentDueDate} initialFocus />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Invoice Template</Label>
-                  <Select value={invoiceTemplate} onValueChange={(value: any) => setInvoiceTemplate(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="detailed">Detailed - Full breakdown with all specifications</SelectItem>
-                      <SelectItem value="summary">Summary - Condensed view with key information</SelectItem>
-                      <SelectItem value="minimal">Minimal - Basic invoice with totals only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="invoice-notes">Invoice Notes</Label>
-                  <Textarea id="invoice-notes" value={invoiceNotes} onChange={e => setInvoiceNotes(e.target.value)} placeholder="Add payment instructions or special terms..." rows={3} />
-                </div>
+              <div className="flex gap-3">
+                <Button onClick={handleSave} className="flex-1">Save Estimate</Button>
+                <Button onClick={() => setShowSaveDialog(false)} variant="outline" className="flex-1">Cancel</Button>
               </div>
-
-              <Button onClick={handleSave} className="w-full">
-                Save Estimate
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Load Dialog */}
-        <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Load Estimate</DialogTitle>
-              <DialogDescription>
-                Select a saved estimate to continue working on
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2">
-              {estimates.length === 0 ? <p className="text-center text-muted-foreground py-8">
-                  No saved estimates found
-                </p> : estimates.map(estimate => <div key={estimate.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/5 transition-colors">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{estimate.estimate_name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Created: {new Date(estimate.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleLoad(estimate)} size="sm">
-                        Load
-                      </Button>
-                      <Button onClick={() => handleDelete(estimate.id)} variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>)}
             </div>
           </DialogContent>
         </Dialog>

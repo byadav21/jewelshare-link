@@ -40,24 +40,42 @@ const Calculators = () => {
     },
     {
       icon: Wrench,
-      title: "Manufacturing Cost Estimator",
+      title: "Estimate Generator",
       description:
-        "Calculate complete jewelry manufacturing costs including gold, diamonds, gemstones, making charges, CAD design, camming/casting, and certification. Get detailed cost breakdowns for accurate pricing and profitability analysis.",
+        "Create detailed manufacturing cost estimates for jewelry quotes. Calculate complete costs including gold, diamonds, gemstones, making charges, CAD design, camming/casting, and certification. Perfect for providing accurate quotes to customers.",
       features: [
         "Complete cost breakdown",
         "Profit margin calculator",
         "Save & load estimates",
-        "Invoice generation & history",
+        "Customer tracking links",
         "Real-time calculations"
       ],
       gradient: "from-jewellery-from to-jewellery-to",
       path: "/manufacturing-cost",
-      badge: "New",
+      badge: "Quoting",
       extraButtons: [
         {
-          label: "Generate Invoice",
-          path: "/invoice-generator"
-        },
+          label: "View Estimate History",
+          path: "/estimate-history"
+        }
+      ]
+    },
+    {
+      icon: Calculator,
+      title: "Invoice Generator",
+      description:
+        "Generate professional invoices for completed jewelry orders. Convert approved estimates into formal invoices with invoice numbering, payment terms, GST calculations, and multi-item line items with complete specifications.",
+      features: [
+        "Auto invoice numbering",
+        "GST & tax calculations",
+        "Multi-item invoices",
+        "Professional PDF export",
+        "Email invoice to customers"
+      ],
+      gradient: "from-orange-500 to-orange-700",
+      path: "/invoice-generator",
+      badge: "Billing",
+      extraButtons: [
         {
           label: "View Invoice History",
           path: "/invoice-history"
@@ -85,7 +103,7 @@ const Calculators = () => {
           </div>
         </ScrollReveal>
 
-        <div className="grid gap-8 md:grid-cols-2 mb-12">
+        <div className="grid gap-8 md:grid-cols-3 mb-12">
           {calculators.map((calc, index) => (
             <ScrollReveal key={index} delay={0.1 * index} direction="up">
               <Card 
