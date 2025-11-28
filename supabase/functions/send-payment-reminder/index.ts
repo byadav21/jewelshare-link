@@ -1,8 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
-import { Resend } from "npm:resend@4.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -40,15 +39,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending payment reminder:", { invoiceId, customerEmail, invoiceNumber });
 
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
     const subject = daysOverdue > 0
       ? `Payment Overdue: Invoice ${invoiceNumber}`
       : `Payment Reminder: Invoice ${invoiceNumber}`;
 
-    const emailResponse = await resend.emails.send({
-      from: "Billing <onboarding@resend.dev>",
-      to: [customerEmail],
-      subject,
-      html: `
+    const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: ${daysOverdue > 0 ? '#ef4444' : '#f97316'}; margin-bottom: 20px;">
             ${daysOverdue > 0 ? 'Payment Overdue Notice' : 'Payment Reminder'}
@@ -96,8 +95,29 @@ const handler = async (req: Request): Promise<Response> => {
             Your Billing Team
           </p>
         </div>
-      `,
+      `;
+
+    // Send email using Resend API directly
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Billing <onboarding@resend.dev>",
+        to: [customerEmail],
+        subject,
+        html: emailHtml,
+      }),
     });
+
+    if (!emailResponse.ok) {
+      const error = await emailResponse.text();
+      throw new Error(`Resend API error: ${error}`);
+    }
+
+    const emailResult = await emailResponse.json();
 
     // Update last_reminder_sent_at timestamp
     await supabase
@@ -105,10 +125,10 @@ const handler = async (req: Request): Promise<Response> => {
       .update({ last_reminder_sent_at: new Date().toISOString() })
       .eq("id", invoiceId);
 
-    console.log("Payment reminder sent successfully:", emailResponse);
+    console.log("Payment reminder sent successfully:", emailResult);
 
     return new Response(
-      JSON.stringify({ success: true, emailResponse }),
+      JSON.stringify({ success: true, emailResult }),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
