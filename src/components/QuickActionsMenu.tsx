@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Share2, FileDown, Zap, X, ShoppingCart, Trophy, Sparkles, FileText, History } from "lucide-react";
+import { Plus, Share2, FileDown, Zap, X, ShoppingCart, Trophy, Sparkles, FileText, History, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
@@ -111,9 +111,9 @@ export const QuickActionsMenu = ({
     disabled: false
   }, {
     icon: FileText,
-    label: "Invoices",
+    label: "Create Invoice",
     onClick: () => {
-      navigate("/invoice-history");
+      navigate("/invoice-generator");
       setIsOpen(false);
     },
     gradient: "from-orange-500/20 to-orange-500/5",
@@ -121,7 +121,27 @@ export const QuickActionsMenu = ({
     disabled: false
   }, {
     icon: History,
-    label: "Estimates",
+    label: "View Invoices",
+    onClick: () => {
+      navigate("/invoice-history");
+      setIsOpen(false);
+    },
+    gradient: "from-amber-500/20 to-amber-500/5",
+    iconColor: "text-amber-500",
+    disabled: false
+  }, {
+    icon: Calculator,
+    label: "Create Estimate",
+    onClick: () => {
+      navigate("/manufacturing-cost");
+      setIsOpen(false);
+    },
+    gradient: "from-emerald-500/20 to-emerald-500/5",
+    iconColor: "text-emerald-500",
+    disabled: false
+  }, {
+    icon: History,
+    label: "View Estimates",
     onClick: () => {
       navigate("/estimate-history");
       setIsOpen(false);
