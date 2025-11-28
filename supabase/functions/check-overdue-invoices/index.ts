@@ -21,7 +21,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Checking for overdue invoices...");
 
-    // Find invoices that are pending and past their due date
     const { data: overdueInvoices, error: fetchError } = await supabase
       .from("manufacturing_cost_estimates")
       .select("*")
@@ -37,7 +36,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${overdueInvoices?.length || 0} overdue invoices`);
 
-    // Update status to overdue
     if (overdueInvoices && overdueInvoices.length > 0) {
       const invoiceIds = overdueInvoices.map((inv) => inv.id);
       
@@ -51,14 +49,12 @@ const handler = async (req: Request): Promise<Response> => {
         throw updateError;
       }
 
-      // Send payment reminders for overdue invoices
       const reminderPromises = overdueInvoices
         .filter((inv) => inv.is_customer_visible && inv.customer_email)
         .map(async (invoice) => {
           const dueDate = new Date(invoice.payment_due_date);
           const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
 
-          // Only send reminder if more than 1 day since last reminder
           const lastReminder = invoice.last_reminder_sent_at 
             ? new Date(invoice.last_reminder_sent_at) 
             : null;
