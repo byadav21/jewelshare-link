@@ -1,6 +1,6 @@
 import { useRef, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Environment, MeshReflectorMaterial } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, MeshReflectorMaterial } from "@react-three/drei";
 import * as THREE from "three";
 
 const Diamond = () => {
@@ -126,16 +126,6 @@ const Scene = () => {
         />
       </mesh>
 
-      <Environment
-        background={false}
-        files={undefined}
-        preset={undefined}
-      >
-        <mesh>
-          <sphereGeometry args={[50, 32, 32]} />
-          <meshBasicMaterial color="#1a1a2e" side={THREE.BackSide} />
-        </mesh>
-      </Environment>
     </>
   );
 };
