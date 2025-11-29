@@ -126,7 +126,16 @@ const Scene = () => {
         />
       </mesh>
 
-      <Environment preset="city" />
+      <Environment
+        background={false}
+        files={undefined}
+        preset={undefined}
+      >
+        <mesh>
+          <sphereGeometry args={[50, 32, 32]} />
+          <meshBasicMaterial color="#1a1a2e" side={THREE.BackSide} />
+        </mesh>
+      </Environment>
     </>
   );
 };
