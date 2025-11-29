@@ -336,8 +336,11 @@ const SharedCatalog = () => {
                         </a>
                       )}
                       {vendorProfile.phone && (
-                        <a href={`tel:${vendorProfile.phone}`} className="text-[10px] sm:text-xs md:text-sm text-primary font-medium hover:underline whitespace-nowrap">
-                          📞 {vendorProfile.phone}
+                        <a 
+                          href={`tel:${vendorProfile.phone}`} 
+                          className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-2 sm:py-2 bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 border border-primary/30 rounded-full text-[10px] sm:text-xs md:text-sm font-medium text-foreground transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 min-h-[44px] sm:min-h-0"
+                        >
+                          📞 <span className="hidden xs:inline">{vendorProfile.phone}</span><span className="xs:hidden">Call</span>
                         </a>
                       )}
                       {vendorProfile.whatsapp_number && (
@@ -345,7 +348,7 @@ const SharedCatalog = () => {
                           href={`https://wa.me/${vendorProfile.whatsapp_number.replace(/\D/g, '')}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-[10px] sm:text-xs md:text-sm text-primary font-medium hover:underline whitespace-nowrap"
+                          className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-2 sm:py-2 bg-gradient-to-r from-emerald-500/20 to-green-500/20 hover:from-emerald-500/30 hover:to-green-500/30 border border-emerald-500/40 rounded-full text-[10px] sm:text-xs md:text-sm font-medium text-emerald-700 dark:text-emerald-400 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 min-h-[44px] sm:min-h-0"
                         >
                           💬 WhatsApp
                         </a>
@@ -395,8 +398,8 @@ const SharedCatalog = () => {
                 />
                 <Dialog open={showVideoRequestForm} onOpenChange={setShowVideoRequestForm}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-9 sm:h-10 text-[10px] sm:text-xs md:text-sm font-medium px-2 sm:px-3">
-                      <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5" />
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none min-h-[44px] sm:h-10 text-[10px] sm:text-xs md:text-sm font-medium px-3 sm:px-4">
+                      <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-1.5" />
                       <span className="hidden xs:inline">Request Video</span>
                       <span className="xs:hidden">Video</span>
                     </Button>
@@ -629,7 +632,7 @@ const SharedCatalog = () => {
                 fluorescence: "",
                 lab: "",
               })}
-              className="h-9 sm:h-10 md:h-11 text-sm"
+              className="min-h-[44px] sm:h-10 md:h-11 text-xs sm:text-sm px-4 sm:px-6"
             >
               Clear All Filters
             </Button>
@@ -781,8 +784,8 @@ const SharedCatalog = () => {
                           productName={product.name}
                           shareLinkId={shareLinkId}
                           trigger={
-                            <Button variant="outline" size="sm" className="whitespace-nowrap px-2 sm:px-3 md:px-4 h-8 sm:h-9 text-[10px] sm:text-xs">
-                              <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            <Button variant="outline" size="sm" className="whitespace-nowrap px-2.5 sm:px-3 md:px-4 min-h-[40px] sm:h-9 text-[10px] sm:text-xs">
+                              <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
                               Video
                             </Button>
                           }
@@ -803,7 +806,7 @@ const SharedCatalog = () => {
                   variant="outline"
                   size="lg"
                   onClick={() => setDisplayCount(prev => prev + 60)}
-                  className="px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base font-semibold hover:bg-primary/10 hover:border-primary transition-all duration-300"
+                  className="min-h-[48px] sm:min-h-0 px-6 sm:px-8 py-3 sm:py-6 text-xs sm:text-base font-semibold hover:bg-primary/10 hover:border-primary transition-all duration-300"
                 >
                   Load More Products ({filteredProducts.length - displayCount} remaining)
                 </Button>
