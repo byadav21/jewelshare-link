@@ -25,7 +25,7 @@ import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
 import analyticsFeature from "@/assets/analytics-feature.jpg";
 
-const JewelryViewer3D = lazy(() => import("@/components/JewelryViewer3D"));
+// const JewelryViewer3D = lazy(() => import("@/components/JewelryViewer3D"));
 import {
   Gem,
   Share2,
@@ -363,8 +363,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* 3D Viewer Section */}
-      <section className="container mx-auto px-4 py-24">
+      {/* 3D Viewer Section - Temporarily Disabled */}
+      {/* <section className="container mx-auto px-4 py-24">
         <ScrollReveal>
           <div className="mb-16 text-center">
             <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
@@ -392,7 +392,7 @@ const Index = () => {
             </p>
           </div>
         </ScrollReveal>
-      </section>
+      </section> */}
 
       {/* Statistics Section */}
       <section className="border-y bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-20">
