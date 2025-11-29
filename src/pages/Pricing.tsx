@@ -3,11 +3,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, Gem, ArrowRight, Sparkles } from "lucide-react";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 
 const Pricing = () => {
   const navigate = useNavigate();
 
   const plans = [
+    {
+      name: "Essentials",
+      price: "Free",
+      period: "30-day trial",
+      description: "Perfect for trying out our professional calculators",
+      gradient: "from-gemstone-from to-gemstone-to",
+      features: [
+        "Unlimited Diamond Calculator access",
+        "Unlimited Manufacturing Cost Estimator",
+        "Read-only catalog browsing",
+        "Profile management",
+        "Email support",
+        "30-day free trial period"
+      ],
+      limitations: [
+        "Cannot add products",
+        "Cannot create share links",
+        "No team members",
+        "Upgrade anytime to full features"
+      ],
+      cta: "Start Free Trial",
+      popular: false,
+      highlighted: true
+    },
     {
       name: "Starter",
       price: "Free",
@@ -83,9 +108,12 @@ const Pricing = () => {
   ];
 
   const comparison = [
-    { feature: "Products", starter: "100", professional: "1,000", enterprise: "Unlimited" },
-    { feature: "Share Links", starter: "1", professional: "10", enterprise: "Unlimited" },
-    { feature: "Team Members", starter: "0", professional: "3", enterprise: "Unlimited" },
+    { feature: "Diamond Calculator", essentials: "✓ Unlimited", starter: "✓ Unlimited", professional: "✓ Unlimited", enterprise: "✓ Unlimited" },
+    { feature: "Manufacturing Estimator", essentials: "✓ Unlimited", starter: "✓ Unlimited", professional: "✓ Unlimited", enterprise: "✓ Unlimited" },
+    { feature: "Catalog View", essentials: "Read-Only", starter: "Full Access", professional: "Full Access", enterprise: "Full Access" },
+    { feature: "Products", essentials: "0", starter: "100", professional: "1,000", enterprise: "Unlimited" },
+    { feature: "Share Links", essentials: "0", starter: "1", professional: "10", enterprise: "Unlimited" },
+    { feature: "Team Members", essentials: "0", starter: "0", professional: "3", enterprise: "Unlimited" },
     { feature: "Product Images", starter: "3/product", professional: "Unlimited", enterprise: "Unlimited" },
     { feature: "Analytics", starter: "Basic", professional: "Advanced", enterprise: "Real-time" },
     { feature: "Video Requests", starter: "✗", professional: "✓", enterprise: "✓" },
@@ -98,6 +126,10 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 pt-6">
+        <BackToHomeButton />
+      </div>
+      
       {/* Header */}
       <section className="border-b">
         <div className="container mx-auto px-4 py-16 text-center">
@@ -116,18 +148,27 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <section className="container mx-auto px-4 py-16">
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-4">
           {plans.map((plan, index) => (
             <Card 
               key={index} 
               className={`relative overflow-hidden border-2 transition-all hover:shadow-xl ${
                 plan.popular ? 'border-jewellery-from shadow-lg' : ''
+              } ${
+                plan.highlighted ? 'border-gemstone-from shadow-md' : ''
               }`}
             >
               {plan.popular && (
                 <div className="absolute right-4 top-4">
                   <Badge className="bg-gradient-to-r from-jewellery-from to-jewellery-to">
                     Most Popular
+                  </Badge>
+                </div>
+              )}
+              {plan.highlighted && (
+                <div className="absolute right-4 top-4">
+                  <Badge className="bg-gradient-to-r from-gemstone-from to-gemstone-to">
+                    Try Free
                   </Badge>
                 </div>
               )}
@@ -149,10 +190,10 @@ const Pricing = () => {
               </CardHeader>
               <CardContent className="relative space-y-6">
                 <Button 
-                  className={`w-full ${plan.popular ? 'bg-gradient-to-r from-jewellery-from to-jewellery-to' : ''}`}
-                  variant={plan.popular ? "default" : "outline"}
+                  className={`w-full ${plan.popular ? 'bg-gradient-to-r from-jewellery-from to-jewellery-to' : ''} ${plan.highlighted ? 'bg-gradient-to-r from-gemstone-from to-gemstone-to' : ''}`}
+                  variant={plan.popular || plan.highlighted ? "default" : "outline"}
                   size="lg"
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate(plan.name === "Essentials" ? '/auth?plan=essentials' : '/auth')}
                 >
                   {plan.cta}
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -195,6 +236,7 @@ const Pricing = () => {
             <thead>
               <tr className="border-b-2">
                 <th className="p-4 text-left font-semibold">Feature</th>
+                <th className="p-4 text-center font-semibold">Essentials</th>
                 <th className="p-4 text-center font-semibold">Starter</th>
                 <th className="p-4 text-center font-semibold">Professional</th>
                 <th className="p-4 text-center font-semibold">Enterprise</th>
@@ -204,6 +246,7 @@ const Pricing = () => {
               {comparison.map((row, index) => (
                 <tr key={index} className="border-b hover:bg-muted/30">
                   <td className="p-4 font-medium">{row.feature}</td>
+                  <td className="p-4 text-center text-gemstone-from">{row.essentials}</td>
                   <td className="p-4 text-center text-muted-foreground">{row.starter}</td>
                   <td className="p-4 text-center font-medium text-jewellery-from">{row.professional}</td>
                   <td className="p-4 text-center font-medium text-diamond-from">{row.enterprise}</td>

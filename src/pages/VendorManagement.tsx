@@ -35,7 +35,7 @@ interface VendorPermissions {
   can_view_sessions: boolean;
   can_manage_sessions: boolean;
   max_active_sessions: number;
-  subscription_plan?: 'starter' | 'professional' | 'enterprise';
+  subscription_plan?: 'starter' | 'professional' | 'enterprise' | 'essentials';
   max_products?: number;
   max_share_links?: number;
   max_team_members?: number;
@@ -120,20 +120,12 @@ export default function VendorManagement() {
         .select("*");
 
       if (permissionsError) throw permissionsError;
-      
-      console.log("🔐 Fetched permissions data:", permissionsData);
 
       // Combine data
       const vendorsData: Vendor[] = vendorApprovals.map(approval => {
         const profile = profiles?.find(p => p.user_id === approval.user_id);
         const userProducts = productCounts?.filter(p => p.user_id === approval.user_id) || [];
         const vendorPermissions = permissionsData?.find(p => p.user_id === approval.user_id);
-        
-        console.log(`📋 Processing vendor ${approval.user_id}:`, {
-          hasProfile: !!profile,
-          hasPermissions: !!vendorPermissions,
-          permissions: vendorPermissions
-        });
         
         return {
           id: approval.user_id,

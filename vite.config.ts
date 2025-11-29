@@ -14,14 +14,13 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    // PWA configuration
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "Jewelry Management Platform",
-        short_name: "Jewelry App",
-        description: "Comprehensive jewelry inventory and vendor management",
+        name: "Cataleon - Jewelry Management",
+        short_name: "Cataleon",
+        description: "Professional jewelry catalog and vendor management platform",
         theme_color: "#F5D547",
         background_color: "#1A1F2E",
         display: "standalone",
@@ -49,6 +48,8 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}"],
+        globIgnores: ["**/stats.html"],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -57,7 +58,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "supabase-cache",
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+                maxAgeSeconds: 60 * 60 * 24 * 7,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -71,7 +72,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "google-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -85,7 +86,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "image-cache",
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30,
               },
             },
           },
@@ -96,14 +97,13 @@ export default defineConfig(({ mode }) => ({
         type: "module",
       },
     }),
-    // Bundle analyzer - generates stats.html
     mode === "production" &&
       visualizer({
         filename: "./dist/stats.html",
         open: false,
         gzipSize: true,
         brotliSize: true,
-        template: "treemap", // or 'sunburst', 'network'
+        template: "treemap",
       }),
   ].filter(Boolean),
   resolve: {
@@ -115,43 +115,10 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks - Split large dependencies
           "react-vendor": ["react", "react-dom", "react-router-dom"],
           "query-vendor": ["@tanstack/react-query"],
           "supabase-vendor": ["@supabase/supabase-js"],
           "ui-vendor": ["lucide-react", "sonner"],
-
-          // Feature-based chunks for better caching
-          "admin-pages": [
-            "./src/pages/AdminDashboard.tsx",
-            "./src/pages/VendorApprovals.tsx",
-            "./src/pages/VendorManagement.tsx",
-            "./src/pages/CustomerDatabase.tsx",
-            "./src/pages/AnalyticsDashboard.tsx",
-            "./src/pages/AuditLogs.tsx",
-            "./src/pages/ExportReports.tsx",
-            "./src/pages/LoginHistory.tsx",
-            "./src/pages/PlanManagement.tsx",
-            "./src/pages/PermissionPresets.tsx",
-          ],
-          "vendor-pages": [
-            "./src/pages/Catalog.tsx",
-            "./src/pages/AddProduct.tsx",
-            "./src/pages/Import.tsx",
-            "./src/pages/Share.tsx",
-            "./src/pages/Interests.tsx",
-            "./src/pages/TeamManagement.tsx",
-            "./src/pages/VendorProfile.tsx",
-            "./src/pages/VendorAnalytics.tsx",
-          ],
-          "public-pages": [
-            "./src/pages/Index.tsx",
-            "./src/pages/Pricing.tsx",
-            "./src/pages/Blog.tsx",
-            "./src/pages/Press.tsx",
-            "./src/pages/About.tsx",
-            "./src/pages/Contact.tsx",
-          ],
         },
       },
     },

@@ -42,6 +42,7 @@ interface CatalogFiltersProps {
   diamondColors: string[];
   diamondClarities: string[];
   deliveryTypes: string[];
+  categoryCounts?: Record<string, number>;
   // Gemstone filters
   gemstoneTypes: string[];
   colors: string[];
@@ -64,6 +65,7 @@ export const CatalogFilters = ({
   diamondColors,
   diamondClarities,
   deliveryTypes,
+  categoryCounts = {},
   gemstoneTypes = [],
   colors = [],
   clarities = [],
@@ -146,6 +148,7 @@ export const CatalogFilters = ({
             diamondColors={diamondColors}
             diamondClarities={diamondClarities}
             deliveryTypes={deliveryTypes}
+            categoryCounts={categoryCounts}
           />
         )}
         {productType === 'Gemstones' && (

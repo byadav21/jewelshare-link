@@ -142,8 +142,17 @@ serve(async (req) => {
       );
     }
 
+    // Filter products by selected categories
+    // If product_type is null (legacy products), include all products
+    const filteredProducts = products.filter(product => {
+      if (!product.product_type) {
+        return true; // Include legacy products without product_type
+      }
+      return shareLink.shared_categories?.includes(product.product_type);
+    });
+
     // Calculate adjusted prices
-    const adjustedProducts = products.map(product => {
+    const adjustedProducts = filteredProducts.map(product => {
       let adjustedPrice = product.retail_price;
       
       if (shareLink.markup_percentage > 0) {
@@ -181,12 +190,19 @@ serve(async (req) => {
           show_vendor_details: shareLink.show_vendor_details,
           markup_percentage: shareLink.markup_percentage,
           markdown_percentage: shareLink.markdown_percentage,
+          expires_at: shareLink.expires_at,
+          view_count: shareLink.view_count,
+          shared_categories: shareLink.shared_categories,
         },
         vendorProfile 
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=60, stale-while-revalidate=300"
+        }
       }
     );
   } catch (error) {

@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface JewelleryFiltersProps {
   filters: any;
@@ -10,6 +11,7 @@ interface JewelleryFiltersProps {
   diamondColors: string[];
   diamondClarities: string[];
   deliveryTypes: string[];
+  categoryCounts?: Record<string, number>;
 }
 
 export const JewelleryFilters = ({
@@ -20,19 +22,38 @@ export const JewelleryFilters = ({
   diamondColors,
   diamondClarities,
   deliveryTypes,
+  categoryCounts = {},
 }: JewelleryFiltersProps) => {
   return (
     <>
       <div className="space-y-1.5 sm:space-y-2">
-        <Label htmlFor="category" className="text-xs sm:text-sm">Category</Label>
+        <Label htmlFor="category" className="text-xs sm:text-sm font-semibold">Category</Label>
         <Select value={filters.category || "all"} onValueChange={(v) => updateFilter("category", v === "all" ? "" : v)}>
           <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
-            <SelectValue placeholder="All" />
+            <SelectValue placeholder="All Categories" />
           </SelectTrigger>
-          <SelectContent className="max-h-[200px] overflow-y-auto bg-background border border-border shadow-lg z-[100]">
-            <SelectItem value="all" className="text-xs sm:text-sm">All Categories</SelectItem>
+          <SelectContent className="max-h-[300px] overflow-y-auto bg-background border border-border shadow-lg z-[100]">
+            <SelectItem value="all" className="text-xs sm:text-sm">
+              <div className="flex items-center justify-between w-full gap-2">
+                <span>All Categories</span>
+                {categoryCounts['all'] !== undefined && (
+                  <Badge variant="secondary" className="text-xs ml-2">
+                    {categoryCounts['all']}
+                  </Badge>
+                )}
+              </div>
+            </SelectItem>
             {categories.map((cat) => (
-              <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">{cat}</SelectItem>
+              <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">
+                <div className="flex items-center justify-between w-full gap-2">
+                  <span>{cat}</span>
+                  {categoryCounts[cat] !== undefined && (
+                    <Badge variant="secondary" className="text-xs ml-2">
+                      {categoryCounts[cat]}
+                    </Badge>
+                  )}
+                </div>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

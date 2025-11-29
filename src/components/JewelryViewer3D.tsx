@@ -1,6 +1,6 @@
 import { useRef, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Environment, MeshReflectorMaterial } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 
 const Diamond = () => {
@@ -108,30 +108,31 @@ const Scene = () => {
       <Diamond />
       <Ring />
 
-      {/* Reflective floor */}
+      {/* Simple floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
         <planeGeometry args={[50, 50]} />
-        <MeshReflectorMaterial
-          blur={[300, 100]}
-          resolution={2048}
-          mixBlur={1}
-          mixStrength={40}
-          roughness={1}
-          depthScale={1.2}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.4}
+        <meshStandardMaterial
           color="#151515"
           metalness={0.5}
-          mirror={0}
+          roughness={0.8}
         />
       </mesh>
-
-      <Environment preset="city" />
     </>
   );
 };
 
-export const JewelryViewer3D = () => {
+const JewelryViewer3D = () => {
+  // Client-only check
+  if (typeof window === 'undefined') {
+    return (
+      <div className="h-[500px] w-full rounded-2xl overflow-hidden border-2 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading 3D Viewer...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-[500px] w-full rounded-2xl overflow-hidden border-2 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Canvas shadows>
@@ -142,3 +143,5 @@ export const JewelryViewer3D = () => {
     </div>
   );
 };
+
+export default JewelryViewer3D;

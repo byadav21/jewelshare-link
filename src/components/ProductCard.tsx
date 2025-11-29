@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { Gem, ChevronLeft, ChevronRight, Zap, Calendar } from "lucide-react";
 
 interface ProductCardProps {
@@ -10,9 +11,10 @@ interface ProductCardProps {
   isSelected: boolean;
   onToggleSelection: (id: string) => void;
   usdRate: number;
+  vendorLogoUrl?: string;
 }
 
-export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }: ProductCardProps) => {
+export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, vendorLogoUrl }: ProductCardProps) => {
   const images = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -39,39 +41,44 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
 
   return (
     <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
       whileHover={{ 
-        rotateX: 5,
-        rotateY: 5,
-        scale: 1.02,
+        y: -8,
         transition: { duration: 0.3, ease: "easeOut" }
       }}
-      style={{ 
-        transformStyle: "preserve-3d",
-        perspective: 1000
-      }}
     >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow relative active:scale-[0.98] touch-manipulation">
-        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onToggleSelection(product.id)}
-          className="bg-background border-2 w-5 h-5 sm:w-4 sm:h-4"
-        />
-      </div>
+      <Card className="overflow-hidden relative group bg-gradient-to-b from-card to-card/95 border-border/50 shadow-lg hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 active:scale-[0.98] touch-manipulation">
+        {/* Premium glow effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div 
+          className="absolute top-3 left-3 z-10" 
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-md rounded opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={(checked) => {
+                onToggleSelection(product.id);
+              }}
+              className="relative bg-background/95 backdrop-blur-sm border-2 border-primary/30 w-5 h-5 sm:w-6 sm:h-6 shadow-lg cursor-pointer"
+            />
+          </div>
+        </div>
       {images.length > 0 ? (
         <div 
           className="aspect-square overflow-hidden bg-muted relative group"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <img
+          <OptimizedImage
             src={images[currentImageIndex]}
             alt={`${product.name} - Image ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-all duration-300 animate-fade-in"
-            onError={(e) => {
-              console.error(`Failed to load image ${currentImageIndex + 1} for ${product.sku}: ${images[currentImageIndex]}`);
-              e.currentTarget.src = 'https://placehold.co/400x400/1a1a2e/FFD700?text=' + encodeURIComponent(product.name.substring(0, 20));
-            }}
+            className="w-full h-full object-cover transition-all duration-300"
+            width={400}
+            height={400}
           />
           {images.length > 1 && (
             <>
@@ -115,23 +122,23 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           <Gem className="h-24 w-24 text-muted-foreground/30" />
         </div>
       )}
-      <CardHeader className="p-3 sm:p-6">
-        <h3 className="font-serif text-base sm:text-xl font-semibold text-foreground">{product.name}</h3>
+      <CardHeader className="p-4 sm:p-6 relative">
+        <h3 className="font-serif text-lg sm:text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">{product.name}</h3>
         {product.sku && (
-          <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">SKU: {product.sku}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground/80 mb-3 font-medium">SKU: {product.sku}</p>
         )}
-        <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs border-t border-border pt-2 sm:pt-3">
-          {product.gemstone && (
-            <>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-medium">Diamond Color:</span>
-                <span className="text-foreground font-semibold">{product.gemstone.split(' ')[0] || '-'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-medium">Diamond Clarity:</span>
-                <span className="text-foreground font-semibold">{product.gemstone.split(' ')[1] || '-'}</span>
-              </div>
-            </>
+        <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm border-t border-border/50 pt-3 sm:pt-4 bg-gradient-to-b from-transparent to-muted/20 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-2">
+          {product.diamond_color && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground font-medium">Diamond Color:</span>
+              <span className="text-foreground font-semibold">{product.diamond_color}</span>
+            </div>
+          )}
+          {product.clarity && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground font-medium">Diamond Clarity:</span>
+              <span className="text-foreground font-semibold">{product.clarity}</span>
+            </div>
           )}
           {product.diamond_weight && (
             <div className="flex justify-between">
@@ -155,8 +162,14 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           )}
           {product.metal_type && (
             <div className="flex justify-between">
-              <span className="text-muted-foreground font-medium">Metal Purity:</span>
+              <span className="text-muted-foreground font-medium">Metal Type:</span>
               <span className="text-foreground font-semibold">{product.metal_type}</span>
+            </div>
+          )}
+          {product.purity_fraction_used && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground font-medium">Metal Purity:</span>
+              <span className="text-foreground font-semibold">{(product.purity_fraction_used * 100).toFixed(0)}%</span>
             </div>
           )}
         </div>
@@ -173,34 +186,39 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate }:
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex flex-col gap-3 border-t border-border p-3 sm:p-6 pt-3 sm:pt-4">
+      <CardFooter className="flex flex-col gap-3.5 border-t border-border/50 p-4 sm:p-6 pt-4 sm:pt-5 bg-gradient-to-b from-muted/5 to-transparent">
         {/* Delivery Badge */}
         {product.delivery_type && (
           <div className="w-full">
             {product.delivery_type === 'immediate delivery' ? (
-              <Badge variant="secondary" className="w-full justify-center gap-1.5 py-1.5 bg-gradient-to-r from-emerald-500/15 to-green-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/20 hover:to-green-500/20">
-                <Zap className="h-3 w-3" />
-                <span className="text-xs font-medium">Immediate Dispatch</span>
+              <Badge variant="secondary" className="w-full justify-center gap-2 py-2 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/30 hover:to-green-500/30 shadow-sm font-semibold">
+                <Zap className="h-3.5 w-3.5" />
+                <span className="text-xs">Immediate Dispatch</span>
               </Badge>
             ) : (
-              <Badge variant="outline" className="w-full justify-center gap-1.5 py-1.5 border-primary/30 text-primary hover:bg-primary/5">
-                <Calendar className="h-3 w-3" />
-                <span className="text-xs font-medium">{product.delivery_type}</span>
+              <Badge variant="outline" className="w-full justify-center gap-2 py-2 border-primary/40 text-primary hover:bg-primary/10 shadow-sm font-semibold">
+                <Calendar className="h-3.5 w-3.5" />
+                <span className="text-xs">{product.delivery_type}</span>
               </Badge>
             )}
           </div>
         )}
         
         {/* Price and Stock */}
-        <div className="flex justify-between w-full">
-          <div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Retail Price</p>
-            <p className="text-base sm:text-lg font-bold text-primary">₹{product.retail_price.toLocaleString('en-IN')}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">${(product.retail_price / usdRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
+        <div className="flex justify-between w-full items-end">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground font-medium">Retail Price</p>
+            <div className="relative">
+              <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent drop-shadow-sm">
+                ₹{product.retail_price.toLocaleString('en-IN')}
+              </p>
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 blur-lg opacity-30 -z-10" />
+            </div>
+            <p className="text-xs text-muted-foreground font-medium">${(product.retail_price / usdRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Stock</p>
-            <p className="text-base sm:text-lg font-semibold text-foreground">{product.stock_quantity}</p>
+          <div className="text-right space-y-1">
+            <p className="text-xs text-muted-foreground font-medium">Stock</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{product.stock_quantity}</p>
           </div>
         </div>
       </CardFooter>

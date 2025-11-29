@@ -20,6 +20,10 @@ export const SharedCatalog = lazy(() => import("@/pages/SharedCatalog"));
 export const CustomOrder = lazy(() => import("@/pages/CustomOrder"));
 export const NotFound = lazy(() => import("@/pages/NotFound"));
 export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizationDemo"));
+export const DiamondCalculator = lazy(() => import("@/pages/DiamondCalculator"));
+export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"));
+export const Calculators = lazy(() => import("@/pages/Calculators"));
+export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));
@@ -34,9 +38,17 @@ export const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 export const VendorProfile = lazy(() => import("@/pages/VendorProfile"));
 export const VideoRequests = lazy(() => import("@/pages/VideoRequests"));
 export const VendorAnalytics = lazy(() => import("@/pages/VendorAnalytics"));
+export const PurchaseInquiries = lazy(() => import("@/pages/PurchaseInquiries"));
+export const Rewards = lazy(() => import("@/pages/Rewards"));
 
 // Admin pages - Loaded only for admin users
 export const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+export const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
+export const AdminBlog = lazy(() => import("@/pages/AdminBlog"));
+export const AdminBrands = lazy(() => import("@/pages/AdminBrands"));
+export const AdminComments = lazy(() => import("@/pages/AdminComments"));
+export const AdminNewsletter = lazy(() => import("@/pages/AdminNewsletter"));
+export const AdminPress = lazy(() => import("@/pages/AdminPress"));
 export const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
 export const VendorApprovals = lazy(() => import("@/pages/VendorApprovals"));
 export const VendorManagement = lazy(() => import("@/pages/VendorManagement"));
@@ -50,3 +62,9 @@ export const LoginHistory = lazy(() => import("@/pages/LoginHistory"));
 export const PlanManagement = lazy(() => import("@/pages/PlanManagement"));
 export const PermissionPresets = lazy(() => import("@/pages/PermissionPresets"));
 export const MigrateImages = lazy(() => import("@/pages/MigrateImages"));
+export const ScratchLeads = lazy(() => import("@/pages/ScratchLeads"));
+export const AdminRewards = lazy(() => import("@/pages/AdminRewards"));
+export const AdminDiamondPrices = lazy(() => import("@/pages/AdminDiamondPrices"));
+export const AdminManufacturingOrders = lazy(() => import("@/pages/AdminManufacturingOrders"));
+export const GuestCalculatorAnalytics = lazy(() => import("@/pages/GuestCalculatorAnalytics"));
+export const Wishlist = lazy(() => import("@/pages/Wishlist"));

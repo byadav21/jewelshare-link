@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 interface VendorPermission {
   id: string;
   user_id: string;
-  subscription_plan: 'starter' | 'professional' | 'enterprise';
+  subscription_plan: 'starter' | 'professional' | 'enterprise' | 'essentials';
   max_products: number | null;
   max_share_links: number | null;
   max_team_members: number | null;

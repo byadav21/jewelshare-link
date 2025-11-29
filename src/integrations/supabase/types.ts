@@ -281,6 +281,306 @@ export type Database = {
           },
         ]
       }
+      diamond_price_history: {
+        Row: {
+          carat_range_max: number
+          carat_range_min: number
+          change_type: string
+          changed_at: string
+          changed_by: string | null
+          clarity_grade: string
+          color_grade: string
+          currency: string
+          cut_grade: string
+          id: string
+          new_price_per_carat: number
+          notes: string | null
+          old_price_per_carat: number | null
+          price_id: string
+          shape: string
+        }
+        Insert: {
+          carat_range_max: number
+          carat_range_min: number
+          change_type: string
+          changed_at?: string
+          changed_by?: string | null
+          clarity_grade: string
+          color_grade: string
+          currency?: string
+          cut_grade: string
+          id?: string
+          new_price_per_carat: number
+          notes?: string | null
+          old_price_per_carat?: number | null
+          price_id: string
+          shape: string
+        }
+        Update: {
+          carat_range_max?: number
+          carat_range_min?: number
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          clarity_grade?: string
+          color_grade?: string
+          currency?: string
+          cut_grade?: string
+          id?: string
+          new_price_per_carat?: number
+          notes?: string | null
+          old_price_per_carat?: number | null
+          price_id?: string
+          shape?: string
+        }
+        Relationships: []
+      }
+      diamond_prices: {
+        Row: {
+          carat_range_max: number
+          carat_range_min: number
+          clarity_grade: string
+          color_grade: string
+          created_at: string
+          currency: string
+          cut_grade: string
+          id: string
+          notes: string | null
+          price_per_carat: number
+          shape: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          carat_range_max: number
+          carat_range_min: number
+          clarity_grade: string
+          color_grade: string
+          created_at?: string
+          currency?: string
+          cut_grade: string
+          id?: string
+          notes?: string | null
+          price_per_carat: number
+          shape: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          carat_range_max?: number
+          carat_range_min?: number
+          clarity_grade?: string
+          color_grade?: string
+          created_at?: string
+          currency?: string
+          cut_grade?: string
+          id?: string
+          notes?: string | null
+          price_per_carat?: number
+          shape?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      guest_calculator_usage: {
+        Row: {
+          calculator_type: string
+          city: string | null
+          country: string | null
+          country_code: string | null
+          id: string
+          ip_address: string
+          latitude: number | null
+          longitude: number | null
+          region: string | null
+          used_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          calculator_type: string
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          id?: string
+          ip_address: string
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
+          used_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          calculator_type?: string
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          id?: string
+          ip_address?: string
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
+          used_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      invoice_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          template_data: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          template_data?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          template_data?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      manufacturing_cost_estimates: {
+        Row: {
+          cad_design_charges: number | null
+          camming_charges: number | null
+          certification_cost: number | null
+          created_at: string | null
+          customer_address: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          diamond_cost: number | null
+          estimate_name: string
+          estimated_completion_date: string | null
+          final_selling_price: number | null
+          gemstone_cost: number | null
+          gold_cost: number | null
+          gold_rate_24k: number | null
+          id: string
+          invoice_date: string | null
+          invoice_notes: string | null
+          invoice_number: string | null
+          invoice_status: string | null
+          is_customer_visible: boolean | null
+          is_invoice_generated: boolean | null
+          last_reminder_sent_at: string | null
+          line_items: Json | null
+          making_charges: number | null
+          net_weight: number | null
+          notes: string | null
+          payment_date: string | null
+          payment_due_date: string | null
+          payment_terms: string | null
+          profit_margin_percentage: number | null
+          purity_fraction: number | null
+          reference_images: string[] | null
+          share_token: string | null
+          status: string | null
+          total_cost: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cad_design_charges?: number | null
+          camming_charges?: number | null
+          certification_cost?: number | null
+          created_at?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          diamond_cost?: number | null
+          estimate_name: string
+          estimated_completion_date?: string | null
+          final_selling_price?: number | null
+          gemstone_cost?: number | null
+          gold_cost?: number | null
+          gold_rate_24k?: number | null
+          id?: string
+          invoice_date?: string | null
+          invoice_notes?: string | null
+          invoice_number?: string | null
+          invoice_status?: string | null
+          is_customer_visible?: boolean | null
+          is_invoice_generated?: boolean | null
+          last_reminder_sent_at?: string | null
+          line_items?: Json | null
+          making_charges?: number | null
+          net_weight?: number | null
+          notes?: string | null
+          payment_date?: string | null
+          payment_due_date?: string | null
+          payment_terms?: string | null
+          profit_margin_percentage?: number | null
+          purity_fraction?: number | null
+          reference_images?: string[] | null
+          share_token?: string | null
+          status?: string | null
+          total_cost?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cad_design_charges?: number | null
+          camming_charges?: number | null
+          certification_cost?: number | null
+          created_at?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          diamond_cost?: number | null
+          estimate_name?: string
+          estimated_completion_date?: string | null
+          final_selling_price?: number | null
+          gemstone_cost?: number | null
+          gold_cost?: number | null
+          gold_rate_24k?: number | null
+          id?: string
+          invoice_date?: string | null
+          invoice_notes?: string | null
+          invoice_number?: string | null
+          invoice_status?: string | null
+          is_customer_visible?: boolean | null
+          is_invoice_generated?: boolean | null
+          last_reminder_sent_at?: string | null
+          line_items?: Json | null
+          making_charges?: number | null
+          net_weight?: number | null
+          notes?: string | null
+          payment_date?: string | null
+          payment_due_date?: string | null
+          payment_terms?: string | null
+          profit_margin_percentage?: number | null
+          purity_fraction?: number | null
+          reference_images?: string[] | null
+          share_token?: string | null
+          status?: string | null
+          total_cost?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string | null
@@ -335,6 +635,39 @@ export type Database = {
           name?: string
           template_config?: Json
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      points_history: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          created_at: string
+          expired: boolean | null
+          expires_at: string | null
+          id: string
+          points: number
+          user_id: string
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          created_at?: string
+          expired?: boolean | null
+          expires_at?: string | null
+          id?: string
+          points: number
+          user_id: string
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          created_at?: string
+          expired?: boolean | null
+          expires_at?: string | null
+          id?: string
+          points?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -605,6 +938,203 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_inquiries: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          message: string | null
+          product_id: string
+          quantity: number | null
+          share_link_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          message?: string | null
+          product_id: string
+          quantity?: number | null
+          share_link_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          message?: string | null
+          product_id?: string
+          quantity?: number | null
+          share_link_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_inquiries_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_inquiries_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      redemptions: {
+        Row: {
+          applied_at: string | null
+          expires_at: string | null
+          id: string
+          points_spent: number
+          redeemed_at: string | null
+          reward_details: Json | null
+          reward_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          expires_at?: string | null
+          id?: string
+          points_spent: number
+          redeemed_at?: string | null
+          reward_details?: Json | null
+          reward_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          expires_at?: string | null
+          id?: string
+          points_spent?: number
+          redeemed_at?: string | null
+          reward_details?: Json | null
+          reward_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards_catalog: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          points_cost: number
+          reward_type: string
+          reward_value: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          points_cost: number
+          reward_type: string
+          reward_value: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          points_cost?: number
+          reward_type?: string
+          reward_value?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      scratch_leads: {
+        Row: {
+          business_name: string | null
+          created_at: string | null
+          email: string
+          id: string
+          interest: string | null
+          name: string
+          phone: string | null
+          session_id: string
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          interest?: string | null
+          name: string
+          phone?: string | null
+          session_id: string
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          interest?: string | null
+          name?: string
+          phone?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
+      scratch_rewards: {
+        Row: {
+          claimed: boolean | null
+          claimed_at: string | null
+          created_at: string | null
+          id: string
+          reward_type: string
+          reward_value: string
+          session_id: string
+        }
+        Insert: {
+          claimed?: boolean | null
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          reward_type: string
+          reward_value: string
+          session_id: string
+        }
+        Update: {
+          claimed?: boolean | null
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          reward_type?: string
+          reward_value?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           id: string
@@ -629,6 +1159,48 @@ export type Database = {
         }
         Relationships: []
       }
+      share_link_product_views: {
+        Row: {
+          id: string
+          product_id: string
+          share_link_id: string
+          viewed_at: string
+          viewer_ip: string | null
+          viewer_user_agent: string | null
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          share_link_id: string
+          viewed_at?: string
+          viewer_ip?: string | null
+          viewer_user_agent?: string | null
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          share_link_id?: string
+          viewed_at?: string
+          viewer_ip?: string | null
+          viewer_user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_link_product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "share_link_product_views_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       share_links: {
         Row: {
           created_at: string | null
@@ -638,6 +1210,7 @@ export type Database = {
           markdown_percentage: number | null
           markup_percentage: number | null
           share_token: string
+          shared_categories: string[] | null
           show_vendor_details: boolean
           user_id: string
           view_count: number | null
@@ -650,6 +1223,7 @@ export type Database = {
           markdown_percentage?: number | null
           markup_percentage?: number | null
           share_token?: string
+          shared_categories?: string[] | null
           show_vendor_details?: boolean
           user_id: string
           view_count?: number | null
@@ -662,6 +1236,7 @@ export type Database = {
           markdown_percentage?: number | null
           markup_percentage?: number | null
           share_token?: string
+          shared_categories?: string[] | null
           show_vendor_details?: boolean
           user_id?: string
           view_count?: number | null
@@ -767,6 +1342,33 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_milestones: {
+        Row: {
+          achieved_at: string
+          id: string
+          milestone_type: string
+          milestone_value: number
+          points_awarded: number
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          id?: string
+          milestone_type: string
+          milestone_value: number
+          points_awarded?: number
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          id?: string
+          milestone_type?: string
+          milestone_value?: number
+          points_awarded?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       vendor_permissions: {
         Row: {
           can_add_products: boolean | null
@@ -796,6 +1398,7 @@ export type Database = {
           plan_updated_at: string | null
           plan_updated_by: string | null
           subscription_plan: Database["public"]["Enums"]["subscription_plan"]
+          trial_ends_at: string | null
           updated_at: string | null
           user_id: string
         }
@@ -827,6 +1430,7 @@ export type Database = {
           plan_updated_at?: string | null
           plan_updated_by?: string | null
           subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
+          trial_ends_at?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -858,7 +1462,35 @@ export type Database = {
           plan_updated_at?: string | null
           plan_updated_by?: string | null
           subscription_plan?: Database["public"]["Enums"]["subscription_plan"]
+          trial_ends_at?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vendor_points: {
+        Row: {
+          created_at: string
+          current_tier: string
+          id: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_tier?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_tier?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -867,7 +1499,12 @@ export type Database = {
         Row: {
           address_line1: string | null
           address_line2: string | null
+          awards: string[] | null
+          brand_tagline: string | null
+          brand_theme: string | null
           business_name: string | null
+          business_story: string | null
+          certifications: string[] | null
           city: string | null
           country: string | null
           created_at: string | null
@@ -876,8 +1513,12 @@ export type Database = {
           gold_rate_updated_at: string | null
           id: string
           instagram_qr_url: string | null
+          logo_url: string | null
+          making_charges_per_gram: number | null
           phone: string | null
           pincode: string | null
+          primary_brand_color: string | null
+          secondary_brand_color: string | null
           seller_categories: string[] | null
           state: string | null
           updated_at: string | null
@@ -888,7 +1529,12 @@ export type Database = {
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
+          awards?: string[] | null
+          brand_tagline?: string | null
+          brand_theme?: string | null
           business_name?: string | null
+          business_story?: string | null
+          certifications?: string[] | null
           city?: string | null
           country?: string | null
           created_at?: string | null
@@ -897,8 +1543,12 @@ export type Database = {
           gold_rate_updated_at?: string | null
           id?: string
           instagram_qr_url?: string | null
+          logo_url?: string | null
+          making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          primary_brand_color?: string | null
+          secondary_brand_color?: string | null
           seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null
@@ -909,7 +1559,12 @@ export type Database = {
         Update: {
           address_line1?: string | null
           address_line2?: string | null
+          awards?: string[] | null
+          brand_tagline?: string | null
+          brand_theme?: string | null
           business_name?: string | null
+          business_story?: string | null
+          certifications?: string[] | null
           city?: string | null
           country?: string | null
           created_at?: string | null
@@ -918,8 +1573,12 @@ export type Database = {
           gold_rate_updated_at?: string | null
           id?: string
           instagram_qr_url?: string | null
+          logo_url?: string | null
+          making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          primary_brand_color?: string | null
+          secondary_brand_color?: string | null
           seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null
@@ -983,12 +1642,102 @@ export type Database = {
           },
         ]
       }
+      wishlist_items: {
+        Row: {
+          added_at: string
+          id: string
+          notes: string | null
+          product_id: string
+          share_link_id: string | null
+          wishlist_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          notes?: string | null
+          product_id: string
+          share_link_id?: string | null
+          wishlist_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          notes?: string | null
+          product_id?: string
+          share_link_id?: string | null
+          wishlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          name: string
+          session_id: string | null
+          share_token: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          session_id?: string | null
+          share_token?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          session_id?: string | null
+          share_token?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       cleanup_old_sessions: { Args: never; Returns: undefined }
+      get_active_points: { Args: { user_id_param: string }; Returns: number }
+      get_expiring_points: {
+        Args: { user_id_param: string }
+        Returns: {
+          expires_at: string
+          points: number
+        }[]
+      }
       hard_delete_products: {
         Args: { product_ids: string[] }
         Returns: undefined
@@ -1014,7 +1763,11 @@ export type Database = {
     Enums: {
       app_role: "admin" | "team_member"
       approval_status: "pending" | "approved" | "rejected"
-      subscription_plan: "starter" | "professional" | "enterprise"
+      subscription_plan:
+        | "starter"
+        | "professional"
+        | "enterprise"
+        | "essentials"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1144,7 +1897,12 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "team_member"],
       approval_status: ["pending", "approved", "rejected"],
-      subscription_plan: ["starter", "professional", "enterprise"],
+      subscription_plan: [
+        "starter",
+        "professional",
+        "enterprise",
+        "essentials",
+      ],
     },
   },
 } as const

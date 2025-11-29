@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, XCircle, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 
 const PendingApproval = () => {
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ const PendingApproval = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute top-4 left-4">
+        <BackToHomeButton variant="ghost" />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           {isPending ? (

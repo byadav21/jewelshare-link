@@ -1,20 +1,23 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Gem } from "lucide-react";
+import { Gem, Calculator, CheckCircle2, Sparkles } from "lucide-react";
 import { PasswordStrength, validatePasswordStrength } from "@/components/PasswordStrength";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { z } from "zod";
 
 
 // Validation schemas
 const emailSchema = z.string().trim().email({ message: "Invalid email address" }).max(255);
 const passwordSchema = z.string().min(8, { message: "Password must be at least 8 characters" });
+const phoneSchema = z.string().trim().min(10, { message: "Phone number must be at least 10 digits" }).max(15);
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -24,7 +27,11 @@ const Auth = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["Jewellery"]);
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [businessName, setBusinessName] = useState("");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isEssentialsPlan = searchParams.get("plan") === "essentials";
 
   useEffect(() => {
     const checkSession = async () => {
@@ -34,7 +41,7 @@ const Auth = () => {
           .from("user_approval_status")
           .select("status")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
         
         if (approvalData?.status === "approved") {
           // Check if user is admin
@@ -42,30 +49,41 @@ const Auth = () => {
             .from("user_roles")
             .select("role")
             .eq("user_id", session.user.id)
-            .single();
+            .maybeSingle();
           
           if (roleData?.role === "admin") {
-            navigate("/admin");
+            navigate("/admin", { replace: true });
           } else {
-            navigate("/catalog");
+            // Check if user has Essentials plan
+            const { data: permissions } = await supabase
+              .from("vendor_permissions")
+              .select("subscription_plan")
+              .eq("user_id", session.user.id)
+              .maybeSingle();
+            
+            if (permissions?.subscription_plan === "essentials") {
+              navigate("/calculators", { replace: true });
+            } else {
+              navigate("/catalog", { replace: true });
+            }
           }
         } else {
-          navigate("/pending-approval");
+          navigate("/pending-approval", { replace: true });
         }
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Don't make async calls inside onAuthStateChange - defer them with setTimeout
-      if (session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only redirect on SIGNED_IN event to avoid race conditions
+      if (event === 'SIGNED_IN' && session) {
         setTimeout(async () => {
           const { data: approvalData } = await supabase
             .from("user_approval_status")
             .select("status")
             .eq("user_id", session.user.id)
-            .single();
+            .maybeSingle();
           
           if (approvalData?.status === "approved") {
             // Check if user is admin
@@ -76,14 +94,25 @@ const Auth = () => {
               .maybeSingle();
             
             if (roleData?.role === "admin") {
-              navigate("/admin");
+              navigate("/admin", { replace: true });
             } else {
-              navigate("/catalog");
+              // Check if user has Essentials plan
+              const { data: permissions } = await supabase
+                .from("vendor_permissions")
+                .select("subscription_plan")
+                .eq("user_id", session.user.id)
+                .maybeSingle();
+              
+              if (permissions?.subscription_plan === "essentials") {
+                navigate("/calculators", { replace: true });
+              } else {
+                navigate("/catalog", { replace: true });
+              }
             }
           } else {
-            navigate("/pending-approval");
+            navigate("/pending-approval", { replace: true });
           }
-        }, 0);
+        }, 100);
       }
     });
 
@@ -140,6 +169,16 @@ const Auth = () => {
           return;
         }
 
+        // Validate phone number for Essentials plan
+        if (isEssentialsPlan) {
+          const phoneValidation = phoneSchema.safeParse(phoneNumber);
+          if (!phoneValidation.success) {
+            toast.error(phoneValidation.error.issues[0].message);
+            setLoading(false);
+            return;
+          }
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email: emailValidation.data,
           password,
@@ -151,12 +190,16 @@ const Auth = () => {
         
         // Create approval status entry with email
         if (data.user) {
+          const approvalStatus = isEssentialsPlan ? "approved" : "pending";
+          
           const { error: approvalError } = await supabase
             .from("user_approval_status")
             .insert({
               user_id: data.user.id,
-              status: "pending",
+              status: approvalStatus,
               email: email,
+              phone: isEssentialsPlan ? phoneNumber : null,
+              business_name: isEssentialsPlan ? businessName : null,
             });
           
           if (approvalError) {
@@ -168,15 +211,39 @@ const Auth = () => {
             .from("vendor_profiles")
             .insert({
               user_id: data.user.id,
-              seller_categories: selectedCategories
+              seller_categories: isEssentialsPlan ? ["Jewellery"] : selectedCategories,
+              business_name: isEssentialsPlan ? businessName : null,
+              phone: isEssentialsPlan ? phoneNumber : null,
             });
 
           if (profileError) {
             console.error("Error creating vendor profile:", profileError);
           }
+
+          // Set plan to essentials if applicable
+          if (isEssentialsPlan) {
+            const { error: permissionsError } = await supabase
+              .from("vendor_permissions")
+              .insert({
+                user_id: data.user.id,
+                subscription_plan: "essentials",
+              });
+
+            if (permissionsError) {
+              console.error("Error setting essentials plan:", permissionsError);
+            }
+          }
         }
         
-        toast.success("Account created! Your request is pending admin approval.");
+        if (isEssentialsPlan) {
+          toast.success("Welcome! Your 30-day free calculator trial has started. You now have unlimited access to our professional calculators!");
+          // Redirect to calculators page for Essentials users
+          setTimeout(() => {
+            navigate("/calculators");
+          }, 2000);
+        } else {
+          toast.success("Account created! Your request is pending admin approval.");
+        }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: emailValidation.data,
@@ -233,19 +300,58 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute top-4 left-4">
+        <BackToHomeButton variant="ghost" />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <Gem className="h-12 w-12 text-primary" />
+            {isEssentialsPlan ? (
+              <div className="relative">
+                <Calculator className="h-12 w-12 text-gemstone-from" />
+                <Sparkles className="h-5 w-5 text-gemstone-to absolute -top-1 -right-1 animate-pulse" />
+              </div>
+            ) : (
+              <Gem className="h-12 w-12 text-primary" />
+            )}
           </div>
-          <CardTitle className="text-3xl font-serif">Jewelry Catalog</CardTitle>
+          {isEssentialsPlan && isSignUp && (
+            <Badge className="mb-3 bg-gradient-to-r from-gemstone-from to-gemstone-to">
+              Free 30-Day Trial
+            </Badge>
+          )}
+          <CardTitle className="text-3xl font-serif">
+            {isEssentialsPlan && isSignUp ? "Start Your Free Calculator Trial" : "Jewelry Catalog"}
+          </CardTitle>
           <CardDescription>
             {isForgotPassword 
               ? "Enter your email to reset your password" 
               : isSignUp 
-              ? "Create an account to manage your inventory" 
+              ? isEssentialsPlan
+                ? "Get unlimited access to professional jewelry calculators"
+                : "Create an account to manage your inventory"
               : "Sign in to your account"}
           </CardDescription>
+          {isEssentialsPlan && isSignUp && (
+            <div className="mt-4 space-y-2 text-left">
+              <div className="flex items-start gap-2 text-sm">
+                <CheckCircle2 className="h-5 w-5 text-gemstone-from shrink-0 mt-0.5" />
+                <span>Unlimited Diamond Calculator access with comparison tool</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <CheckCircle2 className="h-5 w-5 text-gemstone-from shrink-0 mt-0.5" />
+                <span>Full Manufacturing Cost Estimator for accurate pricing</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <CheckCircle2 className="h-5 w-5 text-gemstone-from shrink-0 mt-0.5" />
+                <span>Read-only catalog browsing to explore features</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <CheckCircle2 className="h-5 w-5 text-gemstone-from shrink-0 mt-0.5" />
+                <span>Upgrade anytime to full catalog & sharing features</span>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {isForgotPassword ? (
@@ -308,7 +414,34 @@ const Auth = () => {
                 </div>
               )}
 
-              {isSignUp && (
+              {isSignUp && isEssentialsPlan && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessName">Business Name (Optional)</Label>
+                    <Input
+                      id="businessName"
+                      type="text"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                      placeholder="Your Jewelry Business"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Phone Number *</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required
+                      placeholder="+1 (555) 123-4567"
+                    />
+                    <p className="text-xs text-muted-foreground">Required to activate your free trial</p>
+                  </div>
+                </>
+              )}
+
+              {isSignUp && !isEssentialsPlan && (
                 <div className="space-y-2">
                   <Label>Select Product Categories</Label>
                   <div className="space-y-2">
@@ -357,10 +490,10 @@ const Auth = () => {
 
               <Button 
                 type="submit" 
-                className="w-full" 
-                disabled={loading || (isSignUp && (selectedCategories.length === 0 || !validatePasswordStrength(password)))}
+                className={`w-full ${isEssentialsPlan && isSignUp ? 'bg-gradient-to-r from-gemstone-from to-gemstone-to' : ''}`}
+                disabled={loading || (isSignUp && !isEssentialsPlan && (selectedCategories.length === 0 || !validatePasswordStrength(password))) || (isSignUp && isEssentialsPlan && (!phoneNumber || !validatePasswordStrength(password)))}
               >
-                {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+                {loading ? "Loading..." : isSignUp ? isEssentialsPlan ? "Start Free Trial" : "Create Account" : "Sign In"}
               </Button>
             </form>
           )}
@@ -385,9 +518,27 @@ const Auth = () => {
               {isForgotPassword 
                 ? "Back to sign in" 
                 : isSignUp 
-                ? "Already have an account? Sign in" 
+                ? isEssentialsPlan 
+                  ? "Already have a calculator trial account? Sign in"
+                  : "Already have an account? Sign in"
+                : isEssentialsPlan
+                ? "Want to try calculators? Start free trial"
                 : "Don't have an account? Sign up"}
             </button>
+            {!isEssentialsPlan && !isSignUp && !isForgotPassword && (
+              <div className="pt-3 border-t">
+                <p className="text-xs text-muted-foreground mb-2">Just want to try our calculators?</p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate("/auth?plan=essentials")}
+                  className="w-full text-gemstone-from border-gemstone-from/30 hover:bg-gemstone-from/10"
+                >
+                  <Calculator className="mr-2 h-4 w-4" />
+                  Start 30-Day Free Calculator Trial
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

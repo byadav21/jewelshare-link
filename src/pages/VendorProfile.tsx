@@ -7,13 +7,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MediaUpload } from "@/components/MediaUpload";
+import { LogoUpload } from "@/components/LogoUpload";
 import { toast } from "sonner";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Palette } from "lucide-react";
+
+const brandThemes = {
+  elegant: {
+    name: "Elegant",
+    description: "Sophisticated purple and gold palette",
+    primary: "#6B21A8",
+    secondary: "#D97706",
+  },
+  modern: {
+    name: "Modern",
+    description: "Fresh blue and cyan tones",
+    primary: "#0EA5E9",
+    secondary: "#06B6D4",
+  },
+  classic: {
+    name: "Classic",
+    description: "Timeless navy and burgundy",
+    primary: "#1E3A8A",
+    secondary: "#991B1B",
+  },
+  luxury: {
+    name: "Luxury",
+    description: "Premium gold and black elegance",
+    primary: "#D4AF37",
+    secondary: "#1a1a1a",
+  },
+  minimalist: {
+    name: "Minimalist",
+    description: "Clean grayscale simplicity",
+    primary: "#4B5563",
+    secondary: "#9CA3AF",
+  },
+  vibrant: {
+    name: "Vibrant",
+    description: "Bold and energetic colors",
+    primary: "#EC4899",
+    secondary: "#8B5CF6",
+  },
+};
 
 const VendorProfile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<{ instagram?: boolean; whatsapp?: boolean }>({});
+  const [selectedTheme, setSelectedTheme] = useState<string>("custom");
   const [formData, setFormData] = useState({
     business_name: "",
     address_line1: "",
@@ -27,6 +69,14 @@ const VendorProfile = () => {
     whatsapp_number: "",
     instagram_qr_url: "",
     whatsapp_qr_url: "",
+    logo_url: "",
+    business_story: "",
+    certifications: [] as string[],
+    awards: [] as string[],
+    making_charges_per_gram: "",
+    primary_brand_color: "#4F46E5",
+    secondary_brand_color: "#8B5CF6",
+    brand_tagline: "",
   });
 
   useEffect(() => {
@@ -61,7 +111,16 @@ const VendorProfile = () => {
           whatsapp_number: profile.whatsapp_number || "",
           instagram_qr_url: profile.instagram_qr_url || "",
           whatsapp_qr_url: profile.whatsapp_qr_url || "",
+          logo_url: profile.logo_url || "",
+          business_story: profile.business_story || "",
+          certifications: profile.certifications || [],
+          awards: profile.awards || [],
+          making_charges_per_gram: profile.making_charges_per_gram || "",
+          primary_brand_color: profile.primary_brand_color || "#4F46E5",
+          secondary_brand_color: profile.secondary_brand_color || "#8B5CF6",
+          brand_tagline: profile.brand_tagline || "",
         });
+        setSelectedTheme(profile.brand_theme || "custom");
       }
     } catch (error: any) {
       toast.error("Failed to load vendor profile");
@@ -81,6 +140,7 @@ const VendorProfile = () => {
         .upsert({
           user_id: user.id,
           ...formData,
+          brand_theme: selectedTheme,
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
@@ -147,6 +207,17 @@ const VendorProfile = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Brand Logo</Label>
+                    <LogoUpload
+                      onUploadComplete={(url) => setFormData({ ...formData, logo_url: url })}
+                      currentImage={formData.logo_url}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Automatically cropped and optimized to 500×500px WebP format. Your logo will appear on PDF invoices and shared catalogs.
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="business_name">Business Name *</Label>
                     <Input
@@ -264,6 +335,259 @@ const VendorProfile = () => {
                       placeholder="India"
                       required
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="making_charges_per_gram">Making Charges per Gram (₹)</Label>
+                    <Input
+                      id="making_charges_per_gram"
+                      type="number"
+                      step="0.01"
+                      value={formData.making_charges_per_gram}
+                      onChange={(e) => setFormData({ ...formData, making_charges_per_gram: e.target.value })}
+                      placeholder="150"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This will be used to auto-calculate making charges for jewelry products
+                    </p>
+                  </div>
+
+                  <div className="border-t pt-6 space-y-4">
+                    <h3 className="text-lg font-semibold">Brand Story & Credentials</h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="business_story">Business Story</Label>
+                      <Textarea
+                        id="business_story"
+                        value={formData.business_story}
+                        onChange={(e) => setFormData({ ...formData, business_story: e.target.value })}
+                        placeholder="Tell your brand's story..."
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Certifications</Label>
+                      {formData.certifications.map((cert, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={cert}
+                            onChange={(e) => {
+                              const newCerts = [...formData.certifications];
+                              newCerts[index] = e.target.value;
+                              setFormData({ ...formData, certifications: newCerts });
+                            }}
+                            placeholder="e.g., ISO 9001:2015"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              const newCerts = formData.certifications.filter((_, i) => i !== index);
+                              setFormData({ ...formData, certifications: newCerts });
+                            }}
+                          >
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFormData({ ...formData, certifications: [...formData.certifications, ""] })}
+                      >
+                        Add Certification
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Awards & Recognition</Label>
+                      {formData.awards.map((award, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={award}
+                            onChange={(e) => {
+                              const newAwards = [...formData.awards];
+                              newAwards[index] = e.target.value;
+                              setFormData({ ...formData, awards: newAwards });
+                            }}
+                            placeholder="e.g., Best Jeweler 2023"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              const newAwards = formData.awards.filter((_, i) => i !== index);
+                              setFormData({ ...formData, awards: newAwards });
+                            }}
+                          >
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFormData({ ...formData, awards: [...formData.awards, ""] })}
+                      >
+                        Add Award
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      <h3 className="text-lg font-semibold">Brand Customization for Estimates</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Choose a preset theme or customize your own brand colors
+                    </p>
+                    
+                    <div>
+                      <Label className="text-sm font-medium mb-3 block">
+                        Choose a Brand Theme
+                      </Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                        {Object.entries(brandThemes).map(([key, theme]) => (
+                          <div
+                            key={key}
+                            onClick={() => {
+                              setSelectedTheme(key);
+                              setFormData({
+                                ...formData,
+                                primary_brand_color: theme.primary,
+                                secondary_brand_color: theme.secondary,
+                              });
+                            }}
+                            className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:scale-105 ${
+                              selectedTheme === key
+                                ? "border-primary shadow-lg ring-2 ring-primary/20"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                            style={{
+                              background: `linear-gradient(135deg, ${theme.primary}15, ${theme.secondary}15)`,
+                            }}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <div
+                                className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                                style={{ backgroundColor: theme.primary }}
+                              />
+                              <div
+                                className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                                style={{ backgroundColor: theme.secondary }}
+                              />
+                            </div>
+                            <p className="font-semibold text-sm">{theme.name}</p>
+                            <p className="text-xs text-muted-foreground">{theme.description}</p>
+                          </div>
+                        ))}
+                        <div
+                          onClick={() => setSelectedTheme("custom")}
+                          className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:scale-105 ${
+                            selectedTheme === "custom"
+                              ? "border-primary shadow-lg ring-2 ring-primary/20"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <Palette className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                          <p className="font-semibold text-sm">Custom</p>
+                          <p className="text-xs text-muted-foreground">Pick your own colors</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="brand_tagline">Brand Tagline</Label>
+                      <Input
+                        id="brand_tagline"
+                        value={formData.brand_tagline}
+                        onChange={(e) => setFormData({ ...formData, brand_tagline: e.target.value })}
+                        placeholder="e.g., Crafting Excellence Since 1985"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        This will appear on your estimate PDFs below your business name
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="primary_brand_color">Primary Brand Color</Label>
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            id="primary_brand_color"
+                            type="color"
+                            value={formData.primary_brand_color}
+                            onChange={(e) => {
+                              setFormData({ ...formData, primary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
+                            className="w-20 h-10"
+                          />
+                          <Input
+                            type="text"
+                            value={formData.primary_brand_color}
+                            onChange={(e) => {
+                              setFormData({ ...formData, primary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
+                            placeholder="#4F46E5"
+                            className="flex-1"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Used for headers and primary accents in PDFs
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="secondary_brand_color">Secondary Brand Color</Label>
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            id="secondary_brand_color"
+                            type="color"
+                            value={formData.secondary_brand_color}
+                            onChange={(e) => {
+                              setFormData({ ...formData, secondary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
+                            className="w-20 h-10"
+                          />
+                          <Input
+                            type="text"
+                            value={formData.secondary_brand_color}
+                            onChange={(e) => {
+                              setFormData({ ...formData, secondary_brand_color: e.target.value });
+                              setSelectedTheme("custom");
+                            }}
+                            placeholder="#8B5CF6"
+                            className="flex-1"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Used for secondary elements and highlights
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 border rounded-lg bg-muted/30">
+                      <p className="text-sm font-medium mb-2">Preview</p>
+                      <div className="flex gap-2">
+                        <div 
+                          className="w-16 h-16 rounded border" 
+                          style={{ backgroundColor: formData.primary_brand_color }}
+                        />
+                        <div 
+                          className="w-16 h-16 rounded border" 
+                          style={{ backgroundColor: formData.secondary_brand_color }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="border-t pt-6 space-y-4">

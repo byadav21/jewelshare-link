@@ -3,14 +3,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
-export const WhatsAppButton = () => {
+interface WhatsAppButtonProps {
+  whatsappNumber?: string;
+  message?: string;
+  businessName?: string;
+}
+
+export const WhatsAppButton = ({ 
+  whatsappNumber: propNumber, 
+  message: propMessage,
+  businessName 
+}: WhatsAppButtonProps = {}) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [whatsappNumber, setWhatsappNumber] = useState("1234567890");
+  const [whatsappNumber, setWhatsappNumber] = useState(propNumber || "1234567890");
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardHeight();
 
   useEffect(() => {
-    fetchWhatsAppNumber();
-  }, []);
+    if (!propNumber) {
+      fetchWhatsAppNumber();
+    }
+  }, [propNumber]);
 
   const fetchWhatsAppNumber = async () => {
     const { data, error } = await supabase
@@ -27,11 +41,24 @@ export const WhatsAppButton = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const message = encodeURIComponent("Hi! I'm interested in learning more about your jewelry catalog platform.");
+    const defaultMessage = businessName 
+      ? `Hi! I'm interested in your jewelry collection from ${businessName}.`
+      : "Hi! I'm interested in learning more about your jewelry catalog platform.";
+    
+    const message = encodeURIComponent(propMessage || defaultMessage);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
+
+  // Calculate dynamic bottom positions based on keyboard
+  const expandedBottomPosition = isKeyboardVisible 
+    ? `${keyboardHeight + 80}px` 
+    : '6rem';
+  
+  const buttonBottomPosition = isKeyboardVisible 
+    ? `${keyboardHeight + 16}px` 
+    : '1rem';
 
   return (
     <>
@@ -39,10 +66,15 @@ export const WhatsAppButton = () => {
         {isExpanded && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              y: 0,
+              bottom: expandedBottomPosition
+            }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-4 z-50 md:right-6"
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed right-4 z-50 md:right-6"
           >
             <div className="relative rounded-lg border-2 border-emerald-500/20 bg-background p-4 shadow-2xl">
               <button
@@ -65,7 +97,10 @@ export const WhatsAppButton = () => {
                 </div>
                 
                 <p className="text-sm text-muted-foreground">
-                  Have questions about our jewelry catalog platform? We're here to help!
+                  {businessName 
+                    ? `Have questions about ${businessName}'s jewelry collection? We're here to help!`
+                    : "Have questions about our jewelry catalog platform? We're here to help!"
+                  }
                 </p>
                 
                 <Button
@@ -83,21 +118,21 @@ export const WhatsAppButton = () => {
 
       <motion.div
         initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.5 }}
-        className="fixed bottom-4 right-4 z-50 md:bottom-6 md:right-6"
+        animate={{ 
+          scale: 1,
+          bottom: buttonBottomPosition
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="fixed right-4 z-50 md:right-6 group"
       >
         <Button
           onClick={() => setIsExpanded(!isExpanded)}
           size="icon"
-          className="h-14 w-14 rounded-full bg-emerald-500 shadow-2xl transition-all hover:bg-emerald-600 hover:scale-110"
+          className="h-14 w-14 rounded-full bg-emerald-500/60 shadow-lg transition-all hover:bg-emerald-600 hover:scale-110 opacity-60 hover:opacity-100"
           aria-label="Open WhatsApp chat"
         >
           <MessageCircle className="h-6 w-6 text-white" />
         </Button>
-        
-        {/* Pulse animation */}
-        <span className="absolute -inset-1 rounded-full bg-emerald-500 opacity-75 animate-ping" />
       </motion.div>
     </>
   );

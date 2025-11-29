@@ -18,6 +18,7 @@ import { usePWA } from "@/hooks/usePWA";
 
 // Lazy-loaded page imports
 import * as Pages from "@/routes";
+import * as InvoiceRoutes from "@/routes/invoiceRoutes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,12 +82,48 @@ const AppContent = () => {
         element={<RouteSuspense><Pages.SharedCatalog /></RouteSuspense>} 
       />
       <Route 
+        path={ROUTES.WISHLIST} 
+        element={<RouteSuspense><Pages.Wishlist /></RouteSuspense>} 
+      />
+      <Route 
         path={ROUTES.CUSTOM_ORDER} 
         element={<RouteSuspense><Pages.CustomOrder /></RouteSuspense>} 
       />
       <Route 
         path={ROUTES.IMAGE_DEMO} 
         element={<RouteSuspense><Pages.ImageOptimizationDemo /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.DIAMOND_CALCULATOR} 
+        element={<RouteSuspense><Pages.DiamondCalculator /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.MANUFACTURING_COST} 
+        element={<RouteSuspense><Pages.ManufacturingCost /></RouteSuspense>} 
+      />
+      <Route
+        path={ROUTES.INVOICE_GENERATOR} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceGenerator /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INVOICE_TEMPLATES} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceTemplates /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INVOICE_TEMPLATE_BUILDER} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceTemplateBuilder /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INVOICE_TEMPLATE_BUILDER_EDIT} 
+        element={<RouteSuspense><InvoiceRoutes.InvoiceTemplateBuilder /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.CALCULATORS} 
+        element={<RouteSuspense><Pages.Calculators /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.ORDER_TRACKING} 
+        element={<RouteSuspense><Pages.OrderTracking /></RouteSuspense>} 
       />
 
       {/* Auth-only route (requires login but not approval) */}
@@ -188,16 +225,106 @@ const AppContent = () => {
           </ApprovalGuard>
         } 
       />
-      
-      {/* Admin routes (requires admin role) */}
       <Route 
-        path="/admin/*" 
+        path={ROUTES.PURCHASE_INQUIRIES} 
         element={
-          <RouteSuspense><Pages.AdminDashboard /></RouteSuspense>
+          <ApprovalGuard>
+            <RouteSuspense><Pages.PurchaseInquiries /></RouteSuspense>
+          </ApprovalGuard>
         } 
       />
       <Route 
-        path={ROUTES.SUPER_ADMIN} 
+        path={ROUTES.REWARDS} 
+        element={
+          <ApprovalGuard>
+            <RouteSuspense><Pages.Rewards /></RouteSuspense>
+          </ApprovalGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.INVOICE_HISTORY} 
+        element={
+          <ApprovalGuard>
+            <RouteSuspense><InvoiceRoutes.InvoiceHistory /></RouteSuspense>
+          </ApprovalGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ESTIMATE_HISTORY} 
+        element={
+          <ApprovalGuard>
+            <RouteSuspense><InvoiceRoutes.EstimateHistory /></RouteSuspense>
+          </ApprovalGuard>
+        } 
+      />
+      
+      {/* Admin routes (requires admin role) */}
+      <Route 
+        path={ROUTES.ADMIN}
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminDashboard /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_SETTINGS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminSettings /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_BLOG} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminBlog /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_BRANDS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminBrands /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_COMMENTS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminComments /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_NEWSLETTER} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminNewsletter /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_PRESS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminPress /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_REWARDS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminRewards /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route
+        path={ROUTES.SUPER_ADMIN}
         element={
           <AdminGuard>
             <RouteSuspense><Pages.SuperAdmin /></RouteSuspense>
@@ -225,6 +352,22 @@ const AppContent = () => {
         element={
           <AdminGuard>
             <RouteSuspense><Pages.CustomerDatabase /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_MANUFACTURING_ORDERS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminManufacturingOrders /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.GUEST_CALCULATOR_ANALYTICS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.GuestCalculatorAnalytics /></RouteSuspense>
           </AdminGuard>
         } 
       />
@@ -281,6 +424,22 @@ const AppContent = () => {
         element={
           <AdminGuard>
             <RouteSuspense><Pages.MigrateImages /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.SCRATCH_LEADS} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.ScratchLeads /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_DIAMOND_PRICES} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminDiamondPrices /></RouteSuspense>
           </AdminGuard>
         } 
       />

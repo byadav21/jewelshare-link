@@ -21,6 +21,10 @@ import {
   History,
   Newspaper,
   LayoutDashboard,
+  Gift,
+  Diamond,
+  Package,
+  Calculator,
 } from "lucide-react";
 import { NavigationItem, NavigationGroup } from "@/types";
 import { ROUTES } from "@/constants/routes";
@@ -38,6 +42,9 @@ export const CONTENT_MANAGEMENT_ITEMS: NavigationItem[] = [
   { title: "Comments", url: ROUTES.ADMIN_COMMENTS, icon: MessageSquare },
   { title: "Newsletter", url: ROUTES.ADMIN_NEWSLETTER, icon: Mail },
   { title: "Press Releases", url: ROUTES.ADMIN_PRESS, icon: Newspaper },
+  { title: "Scratch Leads", url: ROUTES.SCRATCH_LEADS, icon: Gift },
+  { title: "Rewards", url: ROUTES.ADMIN_REWARDS, icon: Crown },
+  { title: "Diamond Prices", url: ROUTES.ADMIN_DIAMOND_PRICES, icon: Diamond },
 ];
 
 export const VENDOR_MANAGEMENT_ITEMS: NavigationItem[] = [
@@ -51,7 +58,9 @@ export const SYSTEM_ITEMS: NavigationItem[] = [
   { title: "Active Sessions", url: ROUTES.ACTIVE_SESSIONS, icon: Monitor },
   { title: "Global Search", url: ROUTES.GLOBAL_SEARCH, icon: Search },
   { title: "Customer Database", url: ROUTES.CUSTOMER_DATABASE, icon: Database },
+  { title: "Manufacturing Orders", url: ROUTES.ADMIN_MANUFACTURING_ORDERS, icon: Package },
   { title: "Analytics", url: ROUTES.ANALYTICS_DASHBOARD, icon: TrendingUp },
+  { title: "Calculator Analytics", url: ROUTES.GUEST_CALCULATOR_ANALYTICS, icon: Calculator },
   { title: "Audit Logs", url: ROUTES.AUDIT_LOGS, icon: Shield },
   { title: "Export Reports", url: ROUTES.EXPORT_REPORTS, icon: FileDown },
   { title: "Login History", url: ROUTES.LOGIN_HISTORY, icon: History },

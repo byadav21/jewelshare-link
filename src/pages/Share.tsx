@@ -5,25 +5,57 @@ import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SocialShareButton } from "@/components/SocialShareButton";
+import { ShareStats } from "@/components/ShareStats";
+import { ShareLinkQRCode } from "@/components/ShareLinkQRCode";
+import { ShareLinkAnalytics } from "@/components/ShareLinkAnalytics";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { ArrowLeft, Copy, ExternalLink } from "lucide-react";
+import { ArrowLeft, Copy, ExternalLink, ChevronDown, BarChart3 } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
+import { useRewardsSystem } from "@/hooks/useRewardsSystem";
 
 const Share = () => {
   const navigate = useNavigate();
+  const { awardPoints } = useRewardsSystem();
   const [loading, setLoading] = useState(false);
   const [shareLinks, setShareLinks] = useState<any[]>([]);
+  const [vendorProfile, setVendorProfile] = useState<any>(null);
+  const [expandedAnalytics, setExpandedAnalytics] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     markup_percentage: "",
     markdown_percentage: "",
     expires_at: "",
     show_vendor_details: true,
+    shared_categories: ["Jewellery", "Gemstones", "Loose Diamonds"],
   });
 
   useEffect(() => {
     fetchShareLinks();
+    fetchVendorProfile();
   }, []);
+
+  const fetchVendorProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("vendor_profiles")
+        .select("business_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!error && data) {
+        setVendorProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching vendor profile:", error);
+    }
+  };
 
   const fetchShareLinks = async () => {
     try {
@@ -56,6 +88,22 @@ const Share = () => {
         return;
       }
 
+      if (formData.shared_categories.length === 0) {
+        toast.error("Please select at least one product category to share");
+        setLoading(false);
+        return;
+      }
+
+      // Validate expiration date is in the future
+      const expirationDate = new Date(formData.expires_at);
+      const now = new Date();
+      
+      if (expirationDate <= now) {
+        toast.error("Expiration date must be in the future");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("share_links")
         .insert([
@@ -65,6 +113,7 @@ const Share = () => {
             markdown_percentage: markdown,
             expires_at: formData.expires_at,
             show_vendor_details: formData.show_vendor_details,
+            shared_categories: formData.shared_categories,
           },
         ])
         .select()
@@ -72,8 +121,21 @@ const Share = () => {
 
       if (error) throw error;
 
-      toast.success("Share link created!");
-      setFormData({ markup_percentage: "", markdown_percentage: "", expires_at: "", show_vendor_details: true });
+      // Award points for creating share link
+      try {
+        await awardPoints('share_link_created');
+      } catch (pointsError) {
+        console.error('Failed to award points:', pointsError);
+      }
+
+      toast.success("Share link created successfully! 🎉");
+      setFormData({ 
+        markup_percentage: "", 
+        markdown_percentage: "", 
+        expires_at: "", 
+        show_vendor_details: true,
+        shared_categories: ["Jewellery", "Gemstones", "Loose Diamonds"]
+      });
       fetchShareLinks();
     } catch (error: any) {
       toast.error(error.message || "Failed to create share link");
@@ -166,8 +228,45 @@ const Share = () => {
                     type="datetime-local"
                     value={formData.expires_at}
                     onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
+                    min={new Date().toISOString().slice(0, 16)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Set when this catalog link should stop working
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Product Categories to Share *</Label>
+                  <div className="space-y-2">
+                    {["Jewellery", "Gemstones", "Loose Diamonds"].map((category) => (
+                      <div key={category} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`category-${category}`}
+                          checked={formData.shared_categories.includes(category)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setFormData({
+                                ...formData,
+                                shared_categories: [...formData.shared_categories, category],
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                shared_categories: formData.shared_categories.filter((c) => c !== category),
+                              });
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`category-${category}`} className="cursor-pointer font-normal">
+                          {category}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Select which product types to include in this share link
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -204,52 +303,113 @@ const Share = () => {
                 <p className="text-center text-muted-foreground py-8">No share links yet</p>
               ) : (
                 <div className="space-y-4">
-                  {shareLinks.map((link) => (
-                    <div
-                      key={link.id}
-                      className="border border-border rounded-lg p-4 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <code className="text-sm bg-muted px-2 py-1 rounded">
-                              {link.share_token.substring(0, 20)}...
-                            </code>
+                  {shareLinks.map((link) => {
+                    const shareUrl = `${window.location.origin}/shared/${encodeURIComponent(link.share_token)}`;
+                    const isExpiringSoon = new Date(link.expires_at).getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
+                    const isAnalyticsExpanded = expandedAnalytics === link.id;
+                    
+                    return (
+                      <Card
+                        key={link.id}
+                        className="border-border hover:border-primary/30 transition-colors"
+                      >
+                        <CardContent className="p-4 space-y-3">
+                          {/* Viral Stats */}
+                          <ShareStats
+                            viewCount={link.view_count}
+                            isExpiringSoon={isExpiringSoon}
+                            showTrending
+                          />
+                          
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <code className="text-sm bg-muted px-2 py-1 rounded truncate max-w-[200px]">
+                                  {link.share_token.substring(0, 20)}...
+                                </code>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copyToClipboard(link.share_token)}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => window.open(shareUrl, "_blank")}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </Button>
+                                
+                                {/* QR Code */}
+                                <ShareLinkQRCode
+                                  shareToken={link.share_token}
+                                  businessName={vendorProfile?.business_name}
+                                />
+                                
+                                {/* Social Share */}
+                                <SocialShareButton
+                                  url={shareUrl}
+                                  title={vendorProfile?.business_name || "Exclusive Jewelry Collection"}
+                                  description="Discover stunning jewelry pieces"
+                                />
+                              </div>
+                              <div className="text-sm text-muted-foreground mt-2">
+                                {link.markup_percentage > 0 && `+${link.markup_percentage}% markup`}
+                                {link.markdown_percentage > 0 && `-${link.markdown_percentage}% markdown`}
+                                {link.markup_percentage === 0 && link.markdown_percentage === 0 && "No price adjustment"}
+                                {" • "}
+                                Expires: {new Date(link.expires_at).toLocaleString()}
+                              </div>
+                              <div className="flex gap-1 mt-2 flex-wrap">
+                                {link.shared_categories?.map((category: string) => (
+                                  <Badge key={category} variant="secondary" className="text-xs">
+                                    {category}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
                             <Button
                               size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(link.share_token)}
+                              variant={link.is_active ? "destructive" : "default"}
+                              onClick={() => toggleLinkStatus(link.id, link.is_active)}
                             >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => window.open(`/shared/${encodeURIComponent(link.share_token)}`, "_blank")}
-                            >
-                              <ExternalLink className="h-4 w-4" />
+                              {link.is_active ? "Deactivate" : "Activate"}
                             </Button>
                           </div>
-                          <div className="text-sm text-muted-foreground mt-2">
-                            {link.markup_percentage > 0 && `+${link.markup_percentage}% markup`}
-                            {link.markdown_percentage > 0 && `-${link.markdown_percentage}% markdown`}
-                            {link.markup_percentage === 0 && link.markdown_percentage === 0 && "No price adjustment"}
-                            {" • "}
-                            Expires: {new Date(link.expires_at).toLocaleString()}
-                            {" • "}
-                            Views: {link.view_count}
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant={link.is_active ? "destructive" : "default"}
-                          onClick={() => toggleLinkStatus(link.id, link.is_active)}
-                        >
-                          {link.is_active ? "Deactivate" : "Activate"}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+
+                          {/* Analytics Section */}
+                          <Collapsible
+                            open={isAnalyticsExpanded}
+                            onOpenChange={() => setExpandedAnalytics(isAnalyticsExpanded ? null : link.id)}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full gap-2"
+                              >
+                                <BarChart3 className="h-4 w-4" />
+                                {isAnalyticsExpanded ? "Hide Analytics" : "View Analytics"}
+                                <ChevronDown
+                                  className={`h-4 w-4 transition-transform ${
+                                    isAnalyticsExpanded ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="mt-4">
+                              <ShareLinkAnalytics
+                                shareLinkId={link.id}
+                                viewCount={link.view_count}
+                              />
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
