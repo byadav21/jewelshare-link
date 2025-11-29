@@ -26,13 +26,29 @@ export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDi
 
   useEffect(() => {
     // Check if we should show the dialog
+    const lastSkipTimestamp = localStorage.getItem("gold_rate_skip_timestamp");
     const lastPromptDate = localStorage.getItem("gold_rate_last_prompt");
-    const today = new Date().toDateString();
+    const now = new Date();
+    const today = now.toDateString();
 
-    if (lastPromptDate !== today) {
-      // Show dialog after a slight delay
-      setTimeout(() => setOpen(true), 1000);
+    // If user skipped, check if 24 hours have passed
+    if (lastSkipTimestamp) {
+      const skipTime = new Date(parseInt(lastSkipTimestamp));
+      const hoursSinceSkip = (now.getTime() - skipTime.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursSinceSkip < 24) {
+        // Less than 24 hours since skip, don't show
+        return;
+      }
     }
+
+    // If user updated today, don't show
+    if (lastPromptDate === today) {
+      return;
+    }
+
+    // Show dialog after a slight delay
+    setTimeout(() => setOpen(true), 1000);
   }, []);
 
   const handleUpdate = async () => {
@@ -59,6 +75,8 @@ export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDi
       await onUpdate(newRate);
       const today = new Date().toDateString();
       localStorage.setItem("gold_rate_last_prompt", today);
+      // Clear skip timestamp since rate was updated
+      localStorage.removeItem("gold_rate_skip_timestamp");
       setOpen(false);
       toast.success("Gold rate updated successfully!");
     } catch (error) {
@@ -70,10 +88,14 @@ export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDi
   };
 
   const handleSkip = () => {
-    const today = new Date().toDateString();
-    localStorage.setItem("gold_rate_last_prompt", today);
+    const now = new Date();
+    // Store timestamp for 24-hour tracking
+    localStorage.setItem("gold_rate_skip_timestamp", now.getTime().toString());
+    // Also store date to prevent multiple prompts on same day
+    localStorage.setItem("gold_rate_last_prompt", now.toDateString());
     setOpen(false);
     onSkip();
+    toast.info("Gold rate update skipped. You won't be asked again for 24 hours.");
   };
 
   return (
