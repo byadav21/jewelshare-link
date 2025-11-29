@@ -474,21 +474,21 @@ const ManufacturingCost = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-4 md:py-8 px-3 md:px-4">
       {/* Guest Usage Limit Dialog */}
       <Dialog open={showUsageLimitDialog} onOpenChange={setShowUsageLimitDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Usage Limit Reached</DialogTitle>
-            <DialogDescription>
-              You've reached the limit of 5 uses per 24 hours for guest users. Sign in to get unlimited access to the Manufacturing Cost Estimator, or wait 24 hours for your limit to reset.
+            <DialogTitle className="text-lg">Usage Limit Reached</DialogTitle>
+            <DialogDescription className="text-sm">
+              You've reached 5 uses in 24 hours. Sign in for unlimited access.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-4">
-            <Button onClick={() => navigate('/auth')} className="flex-1">
+          <div className="flex gap-3">
+            <Button onClick={() => navigate('/auth')} className="flex-1" size="sm">
               Sign In
             </Button>
-            <Button variant="outline" onClick={() => navigate('/')} className="flex-1">
+            <Button variant="outline" onClick={() => navigate('/')} className="flex-1" size="sm">
               Go Home
             </Button>
           </div>
@@ -496,26 +496,26 @@ const ManufacturingCost = () => {
       </Dialog>
 
       <BackToHomeButton />
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full mb-4">
-            <Calculator className="h-8 w-8 text-primary" />
+        <div className="text-center space-y-3 md:space-y-4 px-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full mb-2 md:mb-4">
+            <Calculator className="h-6 w-6 md:h-8 md:w-8 text-primary" />
           </div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient">
-            Manufacturing Cost Estimator
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary">
+            Cost Estimator
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Professional jewelry cost estimation and invoice generation workflow
+          <p className="text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl mx-auto">
+            Professional jewelry estimation & invoicing
           </p>
           
           {/* Guest Usage Counter */}
-          {!user && guestUsageCount > 0 && guestUsageCount < 5 && <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border">
-              <Info className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Guest Usage: {guestUsageCount}/5 uses (resets in 24 hours).
-                <Button variant="link" className="ml-1 p-0 h-auto text-sm underline" onClick={() => navigate('/auth')}>
-                  Sign in for unlimited access
+          {!user && guestUsageCount > 0 && guestUsageCount < 5 && <div className="mt-3 md:mt-4 inline-flex items-center gap-2 px-3 md:px-4 py-2 bg-muted/50 rounded-lg border border-border">
+              <Info className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Guest: {guestUsageCount}/5 uses.
+                <Button variant="link" className="ml-1 p-0 h-auto text-xs md:text-sm underline" onClick={() => navigate('/auth')}>
+                  Sign in
                 </Button>
               </p>
             </div>}
