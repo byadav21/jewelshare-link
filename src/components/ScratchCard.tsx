@@ -307,17 +307,17 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
           className="relative max-w-lg w-full max-h-[95vh] bg-gradient-to-br from-background via-card to-background rounded-3xl border-2 border-primary/30 shadow-2xl overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close Button - Fixed at top right with safe spacing */}
+          {/* Close Button - Absolutely positioned in top-right corner */}
           <button
             onClick={onClose}
-            className="sticky top-4 right-4 ml-auto mr-4 z-10 flex items-center justify-center rounded-full bg-white/90 dark:bg-black/90 p-2.5 backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-black hover:scale-110 shadow-lg"
+            className="absolute top-4 right-4 z-50 flex items-center justify-center rounded-full bg-card/95 backdrop-blur-sm p-2 border border-border transition-all hover:bg-background hover:scale-110 hover:rotate-90 shadow-lg"
             aria-label="Close popup"
           >
             <X className="h-5 w-5 text-foreground" />
           </button>
 
           {/* Header */}
-          <div className="relative bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from p-6 sm:p-8 text-center -mt-14"
+          <div className="relative bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from p-6 sm:p-8 text-center pt-16 sm:pt-20"
           >
             <motion.div
               initial={{ scale: 0 }}
