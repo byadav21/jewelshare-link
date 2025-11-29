@@ -297,24 +297,28 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 sm:p-6 md:p-8"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, y: 20, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.9, y: 20, opacity: 0 }}
-          className="relative max-w-lg w-full bg-gradient-to-br from-background via-card to-background rounded-3xl border-2 border-primary/30 shadow-2xl overflow-hidden"
+          className="relative max-w-lg w-full max-h-[95vh] bg-gradient-to-br from-background via-card to-background rounded-3xl border-2 border-primary/30 shadow-2xl overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Close Button - Fixed at top right with safe spacing */}
+          <button
+            onClick={onClose}
+            className="sticky top-4 right-4 ml-auto mr-4 z-10 flex items-center justify-center rounded-full bg-white/90 dark:bg-black/90 p-2.5 backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-black hover:scale-110 shadow-lg"
+            aria-label="Close popup"
+          >
+            <X className="h-5 w-5 text-foreground" />
+          </button>
+
           {/* Header */}
-          <div className="relative bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from p-8 text-center">
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 rounded-full bg-white/20 p-2 backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-110"
-            >
-              <X className="h-5 w-5 text-white" />
-            </button>
+          <div className="relative bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from p-6 sm:p-8 text-center -mt-14"
+          >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -328,7 +332,7 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
           </div>
 
           {/* Content */}
-          <div className="p-8">
+          <div className="p-6 sm:p-8">
             {step === "form" ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -428,7 +432,7 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                <div className="relative mx-auto flex h-[300px] w-full max-w-[400px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-primary/30 bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10">
+                <div className="relative mx-auto flex h-[280px] sm:h-[300px] w-full max-w-[400px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-primary/30 bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10">
                   {/* Reward Content */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
                     {isWinner ? (
