@@ -25,7 +25,7 @@ import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
 import analyticsFeature from "@/assets/analytics-feature.jpg";
 
-const JewelryViewer3D = lazy(() => import("@/components/JewelryViewer3D").then(m => ({ default: m.JewelryViewer3D })));
+const JewelryViewer3D = lazy(() => import("@/components/JewelryViewer3D"));
 import {
   Gem,
   Share2,

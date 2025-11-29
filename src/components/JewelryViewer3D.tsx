@@ -130,7 +130,7 @@ const Scene = () => {
   );
 };
 
-export const JewelryViewer3D = () => {
+const JewelryViewer3D = () => {
   return (
     <div className="h-[500px] w-full rounded-2xl overflow-hidden border-2 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Canvas shadows>
@@ -141,3 +141,5 @@ export const JewelryViewer3D = () => {
     </div>
   );
 };
+
+export default JewelryViewer3D;
