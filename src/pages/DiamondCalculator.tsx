@@ -186,7 +186,7 @@ const DiamondCalculator = () => {
         .eq("shape", lookupShape)
         .eq("color_grade", color)
         .eq("clarity_grade", clarity)
-        .eq("cut_grade", cut)
+        .eq("cut_grade", "Excellent") // Always use Excellent grade for pricing
         .lte("carat_range_min", caratNum)
         .gte("carat_range_max", caratNum)
         .maybeSingle();
@@ -195,7 +195,7 @@ const DiamondCalculator = () => {
 
       if (!data) {
         toast.error(
-          `No pricing data found for ${lookupShape} diamonds with these specifications (${color}/${clarity}/${cut}, ${caratNum}ct). Please contact admin to add pricing data.`,
+          `No pricing data found for ${lookupShape} diamonds with these specifications (${color}/${clarity}, ${caratNum}ct). Please contact admin to add pricing data.`,
           { duration: 5000 }
         );
         setResult(null);
