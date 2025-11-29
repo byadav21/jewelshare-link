@@ -12,16 +12,18 @@ import { ParallaxSection } from "@/components/ParallaxSection";
 import { TiltCard } from "@/components/TiltCard";
 import { InteractiveROICalculator } from "@/components/InteractiveROICalculator";
 
-import { lazy, Suspense, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
 import { NewsletterSubscription } from "@/components/NewsletterSubscription";
 import { CookieConsent } from "@/components/CookieConsent";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ScratchCard } from "@/components/ScratchCard";
+import { FeaturesGrid } from "@/components/home/FeaturesGrid";
+import { ToolsShowcase } from "@/components/home/ToolsShowcase";
+import { CatalogFeatures } from "@/components/home/CatalogFeatures";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
-import catalogFeature from "@/assets/catalog-feature.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
 import analyticsFeature from "@/assets/analytics-feature.jpg";
 
@@ -203,80 +205,7 @@ const Index = () => {
     },
   ];
 
-  const features = [
-    {
-      icon: Gem,
-      title: "Comprehensive Catalog Management",
-      description:
-        "Manage your entire jewelry inventory including loose diamonds, gemstones, and finished jewelry pieces with detailed specifications.",
-      gradient: "from-jewellery-from to-jewellery-to",
-    },
-    {
-      icon: Share2,
-      title: "Smart Catalog Sharing",
-      description:
-        "Create shareable catalogs with custom pricing (markup/markdown) and expiry dates. Track views and engagement in real-time.",
-      gradient: "from-gemstone-from to-gemstone-to",
-    },
-    {
-      icon: Calculator,
-      title: "Diamond Price Calculator",
-      description:
-        "Professional diamond pricing tool with Rapaport-based calculations. Estimate diamond values based on the 4Cs (Carat, Cut, Color, Clarity) with support for all shapes and instant price comparisons. Apply custom discounts or markups for accurate pricing.",
-      gradient: "from-diamond-from to-diamond-to",
-      link: "/calculators",
-    },
-    {
-      icon: Calculator,
-      title: "Manufacturing Cost Estimator",
-      description:
-        "Calculate complete jewelry manufacturing costs including gold, diamonds, gemstones, making charges, CAD design, camming/casting, and certification. Get detailed cost breakdowns for accurate pricing and profitability analysis.",
-      gradient: "from-jewellery-from to-jewellery-to",
-      link: "/calculators",
-    },
-    {
-      icon: Video,
-      title: "Video Request Management",
-      description:
-        "Receive and manage video requests from customers. Update status and communicate directly via email or WhatsApp.",
-      gradient: "from-gemstone-from to-gemstone-to",
-    },
-    {
-      icon: ShoppingBag,
-      title: "Custom Order Tracking",
-      description:
-        "Handle custom jewelry orders with design descriptions, budget tracking, and reference images. Manage entire workflow from request to fulfillment.",
-      gradient: "from-jewellery-from to-jewellery-to",
-    },
-    {
-      icon: Heart,
-      title: "Product Interest Analytics",
-      description:
-        "Track customer interests in specific products. Collect contact details and notes to follow up effectively.",
-      gradient: "from-diamond-from to-diamond-to",
-    },
-    {
-      icon: Users,
-      title: "Team Collaboration",
-      description:
-        "Add team members with granular permissions. Control access to catalog, products, sharing, and customer data.",
-      gradient: "from-gemstone-from to-gemstone-to",
-    },
-    {
-      icon: BarChart3,
-      title: "Advanced Analytics",
-      description:
-        "Get insights into catalog performance, customer engagement, popular products, and sales trends with visual dashboards.",
-      gradient: "from-jewellery-from to-jewellery-to",
-    },
-    {
-      icon: Shield,
-      title: "Secure Session Management",
-      description:
-        "Control active sessions with device tracking, IP monitoring, and remote session termination for enhanced security.",
-      gradient: "from-gemstone-from to-gemstone-to",
-    },
-  ];
+  // Moved to FeaturesGrid component
 
   const benefits = [
     { icon: Zap, text: "Lightning-fast catalog updates" },
@@ -466,140 +395,67 @@ const Index = () => {
         </ScrollReveal>
       </section>
 
-      {/* Features Grid */}
-      <section className="container mx-auto px-4 py-24">
+      {/* Tools Showcase Section */}
+      <ToolsShowcase />
+
+      {/* Catalog Features Section */}
+      <CatalogFeatures />
+
+      {/* Team Analytics Section */}
+      <section className="container mx-auto px-4 py-24 bg-gradient-to-br from-background via-primary/5 to-background">
         <ScrollReveal>
-          <div className="mb-20 text-center">
+          <div className="mb-16 text-center">
             <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
-              Powerful Features for Jewelry Vendors
+              Team & Analytics
             </h2>
-            <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to manage and grow your jewelry business
+            <p className="text-2xl text-muted-foreground max-w-3xl mx-auto">
+              Collaborate with your team and make data-driven decisions with powerful analytics
             </p>
           </div>
         </ScrollReveal>
 
-        {/* Feature Showcase with Images */}
-        <ScrollReveal delay={0.1}>
-          <div className="mb-16 grid gap-8 lg:grid-cols-2">
-            <ParallaxImage
-              src={catalogFeature}
-              alt="Digital catalog on devices"
-              className="relative overflow-hidden rounded-2xl border-2"
-              speed={0.3}
-            />
+        <div className="grid gap-12 lg:grid-cols-2">
+          <ScrollReveal direction="left">
             <div className="flex flex-col justify-center space-y-6">
-              <ScrollReveal delay={0.2} direction="right">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-lg">
-                    <AnimatedIcon icon={Share2} className="h-7 w-7 text-white" animation="rotate" delay={0.2} />
-                  </div>
-                  <div>
-                    <h3 className="mb-3 text-3xl font-bold font-serif">Smart Catalog Sharing</h3>
-                    <p className="text-muted-foreground text-lg leading-relaxed">
-                      Create stunning digital catalogs accessible on any device. Share with custom pricing, track
-                      engagement, and manage everything from a single dashboard. Perfect for B2B and retail customers.
-                    </p>
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from shadow-lg">
+                  <AnimatedIcon icon={Users} className="h-7 w-7 text-white" animation="bounce" delay={0.2} />
                 </div>
-              </ScrollReveal>
-              <ScrollReveal delay={0.3} direction="right">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gemstone-from to-gemstone-to shadow-lg">
-                    <AnimatedIcon icon={Gem} className="h-7 w-7 text-white" animation="pulse" delay={0.3} />
-                  </div>
-                  <div>
-                    <h3 className="mb-3 text-3xl font-bold font-serif">Complete Inventory Control</h3>
-                    <p className="text-muted-foreground text-lg leading-relaxed">
-                      Manage diamonds, gemstones, and jewelry with detailed specifications. Upload multiple high-quality
-                      images, track stock levels, and update pricing instantly across all shared catalogs.
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="mb-3 text-3xl font-bold font-serif">Team Collaboration</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    Scale your business with multi-user access. Set granular permissions for team members, track
+                    activities, and maintain full control over who can view and manage your inventory.
+                  </p>
                 </div>
-              </ScrollReveal>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-diamond-from to-diamond-to shadow-lg">
+                  <AnimatedIcon icon={BarChart3} className="h-7 w-7 text-white" animation="scale" delay={0.3} />
+                </div>
+                <div>
+                  <h3 className="mb-3 text-3xl font-bold font-serif">Advanced Analytics</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    Get real-time insights into catalog performance, customer engagement, and popular products. Make
+                    data-driven decisions with comprehensive dashboards and visual reports.
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.1}>
-          <div className="mb-16 grid gap-8 lg:grid-cols-2">
-            <div className="order-2 lg:order-1 flex flex-col justify-center space-y-6">
-              <ScrollReveal delay={0.2} direction="left">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-diamond-from to-diamond-to">
-                    <AnimatedIcon icon={BarChart3} className="h-6 w-6 text-white" animation="scale" delay={0.2} />
-                  </div>
-                  <div>
-                    <h3 className="mb-2 text-2xl font-bold">Advanced Analytics</h3>
-                    <p className="text-muted-foreground">
-                      Get real-time insights into catalog performance, customer engagement, and popular products. Make
-                      data-driven decisions with comprehensive dashboards and visual reports.
-                    </p>
-                  </div>
-                </div>
-              </ScrollReveal>
-              <ScrollReveal delay={0.3} direction="left">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from via-gemstone-from to-diamond-from">
-                    <AnimatedIcon icon={Users} className="h-6 w-6 text-white" animation="bounce" delay={0.3} />
-                  </div>
-                  <div>
-                    <h3 className="mb-2 text-2xl font-bold">Team Collaboration</h3>
-                    <p className="text-muted-foreground">
-                      Scale your business with multi-user access. Set granular permissions for team members, track
-                      activities, and maintain full control over who can view and manage your inventory.
-                    </p>
-                  </div>
-                </div>
-              </ScrollReveal>
-            </div>
+          </ScrollReveal>
+          <ScrollReveal direction="right">
             <ParallaxImage
               src={analyticsFeature}
               alt="Analytics dashboard"
-              className="order-1 lg:order-2 relative overflow-hidden rounded-2xl border-2"
+              className="relative overflow-hidden rounded-2xl border-2 shadow-2xl"
               speed={0.3}
             />
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.1}>
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature, index) => (
-              <ScrollReveal key={index} delay={0.05 * (index % 4)} direction="up">
-                <TiltCard maxTilt={8} scale={1.05}>
-                  <Card 
-                    className={`group relative overflow-hidden border-2 h-full transition-all hover:shadow-lg hover:shadow-primary/10 ${feature.link ? 'cursor-pointer' : ''}`}
-                    onClick={() => feature.link && navigate(feature.link)}
-                  >
-                    <div
-                      className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-5`}
-                    />
-                    <CardHeader>
-                      <div
-                        className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${feature.gradient}`}
-                      >
-                        <AnimatedIcon 
-                          icon={feature.icon} 
-                          className="h-6 w-6 text-white" 
-                          animation={index % 4 === 0 ? "pulse" : index % 4 === 1 ? "rotate" : index % 4 === 2 ? "bounce" : "scale"}
-                          delay={0.05 * (index % 4)}
-                        />
-                      </div>
-                      <CardTitle className="text-xl flex items-center justify-between">
-                        {feature.title}
-                        {feature.link && <ArrowRight className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="text-base">{feature.description}</CardDescription>
-                    </CardContent>
-                  </Card>
-                </TiltCard>
-              </ScrollReveal>
-            ))}
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
+        </div>
       </section>
+
+      {/* Complete Features Grid */}
+      <FeaturesGrid />
 
       {/* Testimonials Section */}
       <section className="container mx-auto px-4 py-24">
