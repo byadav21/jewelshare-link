@@ -61,110 +61,168 @@ export const generateEstimatePDF = (data: EstimateData) => {
   const primaryRgb = hexToRgb(primaryColor);
   const secondaryRgb = hexToRgb(secondaryColor);
   
-  // Header with brand color
+  // Professional gradient header with accent
   doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.rect(0, 0, pageWidth, 35, 'F');
+  doc.rect(0, 0, pageWidth, 45, 'F');
   
-  // Add logo if available
+  // Accent stripe
+  doc.setFillColor(secondaryRgb.r, secondaryRgb.g, secondaryRgb.b);
+  doc.rect(0, 43, pageWidth, 2, 'F');
+  
+  // Logo container with professional styling
   if (data.vendorBranding?.logoUrl) {
-    try {
-      // Note: In production, logo should be base64 encoded or loaded via Image object
-      // For now, we'll add a placeholder for the logo space
-      doc.setFillColor(255, 255, 255);
-      doc.rect(14, 8, 20, 20, 'F');
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
-      doc.text('LOGO', 24, 19, { align: 'center' });
-    } catch (error) {
-      console.error('Error adding logo:', error);
-    }
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(15, 8, 28, 28, 3, 3, 'F');
+    doc.setDrawColor(230, 230, 235);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(15, 8, 28, 28, 3, 3, 'S');
+    
+    doc.setFontSize(7);
+    doc.setTextColor(160, 160, 170);
+    doc.text('LOGO', 29, 23, { align: 'center' });
   }
   
-  // Business name and title
-  doc.setFontSize(data.vendorBranding?.businessName ? 18 : 24);
+  // Business name with enhanced typography
+  const nameStartX = data.vendorBranding?.logoUrl ? 48 : pageWidth / 2;
+  const nameAlign = data.vendorBranding?.logoUrl ? 'left' : 'center';
+  
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  const titleY = data.vendorBranding?.logoUrl ? 20 : 15;
-  if (data.vendorBranding?.businessName) {
-    doc.text(data.vendorBranding.businessName.toUpperCase(), pageWidth / 2, titleY, { align: 'center' });
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Manufacturing Estimate', pageWidth / 2, titleY + 6, { align: 'center' });
-  } else {
-    doc.text('JEWELRY MANUFACTURING ESTIMATE', pageWidth / 2, titleY, { align: 'center' });
-  }
   
-  // Tagline
-  if (data.vendorBranding?.tagline) {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'italic');
-    doc.text(data.vendorBranding.tagline, pageWidth / 2, 30, { align: 'center' });
+  if (data.vendorBranding?.businessName) {
+    doc.text(data.vendorBranding.businessName.toUpperCase(), nameStartX, 20, { align: nameAlign });
+    
+    if (data.vendorBranding?.tagline) {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(240, 245, 250);
+      doc.text(data.vendorBranding.tagline, nameStartX, 26, { align: nameAlign });
+    }
+    
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('MANUFACTURING ESTIMATE', nameStartX, 34, { align: nameAlign });
+  } else {
+    doc.setFontSize(22);
+    doc.text('MANUFACTURING ESTIMATE', pageWidth / 2, 26, { align: 'center' });
   }
   
   // Reset text color
   doc.setTextColor(0, 0, 0);
   
-  // Vendor contact info
-  let headerY = 45;
+  // Vendor contact info card (right side)
+  let headerY = 53;
   if (data.vendorBranding?.email || data.vendorBranding?.phone || data.vendorBranding?.address) {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(pageWidth - 75, headerY, 61, 28, 2, 2, 'F');
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(pageWidth - 75, headerY, 61, 28, 2, 2, 'S');
     
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(70, 70, 80);
+    
+    let contactY = headerY + 5;
     if (data.vendorBranding.phone) {
-      doc.text(`📞 ${data.vendorBranding.phone}`, pageWidth - 14, headerY, { align: 'right' });
-      headerY += 4;
+      doc.text(`Tel: ${data.vendorBranding.phone}`, pageWidth - 71, contactY);
+      contactY += 4.5;
     }
     if (data.vendorBranding.email) {
-      doc.text(`✉ ${data.vendorBranding.email}`, pageWidth - 14, headerY, { align: 'right' });
-      headerY += 4;
+      doc.text(`Email: ${data.vendorBranding.email}`, pageWidth - 71, contactY);
+      contactY += 4.5;
     }
-    if (data.vendorBranding.address) {
-      const splitAddress = doc.splitTextToSize(data.vendorBranding.address, 70);
-      doc.text(splitAddress, pageWidth - 14, headerY, { align: 'right' });
+    if (data.vendorBranding.address && contactY < headerY + 24) {
+      const splitAddress = doc.splitTextToSize(data.vendorBranding.address, 56);
+      doc.text(splitAddress.slice(0, 2), pageWidth - 71, contactY);
     }
   }
   
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(40, 40, 50);
   
-  // Estimate Details
-  doc.setFontSize(10);
+  // Estimate info card (left side)
+  let estimateInfoY = 53;
+  doc.setFillColor(255, 253, 245);
+  doc.roundedRect(14, estimateInfoY, 85, 28, 2, 2, 'F');
+  doc.setFillColor(secondaryRgb.r, secondaryRgb.g, secondaryRgb.b);
+  doc.rect(14, estimateInfoY, 2, 28, 'F');
+  doc.setDrawColor(secondaryRgb.r, secondaryRgb.g, secondaryRgb.b);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(14, estimateInfoY, 85, 28, 2, 2, 'S');
+  
+  let infoY = estimateInfoY + 6;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('ESTIMATE NUMBER', 20, infoY);
+  doc.setFontSize(11);
+  doc.setTextColor(40, 40, 50);
+  doc.text(data.estimateName, 20, infoY + 5);
+  
+  infoY += 11;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(90, 90, 100);
+  doc.text('Date:', 20, infoY);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Estimate No: ${data.estimateName}`, 14, 58);
-  doc.text(`Date: ${new Date(data.estimateDate).toLocaleDateString()}`, 14, 63);
-  doc.text(`Status: ${data.status.replace('_', ' ').toUpperCase()}`, 14, 68);
+  doc.text(new Date(data.estimateDate).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }), 33, infoY);
   
   if (data.estimatedCompletionDate) {
-    doc.text(`Est. Completion: ${new Date(data.estimatedCompletionDate).toLocaleDateString()}`, 14, 73);
+    infoY += 4.5;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Est. Completion:', 20, infoY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(new Date(data.estimatedCompletionDate).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }), 47, infoY);
   }
   
-  // Customer Details Section
+  // Customer details with enhanced design
+  let customerSectionY = 89;
   if (data.customerName) {
-    doc.setFillColor(240, 240, 245);
-    doc.rect(14, 83, pageWidth - 28, 35, 'F');
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-    doc.text('CUSTOMER INFORMATION', 18, 91);
-    doc.setTextColor(0, 0, 0);
+    doc.setFillColor(250, 252, 255);
+    doc.roundedRect(14, customerSectionY, pageWidth - 28, 38, 2, 2, 'F');
+    doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.roundedRect(14, customerSectionY, pageWidth - 28, 3, 2, 2, 'F');
+    doc.setDrawColor(220, 225, 235);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(14, customerSectionY, pageWidth - 28, 38, 2, 2, 'S');
     
     doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text('CUSTOMER INFORMATION', 20, customerSectionY + 9);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(40, 40, 50);
+    let yPos = customerSectionY + 16;
+    doc.text(data.customerName, 20, yPos);
+    
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    let yPos = 99;
-    doc.text(`Name: ${data.customerName}`, 18, yPos);
+    doc.setTextColor(70, 70, 80);
+    
     if (data.customerPhone) {
-      yPos += 5;
-      doc.text(`Phone: ${data.customerPhone}`, 18, yPos);
+      yPos += 5.5;
+      doc.text(`Tel: ${data.customerPhone}`, 20, yPos);
     }
     if (data.customerEmail) {
       yPos += 5;
-      doc.text(`Email: ${data.customerEmail}`, 18, yPos);
+      doc.text(`Email: ${data.customerEmail}`, 20, yPos);
     }
     if (data.customerAddress) {
       yPos += 5;
-      const splitAddress = doc.splitTextToSize(`Address: ${data.customerAddress}`, pageWidth - 40);
-      doc.text(splitAddress, 18, yPos);
+      const splitAddress = doc.splitTextToSize(data.customerAddress, pageWidth - 45);
+      doc.text(splitAddress, 20, yPos);
     }
   }
   
@@ -233,53 +291,71 @@ export const generateEstimatePDF = (data: EstimateData) => {
   doc.setTextColor(0, 0, 0);
   
   const tableData = [
-    ['Gold Cost', `₹${data.goldCost.toFixed(2)}`],
-    ['Making Charges', `₹${data.makingCharges.toFixed(2)}`],
-    ['CAD Design Charges', `₹${data.cadDesignCharges.toFixed(2)}`],
-    ['Camming Charges', `₹${data.cammingCharges.toFixed(2)}`],
-    ['Certification Cost', `₹${data.certificationCost.toFixed(2)}`],
-    ['Diamond Cost', `₹${data.diamondCost.toFixed(2)}`],
-    ['Gemstone Cost', `₹${data.gemstoneCost.toFixed(2)}`],
+    ['Gold Cost', `Rs. ${data.goldCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ['Making Charges', `Rs. ${data.makingCharges.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ['CAD Design Charges', `Rs. ${data.cadDesignCharges.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ['Camming Charges', `Rs. ${data.cammingCharges.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ['Certification Cost', `Rs. ${data.certificationCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ['Diamond Cost', `Rs. ${data.diamondCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ['Gemstone Cost', `Rs. ${data.gemstoneCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
   ];
   
   (doc as any).autoTable({
     startY: costStartY + 5,
-    head: [['Cost Component', 'Amount']],
+    head: [['Cost Component', 'Amount (INR)']],
     body: tableData,
-    theme: 'striped',
+    theme: 'grid',
     headStyles: { 
       fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b],
-      fontSize: 11,
+      fontSize: 10,
       fontStyle: 'bold',
+      textColor: [255, 255, 255],
+      halign: 'left',
     },
-    alternateRowStyles: { fillColor: [248, 248, 255] },
+    bodyStyles: {
+      fontSize: 9,
+      textColor: [50, 50, 50],
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 'auto' },
+      1: { halign: 'right', fontStyle: 'bold' },
+    },
+    alternateRowStyles: { fillColor: [250, 252, 255] },
     margin: { left: 14, right: 14 },
   });
   
-  // Summary Section
-  const finalY = (doc as any).lastAutoTable.finalY + 10;
+  // Summary section with enhanced design
+  const finalY = (doc as any).lastAutoTable.finalY + 12;
   
-  doc.setFillColor(245, 245, 250);
-  doc.rect(14, finalY, pageWidth - 28, 30, 'F');
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Total Manufacturing Cost:`, 18, finalY + 8);
-  doc.text(`₹${data.totalCost.toFixed(2)}`, pageWidth - 18, finalY + 8, { align: 'right' });
-  
-  doc.text(`Profit Margin (${data.profitMargin}%):`, 18, finalY + 15);
-  doc.text(`₹${((data.finalSellingPrice - data.totalCost)).toFixed(2)}`, pageWidth - 18, finalY + 15, { align: 'right' });
-  
-  // Draw line
-  doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.setFillColor(250, 252, 255);
+  doc.roundedRect(14, finalY, pageWidth - 28, 32, 2, 2, 'F');
+  doc.setDrawColor(220, 225, 235);
   doc.setLineWidth(0.5);
-  doc.line(18, finalY + 18, pageWidth - 18, finalY + 18);
+  doc.roundedRect(14, finalY, pageWidth - 28, 32, 2, 2, 'S');
   
-  doc.setFontSize(14);
-  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text(`Estimated Price:`, 18, finalY + 25);
-  doc.text(`₹${data.finalSellingPrice.toFixed(2)}`, pageWidth - 18, finalY + 25, { align: 'right' });
-  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(70, 70, 80);
+  doc.text('Total Manufacturing Cost:', 20, finalY + 8);
+  doc.text(`Rs. ${data.totalCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, pageWidth - 20, finalY + 8, { align: 'right' });
+  
+  doc.text(`Profit Margin (${data.profitMargin}%):`, 20, finalY + 15);
+  doc.text(`Rs. ${((data.finalSellingPrice - data.totalCost)).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, pageWidth - 20, finalY + 15, { align: 'right' });
+  
+  // Separator line
+  doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.setLineWidth(1);
+  doc.line(20, finalY + 19, pageWidth - 20, finalY + 19);
+  
+  // Grand total
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(14, finalY + 21, pageWidth - 28, 11, 'F');
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('ESTIMATED SELLING PRICE:', 20, finalY + 28);
+  doc.text(`Rs. ${data.finalSellingPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, pageWidth - 20, finalY + 28, { align: 'right' });
+  doc.setTextColor(40, 40, 50);
   
   // Notes Section
   if (data.notes) {
@@ -296,24 +372,34 @@ export const generateEstimatePDF = (data: EstimateData) => {
     doc.text(splitNotes, 14, notesY + 6);
   }
   
-  // Terms & Conditions
-  const termsY = doc.internal.pageSize.getHeight() - 35;
+  // Terms & Conditions with better formatting
+  const termsY = doc.internal.pageSize.getHeight() - 32;
+  doc.setFillColor(248, 250, 252);
+  doc.rect(14, termsY - 4, pageWidth - 28, 24, 'F');
+  
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('Terms & Conditions:', 14, termsY);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('TERMS & CONDITIONS', 18, termsY);
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('• This is an estimate only. Final pricing may vary based on actual materials and labor.', 14, termsY + 5);
-  doc.text('• Prices are valid for 30 days from the estimate date.', 14, termsY + 9);
-  doc.text('• Completion time may vary depending on design complexity and material availability.', 14, termsY + 13);
+  doc.setFontSize(7.5);
+  doc.setTextColor(70, 70, 80);
+  doc.text('- This estimate is valid for 30 days from the date of issue.', 18, termsY + 5);
+  doc.text('- Final pricing may vary based on actual materials and labor costs.', 18, termsY + 9);
+  doc.text('- Completion time depends on design complexity and material availability.', 18, termsY + 13);
+  doc.text('- 50% advance payment required to commence production.', 18, termsY + 17);
   
-  // Footer
-  const footerY = doc.internal.pageSize.getHeight() - 10;
-  doc.setFontSize(8);
-  doc.setTextColor(128, 128, 128);
+  // Footer with enhanced design
+  const footerY = doc.internal.pageSize.getHeight() - 7;
+  doc.setDrawColor(220, 225, 230);
+  doc.setLineWidth(0.5);
+  doc.line(14, footerY - 2, pageWidth - 14, footerY - 2);
+  
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 120, 130);
   doc.text(
-    `Estimate generated on ${new Date().toLocaleString()}`,
+    `Generated on ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
     pageWidth / 2,
     footerY,
     { align: 'center' }
