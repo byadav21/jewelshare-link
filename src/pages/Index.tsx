@@ -314,7 +314,7 @@ const Index = () => {
               <div className="mb-8 inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary/5 px-6 py-3 text-sm backdrop-blur-sm animate-fade-in">
                 <Sparkles className="h-5 w-5 text-primary animate-pulse" />
                 <span className="font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Professional Jewelry Catalog Management
+                  Cataleon - Professional Jewelry Management
                 </span>
               </div>
               <h1 className="mb-8 text-6xl font-bold tracking-tight sm:text-7xl lg:text-8xl animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -797,7 +797,7 @@ const Index = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
                   <Gem className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xl font-bold">Jewelry Catalog</span>
+                <span className="text-xl font-bold">Cataleon</span>
               </div>
               <p className="mb-4 text-sm text-muted-foreground">
                 Professional jewelry inventory management with shareable catalogs and custom pricing for modern vendors.
@@ -998,7 +998,7 @@ const Index = () => {
           <ScrollReveal delay={0.2}>
             <div className="mt-12 border-t pt-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <p className="text-sm text-muted-foreground">© 2024 Jewelry Catalog. All rights reserved.</p>
+              <p className="text-sm text-muted-foreground">© 2024 Cataleon. All rights reserved.</p>
               <div className="flex gap-6 text-sm text-muted-foreground">
                 <a href="#" className="transition-colors hover:text-foreground">
                   Privacy Policy

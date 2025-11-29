@@ -24,7 +24,7 @@ export const Header = () => {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
             <Gem className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-bold hidden sm:inline-block">Jewelry Catalog</span>
+          <span className="text-lg font-bold hidden sm:inline-block">Cataleon</span>
         </Link>
 
         {/* Desktop Navigation */}

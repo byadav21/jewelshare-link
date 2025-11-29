@@ -18,9 +18,9 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "Jewelry Management Platform",
-        short_name: "Jewelry App",
-        description: "Comprehensive jewelry inventory and vendor management",
+        name: "Cataleon - Jewelry Management",
+        short_name: "Cataleon",
+        description: "Professional jewelry catalog and vendor management platform",
         theme_color: "#F5D547",
         background_color: "#1A1F2E",
         display: "standalone",
