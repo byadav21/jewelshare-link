@@ -10,6 +10,11 @@ import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, 
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EstimateWorkflowSteps } from "@/components/estimate/EstimateWorkflowSteps";
+import { EstimateFlowGuide } from "@/components/estimate/EstimateFlowGuide";
+import { useEstimateWorkflow } from "@/hooks/useEstimateWorkflow";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 import { InvoiceLineItems, type LineItem } from "@/components/InvoiceLineItems";
 import { generateInvoicePDF, type InvoiceData } from "@/utils/invoiceGenerator";
 import { generateEstimatePDF } from "@/utils/estimateGenerator";
@@ -25,6 +30,8 @@ const ManufacturingCost = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const { currentStep, steps } = useEstimateWorkflow();
+  const [showFlowGuide, setShowFlowGuide] = useState(true);
   const [estimates, setEstimates] = useState<any[]>([]);
   const [currentEstimateId, setCurrentEstimateId] = useState<string | null>(null);
   const [estimateName, setEstimateName] = useState("");
@@ -1023,10 +1030,10 @@ const ManufacturingCost = () => {
             <Calculator className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient">
-            Estimate Generator
+            Manufacturing Cost Estimator
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Create detailed manufacturing cost estimates for jewelry quotes and pricing
+            Professional jewelry cost estimation and invoice generation workflow
           </p>
           
           {/* Guest Usage Counter */}
@@ -1040,6 +1047,40 @@ const ManufacturingCost = () => {
               </p>
             </div>}
         </div>
+
+        {/* Workflow Steps Indicator */}
+        <Card className="border-primary/20">
+          <CardContent className="p-6">
+            <EstimateWorkflowSteps currentStep={currentStep} steps={steps} />
+          </CardContent>
+        </Card>
+
+        {/* Flow Guide (Collapsible) */}
+        <Collapsible open={showFlowGuide} onOpenChange={setShowFlowGuide}>
+          <Card className="border-primary/20">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="text-left">
+                    <CardTitle className="flex items-center gap-2">
+                      <Info className="h-5 w-5 text-primary" />
+                      Understanding the Workflow
+                    </CardTitle>
+                    <CardDescription>
+                      Learn the difference between estimates and invoices
+                    </CardDescription>
+                  </div>
+                  <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${showFlowGuide ? 'rotate-180' : ''}`} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                <EstimateFlowGuide />
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* Action Buttons */}
         <Card className="border-primary/20 shadow-lg">
