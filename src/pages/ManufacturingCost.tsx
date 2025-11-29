@@ -12,6 +12,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EstimateWorkflowSteps } from "@/components/estimate/EstimateWorkflowSteps";
 import { EstimateFlowGuide } from "@/components/estimate/EstimateFlowGuide";
+import { BasicInfoSection } from "@/components/estimate/BasicInfoSection";
+import { JewelrySpecsSection } from "@/components/estimate/JewelrySpecsSection";
+import { CostingSection } from "@/components/estimate/CostingSection";
+import { PricingSection } from "@/components/estimate/PricingSection";
+import { ReviewSection } from "@/components/estimate/ReviewSection";
+import { ReferenceImagesSection } from "@/components/estimate/ReferenceImagesSection";
 import { useEstimateWorkflow } from "@/hooks/useEstimateWorkflow";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
@@ -1083,36 +1089,15 @@ const ManufacturingCost = () => {
         </Collapsible>
 
         {/* Action Buttons */}
-        <Card className="border-primary/20 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button onClick={() => setShowSaveDialog(true)} size="lg" variant="outline" className="gap-2">
-                <Save className="h-5 w-5" />
-                Save Estimate
-              </Button>
-
-              <Button onClick={() => setShowLoadDialog(true)} size="lg" variant="outline" className="gap-2">
-                <FolderOpen className="h-5 w-5" />
-                Load Estimate
-              </Button>
-
-              <Button onClick={handleExportPDF} size="lg" className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
-                <FileText className="h-5 w-5" />
-                Export Estimate PDF
-              </Button>
-
-              <Button onClick={() => navigate("/estimate-history")} size="lg" variant="secondary" className="gap-2">
-                <FolderOpen className="h-5 w-5" />
-                View Estimate History
-              </Button>
-
-              <Button onClick={() => navigate("/invoice-generator")} size="lg" variant="secondary" className="gap-2">
-                <FileText className="h-5 w-5" />
-                Create Invoice
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <ReviewSection
+          onSave={() => setShowSaveDialog(true)}
+          onLoad={() => setShowLoadDialog(true)}
+          onExportPDF={handleExportPDF}
+          onReset={handleReset}
+          onViewHistory={() => navigate("/estimate-history")}
+          onCreateInvoice={() => navigate("/invoice-generator")}
+          isAuthenticated={!!user}
+        />
         
 
         {/* Save Dialog */}
@@ -1220,674 +1205,62 @@ const ManufacturingCost = () => {
         </Dialog>
 
         {/* Vendor and Customer Details Section */}
-        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Vertical Separator - only visible on md+ screens */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-border to-transparent transform -translate-x-1/2" />
-          
-          {/* Vendor Details (Auto-fetched) */}
-          <Card className="border-primary/20 shadow-sm relative z-10">
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                Vendor Details
-              </CardTitle>
-              <CardDescription>Your business information</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 bg-primary/5">
-              {vendorProfile ? <div className="space-y-4">
-                  {vendorProfile.logo_url && <div className="flex justify-center mb-4">
-                      <img src={vendorProfile.logo_url} alt="Vendor Logo" className="h-20 w-auto object-contain" />
-                    </div>}
-                  <div className="space-y-3 text-sm">
-                    <div className="border-b border-border pb-2">
-                      <p className="font-semibold text-foreground">{vendorProfile.business_name || 'Business Name'}</p>
-                    </div>
-                    {(vendorProfile.address_line1 || vendorProfile.city || vendorProfile.state) && <div>
-                        <p className="text-xs text-muted-foreground mb-1">Address</p>
-                        <p className="text-foreground leading-relaxed">
-                          {[vendorProfile.address_line1, vendorProfile.address_line2, vendorProfile.city, vendorProfile.state, vendorProfile.pincode, vendorProfile.country].filter(Boolean).join(', ')}
-                        </p>
-                      </div>}
-                    {vendorProfile.phone && <div>
-                        <p className="text-xs text-muted-foreground mb-1">Phone</p>
-                        <p className="text-foreground">{vendorProfile.phone}</p>
-                      </div>}
-                  {vendorProfile.email && <div>
-                        <p className="text-xs text-muted-foreground mb-1">Email</p>
-                        <p className="text-foreground">{vendorProfile.email}</p>
-                      </div>}
-                    <div>
-                      <Label htmlFor="vendor-gstin" className="text-xs text-muted-foreground mb-1">GSTIN (Optional)</Label>
-                      <Input id="vendor-gstin" value={vendorGSTIN} onChange={e => setVendorGSTIN(e.target.value)} placeholder="Enter GSTIN" className="mt-1.5" />
-                    </div>
-                  </div>
-                </div> : <p className="text-sm text-muted-foreground py-4">Loading vendor details...</p>}
-            </CardContent>
-          </Card>
+        <BasicInfoSection
+          vendorProfile={vendorProfile}
+          vendorGSTIN={vendorGSTIN}
+          onVendorGSTINChange={setVendorGSTIN}
+          customerDetails={customerDetails}
+          onCustomerDetailsChange={setCustomerDetails}
+        />
 
-          {/* Customer Details (Input fields) */}
-          <Card className="border-accent/20 shadow-sm relative z-10">
-            <CardHeader className="bg-gradient-to-r from-accent/10 to-accent/5 border-b border-accent/10">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <User className="h-5 w-5 text-accent" />
-                Customer Details
-              </CardTitle>
-              <CardDescription>Enter customer information</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 bg-accent/5">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="customer-name" className="text-sm font-medium">Customer Name *</Label>
-                  <Input id="customer-name" value={customerDetails.name} onChange={e => setCustomerDetails({
-                  ...customerDetails,
-                  name: e.target.value
-                })} placeholder="Enter customer name" className="mt-1.5" />
-                </div>
-                <div>
-                  <Label htmlFor="customer-phone" className="text-sm font-medium">Phone Number</Label>
-                  <Input id="customer-phone" value={customerDetails.phone} onChange={e => setCustomerDetails({
-                  ...customerDetails,
-                  phone: e.target.value
-                })} placeholder="Enter phone number" className="mt-1.5" />
-                </div>
-                <div>
-                  <Label htmlFor="customer-email" className="text-sm font-medium">Email Address</Label>
-                  <Input id="customer-email" type="email" value={customerDetails.email} onChange={e => setCustomerDetails({
-                  ...customerDetails,
-                  email: e.target.value
-                })} placeholder="Enter email address" className="mt-1.5" />
-                </div>
-                <div>
-                  <Label htmlFor="customer-address" className="text-sm font-medium">Address</Label>
-                  <Textarea id="customer-address" value={customerDetails.address} onChange={e => setCustomerDetails({
-                  ...customerDetails,
-                  address: e.target.value
-                })} placeholder="Enter customer address" className="mt-1.5 min-h-[90px]" rows={3} />
-                </div>
-                <div>
-                  <Label htmlFor="customer-gstin" className="text-sm font-medium">GSTIN (Optional)</Label>
-                  <Input id="customer-gstin" value={customerDetails.gstin} onChange={e => setCustomerDetails({
-                  ...customerDetails,
-                  gstin: e.target.value
-                })} placeholder="Enter customer GSTIN" className="mt-1.5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Form Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Weight and Purity Inputs */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-primary" />
-                Weight & Purity
-              </CardTitle>
-              <CardDescription>Enter jewelry weight specifications</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Weight Entry Mode Toggle */}
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/50">
-                <div className="space-y-1">
-                  <Label className="text-sm font-semibold">Weight Entry Mode</Label>
-                  <p className="text-xs text-muted-foreground">Choose how you want to enter weight values</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={weightEntryMode === "gross" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setWeightEntryMode("gross")}
-                  >
-                    Gross Weight
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={weightEntryMode === "net" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setWeightEntryMode("net")}
-                  >
-                    Net Weight
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {weightEntryMode === "gross" ? (
-                  <>
-                    <div className="space-y-1">
-                      <Label htmlFor="gross-weight" className="text-sm">Gross Weight (grams)</Label>
-                      <Input
-                        id="gross-weight"
-                        type="number"
-                        min={0}
-                        step={0.001}
-                        value={formData.grossWeight}
-                        onChange={e => handleChange("grossWeight", e.target.value)}
-                        placeholder="0.000"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="net-weight-auto" className="text-sm">Net Weight (grams)</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Input
-                              id="net-weight-auto"
-                              type="number"
-                              value={formData.netWeight}
-                              disabled
-                              className="bg-muted/50 cursor-not-allowed"
-                              placeholder="Auto-calculated"
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">Auto-calculated: Gross - (Diamond + Gemstone weights)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-1 md:col-span-2">
-                    <Label htmlFor="net-weight-manual" className="text-sm">Net Weight (grams)</Label>
-                    <Input
-                      id="net-weight-manual"
-                      type="number"
-                      min={0}
-                      step={0.001}
-                      value={formData.netWeight}
-                      onChange={e => handleChange("netWeight", e.target.value)}
-                      placeholder="0.000"
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-1">
-                  <Label htmlFor="purity-fraction" className="text-sm">Purity Fraction</Label>
-                  <Input
-                    id="purity-fraction"
-                    type="number"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={formData.purityFraction}
-                    onChange={e => handleChange("purityFraction", e.target.value)}
-                    placeholder="0.76"
-                  />
-                  <p className="text-xs text-muted-foreground">e.g., 0.76 for 18K gold</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Gold Rate and Charges */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Coins className="h-5 w-5 text-primary" />
-                Gold Rate & Charges
-              </CardTitle>
-              <CardDescription>Enter rates and additional charges</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="gold-rate-24k" className="text-sm">Gold Rate 24K (per gram)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="gold-rate-24k" type="number" min={0} step={0.01} value={formData.goldRate24k} onChange={e => handleChange("goldRate24k", e.target.value)} className="pl-9" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="making-charges" className="text-sm">Making Charges (Rs.)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="making-charges" type="number" min={0} step={0.01} value={formData.makingCharges} onChange={e => handleChange("makingCharges", e.target.value)} className="pl-9" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="cad-charges" className="text-sm">CAD Design Charges</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="cad-charges" type="number" min={0} step={0.01} value={formData.cadDesignCharges} onChange={e => handleChange("cadDesignCharges", e.target.value)} className="pl-9" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="camming-charges" className="text-sm">Camming Charges</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="camming-charges" type="number" min={0} step={0.01} value={formData.cammingCharges} onChange={e => handleChange("cammingCharges", e.target.value)} className="pl-9" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="certification-cost" className="text-sm">Certification Charges</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="certification-cost" type="number" min={0} step={0.01} value={formData.certificationCost} onChange={e => handleChange("certificationCost", e.target.value)} className="pl-9" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Jewelry Specifications Section */}
+        <JewelrySpecsSection
+          formData={formData}
+          onFormDataChange={(field, value) => {
+            if (typeof value === 'string') {
+              setFormData(prev => ({ ...prev, [field]: value }));
+            } else {
+              setFormData(prev => ({ ...prev, [field]: value }));
+            }
+          }}
+          weightEntryMode={weightEntryMode}
+          onWeightEntryModeChange={setWeightEntryMode}
+        />
 
         {/* Tax, Shipping & Currency Section */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Percent className="h-5 w-5 text-primary" />
-              Tax, Shipping & Currency
-            </CardTitle>
-            <CardDescription>Configure GST, shipping charges, and currency conversion</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* GST Mode Selection */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">GST Type</Label>
-              <div className="flex gap-4">
-                <div className="flex items-center space-x-2">
-                  <input type="radio" id="sgst-cgst-mode" checked={gstMode === 'sgst_cgst'} onChange={() => setGstMode('sgst_cgst')} className="h-4 w-4" />
-                  <Label htmlFor="sgst-cgst-mode" className="text-sm cursor-pointer">
-                    SGST + CGST (Intra-State)
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input type="radio" id="igst-mode" checked={gstMode === 'igst'} onChange={() => setGstMode('igst')} className="h-4 w-4" />
-                  <Label htmlFor="igst-mode" className="text-sm cursor-pointer">
-                    IGST (Inter-State)
-                  </Label>
-                </div>
-              </div>
-            </div>
-
-            {/* GST Rate Presets */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">Quick GST Rate Selection</Label>
-              <div className="flex flex-wrap gap-2">
-                {[0, 3, 5, 12, 18, 28].map(rate => <Button key={rate} type="button" variant={gstMode === 'sgst_cgst' && sgstPercentage === rate / 2 || gstMode === 'igst' && igstPercentage === rate ? 'default' : 'outline'} size="sm" onClick={() => {
-                if (gstMode === 'sgst_cgst') {
-                  setSgstPercentage(rate / 2);
-                  setCgstPercentage(rate / 2);
-                } else {
-                  setIgstPercentage(rate);
-                }
-              }}>
-                    {rate}%
-                  </Button>)}
-              </div>
-            </div>
-
-            {/* GST Input Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {gstMode === 'sgst_cgst' ? <>
-                  <div className="space-y-1">
-                    <Label htmlFor="sgst" className="text-sm">SGST (%)</Label>
-                    <Input id="sgst" type="number" min={0} max={100} step={0.1} value={sgstPercentage} onChange={e => setSgstPercentage(parseFloat(e.target.value) || 0)} />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label htmlFor="cgst" className="text-sm">CGST (%)</Label>
-                    <Input id="cgst" type="number" min={0} max={100} step={0.1} value={cgstPercentage} onChange={e => setCgstPercentage(parseFloat(e.target.value) || 0)} />
-                  </div>
-                </> : <div className="space-y-1 md:col-span-2">
-                  <Label htmlFor="igst" className="text-sm">IGST (%)</Label>
-                  <Input id="igst" type="number" min={0} max={100} step={0.1} value={igstPercentage} onChange={e => setIgstPercentage(parseFloat(e.target.value) || 0)} />
-                </div>}
-
-              <div className="space-y-1">
-                <Label htmlFor="exchange-rate" className="text-sm">Exchange Rate (USD to INR)</Label>
-                <Input id="exchange-rate" type="number" min={0} step={0.01} value={exchangeRate} onChange={e => setExchangeRate(parseFloat(e.target.value) || 0)} />
-              </div>
-            </div>
-
-            {/* Shipping Zone Selection */}
-            
-
-            {/* Manual Shipping Charges Override */}
-            <div className="space-y-1">
-              <Label htmlFor="shipping" className="text-sm">Shipping Charges (₹) - Manual Override</Label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="shipping" type="number" min={0} step={0.01} value={shippingCharges} onChange={e => setShippingCharges(parseFloat(e.target.value) || 0)} className="pl-9" />
-              </div>
-            </div>
-
-            {/* Cost Breakdown Display */}
-            <div className="border-t pt-4 space-y-3">
-              <h4 className="font-semibold text-sm text-muted-foreground">Cost Breakdown</h4>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                  <span className="text-muted-foreground">Subtotal (Before Tax):</span>
-                  <span className="font-semibold">₹{costs.finalSellingPrice.toLocaleString('en-IN')}</span>
-                </div>
-                
-                {gstMode === 'sgst_cgst' ? <>
-                    <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                      <span className="text-muted-foreground">SGST ({sgstPercentage}%):</span>
-                      <span className="font-semibold">₹{costs.sgstAmount.toLocaleString('en-IN')}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                      <span className="text-muted-foreground">CGST ({cgstPercentage}%):</span>
-                      <span className="font-semibold">₹{costs.cgstAmount.toLocaleString('en-IN')}</span>
-                    </div>
-                  </> : <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                    <span className="text-muted-foreground">IGST ({igstPercentage}%):</span>
-                    <span className="font-semibold">₹{costs.igstAmount.toLocaleString('en-IN')}</span>
-                  </div>}
-                
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                  <span className="text-muted-foreground">Shipping ({shippingZone}):</span>
-                  <span className="font-semibold">₹{shippingCharges.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-
-              <div className="border-t pt-3 mt-3">
-                <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
-                  <span className="font-bold text-lg">Grand Total (INR):</span>
-                  <span className="font-bold text-xl text-primary">₹{costs.grandTotal.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-accent/10 rounded-lg mt-2">
-                  <span className="font-semibold">Equivalent (USD):</span>
-                  <span className="font-semibold text-lg text-accent">${costs.totalInUSD.toLocaleString('en-US')}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Diamond Details */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Diamond className="h-5 w-5 text-primary" />
-              Diamond Specifications
-            </CardTitle>
-            <CardDescription>Enter diamond details and pricing</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="diamond-type" className="text-sm">Diamond Type</Label>
-                <Select value={formData.diamondType} onValueChange={(value) => setFormData(prev => ({ ...prev, diamondType: value }))}>
-                  <SelectTrigger id="diamond-type">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="natural">Natural Diamond</SelectItem>
-                    <SelectItem value="lab-grown">Lab Grown Diamond</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="diamond-weight" className="text-sm">Diamond Carat Weight</Label>
-                <Input id="diamond-weight" type="number" min={0} step={0.01} value={formData.diamondWeight} onChange={e => handleChange("diamondWeight", e.target.value)} placeholder="0.00" />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="diamond-per-carat" className="text-sm">Diamond Per Carat Price (Rs.)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="diamond-per-carat" type="number" min={0} step={0.01} value={formData.diamondPerCaratPrice} onChange={e => handleChange("diamondPerCaratPrice", e.target.value)} className="pl-9" placeholder="0.00" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="diamond-shape" className="text-sm">Diamond Shape</Label>
-                <Select value={formData.diamondShape} onValueChange={(value) => setFormData(prev => ({ ...prev, diamondShape: value }))}>
-                  <SelectTrigger id="diamond-shape">
-                    <SelectValue placeholder="Select shape" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="round">Round</SelectItem>
-                    <SelectItem value="princess">Princess</SelectItem>
-                    <SelectItem value="cushion">Cushion</SelectItem>
-                    <SelectItem value="emerald">Emerald</SelectItem>
-                    <SelectItem value="oval">Oval</SelectItem>
-                    <SelectItem value="pear">Pear</SelectItem>
-                    <SelectItem value="marquise">Marquise</SelectItem>
-                    <SelectItem value="heart">Heart</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="diamond-color" className="text-sm">Diamond Color</Label>
-                <Select value={formData.diamondColor} onValueChange={(value) => setFormData(prev => ({ ...prev, diamondColor: value }))}>
-                  <SelectTrigger id="diamond-color">
-                    <SelectValue placeholder="Select color" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="D">D (Colorless)</SelectItem>
-                    <SelectItem value="E">E (Colorless)</SelectItem>
-                    <SelectItem value="F">F (Colorless)</SelectItem>
-                    <SelectItem value="G">G (Near Colorless)</SelectItem>
-                    <SelectItem value="H">H (Near Colorless)</SelectItem>
-                    <SelectItem value="I">I (Near Colorless)</SelectItem>
-                    <SelectItem value="J">J (Near Colorless)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="diamond-clarity" className="text-sm">Diamond Clarity</Label>
-                <Select value={formData.diamondClarity} onValueChange={(value) => setFormData(prev => ({ ...prev, diamondClarity: value }))}>
-                  <SelectTrigger id="diamond-clarity">
-                    <SelectValue placeholder="Select clarity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="FL">FL (Flawless)</SelectItem>
-                    <SelectItem value="IF">IF (Internally Flawless)</SelectItem>
-                    <SelectItem value="VVS1">VVS1 (Very Very Slightly Included)</SelectItem>
-                    <SelectItem value="VVS2">VVS2 (Very Very Slightly Included)</SelectItem>
-                    <SelectItem value="VS1">VS1 (Very Slightly Included)</SelectItem>
-                    <SelectItem value="VS2">VS2 (Very Slightly Included)</SelectItem>
-                    <SelectItem value="SI1">SI1 (Slightly Included)</SelectItem>
-                    <SelectItem value="SI2">SI2 (Slightly Included)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-muted-foreground">Total Diamond Cost:</span>
-                <span className="text-lg font-bold text-primary">₹{(formData.diamondPerCaratPrice * formData.diamondWeight).toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Gemstone Details */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gem className="h-5 w-5 text-accent" />
-              Gemstone Specifications
-            </CardTitle>
-            <CardDescription>Enter gemstone details and pricing</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="gemstone-weight" className="text-sm">Gemstone Carat Weight</Label>
-                <Input id="gemstone-weight" type="number" min={0} step={0.01} value={formData.gemstoneWeight} onChange={e => handleChange("gemstoneWeight", e.target.value)} placeholder="0.00" />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="gemstone-per-carat" className="text-sm">Gemstone Per Carat Price (Rs.)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="gemstone-per-carat" type="number" min={0} step={0.01} value={formData.gemstonePerCaratPrice} onChange={e => handleChange("gemstonePerCaratPrice", e.target.value)} className="pl-9" placeholder="0.00" />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-muted-foreground">Total Gemstone Cost:</span>
-                <span className="text-lg font-bold text-accent">₹{(formData.gemstonePerCaratPrice * formData.gemstoneWeight).toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <CostingSection
+          gstMode={gstMode}
+          onGstModeChange={setGstMode}
+          sgstPercentage={sgstPercentage}
+          cgstPercentage={cgstPercentage}
+          igstPercentage={igstPercentage}
+          onSgstChange={setSgstPercentage}
+          onCgstChange={setCgstPercentage}
+          onIgstChange={setIgstPercentage}
+          shippingCharges={shippingCharges}
+          onShippingChargesChange={setShippingCharges}
+          shippingZone={shippingZone}
+          onShippingZoneChange={setShippingZone}
+          exchangeRate={exchangeRate}
+          onExchangeRateChange={setExchangeRate}
+          costs={costs}
+        />
 
         {/* Profit Margin and Summary */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Profit Margin & Final Pricing
-            </CardTitle>
-            <CardDescription>Set profit margin and view final selling price</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="profit-margin" className="text-sm font-semibold">Profit Margin (%)</Label>
-                <span className="text-lg font-bold text-primary">{profitMargin}%</span>
-              </div>
-              <Input
-                id="profit-margin"
-                type="range"
-                min={0}
-                max={200}
-                step={1}
-                value={profitMargin}
-                onChange={e => setProfitMargin(parseFloat(e.target.value))}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>0%</span>
-                <span>100%</span>
-                <span>200%</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
-                <p className="text-sm text-muted-foreground">Manufacturing Cost</p>
-                <p className="text-2xl font-bold">₹{costs.totalCost.toLocaleString('en-IN')}</p>
-              </div>
-
-              <div className="p-4 bg-primary/10 rounded-lg space-y-2">
-                <p className="text-sm text-muted-foreground">Final Selling Price (Before Tax)</p>
-                <p className="text-2xl font-bold text-primary">₹{costs.finalSellingPrice.toLocaleString('en-IN')}</p>
-              </div>
-
-              <div className="p-4 bg-accent/10 rounded-lg space-y-2">
-                <p className="text-sm text-muted-foreground">Profit Amount</p>
-                <p className="text-2xl font-bold text-accent">₹{costs.profitAmount.toLocaleString('en-IN')}</p>
-              </div>
-
-              <div className="p-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg space-y-2">
-                <p className="text-sm text-muted-foreground">Grand Total (After Tax)</p>
-                <p className="text-2xl font-bold">₹{costs.grandTotal.toLocaleString('en-IN')}</p>
-              </div>
-            </div>
-
-            {/* Cost Breakdown Summary */}
-            <div className="border-t pt-4 space-y-2">
-              <h4 className="font-semibold text-sm">Cost Breakdown</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Gold Cost:</span>
-                  <span className="font-medium">₹{costs.goldCost.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Diamond Cost:</span>
-                  <span className="font-medium">₹{(formData.diamondPerCaratPrice * formData.diamondWeight).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Gemstone Cost:</span>
-                  <span className="font-medium">₹{(formData.gemstonePerCaratPrice * formData.gemstoneWeight).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Making Charges:</span>
-                  <span className="font-medium">₹{formData.makingCharges.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">CAD Design:</span>
-                  <span className="font-medium">₹{formData.cadDesignCharges.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Camming:</span>
-                  <span className="font-medium">₹{formData.cammingCharges.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Certification:</span>
-                  <span className="font-medium">₹{formData.certificationCost.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <PricingSection
+          profitMargin={profitMargin}
+          onProfitMarginChange={setProfitMargin}
+          costs={costs}
+          formData={formData}
+        />
 
         {/* Reference Images Upload */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5 text-primary" />
-              Reference Images
-            </CardTitle>
-            <CardDescription>Upload customer jewelry photos for estimation reference</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                multiple
-                className="hidden"
-              />
-              <Button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingImage}
-                variant="outline"
-                className="gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                {uploadingImage ? "Uploading..." : "Upload Images"}
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Max 5MB per image. Multiple images supported.
-              </p>
-            </div>
-
-            {referenceImages.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {referenceImages.map((url, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={url}
-                      alt={`Reference ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-border"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeImage(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ReferenceImagesSection
+          referenceImages={referenceImages}
+          uploadingImage={uploadingImage}
+          onImageUpload={handleImageUpload}
+          onRemoveImage={removeImage}
+        />
 
         {/* Invoice Line Items */}
         <Card>
