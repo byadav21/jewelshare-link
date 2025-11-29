@@ -12,20 +12,29 @@ import { Link, useNavigate } from "react-router-dom";
 import { Gem, Calculator, Wrench, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useVendorProfile } from "@/hooks/useVendorProfile";
 
 export const Header = () => {
   const navigate = useNavigate();
+  const { vendorName } = useVendorProfile();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
-            <Gem className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-lg font-bold hidden sm:inline-block">Cataleon</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
+              <Gem className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-lg font-bold hidden sm:inline-block">Cataleon</span>
+          </Link>
+          {vendorName && (
+            <span className="text-sm text-muted-foreground hidden md:inline-block">
+              Hello, <span className="font-semibold text-foreground">{vendorName}</span>
+            </span>
+          )}
+        </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-2">
