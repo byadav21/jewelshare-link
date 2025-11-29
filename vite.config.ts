@@ -14,7 +14,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    // PWA configuration
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
@@ -56,7 +55,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "supabase-cache",
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+                maxAgeSeconds: 60 * 60 * 24 * 7,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -70,7 +69,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "google-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -84,7 +83,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "image-cache",
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30,
               },
             },
           },
@@ -95,14 +94,13 @@ export default defineConfig(({ mode }) => ({
         type: "module",
       },
     }),
-    // Bundle analyzer - generates stats.html
     mode === "production" &&
       visualizer({
         filename: "./dist/stats.html",
         open: false,
         gzipSize: true,
         brotliSize: true,
-        template: "treemap", // or 'sunburst', 'network'
+        template: "treemap",
       }),
   ].filter(Boolean),
   resolve: {
@@ -114,7 +112,6 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks - Split large dependencies
           "react-vendor": ["react", "react-dom", "react-router-dom"],
           "query-vendor": ["@tanstack/react-query"],
           "supabase-vendor": ["@supabase/supabase-js"],
