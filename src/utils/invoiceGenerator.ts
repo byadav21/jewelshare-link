@@ -754,46 +754,70 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
     currentY += 6 + (splitNotes.length * 5) + 5;
   }
   
-  // Payment Instructions (on new page if needed)
+  // Payment Instructions with professional card design
   if (currentY > doc.internal.pageSize.getHeight() - 70) {
     doc.addPage();
     currentY = 20;
   }
   
+  doc.setFillColor(255, 253, 245);
+  doc.roundedRect(14, currentY - 2, pageWidth - 28, 22, 2, 2, 'F');
+  doc.setDrawColor(245, 158, 11);
+  doc.setLineWidth(2);
+  doc.line(14, currentY - 2, 14, currentY + 20);
+  doc.setDrawColor(220, 225, 230);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(14, currentY - 2, pageWidth - 28, 22, 2, 2, 'S');
+  
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('PAYMENT INFORMATION', 14, currentY);
-  doc.setTextColor(0, 0, 0);
+  doc.text('PAYMENT INFORMATION', 20, currentY + 4);
+  doc.setTextColor(40, 40, 50);
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('Please make payment within the specified terms.', 14, currentY + 5);
-  doc.text('For payment inquiries, contact us at the details above.', 14, currentY + 9);
-  currentY += 20;
+  doc.setFontSize(8.5);
+  doc.setTextColor(70, 70, 80);
+  doc.text('Please make payment within the specified terms to avoid late fees.', 20, currentY + 10);
+  doc.text('For payment inquiries or bank details, contact us at the details above.', 20, currentY + 15);
+  currentY += 28;
   
-  // Terms & Conditions
-  if (currentY > doc.internal.pageSize.getHeight() - 40) {
+  // Terms & Conditions with professional formatting
+  if (currentY > doc.internal.pageSize.getHeight() - 50) {
     doc.addPage();
     currentY = 20;
   }
   
-  doc.setFontSize(8);
+  doc.setFillColor(248, 250, 252);
+  doc.rect(14, currentY - 2, pageWidth - 28, 32, 'F');
+  doc.setDrawColor(220, 225, 230);
+  doc.setLineWidth(0.5);
+  doc.rect(14, currentY - 2, pageWidth - 28, 32, 'S');
+  
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('Terms & Conditions:', 14, currentY);
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('TERMS & CONDITIONS', 18, currentY + 3);
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.text('- Payment must be received by the due date to avoid late fees.', 14, currentY + 4);
-  doc.text('- All prices are final and include applicable taxes unless otherwise stated.', 14, currentY + 7);
-  doc.text('- This invoice is valid for the amounts and items listed above.', 14, currentY + 10);
+  doc.setFontSize(7.5);
+  doc.setTextColor(70, 70, 80);
+  doc.text('- Payment must be received by the due date to avoid late fees.', 18, currentY + 9);
+  doc.text('- All prices are final and include applicable taxes unless otherwise stated.', 18, currentY + 13);
+  doc.text('- This invoice is valid for the amounts and items listed above.', 18, currentY + 17);
+  doc.text('- Goods once sold cannot be returned or exchanged.', 18, currentY + 21);
+  doc.text('- Subject to jurisdiction mentioned in the invoice.', 18, currentY + 25);
   
-  // Footer
-  const footerY = doc.internal.pageSize.getHeight() - 10;
-  doc.setFontSize(8);
-  doc.setTextColor(128, 128, 128);
+  // Professional footer
+  const footerY = doc.internal.pageSize.getHeight() - 7;
+  doc.setDrawColor(220, 225, 230);
+  doc.setLineWidth(0.5);
+  doc.line(14, footerY - 2, pageWidth - 14, footerY - 2);
+  
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 120, 130);
   doc.text(
-    `Invoice generated on ${new Date().toLocaleString()}`,
+    `Generated on ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
     pageWidth / 2,
     footerY,
     { align: 'center' }
@@ -881,11 +905,11 @@ const renderTotalsSection = (
     doc.setFontSize(10);
   }
   
-  // Shipping charges with icon
+  // Shipping charges with professional styling
   if (hasShipping) {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(80, 80, 90);
-    doc.text(`🚚 Shipping${data.shippingZone ? ` (${data.shippingZone})` : ''}:`, 20, lineY);
+    doc.text(`Shipping${data.shippingZone ? ` (${data.shippingZone})` : ''}:`, 20, lineY);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(50, 50, 60);
     doc.text(formatCurrency(data.shippingCharges!), pageWidth - 20, lineY, { align: 'right' });
@@ -932,8 +956,11 @@ const renderTotalsSection = (
     doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100, 100, 110);
-    const usdAmount = (data.grandTotal / (data.exchangeRate || 1)).toFixed(2);
-    doc.text(`Equivalent: $${usdAmount} USD @ Rs.${data.exchangeRate}/USD`, 20, lineY);
+    const usdAmount = (data.grandTotal / (data.exchangeRate || 1)).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    doc.text(`Equivalent: USD $${usdAmount} @ Exchange Rate Rs.${(data.exchangeRate || 0).toFixed(2)}/USD`, 20, lineY);
     doc.setTextColor(40, 40, 50);
   }
 };

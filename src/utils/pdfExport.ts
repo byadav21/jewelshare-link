@@ -87,13 +87,18 @@ export const exportCatalogToPDF = (
     }
   }
   
-  // Add date, exchange rate, and gold rate
-  doc.setFontSize(9);
+  // Add date, exchange rate, and gold rate with professional styling
+  doc.setFillColor(248, 250, 252);
+  doc.rect(0, 45, pageWidth, 8, 'F');
+  
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(70, 70, 80);
   doc.text(
-    `Date: ${new Date().toLocaleDateString('en-IN')} | Exchange Rate: 1 USD = Rs.${usdRate.toFixed(2)} | Gold Rate (24K): Rs.${goldRate.toLocaleString('en-IN')}/g`,
+    `Date: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} | Exchange Rate: 1 USD = Rs.${usdRate.toFixed(2)} | Gold Rate (24K): Rs.${goldRate.toLocaleString('en-IN')}/g`,
     pageWidth / 2,
-    45,
-    { align: "center" }
+    49,
+    { align: 'center' }
   );
   
   // Prepare table data
@@ -119,7 +124,7 @@ export const exportCatalogToPDF = (
     product.total_usd ? product.total_usd.toFixed(2) : (product.retail_price / usdRate).toFixed(2)
   ]);
   
-  // Add table
+  // Add table with enhanced professional styling
   autoTable(doc, {
     head: [[
       'SKU', 
@@ -143,7 +148,7 @@ export const exportCatalogToPDF = (
       'TOTAL\n(USD)'
     ]],
     body: tableData,
-    startY: 50,
+    startY: 53,
     styles: { 
       fontSize: 8, 
       cellPadding: 3, 
@@ -164,7 +169,7 @@ export const exportCatalogToPDF = (
       valign: 'middle',
       cellPadding: 3
     },
-    alternateRowStyles: { fillColor: [248, 249, 250] },
+    alternateRowStyles: { fillColor: [250, 252, 255] },
     columnStyles: {
       0: { cellWidth: 15, halign: 'left' },
       1: { cellWidth: 32, halign: 'left' },
@@ -183,10 +188,10 @@ export const exportCatalogToPDF = (
       14: { cellWidth: 14, halign: 'right' },
       15: { cellWidth: 13, halign: 'right' },
       16: { cellWidth: 13, halign: 'right' },
-      17: { cellWidth: 22, halign: 'right', fontStyle: 'bold' },
-      18: { cellWidth: 18, halign: 'right', fontStyle: 'bold' }
+      17: { cellWidth: 22, halign: 'right', fontStyle: 'bold', textColor: [30, 64, 175] },
+      18: { cellWidth: 18, halign: 'right', fontStyle: 'bold', textColor: [30, 64, 175] }
     },
-    margin: { top: 50, left: 5, right: 5 },
+    margin: { top: 53, left: 5, right: 5 },
     tableWidth: 'auto',
     didParseCell: function(data: any) {
       if (data.column.index === 17 && data.section === 'body') {
@@ -198,20 +203,30 @@ export const exportCatalogToPDF = (
     }
   });
   
-  // Add totals
+  // Add totals with enhanced design
   const finalY = (doc as any).lastAutoTable.finalY || 50;
+  
+  doc.setFillColor(250, 252, 255);
+  doc.roundedRect(14, finalY + 6, pageWidth - 28, 20, 2, 2, 'F');
+  doc.setDrawColor(41, 128, 185);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(14, finalY + 6, pageWidth - 28, 20, 2, 2, 'S');
+  
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(41, 128, 185);
   doc.text(
-    `Total: Rs.${totalINR.toLocaleString('en-IN')} | $${totalUSD.toFixed(2)} USD`,
+    `Total: Rs.${totalINR.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} | USD $${totalUSD.toFixed(2)}`,
     pageWidth / 2,
-    finalY + 10,
+    finalY + 13,
     { align: "center" }
   );
+  doc.setTextColor(50, 50, 60);
+  doc.setFontSize(9);
   doc.text(
     `Total Products: ${products.length}`,
     pageWidth / 2,
-    finalY + 16,
+    finalY + 20,
     { align: "center" }
   );
   
