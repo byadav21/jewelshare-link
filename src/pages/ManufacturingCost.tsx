@@ -13,11 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { EstimateWorkflowSteps } from "@/components/estimate/EstimateWorkflowSteps";
 import { EstimateFlowGuide } from "@/components/estimate/EstimateFlowGuide";
 import { BasicInfoSection } from "@/components/estimate/BasicInfoSection";
-import { JewelrySpecsSection } from "@/components/estimate/JewelrySpecsSection";
 import { CostingSection } from "@/components/estimate/CostingSection";
 import { PricingSection } from "@/components/estimate/PricingSection";
 import { ReviewSection } from "@/components/estimate/ReviewSection";
-import { ReferenceImagesSection } from "@/components/estimate/ReferenceImagesSection";
 import { useEstimateWorkflow } from "@/hooks/useEstimateWorkflow";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
@@ -44,11 +42,6 @@ const ManufacturingCost = () => {
   const [notes, setNotes] = useState("");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
-  const [referenceImages, setReferenceImages] = useState<string[]>([]);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [customCertification, setCustomCertification] = useState("");
-  const [weightEntryMode, setWeightEntryMode] = useState<"gross" | "net">("gross");
   const [estimateStatus, setEstimateStatus] = useState("draft");
   const [estimatedCompletionDate, setEstimatedCompletionDate] = useState<Date>();
   const [isCustomerVisible, setIsCustomerVisible] = useState(false);
@@ -68,23 +61,8 @@ const ManufacturingCost = () => {
   const [showInvoicePreview, setShowInvoicePreview] = useState(false);
   const [previewInvoiceData, setPreviewInvoiceData] = useState<InvoiceData | null>(null);
   const [formData, setFormData] = useState({
-    grossWeight: 0,
-    netWeight: 0,
     purityFraction: 0.76,
-    goldRate24k: 0,
-    makingCharges: 0,
-    cadDesignCharges: 0,
-    cammingCharges: 0,
-    certificationCost: 0,
-    diamondPerCaratPrice: 0,
-    diamondWeight: 0,
-    diamondType: "",
-    diamondShape: "",
-    diamondColor: "",
-    diamondClarity: "",
-    diamondCertification: "none",
-    gemstonePerCaratPrice: 0,
-    gemstoneWeight: 0
+    goldRate24k: 0
   });
   const [profitMargin, setProfitMargin] = useState(0);
   const [customerDetails, setCustomerDetails] = useState({
@@ -203,25 +181,12 @@ const ManufacturingCost = () => {
     }
   };
 
-  // Calculate net weight automatically (only in gross weight mode)
-  useEffect(() => {
-    if (weightEntryMode === "gross") {
-      const diamondWeightGrams = formData.diamondWeight / 5;
-      const gemstoneWeightGrams = formData.gemstoneWeight / 5;
-      const calculatedNetWeight = formData.grossWeight - diamondWeightGrams - gemstoneWeightGrams;
-      setFormData(prev => ({
-        ...prev,
-        netWeight: Math.max(0, calculatedNetWeight)
-      }));
-    }
-  }, [weightEntryMode, formData.grossWeight, formData.diamondWeight, formData.gemstoneWeight]);
 
-  // Calculate costs
+  // Calculate costs from line items
   useEffect(() => {
-    const goldCost = formData.netWeight * formData.purityFraction * formData.goldRate24k;
-    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
-    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
-    const totalCost = goldCost + formData.makingCharges + formData.cadDesignCharges + formData.cammingCharges + formData.certificationCost + diamondCost + gemstoneCost;
+    // Calculate subtotal from line items
+    const lineItemsTotal = lineItems.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    const totalCost = lineItemsTotal;
     const finalSellingPrice = totalCost * (1 + profitMargin / 100);
     const profitAmount = finalSellingPrice - totalCost;
 
@@ -242,7 +207,7 @@ const ManufacturingCost = () => {
     // Calculate USD equivalent
     const totalInUSD = grandTotal / exchangeRate;
     setCosts({
-      goldCost: parseFloat(goldCost.toFixed(2)),
+      goldCost: 0, // No longer calculated from formData
       totalCost: parseFloat(totalCost.toFixed(2)),
       finalSellingPrice: parseFloat(finalSellingPrice.toFixed(2)),
       profitAmount: parseFloat(profitAmount.toFixed(2)),
@@ -252,39 +217,16 @@ const ManufacturingCost = () => {
       grandTotal: parseFloat(grandTotal.toFixed(2)),
       totalInUSD: parseFloat(totalInUSD.toFixed(2))
     });
-  }, [formData, profitMargin, gstMode, sgstPercentage, cgstPercentage, igstPercentage, shippingCharges, exchangeRate]);
-  const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: parseFloat(value) || 0
-    }));
-  };
+  }, [lineItems, profitMargin, gstMode, sgstPercentage, cgstPercentage, igstPercentage, shippingCharges, exchangeRate]);
   const handleReset = () => {
     setFormData({
-      grossWeight: 0,
-      netWeight: 0,
       purityFraction: 0.76,
-      goldRate24k: 0,
-      makingCharges: 0,
-      cadDesignCharges: 0,
-      cammingCharges: 0,
-      certificationCost: 0,
-      diamondPerCaratPrice: 0,
-      diamondWeight: 0,
-      diamondType: "",
-      diamondShape: "",
-      diamondColor: "",
-      diamondClarity: "",
-      diamondCertification: "none",
-      gemstonePerCaratPrice: 0,
-      gemstoneWeight: 0
+      goldRate24k: 0
     });
     setProfitMargin(0);
     setCurrentEstimateId(null);
     setEstimateName("");
     setNotes("");
-    setReferenceImages([]);
-    setCustomCertification("");
     setCustomerDetails({
       name: "",
       phone: "",
@@ -357,94 +299,30 @@ const ManufacturingCost = () => {
     }
   };
   const handleGenerateInvoice = async () => {
-    if (!estimateName) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter estimate name before generating invoice",
-        variant: "destructive"
-      });
-      return;
-    }
-    let finalInvoiceNumber = invoiceNumber;
-    if (!finalInvoiceNumber) {
-      finalInvoiceNumber = (await generateNextInvoiceNumber()) || "";
-    }
-    const details = formData;
-    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
-    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
-
-    // Build vendor address string
-    const addressParts = [vendorProfile?.address_line1, vendorProfile?.address_line2, vendorProfile?.city, vendorProfile?.state, vendorProfile?.pincode, vendorProfile?.country].filter(Boolean);
-    const vendorAddress = addressParts.length > 0 ? addressParts.join(', ') : undefined;
-    generateInvoicePDF({
-      invoiceNumber: finalInvoiceNumber,
-      invoiceDate: invoiceDate.toISOString(),
-      paymentDueDate: paymentDueDate?.toISOString(),
-      paymentTerms,
-      estimateName,
-      status: estimateStatus,
-      customerName: customerDetails.name,
-      customerPhone: customerDetails.phone,
-      customerEmail: customerDetails.email,
-      customerAddress: customerDetails.address,
-      customerGSTIN: customerDetails.gstin,
-      vendorGSTIN: vendorGSTIN,
-      netWeight: formData.netWeight,
-      grossWeight: formData.grossWeight,
-      purityFraction: formData.purityFraction,
-      goldRate24k: formData.goldRate24k,
-      makingCharges: formData.makingCharges,
-      cadDesignCharges: formData.cadDesignCharges,
-      cammingCharges: formData.cammingCharges,
-      certificationCost: formData.certificationCost,
-      diamondCost,
-      gemstoneCost,
-      goldCost: costs.goldCost,
-      totalCost: costs.totalCost,
-      profitMargin,
-      finalSellingPrice: costs.finalSellingPrice,
-      gstMode,
-      sgstPercentage,
-      cgstPercentage,
-      igstPercentage,
-      sgstAmount: costs.sgstAmount,
-      cgstAmount: costs.cgstAmount,
-      igstAmount: costs.igstAmount,
-      shippingCharges,
-      shippingZone,
-      exchangeRate,
-      grandTotal: costs.grandTotal,
-      notes,
-      invoiceNotes,
-      template: invoiceTemplate,
-      lineItems: lineItems.length > 0 ? lineItems : undefined,
-      details: {
-        diamond_type: formData.diamondType,
-        diamond_shape: formData.diamondShape,
-        diamond_weight: formData.diamondWeight,
-        diamond_color: formData.diamondColor,
-        diamond_clarity: formData.diamondClarity,
-        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
-        gemstone_weight: formData.gemstoneWeight
-      },
-      vendorBranding: vendorProfile ? {
-        name: vendorProfile.business_name,
-        logo: vendorProfile.logo_url,
-        primaryColor: vendorProfile.primary_brand_color,
-        secondaryColor: vendorProfile.secondary_brand_color,
-        tagline: vendorProfile.brand_tagline,
-        email: vendorProfile.email,
-        phone: vendorProfile.phone,
-        address: vendorAddress
-      } : undefined
-    });
-
-    // Save/update the estimate with invoice generated flag
-    await handleSaveInvoice(finalInvoiceNumber);
+    navigate('/invoice-generator');
+  };
+  
+  const handleConfirmDownload = () => {
     toast({
-      title: "Invoice Generated",
-      description: "Invoice PDF has been downloaded and saved"
+      title: "Feature Simplified",
+      description: "Use Invoice Generator page for PDF creation"
     });
+  };
+  
+  const handleSaveInvoice = async (invoiceNum: string) => {
+    // Simplified - no longer needed
+  };
+  
+  const handleSaveAsInvoice = async () => {
+    navigate('/invoice-generator');
+  };
+  
+  const handleExportEstimate = async () => {
+    navigate('/invoice-generator');
+  };
+  
+  const handleExportPDF = async () => {
+    navigate('/invoice-generator');
   };
   const handleExportEstimate = async () => {
     // Use default name if estimate name is not provided
@@ -534,26 +412,25 @@ const ManufacturingCost = () => {
   };
   const handleSaveInvoice = async (generatedInvoiceNumber: string) => {
     if (!user) return;
-    const diamondCost = formData.diamondPerCaratPrice * formData.diamondWeight;
-    const gemstoneCost = formData.gemstonePerCaratPrice * formData.gemstoneWeight;
+    
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
-      net_weight: formData.netWeight,
+      net_weight: 0,
       purity_fraction: formData.purityFraction,
       gold_rate_24k: formData.goldRate24k,
-      making_charges: formData.makingCharges,
-      cad_design_charges: formData.cadDesignCharges,
-      camming_charges: formData.cammingCharges,
-      certification_cost: formData.certificationCost,
-      diamond_cost: diamondCost,
-      gemstone_cost: gemstoneCost,
+      making_charges: 0,
+      cad_design_charges: 0,
+      camming_charges: 0,
+      certification_cost: 0,
+      diamond_cost: 0,
+      gemstone_cost: 0,
       gold_cost: costs.goldCost,
       total_cost: costs.totalCost,
       profit_margin_percentage: profitMargin,
       final_selling_price: costs.finalSellingPrice,
       notes: notes || null,
-      reference_images: referenceImages,
+      reference_images: [],
       customer_name: customerDetails.name || null,
       customer_phone: customerDetails.phone || null,
       customer_email: customerDetails.email || null,
@@ -569,16 +446,6 @@ const ManufacturingCost = () => {
       is_invoice_generated: true,
       line_items: (lineItems.length > 0 ? lineItems : []) as any,
       details: {
-        gross_weight: formData.grossWeight,
-        diamond_per_carat_price: formData.diamondPerCaratPrice,
-        diamond_weight: formData.diamondWeight,
-        diamond_type: formData.diamondType,
-        diamond_shape: formData.diamondShape,
-        diamond_color: formData.diamondColor,
-        diamond_clarity: formData.diamondClarity,
-        diamond_certification: formData.diamondCertification === 'other' ? customCertification : formData.diamondCertification,
-        gemstone_per_carat_price: formData.gemstonePerCaratPrice,
-        gemstone_weight: formData.gemstoneWeight,
         vendor_gstin: vendorGSTIN || null,
         customer_gstin: customerDetails.gstin || null,
         gst_mode: gstMode,
@@ -590,8 +457,7 @@ const ManufacturingCost = () => {
         igst_amount: costs.igstAmount,
         shipping_charges: shippingCharges,
         shipping_zone: shippingZone,
-        exchange_rate: exchangeRate,
-        grand_total: costs.grandTotal
+        exchange_rate: exchangeRate
       }
     };
     if (currentEstimateId) {
@@ -748,56 +614,51 @@ const ManufacturingCost = () => {
     }
   };
   const handleSave = async () => {
-    if (!estimateName) {
+    if (!user) {
       toast({
-        title: "Missing Information",
-        description: "Please enter estimate name",
+        title: "Authentication Required",
+        description: "Please sign in to save estimates.",
         variant: "destructive"
       });
       return;
     }
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+
+    if (!estimateName.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter an estimate name.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
-      net_weight: formData.netWeight,
+      customer_name: customerDetails.name || null,
+      customer_phone: customerDetails.phone || null,
+      customer_email: customerDetails.email || null,
+      customer_address: customerDetails.address || null,
+      net_weight: 0,
       purity_fraction: formData.purityFraction,
       gold_rate_24k: formData.goldRate24k,
-      making_charges: formData.makingCharges,
-      cad_design_charges: formData.cadDesignCharges,
-      camming_charges: formData.cammingCharges,
-      certification_cost: formData.certificationCost,
-      diamond_cost: formData.diamondPerCaratPrice * formData.diamondWeight,
-      gemstone_cost: formData.gemstonePerCaratPrice * formData.gemstoneWeight,
+      making_charges: 0,
+      cad_design_charges: 0,
+      camming_charges: 0,
+      certification_cost: 0,
+      diamond_cost: 0,
+      gemstone_cost: 0,
       gold_cost: costs.goldCost,
       total_cost: costs.totalCost,
-      profit_margin_percentage: profitMargin,
       final_selling_price: costs.finalSellingPrice,
+      profit_margin_percentage: profitMargin,
       notes,
-      reference_images: referenceImages,
-      customer_name: customerDetails.name,
-      customer_phone: customerDetails.phone,
-      customer_email: customerDetails.email,
-      customer_address: customerDetails.address,
       status: estimateStatus,
-      estimated_completion_date: estimatedCompletionDate?.toISOString(),
+      estimated_completion_date: estimatedCompletionDate?.toISOString() || null,
       is_customer_visible: isCustomerVisible,
-      share_token: shareToken || undefined,
-      line_items: lineItems.length > 0 ? (lineItems as any) : null,
-      is_invoice_generated: false,
+      share_token: shareToken || `EST-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      line_items: lineItems.length > 0 ? lineItems : null,
       details: {
-        gross_weight: formData.grossWeight,
-        diamond_type: formData.diamondType,
-        diamond_shape: formData.diamondShape,
-        diamond_weight: formData.diamondWeight,
-        diamond_color: formData.diamondColor,
-        diamond_clarity: formData.diamondClarity,
-        diamond_per_carat_price: formData.diamondPerCaratPrice,
-        gemstone_weight: formData.gemstoneWeight,
-        gemstone_per_carat_price: formData.gemstonePerCaratPrice,
         customer_gstin: customerDetails.gstin,
         vendor_gstin: vendorGSTIN,
         gst_mode: gstMode,
@@ -846,37 +707,14 @@ const ManufacturingCost = () => {
   };
   const handleLoad = (estimate: any) => {
     const details = estimate.details as any;
-    const certValue = details?.diamond_certification || "";
-    const knownCerts = ["GIA", "IGI", "AGS", "EGL", "HRD", "GSI", "none"];
     setFormData({
-      grossWeight: details?.gross_weight || 0,
-      netWeight: estimate.net_weight || 0,
       purityFraction: estimate.purity_fraction || 0.76,
-      goldRate24k: estimate.gold_rate_24k || 0,
-      makingCharges: estimate.making_charges || 0,
-      cadDesignCharges: estimate.cad_design_charges || 0,
-      cammingCharges: estimate.camming_charges || 0,
-      certificationCost: estimate.certification_cost || 0,
-      diamondPerCaratPrice: details?.diamond_per_carat_price || 0,
-      diamondWeight: details?.diamond_weight || 0,
-      diamondType: details?.diamond_type || "",
-      diamondShape: details?.diamond_shape || "",
-      diamondColor: details?.diamond_color || "",
-      diamondClarity: details?.diamond_clarity || "",
-      diamondCertification: knownCerts.includes(certValue) ? certValue : certValue ? "other" : "none",
-      gemstonePerCaratPrice: details?.gemstone_per_carat_price || 0,
-      gemstoneWeight: details?.gemstone_weight || 0
+      goldRate24k: estimate.gold_rate_24k || 0
     });
-    if (certValue && !knownCerts.includes(certValue)) {
-      setCustomCertification(certValue);
-    } else {
-      setCustomCertification("");
-    }
     setProfitMargin(estimate.profit_margin_percentage || 0);
     setCurrentEstimateId(estimate.id);
     setEstimateName(estimate.estimate_name);
     setNotes(estimate.notes || "");
-    setReferenceImages(estimate.reference_images || []);
     setCustomerDetails({
       name: estimate.customer_name || "",
       phone: estimate.customer_phone || "",
@@ -928,82 +766,6 @@ const ManufacturingCost = () => {
         handleReset();
       }
     }
-  };
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    try {
-      setUploadingImage(true);
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to upload images.",
-          variant: "destructive"
-        });
-        return;
-      }
-      const uploadedUrls: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (!file.type.startsWith("image/")) {
-          toast({
-            title: "Invalid File Type",
-            description: `${file.name} is not an image file.`,
-            variant: "destructive"
-          });
-          continue;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-          toast({
-            title: "File Too Large",
-            description: `${file.name} exceeds 5MB limit.`,
-            variant: "destructive"
-          });
-          continue;
-        }
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const {
-          data,
-          error
-        } = await supabase.storage.from("manufacturing-estimates").upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: false
-        });
-        if (error) throw error;
-        const {
-          data: {
-            publicUrl
-          }
-        } = supabase.storage.from("manufacturing-estimates").getPublicUrl(data.path);
-        uploadedUrls.push(publicUrl);
-      }
-      setReferenceImages([...referenceImages, ...uploadedUrls]);
-      toast({
-        title: "Images Uploaded",
-        description: `${uploadedUrls.length} image(s) uploaded successfully.`
-      });
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({
-        title: "Upload Failed",
-        description: "Failed to upload images. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setUploadingImage(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-  const removeImage = (index: number) => {
-    setReferenceImages(referenceImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -1213,18 +975,26 @@ const ManufacturingCost = () => {
           onCustomerDetailsChange={setCustomerDetails}
         />
 
-        {/* Jewelry Specifications Section */}
-        <JewelrySpecsSection
-          formData={formData}
-          onFormDataChange={(field, value) => {
-            if (typeof value === 'string') {
-              setFormData(prev => ({ ...prev, [field]: value }));
-            } else {
-              setFormData(prev => ({ ...prev, [field]: value }));
-            }
-          }}
-          weightEntryMode={weightEntryMode}
-          onWeightEntryModeChange={setWeightEntryMode}
+        {/* Invoice Line Items */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Invoice Line Items
+            </CardTitle>
+            <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} />
+          </CardContent>
+        </Card>
+
+        {/* Profit Margin and Summary */}
+        <PricingSection
+          profitMargin={profitMargin}
+          onProfitMarginChange={setProfitMargin}
+          costs={costs}
+          formData={{ diamondPerCaratPrice: 0, diamondWeight: 0, gemstonePerCaratPrice: 0, gemstoneWeight: 0, makingCharges: 0, cadDesignCharges: 0, cammingCharges: 0, certificationCost: 0 }}
         />
 
         {/* Tax, Shipping & Currency Section */}
@@ -1245,36 +1015,6 @@ const ManufacturingCost = () => {
           onExchangeRateChange={setExchangeRate}
           costs={costs}
         />
-
-        {/* Profit Margin and Summary */}
-        <PricingSection
-          profitMargin={profitMargin}
-          onProfitMarginChange={setProfitMargin}
-          costs={costs}
-          formData={formData}
-        />
-
-        {/* Reference Images Upload */}
-        <ReferenceImagesSection
-          referenceImages={referenceImages}
-          uploadingImage={uploadingImage}
-          onImageUpload={handleImageUpload}
-          onRemoveImage={removeImage}
-        />
-
-        {/* Invoice Line Items */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Invoice Line Items
-            </CardTitle>
-            <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} />
-          </CardContent>
-        </Card>
       </div>
 
       <InvoicePreviewDialog open={showInvoicePreview} onOpenChange={setShowInvoicePreview} invoiceData={previewInvoiceData} onConfirmDownload={handleConfirmDownload} />
