@@ -1367,7 +1367,7 @@ const Catalog = () => {
 
               {products.length === 0 ? <div className="text-center py-16 sm:py-20">
                   <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 mb-6">
-                    <Gem className="h-10 w-10 sm:h-12 sm:h-12 text-primary" />
+                    <Gem className="h-10 w-10 sm:w-12 sm:h-12 text-primary" />
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-3 text-foreground">No products yet</h2>
                   <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">Start building your stunning jewelry catalog and showcase your collection</p>
@@ -1454,7 +1454,7 @@ const Catalog = () => {
                   </Button>
                 </div> : <>
                   <div key={selectedProductType} className={`
-                      grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6
+                      grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6
                       transition-opacity duration-300
                       ${transitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'}
                     `}>
