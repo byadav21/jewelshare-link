@@ -287,10 +287,10 @@ const SharedCatalog = () => {
       
       {/* Mobile-Optimized Header */}
       <header className="border-b border-border/50 bg-gradient-to-b from-card via-card/95 to-card/90 backdrop-blur-xl shadow-2xl relative z-10">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 md:py-6">
           {/* Viral Stats & Timer Banner */}
           {shareLinkData && !isExpired && (
-            <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between pb-5 border-b border-border/30 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 py-4 rounded-xl">
+            <div className="mb-4 sm:mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 justify-between pb-3 sm:pb-5 border-b border-border/30 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-xl">
               <ShareStats 
                 viewCount={shareLinkData.view_count}
                 isExpiringSoon={isExpiringSoon}
@@ -302,22 +302,22 @@ const SharedCatalog = () => {
 
           {/* Vendor Details */}
           {showVendorDetails && vendorProfile && (
-            <div className="mb-5 pb-5 border-b border-border/30">
+            <div className="mb-4 sm:mb-5 pb-3 sm:pb-5 border-b border-border/30">
               <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                 {/* Logo & Business Info */}
-                <div className="flex items-start gap-3 flex-1 min-w-0 w-full">
+                <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 w-full">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 blur-xl rounded-full" />
-                    <Gem className="relative h-8 w-8 sm:h-12 sm:w-12 text-primary flex-shrink-0 drop-shadow-2xl" />
+                    <Gem className="relative h-6 w-6 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary flex-shrink-0 drop-shadow-2xl" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-xl sm:text-3xl lg:text-4xl font-serif font-bold bg-gradient-to-r from-foreground via-foreground to-primary/80 bg-clip-text text-transparent leading-tight mb-3 break-words">
+                    <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-serif font-bold bg-gradient-to-r from-foreground via-foreground to-primary/80 bg-clip-text text-transparent leading-tight mb-2 sm:mb-3 break-words">
                       {vendorProfile.business_name || "Jewelry Catalog"}
                     </h1>
                     
                     {/* Address */}
                     {vendorProfile.address_line1 && (
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 break-words leading-relaxed">
+                      <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mb-1.5 sm:mb-2 break-words leading-relaxed">
                         {vendorProfile.address_line1}
                         {vendorProfile.address_line2 && `, ${vendorProfile.address_line2}`}
                         {vendorProfile.city && (
@@ -329,14 +329,14 @@ const SharedCatalog = () => {
                     )}
                     
                     {/* Contact Links - Mobile Optimized */}
-                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 md:gap-3">
                       {vendorProfile.email && (
-                        <a href={`mailto:${vendorProfile.email}`} className="text-xs sm:text-sm text-primary font-medium hover:underline truncate max-w-full">
+                        <a href={`mailto:${vendorProfile.email}`} className="text-[10px] sm:text-xs md:text-sm text-primary font-medium hover:underline truncate max-w-full">
                           ✉️ {vendorProfile.email}
                         </a>
                       )}
                       {vendorProfile.phone && (
-                        <a href={`tel:${vendorProfile.phone}`} className="text-xs sm:text-sm text-primary font-medium hover:underline whitespace-nowrap">
+                        <a href={`tel:${vendorProfile.phone}`} className="text-[10px] sm:text-xs md:text-sm text-primary font-medium hover:underline whitespace-nowrap">
                           📞 {vendorProfile.phone}
                         </a>
                       )}
@@ -345,7 +345,7 @@ const SharedCatalog = () => {
                           href={`https://wa.me/${vendorProfile.whatsapp_number.replace(/\D/g, '')}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-xs sm:text-sm text-primary font-medium hover:underline whitespace-nowrap"
+                          className="text-[10px] sm:text-xs md:text-sm text-primary font-medium hover:underline whitespace-nowrap"
                         >
                           💬 WhatsApp
                         </a>
@@ -376,16 +376,16 @@ const SharedCatalog = () => {
           {/* Bottom Action Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-4 pt-3 border-t border-border/30">
             {/* Exchange Rate */}
-            <div className="relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/30 px-5 py-3 rounded-2xl shadow-lg overflow-hidden">
+            <div className="relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/30 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer" />
-              <span className="relative text-xs sm:text-sm font-bold text-foreground">
-                1 USD = <span className="text-primary text-lg sm:text-xl drop-shadow-sm">₹{usdToInr.toFixed(2)}</span>
+              <span className="relative text-[10px] sm:text-xs md:text-sm font-bold text-foreground">
+                1 USD = <span className="text-primary text-sm sm:text-lg md:text-xl drop-shadow-sm">₹{usdToInr.toFixed(2)}</span>
               </span>
             </div>
             
             {/* Action Buttons */}
             {shareLinkId && (
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 sm:gap-2">
                 {/* Social Share Button */}
                 <SocialShareButton
                   url={catalogUrl}
@@ -395,8 +395,8 @@ const SharedCatalog = () => {
                 />
                 <Dialog open={showVideoRequestForm} onOpenChange={setShowVideoRequestForm}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 text-xs sm:text-sm font-medium">
-                      <Video className="h-4 w-4 mr-1.5" />
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-9 sm:h-10 text-[10px] sm:text-xs md:text-sm font-medium px-2 sm:px-3">
+                      <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5" />
                       <span className="hidden xs:inline">Request Video</span>
                       <span className="xs:hidden">Video</span>
                     </Button>
@@ -593,18 +593,18 @@ const SharedCatalog = () => {
       </header>
 
       {/* Product Grid */}
-      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-8 sm:py-12 relative z-10">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 md:py-12 relative z-10">
         {/* Featured Products Showcase */}
         {products.length > 0 && (
-          <div className="mb-12">
+          <div className="mb-8 sm:mb-12">
             <ProductShowcaseCarousel products={products.slice(0, 8)} usdRate={usdToInr} />
           </div>
         )}
 
         {filteredProducts.length === 0 && products.length > 0 ? (
-          <div className="text-center py-16 sm:py-20">
-            <Gem className="h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <p className="text-lg sm:text-xl text-muted-foreground mb-4">No products match your filters</p>
+          <div className="text-center py-12 sm:py-16 md:py-20">
+            <Gem className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 text-muted-foreground mx-auto mb-3 sm:mb-4 opacity-50" />
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-3 sm:mb-4">No products match your filters</p>
             <Button 
               variant="outline" 
               onClick={() => setFilters({
@@ -629,20 +629,20 @@ const SharedCatalog = () => {
                 fluorescence: "",
                 lab: "",
               })}
-              className="h-10 sm:h-11"
+              className="h-9 sm:h-10 md:h-11 text-sm"
             >
               Clear All Filters
             </Button>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-16 sm:py-20">
-            <Gem className="h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h2 className="text-xl sm:text-2xl font-serif font-bold mb-2 text-foreground">No Products Available</h2>
-            <p className="text-sm sm:text-base text-muted-foreground">This catalog is currently empty</p>
+          <div className="text-center py-12 sm:py-16 md:py-20">
+            <Gem className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 text-muted-foreground mx-auto mb-3 sm:mb-4 opacity-50" />
+            <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold mb-2 text-foreground">No Products Available</h2>
+            <p className="text-xs sm:text-sm md:text-base text-muted-foreground">This catalog is currently empty</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
               {filteredProducts.slice(0, displayCount).map((product) => {
               // Track product view when card is clicked
               const handleProductClick = () => {
@@ -659,7 +659,7 @@ const SharedCatalog = () => {
               return (
                 <Card 
                   key={product.id} 
-                  className="group overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-border/50 hover:border-primary/40 bg-gradient-to-b from-card to-card/95 backdrop-blur-sm cursor-pointer hover:-translate-y-2"
+                  className="group overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-border/50 hover:border-primary/40 bg-gradient-to-b from-card to-card/95 backdrop-blur-sm cursor-pointer hover:-translate-y-1"
                   onClick={handleProductClick}
                 >
                 {/* Premium hover glow */}
@@ -677,7 +677,7 @@ const SharedCatalog = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
                     {/* Action Buttons Overlay - Always visible on mobile, hover on desktop */}
-                    <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 z-10">
                       <div className="bg-background/90 backdrop-blur-sm rounded-full shadow-lg">
                         <WishlistButton 
                           productId={product.id}
@@ -697,21 +697,21 @@ const SharedCatalog = () => {
                     </div>
                   </div>
                 )}
-                <CardHeader className="pb-3 relative z-10">
-                  <h3 className="font-serif text-base sm:text-lg font-bold text-foreground group-hover:text-primary line-clamp-2 leading-tight transition-colors duration-300">
+                <CardHeader className="pb-2 sm:pb-3 relative z-10 p-3 sm:p-4 md:p-6">
+                  <h3 className="font-serif text-sm sm:text-base md:text-lg font-bold text-foreground group-hover:text-primary line-clamp-2 leading-tight transition-colors duration-300">
                     {product.name}
                   </h3>
                   {product.sku && (
-                    <p className="text-xs text-muted-foreground font-mono">SKU: {product.sku}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground font-mono mt-1">SKU: {product.sku}</p>
                   )}
                 </CardHeader>
-                <CardContent className="pb-3">
+                <CardContent className="pb-2 sm:pb-3 p-3 sm:p-4 md:p-6 pt-0">
                   {product.description && (
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                    <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2 leading-relaxed">
                       {product.description}
                     </p>
                   )}
-                  <div className="space-y-1 text-xs sm:text-sm">
+                  <div className="space-y-0.5 sm:space-y-1 text-[10px] sm:text-xs md:text-sm">
                     {product.category && (
                       <p className="text-foreground truncate">
                         <span className="text-muted-foreground">Category:</span> <span className="font-medium">{product.category}</span>
@@ -729,48 +729,48 @@ const SharedCatalog = () => {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="border-t border-border/30 pt-4 flex-col gap-3.5 bg-gradient-to-b from-muted/10 to-transparent relative z-10">
+                <CardFooter className="border-t border-border/30 pt-3 sm:pt-4 flex-col gap-2.5 sm:gap-3.5 bg-gradient-to-b from-muted/10 to-transparent relative z-10 p-3 sm:p-4 md:p-6">
                   {/* Delivery Badge */}
                   {product.delivery_type && (
                     <div className="w-full">
                       {product.delivery_type === 'immediate delivery' ? (
-                        <Badge variant="secondary" className="w-full justify-center gap-2 py-2 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/30 hover:to-green-500/30 shadow-sm font-semibold">
-                          <Zap className="h-3.5 w-3.5" />
-                          <span className="text-xs">Immediate Dispatch</span>
+                        <Badge variant="secondary" className="w-full justify-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:from-emerald-500/30 hover:to-green-500/30 shadow-sm font-semibold text-[10px] sm:text-xs">
+                          <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                          <span>Immediate Dispatch</span>
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="w-full justify-center gap-2 py-2 border-primary/40 text-primary hover:bg-primary/10 shadow-sm font-semibold">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span className="text-xs">{product.delivery_type}</span>
+                        <Badge variant="outline" className="w-full justify-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 border-primary/40 text-primary hover:bg-primary/10 shadow-sm font-semibold text-[10px] sm:text-xs">
+                          <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                          <span>{product.delivery_type}</span>
                         </Badge>
                       )}
                     </div>
                   )}
                   
-                  <div className="w-full space-y-2">
+                  <div className="w-full space-y-1 sm:space-y-2">
                     <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-muted-foreground font-medium">INR</span>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">INR</span>
                       <div className="relative">
-                        <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent drop-shadow-sm">
+                        <p className="text-base sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent drop-shadow-sm">
                           ₹{product.displayed_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-muted-foreground font-medium">USD</span>
-                      <p className="text-base sm:text-lg font-semibold text-foreground">
+                      <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">USD</span>
+                      <p className="text-sm sm:text-base md:text-lg font-semibold text-foreground">
                         ${(product.displayed_price / usdToInr).toFixed(2)}
                       </p>
                     </div>
                   </div>
                   {shareLinkId && (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1.5 sm:gap-2">
                       <PurchaseInquiryDialog
                         productId={product.id}
                         productName={product.name}
                         shareLinkId={shareLinkId}
                       />
-                      <div className="flex gap-2 items-stretch">
+                      <div className="flex gap-1.5 sm:gap-2 items-stretch">
                         <InterestDialog
                           productId={product.id}
                           productName={product.name}
@@ -781,8 +781,8 @@ const SharedCatalog = () => {
                           productName={product.name}
                           shareLinkId={shareLinkId}
                           trigger={
-                            <Button variant="outline" size="sm" className="whitespace-nowrap px-4">
-                              <Video className="h-4 w-4 mr-1" />
+                            <Button variant="outline" size="sm" className="whitespace-nowrap px-2 sm:px-3 md:px-4 h-8 sm:h-9 text-[10px] sm:text-xs">
+                              <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                               Video
                             </Button>
                           }
@@ -798,12 +798,12 @@ const SharedCatalog = () => {
             
             {/* Load More Button */}
             {displayCount < filteredProducts.length && (
-              <div className="flex justify-center mt-12">
+              <div className="flex justify-center mt-8 sm:mt-12">
                 <Button
                   variant="outline"
                   size="lg"
                   onClick={() => setDisplayCount(prev => prev + 60)}
-                  className="px-8 py-6 text-base font-semibold hover:bg-primary/10 hover:border-primary transition-all duration-300"
+                  className="px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base font-semibold hover:bg-primary/10 hover:border-primary transition-all duration-300"
                 >
                   Load More Products ({filteredProducts.length - displayCount} remaining)
                 </Button>
