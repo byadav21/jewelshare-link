@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EstimateImage } from "@/components/EstimateImage";
 import {
   Select,
   SelectContent,
@@ -709,7 +710,7 @@ const AdminManufacturingOrders = () => {
                             rel="noopener noreferrer"
                             className="group relative aspect-square rounded-lg overflow-hidden border hover:border-primary transition-colors"
                           >
-                            <img
+                            <EstimateImage
                               src={imageUrl}
                               alt={`Reference ${index + 1}`}
                               className="object-cover w-full h-full group-hover:scale-105 transition-transform"
