@@ -7,6 +7,7 @@ import { Loader2, Package, Clock, CheckCircle, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { EstimateImage } from '@/components/EstimateImage';
 
 interface OrderDetails {
   id: string;
@@ -197,7 +198,7 @@ export default function OrderTracking() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {order.reference_images.map((imageUrl, index) => (
                   <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
-                    <img
+                    <EstimateImage
                       src={imageUrl}
                       alt={`Reference ${index + 1}`}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"

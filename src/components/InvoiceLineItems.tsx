@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { EstimateImage } from "@/components/EstimateImage";
 
 export interface LineItem {
   id: string;
@@ -138,11 +139,11 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('manufacturing-estimates')
-        .getPublicUrl(filePath);
+      // Store the storage path (not public URL)
+      // Signed URLs will be generated when displaying
+      const imagePath = data.path;
 
-      updateItem(index, 'image_url', publicUrl);
+      updateItem(index, 'image_url', imagePath);
       toast.success("Image uploaded successfully");
     } catch (error: any) {
       console.error('Error uploading image:', error);
@@ -516,7 +517,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                 <CardContent>
                   <div className="flex gap-4">
                     {item.image_url && (
-                      <img
+                      <EstimateImage
                         src={item.image_url}
                         alt={item.item_name}
                         className="h-24 w-24 object-cover rounded border"

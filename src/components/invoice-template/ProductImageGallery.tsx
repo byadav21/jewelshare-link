@@ -68,13 +68,13 @@ export const ProductImageGallery = ({ images, onUpdate }: ProductImageGalleryPro
 
         if (error) throw error;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("manufacturing-estimates")
-          .getPublicUrl(data.path);
+        // Store the storage path, not the URL
+        // Signed URLs will be generated when displaying images
+        const imagePath = data.path;
 
         uploadedImages.push({
           id: `img_${Date.now()}_${i}`,
-          url: publicUrl,
+          url: imagePath,
           name: file.name,
           isDefault: images.length === 0 && i === 0, // First image is default if gallery is empty
         });
