@@ -568,14 +568,20 @@ const Catalog = () => {
   };
   const fetchProducts = useCallback(async () => {
     try {
+      setLoading(true);
       const {
         data: {
           user
         }
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
-      // Optimized query: only fetch needed columns and limit results
+      console.log("Fetching products for type:", selectedProductType);
+      
+      // Optimized query: only fetch needed columns
       let query = supabase
         .from("products")
         .select("id, name, sku, image_url, image_url_2, image_url_3, cost_price, retail_price, stock_quantity, category, metal_type, gemstone, color, diamond_color, clarity, delivery_type, product_type, weight_grams, gemstone_type, carat_weight, cut, diamond_type, shape, carat, polish, symmetry, fluorescence, lab, created_at")
@@ -595,10 +601,16 @@ const Catalog = () => {
       } = await query
         .order("created_at", { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+      }
+      
+      console.log(`Loaded ${data?.length || 0} products`);
       setProducts(data || []);
     } catch (error: any) {
-      toast.error("Failed to load products");
+      console.error("Failed to load products:", error);
+      toast.error("Failed to load products. Please refresh the page.");
     } finally {
       setLoading(false);
     }
@@ -608,7 +620,6 @@ const Catalog = () => {
   useEffect(() => {
     if (selectedProductType) {
       setTransitioning(true);
-      setLoading(true);
 
       // Fetch products and clear transition state
       fetchProducts().finally(() => {
