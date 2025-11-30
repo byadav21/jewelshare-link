@@ -9,15 +9,32 @@ export const ThemeSwitcher = () => {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    // Check if user has manually set a preference
+    const hasManualPreference = localStorage.getItem("theme-manual-override");
+    
+    if (!hasManualPreference) {
+      // Auto-set theme based on time of day
+      const hour = new Date().getHours();
+      const autoTheme = hour >= 6 && hour < 18 ? "light" : "dark";
+      setTheme(autoTheme);
+    }
+  }, [setTheme]);
 
   if (!mounted) {
     return null;
   }
 
+  const handleThemeToggle = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    // Mark that user has manually overridden the auto theme
+    localStorage.setItem("theme-manual-override", "true");
+  };
+
   return (
     <motion.button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={handleThemeToggle}
       className="fixed top-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/20 bg-background/80 backdrop-blur-lg shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300"
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
