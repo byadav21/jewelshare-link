@@ -47,9 +47,9 @@ export const JewelleryFilters = ({
               <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">
                 <div className="flex items-center justify-between w-full gap-2">
                   <span>{cat}</span>
-                  {categoryCounts[cat] !== undefined && (
+                  {categoryCounts[cat.toUpperCase().trim()] !== undefined && (
                     <Badge variant="secondary" className="text-xs ml-2">
-                      {categoryCounts[cat]}
+                      {categoryCounts[cat.toUpperCase().trim()]}
                     </Badge>
                   )}
                 </div>
