@@ -77,6 +77,10 @@ const Catalog = () => {
     diamondClarity: "",
     searchQuery: "",
     deliveryType: "",
+    minDiamondWeight: "",
+    maxDiamondWeight: "",
+    minNetWeight: "",
+    maxNetWeight: "",
     gemstoneType: "",
     color: "",
     clarity: "",
@@ -482,6 +486,27 @@ const Catalog = () => {
         if (clarity?.toUpperCase().trim() !== filters.diamondClarity.toUpperCase().trim()) return false;
       }
       if (filters.deliveryType && product.delivery_type !== filters.deliveryType) return false;
+      
+      // Diamond weight filters
+      if (filters.minDiamondWeight) {
+        const minDW = parseFloat(filters.minDiamondWeight);
+        if (!product.diamond_weight || product.diamond_weight < minDW) return false;
+      }
+      if (filters.maxDiamondWeight) {
+        const maxDW = parseFloat(filters.maxDiamondWeight);
+        if (!product.diamond_weight || product.diamond_weight > maxDW) return false;
+      }
+      
+      // Net weight filters
+      if (filters.minNetWeight) {
+        const minNW = parseFloat(filters.minNetWeight);
+        if (!product.net_weight || product.net_weight < minNW) return false;
+      }
+      if (filters.maxNetWeight) {
+        const maxNW = parseFloat(filters.maxNetWeight);
+        if (!product.net_weight || product.net_weight > maxNW) return false;
+      }
+      
       return true;
     });
     
@@ -1389,6 +1414,10 @@ const Catalog = () => {
                 diamondClarity: "",
                 searchQuery: "",
                 deliveryType: "",
+                minDiamondWeight: "",
+                maxDiamondWeight: "",
+                minNetWeight: "",
+                maxNetWeight: "",
                 gemstoneType: "",
                 color: "",
                 clarity: "",

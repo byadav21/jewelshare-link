@@ -45,6 +45,7 @@ const SharedCatalog = () => {
   const [filters, setFilters] = useState<FilterState>({
     category: "", metalType: "", minPrice: "", maxPrice: "",
     diamondColor: "", diamondClarity: "", searchQuery: "", deliveryType: "",
+    minDiamondWeight: "", maxDiamondWeight: "", minNetWeight: "", maxNetWeight: "",
     gemstoneType: "", color: "", clarity: "", cut: "", minCarat: "", maxCarat: "",
     diamondType: "", shape: "", polish: "", symmetry: "", fluorescence: "", lab: ""
   });
@@ -619,6 +620,10 @@ const SharedCatalog = () => {
                 diamondClarity: "",
                 searchQuery: "",
                 deliveryType: "",
+                minDiamondWeight: "",
+                maxDiamondWeight: "",
+                minNetWeight: "",
+                maxNetWeight: "",
                 gemstoneType: "",
                 color: "",
                 clarity: "",
