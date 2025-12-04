@@ -208,7 +208,7 @@ const Import = () => {
       (worksheet[`D${index + 2}`] ? String(worksheet[`D${index + 2}`].v || '').trim() : null);
 
     // Get product name and SKU
-    const productName = getVal('Prodcut Title', 'Product Title', 'PRODUCT', 'Name') || `Product ${index + 1}`;
+    const productName = getVal('Prodcut', 'Prodcut Title', 'Product Title', 'PRODUCT', 'Name') || `Product ${index + 1}`;
     const sku = getVal('SKU', 'CERT', 'SKU ID');
     const category = getVal('Category', 'CATEGORY');
     
@@ -365,8 +365,9 @@ const Import = () => {
             { excel: 'Gemstone cost', db: 'gemstone_cost', type: 'number', required: false, alternatives: [] },
             { excel: 'TOTAL', db: 'retail_price', type: 'number', required: false, alternatives: ['Total'], note: 'Auto-calculated if empty' },
             { excel: 'TOTAL_USD', db: 'total_usd', type: 'number', required: false, alternatives: ['Total USD'] },
-            { excel: 'Prodcut Title', db: 'name', type: 'text', required: false, alternatives: ['Product Title', 'PRODUCT', 'Name'] },
+            { excel: 'Prodcut', db: 'name', type: 'text', required: false, alternatives: ['Prodcut Title', 'Product Title', 'PRODUCT', 'Name'] },
             { excel: 'IMAGE_URL', db: 'image_url', type: 'url', required: false, alternatives: ['Image URL', 'Images'] },
+            { excel: 'STOCK QUANTITY', db: 'stock_quantity', type: 'number', required: false, alternatives: ['Stock', 'Stock Quantity'] },
           ];
 
           jewelryMappings.forEach(mapping => {
