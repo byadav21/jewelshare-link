@@ -338,16 +338,17 @@ const Catalog = () => {
         retail_price: Math.max(0, product.retail_price + goldValueDifference)
       };
     });
-    let successCount = 0;
-    for (const update of updatedProducts) {
-      const {
-        error
-      } = await supabase.from("products").update({
+    // Batch update products in parallel for faster performance
+    const updatePromises = updatedProducts.map(update => 
+      supabase.from("products").update({
         cost_price: update.cost_price,
         retail_price: update.retail_price
-      }).eq("id", update.id);
-      if (!error) successCount++;
-    }
+      }).eq("id", update.id)
+    );
+    
+    const results = await Promise.all(updatePromises);
+    const successCount = results.filter(r => !r.error).length;
+    
     setGoldRate(newRate);
     await fetchProducts();
     toast.success(`Gold rate updated to ₹${newRate.toLocaleString('en-IN')}/g and ${successCount} product prices recalculated!`);
