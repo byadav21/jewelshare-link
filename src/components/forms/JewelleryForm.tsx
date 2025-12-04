@@ -3,6 +3,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  safeNumber, 
+  normalizePurity, 
+  getPurityPercentage,
+  KARAT_OPTIONS,
+  calculateDiamondWeight,
+  calculateDValue,
+  calculateNetWeight,
+  calculateMakingCharges,
+  calculateGoldValue,
+  calculateTotalPrice
+} from "@/utils/jewelryCalculations";
 
 interface JewelleryFormProps {
   formData: any;
@@ -11,24 +23,7 @@ interface JewelleryFormProps {
 }
 
 // Standard karat options
-const STANDARD_KARATS = ['14', '18', '22', '24'];
-
-// Utility: Normalize purity to decimal fraction (0-1)
-const normalizePurity = (value: string | number | undefined): number => {
-  const raw = parseFloat(String(value)) || 18;
-  if (raw <= 1) return raw; // Already decimal (e.g., 0.75)
-  if (raw <= 24) return raw / 24; // Karat (e.g., 18 → 0.75)
-  return raw / 100; // Percentage (e.g., 75 → 0.75)
-};
-
-// Utility: Get purity percentage display
-const getPurityPercentage = (value: string | number | undefined): string => {
-  const fraction = normalizePurity(value);
-  return (fraction * 100).toFixed(1);
-};
-
-// Utility: Safe number parsing
-const safeNumber = (val: any): number => parseFloat(val) || 0;
+const STANDARD_KARATS = KARAT_OPTIONS.map(k => k.value);
 
 export const JewelleryForm = ({ formData, handleChange, setFormData }: JewelleryFormProps) => {
   const [vendorMakingCharges, setVendorMakingCharges] = useState(0);
@@ -57,7 +52,7 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     fetchVendorProfile();
   }, []);
 
-  // Memoized calculations
+  // Memoized calculations using shared utilities
   const calculations = useMemo(() => {
     const dWt1 = safeNumber(formData.d_wt_1);
     const dWt2 = safeNumber(formData.d_wt_2);
@@ -70,34 +65,14 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     const certificationCost = safeNumber(formData.certification_cost);
     const purityFraction = normalizePurity(formData.purity_fraction_used);
 
-    // Total Diamond Weight = D.WT 1 + D.WT 2
-    const totalDiamondWeight = dWt1 + dWt2;
-
-    // D VALUE = (D.WT 1 × D RATE 1) + (D.WT 2 × Pointer Diamond)
-    let dValue = 0;
-    if (dWt1 > 0 || dWt2 > 0) {
-      dValue = (dWt1 * dRate1) + (dWt2 * pointerDiamond);
-    } else if (totalDiamondWeight > 0 && dRate1 > 0) {
-      dValue = totalDiamondWeight * dRate1;
-    }
-
-    // NET WT = Gross Weight - (Diamond Weight + Gemstone Weight) / 5
-    // (1 carat = 0.2 grams, so divide by 5)
-    const netWeight = grossWeight > 0 
-      ? grossWeight - ((totalDiamondWeight + gemstoneWeight) / 5)
-      : 0;
-
-    // Making Charges = Gross Weight × Making Rate per gram
-    const makingCharges = grossWeight * vendorMakingCharges;
-
-    // Gemstone Cost = Gemstone Weight × Gemstone Rate
+    // Use shared calculation functions
+    const totalDiamondWeight = calculateDiamondWeight(dWt1, dWt2);
+    const dValue = calculateDValue(dWt1, dRate1, dWt2, pointerDiamond);
+    const netWeight = calculateNetWeight(grossWeight, totalDiamondWeight, gemstoneWeight);
+    const makingCharges = calculateMakingCharges(grossWeight, vendorMakingCharges);
     const gemstoneCost = gemstoneWeight * gemstoneRate;
-
-    // Gold Value = Net Weight × Gold Rate × Purity Fraction
-    const goldValue = netWeight * goldPerGram * purityFraction;
-
-    // Total Price = D Value + Making + Gold + Certification + Gemstone
-    const totalPrice = dValue + makingCharges + goldValue + certificationCost + gemstoneCost;
+    const goldValue = calculateGoldValue(netWeight, purityFraction, goldPerGram);
+    const totalPrice = calculateTotalPrice(dValue, makingCharges, goldValue, certificationCost, gemstoneCost);
 
     return {
       totalDiamondWeight: totalDiamondWeight > 0 ? totalDiamondWeight.toFixed(2) : '',
