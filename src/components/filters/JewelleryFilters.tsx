@@ -144,6 +144,58 @@ export const JewelleryFilters = ({
           </SelectContent>
         </Select>
       </div>
+
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="minDiamondWeight" className="text-xs sm:text-sm">Min D.WT (ct)</Label>
+        <Input
+          id="minDiamondWeight"
+          type="number"
+          placeholder="0"
+          step="0.01"
+          value={filters.minDiamondWeight}
+          onChange={(e) => updateFilter("minDiamondWeight", e.target.value)}
+          className="h-9 sm:h-10 text-xs sm:text-sm"
+        />
+      </div>
+
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="maxDiamondWeight" className="text-xs sm:text-sm">Max D.WT (ct)</Label>
+        <Input
+          id="maxDiamondWeight"
+          type="number"
+          placeholder="No limit"
+          step="0.01"
+          value={filters.maxDiamondWeight}
+          onChange={(e) => updateFilter("maxDiamondWeight", e.target.value)}
+          className="h-9 sm:h-10 text-xs sm:text-sm"
+        />
+      </div>
+
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="minNetWeight" className="text-xs sm:text-sm">Min Net WT (g)</Label>
+        <Input
+          id="minNetWeight"
+          type="number"
+          placeholder="0"
+          step="0.01"
+          value={filters.minNetWeight}
+          onChange={(e) => updateFilter("minNetWeight", e.target.value)}
+          className="h-9 sm:h-10 text-xs sm:text-sm"
+        />
+      </div>
+
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="maxNetWeight" className="text-xs sm:text-sm">Max Net WT (g)</Label>
+        <Input
+          id="maxNetWeight"
+          type="number"
+          placeholder="No limit"
+          step="0.01"
+          value={filters.maxNetWeight}
+          onChange={(e) => updateFilter("maxNetWeight", e.target.value)}
+          className="h-9 sm:h-10 text-xs sm:text-sm"
+        />
+      </div>
     </>
   );
 };
