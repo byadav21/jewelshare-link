@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, memo } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +13,7 @@ interface ProductCardProps {
   vendorLogoUrl?: string;
 }
 
-export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, vendorLogoUrl }: ProductCardProps) => {
+const ProductCardComponent = ({ product, isSelected, onToggleSelection, usdRate, vendorLogoUrl }: ProductCardProps) => {
   const images = [product.image_url, product.image_url_2, product.image_url_3].filter(Boolean);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -40,16 +39,8 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, v
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      whileHover={{ 
-        y: -8,
-        transition: { duration: 0.3, ease: "easeOut" }
-      }}
-    >
-      <Card className="overflow-hidden relative group bg-gradient-to-b from-card to-card/95 border-border/50 shadow-lg hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 active:scale-[0.98] touch-manipulation">
+    <div className="transform hover:-translate-y-2 transition-transform duration-300">
+      <Card className="overflow-hidden relative group bg-gradient-to-b from-card to-card/95 border-border/50 shadow-lg hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98] touch-manipulation">
         {/* Premium glow effect on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         <div 
@@ -223,6 +214,16 @@ export const ProductCard = ({ product, isSelected, onToggleSelection, usdRate, v
         </div>
       </CardFooter>
     </Card>
-    </motion.div>
+    </div>
   );
 };
+
+// Memoize to prevent unnecessary re-renders
+export const ProductCard = memo(ProductCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.usdRate === nextProps.usdRate &&
+    prevProps.product.retail_price === nextProps.product.retail_price
+  );
+});
