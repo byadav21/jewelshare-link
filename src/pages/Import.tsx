@@ -377,16 +377,25 @@ const Import = () => {
           const netWeightFromExcel = parseNumber(row['NET WT']);
           const netWeight = netWeightFromExcel || (grossWeight - totalDiamondWeight + gemstoneWeight / 5);
           
-          // Parse purity (handles both 76% and 0.76 formats)
+          // Normalize purity: handle decimal (0.76), karat (18 = 18K = 75%), or percentage (76 = 76%)
           const purityFraction = (() => {
             const purityValue = row.PURITY_FRACTION_USED;
-            if (!purityValue) return 0.76; // Default 18K
+            if (!purityValue) return 18 / 24; // Default 18K = 0.75
             if (typeof purityValue === 'string' && purityValue.includes('%')) {
               const numValue = parseFloat(purityValue.replace(/[^0-9.-]/g, ''));
-              return numValue > 0 ? numValue / 100 : 0.76;
+              return numValue > 0 ? numValue / 100 : 18 / 24;
             }
             const numValue = parseNumber(purityValue);
-            return numValue > 1 ? numValue / 100 : (numValue || 0.76);
+            if (numValue <= 1) {
+              // Already a decimal fraction (e.g., 0.76)
+              return numValue || 18 / 24;
+            } else if (numValue <= 24) {
+              // Karat value (e.g., 18 = 18K = 18/24 = 0.75)
+              return numValue / 24;
+            } else {
+              // Percentage (e.g., 76 = 76% = 0.76)
+              return numValue / 100;
+            }
           })();
           
           // Calculate D VALUE if not provided: (D.WT 1 × D RATE 1) + (D.WT 2 × Pointer diamond)
