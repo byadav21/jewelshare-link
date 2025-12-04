@@ -306,12 +306,16 @@ export const processJewelryImportRow = (
 };
 
 /**
- * Parse image URLs from Excel (supports pipe-separated URLs)
+ * Parse image URLs from Excel (supports pipe-separated URLs and escaped characters)
  */
 export const parseImageUrls = (imageUrlValue: any): { url1: string | null; url2: string | null; url3: string | null } => {
   if (!imageUrlValue) return { url1: null, url2: null, url3: null };
   
-  const urlString = String(imageUrlValue).trim();
+  // Clean up escaped characters from Excel (e.g., "https\://..." or "\|")
+  let urlString = String(imageUrlValue).trim()
+    .replace(/\\:/g, ':')  // Fix escaped colons
+    .replace(/\\\|/g, '|') // Fix escaped pipes
+    .replace(/\\/g, '');   // Remove remaining backslashes
   
   // Handle pipe-separated URLs
   if (urlString.includes('|')) {
