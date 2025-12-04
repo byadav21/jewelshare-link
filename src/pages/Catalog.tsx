@@ -448,6 +448,31 @@ const Catalog = () => {
   const diamondClarities = useMemo(() => [...new Set(products.map(p => p.gemstone?.split(' ')[1]).filter(Boolean))].sort(), [products]);
   const deliveryTypes = useMemo(() => [...new Set(products.map(p => p.delivery_type).filter(Boolean))].sort(), [products]);
 
+  // Natural sort function for product names (e.g., "Diamond Ring 1", "Diamond Ring 2", "Diamond Ring 10")
+  const naturalSort = (a: any, b: any) => {
+    const nameA = a.name || '';
+    const nameB = b.name || '';
+    
+    // Extract text prefix and numeric suffix
+    const matchA = nameA.match(/^(.+?)\s*(\d+)$/);
+    const matchB = nameB.match(/^(.+?)\s*(\d+)$/);
+    
+    if (matchA && matchB) {
+      const [, prefixA, numA] = matchA;
+      const [, prefixB, numB] = matchB;
+      
+      // First compare prefixes alphabetically
+      const prefixCompare = prefixA.localeCompare(prefixB);
+      if (prefixCompare !== 0) return prefixCompare;
+      
+      // Then compare numbers numerically
+      return parseInt(numA, 10) - parseInt(numB, 10);
+    }
+    
+    // Fallback to standard string comparison
+    return nameA.localeCompare(nameB);
+  };
+
   // Filter products
   const filteredProducts = useMemo(() => {
     const filtered = products.filter(product => {
@@ -483,7 +508,9 @@ const Catalog = () => {
       if (filters.deliveryType && product.delivery_type !== filters.deliveryType) return false;
       return true;
     });
-    return filtered;
+    
+    // Sort products naturally by name
+    return filtered.sort(naturalSort);
   }, [products, filters]);
 
   // Display products with load more functionality
