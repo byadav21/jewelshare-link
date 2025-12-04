@@ -132,9 +132,18 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
     const netWeight = parseFloat(formData.net_weight) || 0;
     const goldPerGram = parseFloat(formData.gold_per_gram_price) || 0;
     
-    // Handle purity: if value > 1, treat as percentage (76), otherwise as decimal (0.76)
-    const purityRaw = parseFloat(formData.purity_fraction_used) || 0;
-    const purityFraction = purityRaw > 1 ? purityRaw / 100 : (purityRaw > 0 ? purityRaw : 0.76);
+    // Normalize purity: handle decimal (0.76), karat (18 = 18K = 75%), or percentage (76 = 76%)
+    const purityRaw = parseFloat(formData.purity_fraction_used) || 18; // Default to 18K
+    let purityFraction: number;
+    if (purityRaw <= 1) {
+      purityFraction = purityRaw;
+    } else if (purityRaw <= 24) {
+      // Karat value (e.g., 18 = 18K = 18/24 = 0.75)
+      purityFraction = purityRaw / 24;
+    } else {
+      // Percentage (e.g., 76 = 76% = 0.76)
+      purityFraction = purityRaw / 100;
+    }
     
     const diamondValue = parseFloat(formData.d_value) || 0;
     const mkg = parseFloat(formData.mkg) || 0;
@@ -450,8 +459,15 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
           <div className="flex justify-between">
             <span className="text-muted-foreground">Gold Value:</span>
             <span className="font-medium">₹{(() => {
-              const purityRaw = parseFloat(formData.purity_fraction_used) || 0;
-              const purityFraction = purityRaw > 1 ? purityRaw / 100 : (purityRaw > 0 ? purityRaw : 0.76);
+              const purityRaw = parseFloat(formData.purity_fraction_used) || 18;
+              let purityFraction: number;
+              if (purityRaw <= 1) {
+                purityFraction = purityRaw;
+              } else if (purityRaw <= 24) {
+                purityFraction = purityRaw / 24;
+              } else {
+                purityFraction = purityRaw / 100;
+              }
               return (parseFloat(formData.net_weight || 0) * parseFloat(formData.gold_per_gram_price || 0) * purityFraction).toLocaleString('en-IN');
             })()}</span>
           </div>

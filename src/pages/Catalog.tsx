@@ -322,9 +322,19 @@ const Catalog = () => {
     if (profileError) throw profileError;
     
     const updatedProducts = products.filter(p => p.net_weight || p.weight_grams).map(product => {
-      // Use per-product purity, handling both decimal (0.76) and percentage (76) formats
-      const purityRaw = product.purity_fraction_used || 0.76;
-      const purity = purityRaw > 1 ? purityRaw / 100 : purityRaw;
+      // Normalize purity: handle decimal (0.76), karat (18 = 18K = 75%), or percentage (76 = 76%)
+      const purityRaw = product.purity_fraction_used || 18; // Default to 18K
+      let purity: number;
+      if (purityRaw <= 1) {
+        // Already a decimal fraction (e.g., 0.76)
+        purity = purityRaw;
+      } else if (purityRaw <= 24) {
+        // Karat value (e.g., 18 = 18K = 18/24 = 0.75)
+        purity = purityRaw / 24;
+      } else {
+        // Percentage (e.g., 76 = 76% = 0.76)
+        purity = purityRaw / 100;
+      }
       
       // Use net_weight if available, otherwise use weight_grams
       const weight = product.net_weight || product.weight_grams || 0;
