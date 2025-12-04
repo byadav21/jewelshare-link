@@ -226,7 +226,8 @@ const Import = () => {
       sku: sku,
       category: category,
       metal_type: getVal('METAL TYPE', 'Metal Type') || null,
-      gemstone: getVal('GEMSTONE Name', 'GEMSTONE', 'Gemstone') || null,
+      gemstone: getVal('GEMSTONE Name', 'GEMSTONE', 'Gemstone', 'Gemstone Name') || null,
+      gemstone_name: getVal('GEMSTONE Name', 'GEMSTONE', 'Gemstone', 'Gemstone Name') || null,
       color: getVal('COLOR', 'Color') || null,
       diamond_color: diamondColor,
       clarity: clarity,
@@ -243,7 +244,7 @@ const Import = () => {
       // Diamond fields
       d_wt_1: dWt1 || null,
       d_wt_2: dWt2 || null,
-      diamond_type: getVal('Center stone TYPE', 'CS TYPE', 'Diamond Type') || null,
+      diamond_type: getVal('Center stone TYPE', 'CS TYPE', 'Diamond Type', 'CENTER_STONE_TYPE') || null,
       purity_fraction_used: calculations.purityFraction,
       d_rate_1: dRate1 || null,
       pointer_diamond: pointerDiamond || null,
@@ -341,7 +342,7 @@ const Import = () => {
         }> = [];
 
         if (selectedProductType === 'Jewellery') {
-          // Jewelry-specific mappings - support multiple Excel formats
+          // Jewelry-specific mappings - support GEMHUB format and other Excel formats
           const jewelryMappings = [
             { excel: 'SKU', db: 'sku', type: 'text', required: false, alternatives: ['CERT', 'SKU ID'] },
             { excel: 'Category', db: 'category', type: 'text', required: false, alternatives: ['CATEGORY'] },
@@ -351,16 +352,19 @@ const Import = () => {
             { excel: 'Diamond Weight 2', db: 'd_wt_2', type: 'number', required: false, alternatives: ['D.WT 2', 'D WT 2'] },
             { excel: 'Total Diamond Weight', db: 'diamond_weight', type: 'number', required: false, alternatives: ['T DWT'] },
             { excel: 'Gross Weight', db: 'weight_grams', type: 'number', required: true, alternatives: ['G WT', 'GWT'] },
+            { excel: 'Center stone TYPE', db: 'diamond_type', type: 'text', required: false, alternatives: ['CS TYPE', 'Diamond Type'] },
             { excel: 'NET Weight', db: 'net_weight', type: 'number', required: false, alternatives: ['NET WT'] },
             { excel: 'PURITY_FRACTION_USED', db: 'purity_fraction_used', type: 'number', required: true, alternatives: ['Purity'] },
             { excel: 'Diamond RATE 1', db: 'd_rate_1', type: 'number', required: false, alternatives: ['D RATE 1'] },
             { excel: 'Diamond Rate 2', db: 'pointer_diamond', type: 'number', required: false, alternatives: ['Pointer diamond'] },
             { excel: 'D VALUE', db: 'd_value', type: 'number', required: false, alternatives: [] },
+            { excel: 'GEMSTONE Name', db: 'gemstone_name', type: 'text', required: false, alternatives: ['GEMSTONE', 'Gemstone Name'] },
             { excel: 'Making Charges', db: 'mkg', type: 'number', required: false, alternatives: ['MKG'], note: 'Auto-calculated from vendor profile' },
             { excel: 'GOLD Cost', db: 'gold_per_gram_price', type: 'number', required: false, alternatives: ['GOLD'], note: 'Auto-calculated from vendor profile' },
             { excel: 'Certification cost', db: 'certification_cost', type: 'number', required: false, alternatives: [] },
             { excel: 'Gemstone cost', db: 'gemstone_cost', type: 'number', required: false, alternatives: [] },
             { excel: 'TOTAL', db: 'retail_price', type: 'number', required: false, alternatives: ['Total'], note: 'Auto-calculated if empty' },
+            { excel: 'TOTAL_USD', db: 'total_usd', type: 'number', required: false, alternatives: ['Total USD'] },
             { excel: 'Prodcut Title', db: 'name', type: 'text', required: false, alternatives: ['Product Title', 'PRODUCT', 'Name'] },
             { excel: 'IMAGE_URL', db: 'image_url', type: 'url', required: false, alternatives: ['Image URL', 'Images'] },
           ];
@@ -484,13 +488,16 @@ const Import = () => {
       for (const [index, rowData] of jsonData.entries()) {
         const row: any = rowData;
 
-        // Parse image URLs helper - supports multiple column names and pipe-separated URLs
+        // Parse image URLs helper - supports multiple column names, pipe-separated URLs, and escaped chars
         const parseImageUrls = () => {
           const imageField = row.IMAGE_URL || row['IMAGE URL'] || row['Image URL'] || row['Images'] || row['IMAGE_URL'];
           if (!imageField) return { imageUrl: null, imageUrl2: null, imageUrl3: null };
           
+          // Clean escaped characters from Excel export (e.g., "https\://..." becomes "https://...")
           const cleanUrls = String(imageField)
-            .replace(/\\/g, '') // Remove backslashes from escaped URLs
+            .replace(/\\:/g, ':')  // Fix escaped colons
+            .replace(/\\\|/g, '|') // Fix escaped pipes
+            .replace(/\\/g, '')    // Remove remaining backslashes
             .split('|')
             .map((url: string) => url.trim())
             .filter((url: string) => url.startsWith('http'));
