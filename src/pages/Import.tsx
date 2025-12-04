@@ -16,6 +16,7 @@ import { generateProductTemplate } from "@/utils/generateTemplate";
 import { convertINRtoUSD } from "@/utils/currencyConversion";
 import { getExpectedColumns } from "@/utils/columnMapping";
 import { ColumnMappingPreview } from "@/components/ColumnMappingPreview";
+import { safeNumber, normalizePurity, processJewelryImportRow } from "@/utils/jewelryCalculations";
 
 type ProductType = 'Jewellery' | 'Gemstones' | 'Loose Diamonds';
 
@@ -61,6 +62,199 @@ const Import = () => {
       return (data?.approved_categories || []) as string[];
     },
   });
+
+  // ============================================
+  // Product Row Processing Helpers
+  // ============================================
+
+  const processGemstoneRow = async (
+    row: Record<string, any>,
+    userId: string,
+    index: number,
+    imageUrl: string | null,
+    imageUrl2: string | null,
+    imageUrl3: string | null
+  ) => {
+    const priceINR = safeNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
+    const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
+    const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
+    
+    const costPriceRaw = hasCostPrice ? safeNumber(row['COST PRICE'] || row.COST_PRICE || row['Cost Price']) : null;
+    const retailPriceRaw = hasRetailPrice ? safeNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE || row['Retail Price']) : null;
+    
+    const safePriceVal = (priceINR && priceINR > 0) ? priceINR : 0.01;
+    const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safePriceVal;
+    const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePriceVal;
+    const priceUSD = safePriceVal > 0.01 ? await convertINRtoUSD(safePriceVal) : null;
+    
+    return {
+      user_id: userId,
+      sku: row['SKU ID'] || row['SKU'] || `GEM-${index + 1}`,
+      gemstone_name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Ruby',
+      gemstone_type: row['GEMSTONE TYPE'] || row['Gemstone Type'] || null,
+      carat_weight: safeNumber(row['CARAT WEIGHT'] || row['Carat Weight']),
+      color: row['COLOR'] || row['Color'] || null,
+      clarity: row['CLARITY'] || row['Clarity'] || null,
+      cut: row['CUT'] || row['Cut'] || null,
+      polish: row['POLISH'] || row['Polish'] || null,
+      symmetry: row['SYMMETRY'] || row['Symmetry'] || null,
+      measurement: row['MEASUREMENT'] || row['Measurement'] || null,
+      certification: row['CERTIFICATION'] || row['Certification'] || null,
+      image_url: imageUrl,
+      image_url_2: imageUrl2,
+      image_url_3: imageUrl3,
+      price_inr: safePriceVal,
+      price_usd: priceUSD,
+      cost_price: costPrice,
+      retail_price: retailPrice,
+      stock_quantity: safeNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
+      product_type: 'Gemstones',
+      name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
+    };
+  };
+
+  const processDiamondRow = async (
+    row: Record<string, any>,
+    userId: string,
+    index: number,
+    imageUrl: string | null,
+    imageUrl2: string | null,
+    imageUrl3: string | null
+  ) => {
+    const priceINR = safeNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
+    const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
+    const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
+    
+    const costPriceRaw = hasCostPrice ? safeNumber(row['COST PRICE'] || row.COST_PRICE || row['Cost Price']) : null;
+    const retailPriceRaw = hasRetailPrice ? safeNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE || row['Retail Price']) : null;
+    
+    const safePriceVal = (priceINR && priceINR > 0) ? priceINR : 0.01;
+    const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safePriceVal;
+    const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePriceVal;
+    const priceUSD = safePriceVal > 0.01 ? await convertINRtoUSD(safePriceVal) : null;
+    
+    return {
+      user_id: userId,
+      sku: row['SKU NO'] || row['SKU'] || `DIA-${index + 1}`,
+      diamond_type: row['DIAMOND TYPE'] || row['Diamond Type'] || 'Natural',
+      status: row.STATUS || row['Status'] || null,
+      shape: row.SHAPE || row['Shape'] || 'Round',
+      carat: safeNumber(row.CARAT || row['Carat']),
+      clarity: row.CLARITY || row['Clarity'] || 'VS1',
+      color: row.COLOR || row['Color'] || 'F',
+      color_shade_amount: row['COLOR SHADE AMOUNT'] || row['Color Shade Amount'] || null,
+      cut: row.CUT || row['Cut'] || null,
+      polish: row.POLISH || row['Polish'] || null,
+      symmetry: row.SYMMETRY || row['Symmetry'] || null,
+      fluorescence: row.FLO || row['Fluorescence'] || null,
+      measurement: row.MEASUREMENT || row['Measurement'] || null,
+      ratio: row.RATIO || row['Ratio'] || null,
+      lab: row.LAB || row['Lab'] || null,
+      image_url: imageUrl,
+      image_url_2: imageUrl2,
+      image_url_3: imageUrl3,
+      price_inr: safePriceVal,
+      price_usd: priceUSD,
+      cost_price: costPrice,
+      retail_price: retailPrice,
+      stock_quantity: safeNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
+      product_type: 'Loose Diamonds',
+      name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,
+    };
+  };
+
+  const processJewelryRow = async (
+    row: Record<string, any>,
+    userId: string,
+    index: number,
+    imageUrl: string | null,
+    imageUrl2: string | null,
+    imageUrl3: string | null,
+    goldRate: number,
+    makingChargesPerGram: number,
+    worksheet: XLSX.WorkSheet
+  ) => {
+    // Use shared calculation utility
+    const calculations = processJewelryImportRow(row, goldRate, makingChargesPerGram);
+    
+    // Parse additional fields
+    const grossWeight = safeNumber(row['G WT']);
+    const dWt1 = safeNumber(row['D.WT 1'] || row['D WT 1']);
+    const dWt2 = safeNumber(row['D.WT 2'] || row['D WT 2']);
+    const dRate1 = safeNumber(row['D RATE 1']);
+    const pointerDiamond = safeNumber(row['Pointer diamond']);
+    const certificationCost = safeNumber(row['Certification cost']);
+    const gemstoneCost = safeNumber(row['Gemstone cost']);
+    const gemstoneWeight = safeNumber(row['GEMSTONE WT']);
+    
+    // Convert to USD
+    const totalUsdFromExcel = safeNumber(row.TOTAL_USD);
+    const totalUsd = totalUsdFromExcel || (calculations.totalPrice > 0 ? await convertINRtoUSD(calculations.totalPrice) : null);
+    
+    // Get column values by position for GEMHUB format
+    const diamondColorCell = worksheet[`C${index + 2}`];
+    const clarityCell = worksheet[`D${index + 2}`];
+    const diamondColorFromColumn = diamondColorCell ? String(diamondColorCell.v || '').trim() : null;
+    const clarityFromColumn = clarityCell ? String(clarityCell.v || '').trim() : null;
+
+    // Parse delivery type
+    const parseDeliveryType = () => {
+      const deliveryType = row['DELIVERY TYPE'];
+      if (!deliveryType) return 'immediate';
+      const typeStr = String(deliveryType).toLowerCase();
+      return typeStr.includes('schedule') ? 'scheduled' : 'immediate';
+    };
+    
+    return {
+      user_id: userId,
+      name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
+      description: row.DESCRIPTION || row['Product Type'] || null,
+      sku: row.CERT || row['SKU ID'] || row.SKU || null,
+      category: row.CATEGORY || null,
+      metal_type: row['METAL TYPE'] || null,
+      gemstone: row.GEMSTONE || null,
+      color: row.COLOR || null,
+      diamond_color: diamondColorFromColumn || row['Diamond Color'] || row['DIAMOND COLOR'] || null,
+      clarity: clarityFromColumn || row.CLARITY || null,
+      image_url: imageUrl,
+      image_url_2: imageUrl2,
+      image_url_3: imageUrl3,
+      
+      // Weight fields
+      weight_grams: grossWeight || null,
+      net_weight: calculations.netWeight || null,
+      diamond_weight: calculations.totalDiamondWeight || null,
+      carat_weight: gemstoneWeight || null,
+      
+      // Diamond fields
+      d_wt_1: dWt1 || null,
+      d_wt_2: dWt2 || null,
+      diamond_type: row['CS TYPE'] || null,
+      purity_fraction_used: calculations.purityFraction,
+      d_rate_1: dRate1 || null,
+      pointer_diamond: pointerDiamond || null,
+      d_value: calculations.dValue || null,
+      gemstone_type: row['GEMSTONE TYPE'] || null,
+      mkg: calculations.makingCharges || null,
+      gold_per_gram_price: calculations.goldValue || null,
+      certification_cost: certificationCost || null,
+      gemstone_cost: gemstoneCost || null,
+      total_usd: totalUsd,
+      
+      // Pricing
+      price_inr: calculations.totalPrice,
+      price_usd: totalUsd,
+      cost_price: calculations.costPrice,
+      retail_price: calculations.costPrice,
+      stock_quantity: safeNumber(row['STOCK QUANTITY']) || 1,
+      
+      // Delivery
+      delivery_type: parseDeliveryType(),
+      dispatches_in_days: row['DISPATCHES IN DAYS'] || null,
+      
+      product_type: 'Jewellery',
+    };
+  };
 
   const handlePreview = async () => {
     if (!file) {
@@ -253,241 +447,35 @@ const Import = () => {
                      productImportSchema;
       
       for (const [index, rowData] of jsonData.entries()) {
-        const row: any = rowData; // Type assertion for Excel data
-        
-        // Parse numbers safely
-        const parseNumber = (val: any): number => {
-          if (typeof val === 'number') return val;
-          if (typeof val === 'string') {
-            const cleaned = val.replace(/[^0-9.-]/g, '');
-            return parseFloat(cleaned) || 0;
-          }
-          return 0;
-        };
+        const row: any = rowData;
 
-        // Parse image URLs
-        let imageUrl = null;
-        let imageUrl2 = null;
-        let imageUrl3 = null;
-        if (row.IMAGE_URL || row['IMAGE URL']) {
-          const cleanUrls = String(row.IMAGE_URL || row['IMAGE URL'])
+        // Parse image URLs helper
+        const parseImageUrls = () => {
+          const imageField = row.IMAGE_URL || row['IMAGE URL'];
+          if (!imageField) return { imageUrl: null, imageUrl2: null, imageUrl3: null };
+          
+          const cleanUrls = String(imageField)
             .replace(/\\/g, '')
             .split('|')
             .map((url: string) => url.trim())
             .filter((url: string) => url.startsWith('http'));
           
-          imageUrl = cleanUrls[0] || null;
-          imageUrl2 = cleanUrls[1] || null;
-          imageUrl3 = cleanUrls[2] || null;
-        }
+          return {
+            imageUrl: cleanUrls[0] || null,
+            imageUrl2: cleanUrls[1] || null,
+            imageUrl3: cleanUrls[2] || null,
+          };
+        };
 
+        const { imageUrl, imageUrl2, imageUrl3 } = parseImageUrls();
         let product: any;
 
         if (selectedProductType === 'Gemstones') {
-          const priceINR = parseNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
-          
-          // Check if COST PRICE and RETAIL PRICE columns exist in the file (handle both underscore and space formats)
-          const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
-          const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
-          
-          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row.COST_PRICE || row['Cost Price']) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE || row['Retail Price']) : null;
-          
-          // Ensure we always have valid prices (minimum 0.01)
-          const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
-          const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safePrice;
-          const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
-          const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
-          
-          product = {
-            user_id: user.id,
-            sku: row['SKU ID'] || row['SKU'] || `GEM-${index + 1}`,
-            gemstone_name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Ruby',
-            gemstone_type: row['GEMSTONE TYPE'] || row['Gemstone Type'] || null,
-            carat_weight: parseNumber(row['CARAT WEIGHT'] || row['Carat Weight']),
-            color: row['COLOR'] || row['Color'] || null,
-            clarity: row['CLARITY'] || row['Clarity'] || null,
-            cut: row['CUT'] || row['Cut'] || null,
-            polish: row['POLISH'] || row['Polish'] || null,
-            symmetry: row['SYMMETRY'] || row['Symmetry'] || null,
-            measurement: row['MEASUREMENT'] || row['Measurement'] || null,
-            certification: row['CERTIFICATION'] || row['Certification'] || null,
-            image_url: imageUrl || null,
-            image_url_2: imageUrl2 || null,
-            image_url_3: imageUrl3 || null,
-            price_inr: safePrice,
-            price_usd: priceUSD,
-            cost_price: costPrice,
-            retail_price: retailPrice,
-            stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
-            product_type: 'Gemstones',
-            name: row['GEMSTONE NAME'] || row['Gemstone Name'] || 'Unknown Gemstone',
-          };
+          product = await processGemstoneRow(row, user.id, index, imageUrl, imageUrl2, imageUrl3);
         } else if (selectedProductType === 'Loose Diamonds') {
-          const priceINR = parseNumber(row['PRICE INR'] || row.PRICE_INR || row['Price INR'] || row['Price']);
-          
-          // Check if COST PRICE and RETAIL PRICE columns exist in the file (handle both underscore and space formats)
-          const hasCostPrice = 'COST PRICE' in row || 'COST_PRICE' in row || 'Cost Price' in row;
-          const hasRetailPrice = 'RETAIL PRICE' in row || 'RETAIL_PRICE' in row || 'Retail Price' in row;
-          
-          const costPriceRaw = hasCostPrice ? parseNumber(row['COST PRICE'] || row.COST_PRICE || row['Cost Price']) : null;
-          const retailPriceRaw = hasRetailPrice ? parseNumber(row['RETAIL PRICE'] || row.RETAIL_PRICE || row['Retail Price']) : null;
-          
-          // Ensure we always have valid prices (minimum 0.01)
-          const safePrice = (priceINR && priceINR > 0) ? priceINR : 0.01;
-          const costPrice = (costPriceRaw !== null && costPriceRaw > 0) ? costPriceRaw : safePrice;
-          const retailPrice = (retailPriceRaw !== null && retailPriceRaw > 0) ? retailPriceRaw : safePrice;
-          const priceUSD = safePrice > 0.01 ? await convertINRtoUSD(safePrice) : null;
-          
-          product = {
-            user_id: user.id,
-            sku: row['SKU NO'] || row['SKU'] || `DIA-${index + 1}`,
-            diamond_type: row['DIAMOND TYPE'] || row['Diamond Type'] || 'Natural',
-            status: row.STATUS || row['Status'] || null,
-            shape: row.SHAPE || row['Shape'] || 'Round',
-            carat: parseNumber(row.CARAT || row['Carat']),
-            clarity: row.CLARITY || row['Clarity'] || 'VS1',
-            color: row.COLOR || row['Color'] || 'F',
-            color_shade_amount: row['COLOR SHADE AMOUNT'] || row['Color Shade Amount'] || null,
-            cut: row.CUT || row['Cut'] || null,
-            polish: row.POLISH || row['Polish'] || null,
-            symmetry: row.SYMMETRY || row['Symmetry'] || null,
-            fluorescence: row.FLO || row['Fluorescence'] || null,
-            measurement: row.MEASUREMENT || row['Measurement'] || null,
-            ratio: row.RATIO || row['Ratio'] || null,
-            lab: row.LAB || row['Lab'] || null,
-            image_url: imageUrl || null,
-            image_url_2: imageUrl2 || null,
-            image_url_3: imageUrl3 || null,
-            price_inr: safePrice,
-            price_usd: priceUSD,
-            cost_price: costPrice,
-            retail_price: retailPrice,
-            stock_quantity: parseNumber(row['STOCK QUANTITY'] || row['Stock Quantity']) || 1,
-            product_type: 'Loose Diamonds',
-            name: `${row.SHAPE || 'Round'} Diamond ${row.CARAT || '1.0'}ct`,
-          };
+          product = await processDiamondRow(row, user.id, index, imageUrl, imageUrl2, imageUrl3);
         } else {
-          // Jewellery - GEMHUB format with auto-calculations
-          const grossWeight = parseNumber(row['G WT']) || 0;
-          const totalDiamondWeight = parseNumber(row['T DWT']) || 0;
-          const gemstoneWeight = parseNumber(row['GEMSTONE WT']) || 0;
-          
-          // Calculate NET WT if not provided: G WT - T DWT + GEMSTONE WT/5
-          const netWeightFromExcel = parseNumber(row['NET WT']);
-          const netWeight = netWeightFromExcel || (grossWeight - totalDiamondWeight + gemstoneWeight / 5);
-          
-          // Normalize purity: handle decimal (0.76), karat (18 = 18K = 75%), or percentage (76 = 76%)
-          const purityFraction = (() => {
-            const purityValue = row.PURITY_FRACTION_USED;
-            if (!purityValue) return 18 / 24; // Default 18K = 0.75
-            if (typeof purityValue === 'string' && purityValue.includes('%')) {
-              const numValue = parseFloat(purityValue.replace(/[^0-9.-]/g, ''));
-              return numValue > 0 ? numValue / 100 : 18 / 24;
-            }
-            const numValue = parseNumber(purityValue);
-            if (numValue <= 1) {
-              // Already a decimal fraction (e.g., 0.76)
-              return numValue || 18 / 24;
-            } else if (numValue <= 24) {
-              // Karat value (e.g., 18 = 18K = 18/24 = 0.75)
-              return numValue / 24;
-            } else {
-              // Percentage (e.g., 76 = 76% = 0.76)
-              return numValue / 100;
-            }
-          })();
-          
-          // Calculate D VALUE if not provided: (D.WT 1 × D RATE 1) + (D.WT 2 × Pointer diamond)
-          const dWt1 = parseNumber(row['D.WT 1'] || row['D WT 1']) || 0;
-          const dWt2 = parseNumber(row['D.WT 2'] || row['D WT 2']) || 0;
-          const dRate1 = parseNumber(row['D RATE 1']) || 0;
-          const pointerDiamond = parseNumber(row['Pointer diamond']) || 0;
-          const dValueFromExcel = parseNumber(row['D VALUE']);
-          const dValue = dValueFromExcel || (dWt1 * dRate1 + dWt2 * pointerDiamond);
-          
-          // Calculate MKG if not provided: G WT × making_charges_per_gram
-          const mkgFromExcel = parseNumber(row.MKG);
-          const mkg = mkgFromExcel || (grossWeight * makingCharges);
-          
-          // Calculate GOLD if not provided: NET WT × gold_rate × purity_fraction
-          const goldFromExcel = parseNumber(row.GOLD);
-          const goldValue = goldFromExcel || (netWeight * goldRate * purityFraction);
-          
-          // Calculate TOTAL if not provided: D VALUE + MKG + GOLD + Certification cost + Gemstone cost
-          const certificationCost = parseNumber(row['Certification cost']) || 0;
-          const gemstoneCost = parseNumber(row['Gemstone cost']) || 0;
-          const totalFromExcel = parseNumber(row.TOTAL);
-          const totalPrice = totalFromExcel || (dValue + mkg + goldValue + certificationCost + gemstoneCost);
-          
-          // Convert to USD if not provided
-          const totalUsdFromExcel = parseNumber(row.TOTAL_USD);
-          const totalUsd = totalUsdFromExcel || (totalPrice > 0 ? await convertINRtoUSD(totalPrice) : null);
-          
-          // Handle GEMHUB format columns
-          // Get column C (Diamond Color) and column D (Clarity) by position
-          const rawRow = worksheet[`C${index + 2}`]; // +2 because index starts at 0 and row 1 is header
-          const diamondColorFromColumn = rawRow ? String(rawRow.v || '').trim() : null;
-          
-          const clarityRow = worksheet[`D${index + 2}`];
-          const clarityFromColumn = clarityRow ? String(clarityRow.v || '').trim() : null;
-          
-          product = {
-            user_id: user.id,
-            name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
-            description: row.DESCRIPTION || row['Product Type'] || null,
-            sku: row.CERT || row['SKU ID'] || row.SKU || null,
-            category: row.CATEGORY || null,
-            metal_type: row['METAL TYPE'] || null,
-            gemstone: row.GEMSTONE || null,
-            color: row.COLOR || null,
-            // Read diamond_color from column C position, fallback to named columns
-            diamond_color: diamondColorFromColumn || row['Diamond Color'] || row['DIAMOND COLOR'] || null,
-            // Read clarity from column D position, fallback to named columns
-            clarity: clarityFromColumn || row.CLARITY || null,
-            image_url: imageUrl || null,
-            image_url_2: imageUrl2 || null,
-            image_url_3: imageUrl3 || null,
-            
-            // Weight fields
-            weight_grams: grossWeight || null,
-            net_weight: netWeight || null,
-            diamond_weight: totalDiamondWeight || null,
-            carat_weight: gemstoneWeight || null, // Store gemstone weight in carat_weight
-            
-            // GEMHUB specific diamond fields
-            d_wt_1: dWt1 || null,
-            d_wt_2: dWt2 || null,
-            diamond_type: row['CS TYPE'] || null,
-            purity_fraction_used: purityFraction,
-            d_rate_1: dRate1 || null,
-            pointer_diamond: pointerDiamond || null,
-            d_value: dValue || null,
-            gemstone_type: row['GEMSTONE TYPE'] || null,
-            mkg: mkg || null,
-            gold_per_gram_price: goldValue || null,
-            certification_cost: certificationCost || null,
-            gemstone_cost: gemstoneCost || null,
-            total_usd: totalUsd,
-            
-            // Pricing - use calculated TOTAL (ensure minimum 0.01 for validation)
-            price_inr: totalPrice,
-            price_usd: totalUsd,
-            cost_price: totalPrice > 0 ? totalPrice : 0.01, // Use TOTAL as cost price with minimum
-            retail_price: totalPrice > 0 ? totalPrice : 0.01, // Use TOTAL as retail price with minimum
-            stock_quantity: parseNumber(row['STOCK QUANTITY']) || 1,
-            
-            // Delivery
-            delivery_type: (() => {
-              const deliveryType = row['DELIVERY TYPE'];
-              if (!deliveryType) return 'immediate';
-              const typeStr = String(deliveryType).toLowerCase();
-              return typeStr.includes('schedule') ? 'scheduled' : 'immediate';
-            })(),
-            dispatches_in_days: row['DISPATCHES IN DAYS'] || null,
-            
-            product_type: 'Jewellery',
-          };
+          product = await processJewelryRow(row, user.id, index, imageUrl, imageUrl2, imageUrl3, goldRate, makingCharges, worksheet);
         }
 
         // Validate product data
