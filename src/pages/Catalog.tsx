@@ -407,17 +407,17 @@ const Catalog = () => {
     return uniqueCategories.sort();
   }, [products]);
   
-  // Simplified category counts - only count when category filter is active
+  // Calculate category counts for all categories
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: products.length };
-    if (filters.category) {
-      // Only calculate specific category count when filtering
-      counts[filters.category] = products.filter(p => 
-        p.category?.toUpperCase().trim() === filters.category.toUpperCase().trim()
-      ).length;
-    }
+    products.forEach(p => {
+      if (p.category) {
+        const cat = p.category.toUpperCase().trim();
+        counts[cat] = (counts[cat] || 0) + 1;
+      }
+    });
     return counts;
-  }, [products.length, filters.category]);
+  }, [products]);
   
   const metalTypes = useMemo(() => [...new Set(products.map(p => p.metal_type).filter(Boolean))].sort(), [products]);
   const diamondColors = useMemo(() => [...new Set(products.map(p => p.gemstone?.split(' ')[0]).filter(Boolean))].sort(), [products]);
