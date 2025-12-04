@@ -13,6 +13,11 @@ interface JewelleryFormProps {
 
 export const JewelleryForm = ({ formData, handleChange, setFormData }: JewelleryFormProps) => {
   const [vendorMakingCharges, setVendorMakingCharges] = useState(0);
+  const [isCustomPurity, setIsCustomPurity] = useState(false);
+
+  // Check if current purity is a standard karat value
+  const standardKarats = ['14', '18', '22', '24'];
+  const currentPurityIsStandard = standardKarats.includes(formData.purity_fraction_used?.toString());
 
   // Fetch vendor's making charges on mount
   useEffect(() => {
@@ -340,25 +345,62 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="purity_fraction_used">Purity (Karat)</Label>
-          <Select
-            value={formData.purity_fraction_used?.toString() || "18"}
-            onValueChange={(value) => {
-              setFormData((prev: any) => ({
-                ...prev,
-                purity_fraction_used: value
-              }));
-            }}
-          >
-            <SelectTrigger className="bg-background">
-              <SelectValue placeholder="Select purity" />
-            </SelectTrigger>
-            <SelectContent className="bg-background z-50">
-              <SelectItem value="14">14K (58.3%)</SelectItem>
-              <SelectItem value="18">18K (75%)</SelectItem>
-              <SelectItem value="22">22K (91.7%)</SelectItem>
-              <SelectItem value="24">24K (100%)</SelectItem>
-            </SelectContent>
-          </Select>
+          {isCustomPurity || (!currentPurityIsStandard && formData.purity_fraction_used) ? (
+            <div className="flex gap-2">
+              <Input
+                id="purity_fraction_used"
+                name="purity_fraction_used"
+                type="number"
+                step="0.01"
+                value={formData.purity_fraction_used}
+                onChange={handleChange}
+                placeholder="Enter karat (e.g., 18) or percentage (e.g., 76)"
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCustomPurity(false);
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    purity_fraction_used: "18"
+                  }));
+                }}
+                className="px-3 py-2 text-xs bg-muted hover:bg-muted/80 rounded-md transition-colors"
+              >
+                Reset
+              </button>
+            </div>
+          ) : (
+            <Select
+              value={formData.purity_fraction_used?.toString() || "18"}
+              onValueChange={(value) => {
+                if (value === "custom") {
+                  setIsCustomPurity(true);
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    purity_fraction_used: ""
+                  }));
+                } else {
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    purity_fraction_used: value
+                  }));
+                }
+              }}
+            >
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="Select purity" />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                <SelectItem value="14">14K (58.3%)</SelectItem>
+                <SelectItem value="18">18K (75%)</SelectItem>
+                <SelectItem value="22">22K (91.7%)</SelectItem>
+                <SelectItem value="24">24K (100%)</SelectItem>
+                <SelectItem value="custom">Custom...</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <p className="text-xs text-muted-foreground">
             {(() => {
               const val = parseFloat(formData.purity_fraction_used) || 18;
