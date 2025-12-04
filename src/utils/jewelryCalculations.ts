@@ -89,7 +89,7 @@ export const calculateDiamondWeight = (dWt1: number, dWt2: number): number => {
 };
 
 /**
- * Calculate net weight: Gross Weight - (Total Diamond Weight + Gemstone Weight / 5)
+ * Calculate net weight: Gross Weight - (Total Diamond Weight + Gemstone Weight) / 5
  */
 export const calculateNetWeight = (
   grossWeight: number,
@@ -99,7 +99,7 @@ export const calculateNetWeight = (
   const gw = safeNumber(grossWeight);
   const tdw = safeNumber(totalDiamondWeight);
   const gsw = safeNumber(gemstoneWeight);
-  return Math.max(0, gw - (tdw + gsw / 5));
+  return Math.max(0, gw - (tdw + gsw) / 5);
 };
 
 /**
@@ -212,40 +212,85 @@ export const calculateJewelryPricing = (inputs: JewelryPriceInputs): JewelryPric
 };
 
 /**
+ * Get value from row with multiple possible column names
+ */
+const getRowValue = (row: Record<string, any>, ...keys: string[]): any => {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== null && row[key] !== '') {
+      return row[key];
+    }
+  }
+  return null;
+};
+
+/**
  * Process jewelry row data from Excel import
+ * Supports multiple Excel column formats (GEMHUB format and standard format)
  */
 export const processJewelryImportRow = (
   row: Record<string, any>,
   goldRate: number,
   makingChargesPerGram: number
 ): JewelryPriceOutputs & { purityFraction: number } => {
-  // Parse input values
-  const grossWeight = safeNumber(row['G WT']);
-  const gemstoneWeight = safeNumber(row['GEMSTONE WT']);
-  const dWt1 = safeNumber(row['D.WT 1'] || row['D WT 1']);
-  const dWt2 = safeNumber(row['D.WT 2'] || row['D WT 2']);
-  const dRate1 = safeNumber(row['D RATE 1']);
-  const pointerDiamond = safeNumber(row['Pointer diamond']);
-  const certificationCost = safeNumber(row['Certification cost']);
-  const gemstoneCost = safeNumber(row['Gemstone cost']);
+  // Parse input values - support multiple column name formats
+  const grossWeight = safeNumber(
+    getRowValue(row, 'Gross Weight', 'G WT', 'GWT', 'GROSS_WEIGHT', 'Gross_Weight')
+  );
+  const gemstoneWeight = safeNumber(
+    getRowValue(row, 'GEMSTONE WT', 'Gemstone Weight', 'GS_WT', 'GEMSTONE_WEIGHT')
+  );
+  const dWt1 = safeNumber(
+    getRowValue(row, 'Diamond Weight 1', 'D.WT 1', 'D WT 1', 'DWT1', 'D_WT_1')
+  );
+  const dWt2 = safeNumber(
+    getRowValue(row, 'Diamond Weight 2', 'D.WT 2', 'D WT 2', 'DWT2', 'D_WT_2')
+  );
+  const dRate1 = safeNumber(
+    getRowValue(row, 'Diamond RATE 1', 'D RATE 1', 'D_RATE_1', 'DRATE1')
+  );
+  const pointerDiamond = safeNumber(
+    getRowValue(row, 'Diamond Rate 2', 'Pointer diamond', 'D RATE 2', 'D_RATE_2', 'POINTER_DIAMOND')
+  );
+  const certificationCost = safeNumber(
+    getRowValue(row, 'Certification cost', 'CERTIFICATION_COST', 'Cert Cost', 'CERT_COST')
+  );
+  const gemstoneCost = safeNumber(
+    getRowValue(row, 'Gemstone cost', 'GEMSTONE_COST', 'GS_COST')
+  );
   
-  // Normalize purity
-  const purityFraction = normalizePurity(row.PURITY_FRACTION_USED);
+  // Normalize purity - support multiple formats
+  const purityRaw = getRowValue(row, 'PURITY_FRACTION_USED', 'Purity', 'PURITY', 'Purity Fraction');
+  const purityFraction = normalizePurity(purityRaw);
 
   // Check for pre-calculated values in Excel
-  const netWeightFromExcel = safeNumber(row['NET WT']);
-  const dValueFromExcel = safeNumber(row['D VALUE']);
-  const mkgFromExcel = safeNumber(row.MKG);
-  const goldFromExcel = safeNumber(row.GOLD);
-  const totalFromExcel = safeNumber(row.TOTAL);
+  const netWeightFromExcel = safeNumber(
+    getRowValue(row, 'NET Weight', 'NET WT', 'Net Weight', 'NET_WEIGHT')
+  );
+  const dValueFromExcel = safeNumber(
+    getRowValue(row, 'D VALUE', 'DVALUE', 'Diamond Value')
+  );
+  const mkgFromExcel = safeNumber(
+    getRowValue(row, 'Making Charges', 'MKG', 'MAKING_CHARGES')
+  );
+  const goldFromExcel = safeNumber(
+    getRowValue(row, 'GOLD Cost', 'GOLD', 'Gold Value', 'GOLD_COST')
+  );
+  const totalFromExcel = safeNumber(
+    getRowValue(row, 'TOTAL', 'Total', 'TOTAL_PRICE', 'Total Price')
+  );
 
-  // Calculate values (use Excel values if provided, otherwise calculate)
+  // Calculate values - ALWAYS recalculate using vendor profile values
+  // Only use Excel pre-calculated values for NET WT and D VALUE if provided
   const totalDiamondWeight = calculateDiamondWeight(dWt1, dWt2);
   const netWeight = netWeightFromExcel || calculateNetWeight(grossWeight, totalDiamondWeight, gemstoneWeight);
   const dValue = dValueFromExcel || calculateDValue(dWt1, dRate1, dWt2, pointerDiamond);
-  const makingCharges = mkgFromExcel || calculateMakingCharges(grossWeight, makingChargesPerGram);
-  const goldValue = goldFromExcel || calculateGoldValue(netWeight, purityFraction, goldRate);
-  const totalPrice = totalFromExcel || calculateTotalPrice(dValue, makingCharges, goldValue, certificationCost, gemstoneCost);
+  
+  // ALWAYS calculate making charges and gold value from vendor profile
+  const makingCharges = calculateMakingCharges(grossWeight, makingChargesPerGram);
+  const goldValue = calculateGoldValue(netWeight, purityFraction, goldRate);
+  
+  // Calculate total price using calculated values
+  const totalPrice = calculateTotalPrice(dValue, makingCharges, goldValue, certificationCost, gemstoneCost);
   const costPrice = totalPrice > 0 ? totalPrice : 0.01;
 
   return {
@@ -258,4 +303,25 @@ export const processJewelryImportRow = (
     costPrice,
     purityFraction,
   };
+};
+
+/**
+ * Parse image URLs from Excel (supports pipe-separated URLs)
+ */
+export const parseImageUrls = (imageUrlValue: any): { url1: string | null; url2: string | null; url3: string | null } => {
+  if (!imageUrlValue) return { url1: null, url2: null, url3: null };
+  
+  const urlString = String(imageUrlValue).trim();
+  
+  // Handle pipe-separated URLs
+  if (urlString.includes('|')) {
+    const urls = urlString.split('|').map(u => u.trim()).filter(u => u);
+    return {
+      url1: urls[0] || null,
+      url2: urls[1] || null,
+      url3: urls[2] || null,
+    };
+  }
+  
+  return { url1: urlString || null, url2: null, url3: null };
 };
