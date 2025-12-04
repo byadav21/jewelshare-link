@@ -232,7 +232,7 @@ export const processJewelryImportRow = (
   goldRate: number,
   makingChargesPerGram: number
 ): JewelryPriceOutputs & { purityFraction: number } => {
-  // Parse input values - support multiple column name formats
+  // Parse input values - support GEMHUB format and other column name formats
   const grossWeight = safeNumber(
     getRowValue(row, 'Gross Weight', 'G WT', 'GWT', 'GROSS_WEIGHT', 'Gross_Weight')
   );
@@ -262,7 +262,7 @@ export const processJewelryImportRow = (
   const purityRaw = getRowValue(row, 'PURITY_FRACTION_USED', 'Purity', 'PURITY', 'Purity Fraction');
   const purityFraction = normalizePurity(purityRaw);
 
-  // Check for pre-calculated values in Excel
+  // Check for pre-calculated values in Excel (GEMHUB format)
   const netWeightFromExcel = safeNumber(
     getRowValue(row, 'NET Weight', 'NET WT', 'Net Weight', 'NET_WEIGHT')
   );
