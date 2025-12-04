@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 
 interface JewelleryFormProps {
@@ -338,16 +339,33 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="purity_fraction_used">Purity (%)</Label>
-          <Input
-            id="purity_fraction_used"
-            name="purity_fraction_used"
-            type="number"
-            step="0.01"
-            value={formData.purity_fraction_used}
-            onChange={handleChange}
-            placeholder="76"
-          />
+          <Label htmlFor="purity_fraction_used">Purity (Karat)</Label>
+          <Select
+            value={formData.purity_fraction_used?.toString() || "18"}
+            onValueChange={(value) => {
+              setFormData((prev: any) => ({
+                ...prev,
+                purity_fraction_used: value
+              }));
+            }}
+          >
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder="Select purity" />
+            </SelectTrigger>
+            <SelectContent className="bg-background z-50">
+              <SelectItem value="14">14K (58.3%)</SelectItem>
+              <SelectItem value="18">18K (75%)</SelectItem>
+              <SelectItem value="22">22K (91.7%)</SelectItem>
+              <SelectItem value="24">24K (100%)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {(() => {
+              const val = parseFloat(formData.purity_fraction_used) || 18;
+              const pct = val <= 1 ? (val * 100).toFixed(1) : val <= 24 ? ((val / 24) * 100).toFixed(1) : val.toFixed(1);
+              return `${pct}% gold purity`;
+            })()}
+          </p>
         </div>
 
         <div className="space-y-2">
