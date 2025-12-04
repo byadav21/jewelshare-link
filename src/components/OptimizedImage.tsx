@@ -1,6 +1,6 @@
 /**
- * Optimized Image component with lazy loading and modern formats
- * Automatically handles WebP/AVIF with fallbacks, lazy loading, and responsive images
+ * Optimized Image component with lazy loading
+ * Handles lazy loading with Intersection Observer and graceful error handling
  */
 
 import { useState, useEffect, useRef, ImgHTMLAttributes } from "react";
@@ -14,8 +14,6 @@ interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 
   height?: number;
   lazy?: boolean;
   priority?: boolean;
-  quality?: number;
-  sizes?: string;
   className?: string;
   objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
   onLoad?: () => void;
@@ -29,8 +27,6 @@ export const OptimizedImage = ({
   height,
   lazy = true,
   priority = false,
-  quality = 85,
-  sizes,
   className,
   objectFit = "cover",
   onLoad,
@@ -41,70 +37,36 @@ export const OptimizedImage = ({
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(!lazy || priority);
   const imgRef = useRef<HTMLImageElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Reset state when src changes
+  useEffect(() => {
+    setIsLoaded(false);
+    setHasError(false);
+  }, [src]);
 
   // Lazy loading with Intersection Observer
   useEffect(() => {
     if (!lazy || priority || isInView) return;
 
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsInView(true);
-            observerRef.current?.disconnect();
+            observer.disconnect();
           }
         });
       },
-      {
-        rootMargin: "50px", // Start loading 50px before entering viewport
-      }
+      { rootMargin: "100px" }
     );
 
-    if (imgRef.current) {
-      observerRef.current.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
-    return () => {
-      observerRef.current?.disconnect();
-    };
+    return () => observer.disconnect();
   }, [lazy, priority, isInView]);
-
-  // Generate srcset for responsive images
-  const generateSrcSet = (baseSrc: string): string => {
-    if (!width) return baseSrc;
-    
-    const widths = [320, 640, 768, 1024, 1920];
-    return widths
-      .map((w) => `${baseSrc}?w=${w}&q=${quality} ${w}w`)
-      .join(", ");
-  };
-
-  // Generate WebP and AVIF sources
-  const getImageSources = () => {
-    const sources = [];
-    
-    // AVIF (best compression, if supported)
-    sources.push(
-      <source
-        key="avif"
-        type="image/avif"
-        srcSet={`${src}?format=avif&q=${quality}`}
-      />
-    );
-    
-    // WebP (good compression, widely supported)
-    sources.push(
-      <source
-        key="webp"
-        type="image/webp"
-        srcSet={generateSrcSet(src)}
-        sizes={sizes}
-      />
-    );
-    
-    return sources;
-  };
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -116,12 +78,6 @@ export const OptimizedImage = ({
     onError?.();
   };
 
-  const imageClasses = cn(
-    "transition-opacity duration-300 max-w-full h-auto",
-    isLoaded ? "opacity-100" : "opacity-0",
-    className
-  );
-
   const objectFitClass = {
     contain: "object-contain",
     cover: "object-cover",
@@ -130,12 +86,12 @@ export const OptimizedImage = ({
     "scale-down": "object-scale-down",
   }[objectFit];
 
-  // Show skeleton while loading
+  // Show skeleton while not in view
   if (!isInView) {
     return (
       <div
-        ref={imgRef}
-        className={cn("relative", className)}
+        ref={containerRef}
+        className={cn("relative bg-muted", className)}
         style={{ width, height }}
       >
         <Skeleton className="w-full h-full" />
@@ -153,33 +109,31 @@ export const OptimizedImage = ({
         )}
         style={{ width, height }}
       >
-        <span className="text-sm">Failed to load image</span>
+        <span className="text-xs">Image unavailable</span>
       </div>
     );
   }
 
   return (
-    <div className={cn("relative", !isLoaded && "overflow-hidden")}>
+    <div ref={containerRef} className={cn("relative", className)}>
       {!isLoaded && <Skeleton className="absolute inset-0" />}
-      
-      <picture>
-        {getImageSources()}
-        
-        {/* Fallback to original format */}
-        <img
-          ref={imgRef}
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          loading={lazy && !priority ? "lazy" : "eager"}
-          decoding={priority ? "sync" : "async"}
-          onLoad={handleLoad}
-          onError={handleError}
-          className={cn(imageClasses, objectFitClass)}
-          {...props}
-        />
-      </picture>
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={lazy && !priority ? "lazy" : "eager"}
+        decoding="async"
+        onLoad={handleLoad}
+        onError={handleError}
+        className={cn(
+          "transition-opacity duration-200 max-w-full h-auto",
+          isLoaded ? "opacity-100" : "opacity-0",
+          objectFitClass
+        )}
+        {...props}
+      />
     </div>
   );
 };
@@ -220,7 +174,7 @@ export const OptimizedBackgroundImage = ({
           }
         });
       },
-      { rootMargin: "50px" }
+      { rootMargin: "100px" }
     );
 
     if (divRef.current) {
