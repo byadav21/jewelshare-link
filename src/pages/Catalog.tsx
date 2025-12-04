@@ -320,10 +320,17 @@ const Catalog = () => {
       gold_rate_updated_at: new Date().toISOString()
     }).eq("user_id", user.id);
     if (profileError) throw profileError;
-    const purity = 0.76;
-    const updatedProducts = products.filter(p => p.weight_grams).map(product => {
-      const oldGoldValue = product.weight_grams * purity * goldRate;
-      const newGoldValue = product.weight_grams * purity * newRate;
+    
+    const updatedProducts = products.filter(p => p.weight_grams || p.net_weight).map(product => {
+      // Use per-product purity, handling both decimal (0.76) and percentage (76) formats
+      const purityRaw = product.purity_fraction_used || 0.76;
+      const purity = purityRaw > 1 ? purityRaw / 100 : purityRaw;
+      
+      // Use net_weight if available, otherwise use weight_grams
+      const weight = product.net_weight || product.weight_grams;
+      
+      const oldGoldValue = weight * purity * goldRate;
+      const newGoldValue = weight * purity * newRate;
       const goldValueDifference = newGoldValue - oldGoldValue;
       return {
         id: product.id,
@@ -584,7 +591,7 @@ const Catalog = () => {
       // Optimized query: only fetch needed columns
       let query = supabase
         .from("products")
-        .select("id, name, sku, image_url, image_url_2, image_url_3, cost_price, retail_price, stock_quantity, category, metal_type, gemstone, color, diamond_color, clarity, delivery_type, product_type, weight_grams, gemstone_type, carat_weight, cut, diamond_type, shape, carat, polish, symmetry, fluorescence, lab, created_at")
+        .select("id, name, sku, image_url, image_url_2, image_url_3, cost_price, retail_price, stock_quantity, category, metal_type, gemstone, color, diamond_color, clarity, delivery_type, product_type, weight_grams, gemstone_type, carat_weight, cut, diamond_type, shape, carat, polish, symmetry, fluorescence, lab, created_at, purity_fraction_used, net_weight")
         .eq("user_id", user.id)
         .is("deleted_at", null);
 
@@ -709,6 +716,12 @@ const Catalog = () => {
           const numValue = parseFloat(value as string);
           if (!isNaN(numValue) && numValue >= 0) {
             formattedUpdates[key] = numValue;
+          }
+        } else if (key === 'purity_fraction_used') {
+          // Purity: normalize to decimal (0-1) if entered as percentage
+          const numValue = parseFloat(value as string);
+          if (!isNaN(numValue) && numValue >= 0) {
+            formattedUpdates[key] = numValue > 1 ? numValue / 100 : numValue;
           }
         } else {
           formattedUpdates[key] = value;

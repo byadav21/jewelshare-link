@@ -196,7 +196,7 @@ const AddProduct = () => {
           diamond_weight: formData.diamond_weight ? parseFloat(formData.diamond_weight) : null,
           d_wt_1: formData.d_wt_1 ? parseFloat(formData.d_wt_1) : null,
           d_wt_2: formData.d_wt_2 ? parseFloat(formData.d_wt_2) : null,
-          purity_fraction_used: formData.purity_fraction_used ? parseFloat(formData.purity_fraction_used) : null,
+          purity_fraction_used: formData.purity_fraction_used ? (parseFloat(formData.purity_fraction_used) > 1 ? parseFloat(formData.purity_fraction_used) / 100 : parseFloat(formData.purity_fraction_used)) : null,
           d_rate_1: formData.d_rate_1 ? parseFloat(formData.d_rate_1) : null,
           pointer_diamond: formData.pointer_diamond ? parseFloat(formData.pointer_diamond) : null,
           d_value: formData.d_value ? parseFloat(formData.d_value) : null,
