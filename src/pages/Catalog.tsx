@@ -321,28 +321,36 @@ const Catalog = () => {
     }).eq("user_id", user.id);
     if (profileError) throw profileError;
     
-    const updatedProducts = products.filter(p => p.weight_grams || p.net_weight).map(product => {
+    const updatedProducts = products.filter(p => p.net_weight || p.weight_grams).map(product => {
       // Use per-product purity, handling both decimal (0.76) and percentage (76) formats
       const purityRaw = product.purity_fraction_used || 0.76;
       const purity = purityRaw > 1 ? purityRaw / 100 : purityRaw;
       
       // Use net_weight if available, otherwise use weight_grams
-      const weight = product.net_weight || product.weight_grams;
+      const weight = product.net_weight || product.weight_grams || 0;
       
-      const oldGoldValue = weight * purity * goldRate;
-      const newGoldValue = weight * purity * newRate;
-      const goldValueDifference = newGoldValue - oldGoldValue;
+      // Recalculate full price from components
+      const goldValue = weight * purity * newRate;
+      const diamondValue = product.d_value || 0;
+      const makingCharges = product.mkg || 0;
+      const certificationCost = product.certification_cost || 0;
+      const gemstoneCost = product.gemstone_cost || 0;
+      
+      const totalCost = goldValue + diamondValue + makingCharges + certificationCost + gemstoneCost;
+      
       return {
         id: product.id,
-        cost_price: Math.max(0, product.cost_price + goldValueDifference),
-        retail_price: Math.max(0, product.retail_price + goldValueDifference)
+        cost_price: Math.round(totalCost * 100) / 100,
+        retail_price: Math.round(totalCost * 100) / 100,
+        gold_per_gram_price: newRate
       };
     });
     // Batch update products in parallel for faster performance
     const updatePromises = updatedProducts.map(update => 
       supabase.from("products").update({
         cost_price: update.cost_price,
-        retail_price: update.retail_price
+        retail_price: update.retail_price,
+        gold_per_gram_price: update.gold_per_gram_price
       }).eq("id", update.id)
     );
     
@@ -589,10 +597,10 @@ const Catalog = () => {
       
       console.log("Fetching products for type:", selectedProductType);
       
-      // Optimized query: only fetch needed columns
+      // Optimized query: fetch columns needed for display and pricing calculations
       let query = supabase
         .from("products")
-        .select("id, name, sku, image_url, image_url_2, image_url_3, cost_price, retail_price, stock_quantity, category, metal_type, gemstone, color, diamond_color, clarity, delivery_type, product_type, weight_grams, gemstone_type, carat_weight, cut, diamond_type, shape, carat, polish, symmetry, fluorescence, lab, created_at, purity_fraction_used, net_weight")
+        .select("id, name, sku, image_url, image_url_2, image_url_3, cost_price, retail_price, stock_quantity, category, metal_type, gemstone, color, diamond_color, clarity, delivery_type, product_type, weight_grams, gemstone_type, carat_weight, cut, diamond_type, shape, carat, polish, symmetry, fluorescence, lab, created_at, purity_fraction_used, net_weight, d_value, mkg, certification_cost, gemstone_cost, gold_per_gram_price, d_rate_1, d_wt_1, d_wt_2, pointer_diamond")
         .eq("user_id", user.id)
         .is("deleted_at", null);
 
