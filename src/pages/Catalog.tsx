@@ -400,35 +400,11 @@ const Catalog = () => {
     }
   };
 
-  // Predefined categories
-  const predefinedCategories = [
-    "CVD BANGLE",
-    "CVD BRACELET",
-    "CVD GENTS RING",
-    "CVD LADIES RING",
-    "CVD PANDENT",
-    "CVD TOPS",
-    "DIAMOND BRACELET", 
-    "DIAMOND GENTS RING",
-    "DIAMOND LADIES RING", 
-    "DIAMOND PANDENT",
-    "DIAMOND PANDENT SET", 
-    "DIAMOND SET", 
-    "DIAMOND TOPS", 
-    "GOLD BRACELET",
-    "GOLD PANDENT",
-    "GOLD TOPS",
-    "LAB-GROWN DIAMOND",
-    "MOISSANITE JEWELLERY",
-    "MOISSANITE PENDANT",
-    "MOISSANITE RING"
-  ];
-
-  // Extract unique filter values and merge with predefined
+  // Extract unique categories dynamically from products
   const categories = useMemo(() => {
-    const productCategories = products.map(p => p.category).filter(Boolean);
-    const allCategories = [...new Set([...predefinedCategories, ...productCategories])];
-    return allCategories.sort();
+    const productCategories = products.map(p => p.category).filter(Boolean) as string[];
+    const uniqueCategories = [...new Set(productCategories)];
+    return uniqueCategories.sort();
   }, [products]);
   
   // Simplified category counts - only count when category filter is active
