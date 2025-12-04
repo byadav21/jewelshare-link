@@ -131,7 +131,11 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
   useEffect(() => {
     const netWeight = parseFloat(formData.net_weight) || 0;
     const goldPerGram = parseFloat(formData.gold_per_gram_price) || 0;
-    const purityFraction = (parseFloat(formData.purity_fraction_used) || 100) / 100;
+    
+    // Handle purity: if value > 1, treat as percentage (76), otherwise as decimal (0.76)
+    const purityRaw = parseFloat(formData.purity_fraction_used) || 0;
+    const purityFraction = purityRaw > 1 ? purityRaw / 100 : (purityRaw > 0 ? purityRaw : 0.76);
+    
     const diamondValue = parseFloat(formData.d_value) || 0;
     const mkg = parseFloat(formData.mkg) || 0;
     const certificationCost = parseFloat(formData.certification_cost) || 0;
@@ -445,7 +449,11 @@ export const JewelleryForm = ({ formData, handleChange, setFormData }: Jewellery
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Gold Value:</span>
-            <span className="font-medium">₹{(parseFloat(formData.net_weight || 0) * parseFloat(formData.gold_per_gram_price || 0) * (parseFloat(formData.purity_fraction_used || 100) / 100)).toLocaleString('en-IN')}</span>
+            <span className="font-medium">₹{(() => {
+              const purityRaw = parseFloat(formData.purity_fraction_used) || 0;
+              const purityFraction = purityRaw > 1 ? purityRaw / 100 : (purityRaw > 0 ? purityRaw : 0.76);
+              return (parseFloat(formData.net_weight || 0) * parseFloat(formData.gold_per_gram_price || 0) * purityFraction).toLocaleString('en-IN');
+            })()}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Certification:</span>
