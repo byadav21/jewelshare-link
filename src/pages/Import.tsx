@@ -174,48 +174,62 @@ const Import = () => {
     makingChargesPerGram: number,
     worksheet: XLSX.WorkSheet
   ) => {
-    // Use shared calculation utility
+    // Use shared calculation utility - calculates using vendor profile values
     const calculations = processJewelryImportRow(row, goldRate, makingChargesPerGram);
     
-    // Parse additional fields
-    const grossWeight = safeNumber(row['G WT']);
-    const dWt1 = safeNumber(row['D.WT 1'] || row['D WT 1']);
-    const dWt2 = safeNumber(row['D.WT 2'] || row['D WT 2']);
-    const dRate1 = safeNumber(row['D RATE 1']);
-    const pointerDiamond = safeNumber(row['Pointer diamond']);
-    const certificationCost = safeNumber(row['Certification cost']);
-    const gemstoneCost = safeNumber(row['Gemstone cost']);
-    const gemstoneWeight = safeNumber(row['GEMSTONE WT']);
+    // Helper to get value from multiple possible column names
+    const getVal = (...keys: string[]) => {
+      for (const key of keys) {
+        if (row[key] !== undefined && row[key] !== null && row[key] !== '') {
+          return row[key];
+        }
+      }
+      return null;
+    };
+    
+    // Parse weight fields - support multiple column formats
+    const grossWeight = safeNumber(getVal('Gross Weight', 'G WT', 'GWT'));
+    const dWt1 = safeNumber(getVal('Diamond Weight 1', 'D.WT 1', 'D WT 1', 'DWT1'));
+    const dWt2 = safeNumber(getVal('Diamond Weight 2', 'D.WT 2', 'D WT 2', 'DWT2'));
+    const dRate1 = safeNumber(getVal('Diamond RATE 1', 'D RATE 1', 'DRATE1'));
+    const pointerDiamond = safeNumber(getVal('Diamond Rate 2', 'Pointer diamond', 'D RATE 2'));
+    const certificationCost = safeNumber(getVal('Certification cost', 'CERTIFICATION_COST'));
+    const gemstoneCost = safeNumber(getVal('Gemstone cost', 'GEMSTONE_COST'));
+    const gemstoneWeight = safeNumber(getVal('GEMSTONE WT', 'Gemstone Weight'));
     
     // Convert to USD
-    const totalUsdFromExcel = safeNumber(row.TOTAL_USD);
+    const totalUsdFromExcel = safeNumber(getVal('TOTAL_USD', 'TOTAL USD'));
     const totalUsd = totalUsdFromExcel || (calculations.totalPrice > 0 ? await convertINRtoUSD(calculations.totalPrice) : null);
     
-    // Get column values by position for GEMHUB format
-    const diamondColorCell = worksheet[`C${index + 2}`];
-    const clarityCell = worksheet[`D${index + 2}`];
-    const diamondColorFromColumn = diamondColorCell ? String(diamondColorCell.v || '').trim() : null;
-    const clarityFromColumn = clarityCell ? String(clarityCell.v || '').trim() : null;
+    // Get diamond color and clarity - support multiple column formats
+    const diamondColor = getVal('Diamond Color', 'DIAMOND COLOR', 'Diamond_Color') || 
+      (worksheet[`C${index + 2}`] ? String(worksheet[`C${index + 2}`].v || '').trim() : null);
+    const clarity = getVal('Diamond CLARITY', 'CLARITY', 'Clarity') ||
+      (worksheet[`D${index + 2}`] ? String(worksheet[`D${index + 2}`].v || '').trim() : null);
 
+    // Get product name and SKU
+    const productName = getVal('Prodcut Title', 'Product Title', 'PRODUCT', 'Name') || `Product ${index + 1}`;
+    const sku = getVal('SKU', 'CERT', 'SKU ID');
+    const category = getVal('Category', 'CATEGORY');
+    
     // Parse delivery type
-    const parseDeliveryType = () => {
-      const deliveryType = row['DELIVERY TYPE'];
-      if (!deliveryType) return 'immediate';
-      const typeStr = String(deliveryType).toLowerCase();
-      return typeStr.includes('schedule') ? 'scheduled' : 'immediate';
-    };
+    const deliveryType = (() => {
+      const dt = getVal('DELIVERY TYPE', 'Delivery Type');
+      if (!dt) return 'immediate';
+      return String(dt).toLowerCase().includes('schedule') ? 'scheduled' : 'immediate';
+    })();
     
     return {
       user_id: userId,
-      name: row.PRODUCT || row.CERT || `Product ${index + 1}`,
-      description: row.DESCRIPTION || row['Product Type'] || null,
-      sku: row.CERT || row['SKU ID'] || row.SKU || null,
-      category: row.CATEGORY || null,
-      metal_type: row['METAL TYPE'] || null,
-      gemstone: row.GEMSTONE || null,
-      color: row.COLOR || null,
-      diamond_color: diamondColorFromColumn || row['Diamond Color'] || row['DIAMOND COLOR'] || null,
-      clarity: clarityFromColumn || row.CLARITY || null,
+      name: productName,
+      description: getVal('DESCRIPTION', 'Description') || null,
+      sku: sku,
+      category: category,
+      metal_type: getVal('METAL TYPE', 'Metal Type') || null,
+      gemstone: getVal('GEMSTONE Name', 'GEMSTONE', 'Gemstone') || null,
+      color: getVal('COLOR', 'Color') || null,
+      diamond_color: diamondColor,
+      clarity: clarity,
       image_url: imageUrl,
       image_url_2: imageUrl2,
       image_url_3: imageUrl3,
@@ -229,28 +243,28 @@ const Import = () => {
       // Diamond fields
       d_wt_1: dWt1 || null,
       d_wt_2: dWt2 || null,
-      diamond_type: row['CS TYPE'] || null,
+      diamond_type: getVal('Center stone TYPE', 'CS TYPE', 'Diamond Type') || null,
       purity_fraction_used: calculations.purityFraction,
       d_rate_1: dRate1 || null,
       pointer_diamond: pointerDiamond || null,
       d_value: calculations.dValue || null,
-      gemstone_type: row['GEMSTONE TYPE'] || null,
+      gemstone_type: getVal('GEMSTONE TYPE', 'Gemstone Type') || null,
       mkg: calculations.makingCharges || null,
       gold_per_gram_price: calculations.goldValue || null,
       certification_cost: certificationCost || null,
       gemstone_cost: gemstoneCost || null,
       total_usd: totalUsd,
       
-      // Pricing
+      // Pricing - calculated from vendor profile gold rate and making charges
       price_inr: calculations.totalPrice,
       price_usd: totalUsd,
       cost_price: calculations.costPrice,
       retail_price: calculations.costPrice,
-      stock_quantity: safeNumber(row['STOCK QUANTITY']) || 1,
+      stock_quantity: safeNumber(getVal('STOCK QUANTITY', 'Stock')) || 1,
       
       // Delivery
-      delivery_type: parseDeliveryType(),
-      dispatches_in_days: row['DISPATCHES IN DAYS'] || null,
+      delivery_type: deliveryType,
+      dispatches_in_days: getVal('DISPATCHES IN DAYS', 'Dispatches') || null,
       
       product_type: 'Jewellery',
     };
@@ -287,6 +301,14 @@ const Import = () => {
       const goldRate = vendorProfile?.gold_rate_24k_per_gram || 7000; // Default fallback
       const makingCharges = vendorProfile?.making_charges_per_gram || 500; // Default fallback
 
+      // Show vendor profile rates being used
+      if (selectedProductType === 'Jewellery') {
+        toast({
+          title: "Using Vendor Profile Rates",
+          description: `Gold Rate: ₹${goldRate.toLocaleString()}/gram | Making Charges: ₹${makingCharges.toLocaleString()}/gram`,
+        });
+      }
+
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       
@@ -319,45 +341,58 @@ const Import = () => {
         }> = [];
 
         if (selectedProductType === 'Jewellery') {
-          // Jewelry-specific mappings
+          // Jewelry-specific mappings - support multiple Excel formats
           const jewelryMappings = [
-            { excel: 'CERT', db: 'sku', type: 'text', required: false, col: 'A' },
-            { excel: 'PRODUCT', db: 'name', type: 'text', required: true, col: 'B' },
-            { excel: 'Diamond Color', db: 'diamond_color', type: 'text', required: false, col: 'C' },
-            { excel: 'CLARITY', db: 'clarity', type: 'text', required: false, col: 'D' },
-            { excel: 'D.WT 1', db: 'd_wt_1', type: 'number', required: false },
-            { excel: 'D.WT 2', db: 'd_wt_2', type: 'number', required: false },
-            { excel: 'T DWT', db: 'diamond_weight', type: 'number', required: false },
-            { excel: 'G WT', db: 'weight_grams', type: 'number', required: true },
-            { excel: 'NET WT', db: 'net_weight', type: 'number', required: false },
-            { excel: 'PURITY_FRACTION_USED', db: 'purity_fraction_used', type: 'number', required: true },
-            { excel: 'D RATE 1', db: 'd_rate_1', type: 'number', required: false },
-            { excel: 'Pointer diamond', db: 'pointer_diamond', type: 'number', required: false },
-            { excel: 'D VALUE', db: 'd_value', type: 'number', required: false },
-            { excel: 'MKG', db: 'mkg', type: 'number', required: false },
-            { excel: 'GOLD', db: 'gold_per_gram_price', type: 'number', required: false },
-            { excel: 'Certification cost', db: 'certification_cost', type: 'number', required: false },
-            { excel: 'Gemstone cost', db: 'gemstone_cost', type: 'number', required: false },
-            { excel: 'TOTAL', db: 'retail_price', type: 'number', required: true },
-            { excel: 'METAL TYPE', db: 'metal_type', type: 'text', required: true },
-            { excel: 'IMAGE_URL', db: 'image_url', type: 'url', required: false },
+            { excel: 'SKU', db: 'sku', type: 'text', required: false, alternatives: ['CERT', 'SKU ID'] },
+            { excel: 'Category', db: 'category', type: 'text', required: false, alternatives: ['CATEGORY'] },
+            { excel: 'Diamond Color', db: 'diamond_color', type: 'text', required: false, alternatives: ['DIAMOND COLOR'] },
+            { excel: 'Diamond CLARITY', db: 'clarity', type: 'text', required: false, alternatives: ['CLARITY'] },
+            { excel: 'Diamond Weight 1', db: 'd_wt_1', type: 'number', required: false, alternatives: ['D.WT 1', 'D WT 1'] },
+            { excel: 'Diamond Weight 2', db: 'd_wt_2', type: 'number', required: false, alternatives: ['D.WT 2', 'D WT 2'] },
+            { excel: 'Total Diamond Weight', db: 'diamond_weight', type: 'number', required: false, alternatives: ['T DWT'] },
+            { excel: 'Gross Weight', db: 'weight_grams', type: 'number', required: true, alternatives: ['G WT', 'GWT'] },
+            { excel: 'NET Weight', db: 'net_weight', type: 'number', required: false, alternatives: ['NET WT'] },
+            { excel: 'PURITY_FRACTION_USED', db: 'purity_fraction_used', type: 'number', required: true, alternatives: ['Purity'] },
+            { excel: 'Diamond RATE 1', db: 'd_rate_1', type: 'number', required: false, alternatives: ['D RATE 1'] },
+            { excel: 'Diamond Rate 2', db: 'pointer_diamond', type: 'number', required: false, alternatives: ['Pointer diamond'] },
+            { excel: 'D VALUE', db: 'd_value', type: 'number', required: false, alternatives: [] },
+            { excel: 'Making Charges', db: 'mkg', type: 'number', required: false, alternatives: ['MKG'], note: 'Auto-calculated from vendor profile' },
+            { excel: 'GOLD Cost', db: 'gold_per_gram_price', type: 'number', required: false, alternatives: ['GOLD'], note: 'Auto-calculated from vendor profile' },
+            { excel: 'Certification cost', db: 'certification_cost', type: 'number', required: false, alternatives: [] },
+            { excel: 'Gemstone cost', db: 'gemstone_cost', type: 'number', required: false, alternatives: [] },
+            { excel: 'TOTAL', db: 'retail_price', type: 'number', required: false, alternatives: ['Total'], note: 'Auto-calculated if empty' },
+            { excel: 'Prodcut Title', db: 'name', type: 'text', required: false, alternatives: ['Product Title', 'PRODUCT', 'Name'] },
+            { excel: 'IMAGE_URL', db: 'image_url', type: 'url', required: false, alternatives: ['Image URL', 'Images'] },
           ];
 
           jewelryMappings.forEach(mapping => {
-            const excelValue = firstRow[mapping.excel] || firstRow[mapping.excel.toUpperCase()] || 
-                              firstRow[mapping.excel.toLowerCase()];
-            const isMapped = detectedColumns.some(col => 
-              col.toLowerCase().replace(/[^a-z0-9]/g, '') === mapping.excel.toLowerCase().replace(/[^a-z0-9]/g, '')
-            );
+            // Check all possible column names
+            const allNames = [mapping.excel, ...(mapping.alternatives || [])];
+            let foundValue = null;
+            let isMapped = false;
+            
+            for (const name of allNames) {
+              const val = firstRow[name] || firstRow[name.toUpperCase()] || firstRow[name.toLowerCase()];
+              if (val !== undefined && val !== null) {
+                foundValue = val;
+                isMapped = true;
+                break;
+              }
+              // Also check if column exists
+              if (detectedColumns.some(col => 
+                col.toLowerCase().replace(/[^a-z0-9]/g, '') === name.toLowerCase().replace(/[^a-z0-9]/g, '')
+              )) {
+                isMapped = true;
+              }
+            }
             
             mappingsArray.push({
               excelColumn: mapping.excel,
               databaseField: mapping.db,
-              sampleValue: excelValue ? String(excelValue).substring(0, 50) : '',
+              sampleValue: foundValue ? String(foundValue).substring(0, 50) : '',
               dataType: mapping.type,
               required: mapping.required,
-              mapped: isMapped,
-              columnPosition: mapping.col
+              mapped: isMapped
             });
           });
         } else if (selectedProductType === 'Gemstones') {
@@ -449,13 +484,13 @@ const Import = () => {
       for (const [index, rowData] of jsonData.entries()) {
         const row: any = rowData;
 
-        // Parse image URLs helper
+        // Parse image URLs helper - supports multiple column names and pipe-separated URLs
         const parseImageUrls = () => {
-          const imageField = row.IMAGE_URL || row['IMAGE URL'];
+          const imageField = row.IMAGE_URL || row['IMAGE URL'] || row['Image URL'] || row['Images'] || row['IMAGE_URL'];
           if (!imageField) return { imageUrl: null, imageUrl2: null, imageUrl3: null };
           
           const cleanUrls = String(imageField)
-            .replace(/\\/g, '')
+            .replace(/\\/g, '') // Remove backslashes from escaped URLs
             .split('|')
             .map((url: string) => url.trim())
             .filter((url: string) => url.startsWith('http'));
