@@ -37,13 +37,11 @@ import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog"
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { NavLink } from "@/components/NavLink";
-import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
-  const [allProducts, setAllProducts] = useState<any[]>([]); // Store all products for counting
   const [loading, setLoading] = useState(true);
-  const [transitioning, setTransitioning] = useState(false); // For smooth transitions
   const [usdRate, setUsdRate] = useState(87.67);
   const [goldRate, setGoldRate] = useState(85000);
   const [editingGoldRate, setEditingGoldRate] = useState(false);
@@ -237,16 +235,17 @@ const Catalog = () => {
       fetchUSDRate();
     }
     
-    // Run all queries in parallel for faster loading
+    // Fetch products and vendor data in parallel
     Promise.all([
-      fetchAllProducts(),
       fetchProducts(),
       fetchVendorProfile(),
       fetchApprovedCategories(),
     ]).then(() => {
-      // Setup listeners after data is loaded
-      setupPlanUpgradeListener();
-      setupReferralListener();
+      // Setup listeners after data is loaded (defer to not block initial render)
+      setTimeout(() => {
+        setupPlanUpgradeListener();
+        setupReferralListener();
+      }, 1000);
     });
   }, []);
   const fetchApprovedCategories = async () => {
@@ -432,69 +431,17 @@ const Catalog = () => {
     return allCategories.sort();
   }, [products]);
   
-  // Calculate category counts based on current filters (excluding category filter itself)
+  // Simplified category counts - only count when category filter is active
   const categoryCounts = useMemo(() => {
-    // First, filter products by all criteria EXCEPT category
-    const productsMatchingOtherFilters = products.filter(product => {
-      // Search query
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase().trim();
-        const searchableFields = [
-          product.product_type, product.diamond_color, product.d_wt_1?.toString(), 
-          product.d_wt_2?.toString(), product.purity_fraction_used?.toString(), 
-          product.d_rate_1?.toString(), product.pointer_diamond?.toString(), 
-          product.d_value?.toString(), product.mkg?.toString(), 
-          product.certification_cost?.toString(), product.gemstone_cost?.toString(), 
-          product.total_usd?.toString(), product.name, product.category, product.sku, 
-          product.description, product.metal_type, product.gemstone, product.color, 
-          product.clarity, product.weight_grams?.toString(), product.diamond_weight?.toString(), 
-          product.net_weight?.toString(), product.cost_price?.toString(), 
-          product.retail_price?.toString(), product.per_carat_price?.toString(), 
-          product.gold_per_gram_price?.toString()
-        ].filter(Boolean);
-        const matchFound = searchableFields.some(field => field?.toLowerCase().includes(query));
-        if (!matchFound) return false;
-      }
-      
-      // Skip category filter here - we count per category below
-      
-      if (filters.metalType && product.metal_type?.toUpperCase().trim() !== filters.metalType.toUpperCase().trim()) return false;
-      if (filters.minPrice) {
-        const minPrice = parseFloat(filters.minPrice);
-        if (product.retail_price < minPrice) return false;
-      }
-      if (filters.maxPrice) {
-        const maxPrice = parseFloat(filters.maxPrice);
-        if (product.retail_price > maxPrice) return false;
-      }
-      if (filters.diamondColor) {
-        const color = product.gemstone?.split(' ')[0];
-        if (color?.toUpperCase().trim() !== filters.diamondColor.toUpperCase().trim()) return false;
-      }
-      if (filters.diamondClarity) {
-        const clarity = product.gemstone?.split(' ')[1];
-        if (clarity?.toUpperCase().trim() !== filters.diamondClarity.toUpperCase().trim()) return false;
-      }
-      if (filters.deliveryType && product.delivery_type !== filters.deliveryType) return false;
-      
-      return true;
-    });
-
-    // Now count how many products in each category match the other filters
-    const counts: Record<string, number> = {
-      all: productsMatchingOtherFilters.length
-    };
-    
-    categories.forEach(cat => {
-      counts[cat] = productsMatchingOtherFilters.filter(p => {
-        const categoryMatch = p.category?.toUpperCase().trim() === cat.toUpperCase().trim();
-        const nameMatch = p.name?.toUpperCase().trim().includes(cat.toUpperCase().trim());
-        return categoryMatch || nameMatch;
-      }).length;
-    });
-    
+    const counts: Record<string, number> = { all: products.length };
+    if (filters.category) {
+      // Only calculate specific category count when filtering
+      counts[filters.category] = products.filter(p => 
+        p.category?.toUpperCase().trim() === filters.category.toUpperCase().trim()
+      ).length;
+    }
     return counts;
-  }, [products, categories, filters]);
+  }, [products.length, filters.category]);
   
   const metalTypes = useMemo(() => [...new Set(products.map(p => p.metal_type).filter(Boolean))].sort(), [products]);
   const diamondColors = useMemo(() => [...new Set(products.map(p => p.gemstone?.split(' ')[0]).filter(Boolean))].sort(), [products]);
@@ -566,32 +513,7 @@ const Catalog = () => {
     }
   }, [filteredProducts, vendorProfile, usdRate, goldRate, totalINR, totalUSD]);
 
-  // Fetch all products for category counts
-  const fetchAllProducts = async () => {
-    try {
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      // Optimized: only fetch id and product_type for counting, not all columns
-      const {
-        data,
-        error
-      } = await supabase
-        .from("products")
-        .select("id, product_type")
-        .eq("user_id", user.id)
-        .is("deleted_at", null);
-        
-      if (error) throw error;
-      setAllProducts(data || []);
-    } catch (error: any) {
-      console.error("Failed to load all products:", error);
-    }
-  };
+  // fetchProducts function
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -642,27 +564,20 @@ const Catalog = () => {
     }
   }, [selectedProductType]);
 
-  // Re-fetch products when category changes with transition
+  // Re-fetch products when category changes
   useEffect(() => {
     if (selectedProductType) {
-      setTransitioning(true);
-
-      // Fetch products and clear transition state
-      fetchProducts().finally(() => {
-        setTimeout(() => {
-          setTransitioning(false);
-        }, 200);
-      });
+      fetchProducts();
     }
   }, [selectedProductType, fetchProducts]);
 
-  // Calculate product counts per category
+  // Calculate product counts per category (simplified)
   const getCategoryCount = useCallback((category: string) => {
     if (category === 'Jewellery') {
-      return allProducts.filter(p => p.product_type === 'Jewellery' || p.product_type === null).length;
+      return products.filter(p => p.product_type === 'Jewellery' || p.product_type === null).length;
     }
-    return allProducts.filter(p => p.product_type === category).length;
-  }, [allProducts]);
+    return products.filter(p => p.product_type === category).length;
+  }, [products]);
   const handleDeleteSelected = useCallback(async () => {
     setIsDeleting(true);
     try {
@@ -689,15 +604,15 @@ const Catalog = () => {
       setSelectedProducts(new Set());
       setDeleteDialogOpen(false);
       
-      // Refresh both product lists
-      await Promise.all([fetchProducts(), fetchAllProducts()]);
+      // Refresh products
+      await fetchProducts();
     } catch (error: any) {
       console.error("Failed to delete products:", error);
       toast.error(`Failed to delete: ${error.message || 'Unknown error'}`);
     } finally {
       setIsDeleting(false);
     }
-  }, [selectedProducts, fetchProducts, fetchAllProducts]);
+  }, [selectedProducts, fetchProducts]);
 
   // Get selected products data for delete confirmation
   const selectedProductsData = useMemo(() => {
@@ -814,13 +729,13 @@ const Catalog = () => {
       
       setSelectedProducts(new Set());
       
-      // Refresh product lists
-      await Promise.all([fetchProducts(), fetchAllProducts()]);
+      // Refresh product list
+      await fetchProducts();
     } catch (error: any) {
       console.error("Failed to update products:", error);
       toast.error(`Failed to update: ${error.message || 'Unknown error'}`);
     }
-  }, [selectedProducts, fetchProducts, fetchAllProducts]);
+  }, [selectedProducts, fetchProducts]);
 
   const handleAutoCategorizationClick = () => {
     if (!products || products.length === 0) {
@@ -871,7 +786,6 @@ const Catalog = () => {
 
       toast.success(`Successfully categorized ${selectedIds.length} products!`);
       await fetchProducts();
-      await fetchAllProducts();
     } catch (error) {
       console.error("Error applying categorization:", error);
       toast.error("Failed to apply categorization");
@@ -1351,7 +1265,7 @@ const Catalog = () => {
               };
               const style = categoryStyles[categoryKey] || categoryStyles['jewellery'];
               const count = getCategoryCount(category);
-              return <button key={category} onClick={() => setSelectedProductType(category)} disabled={transitioning} className={`
+              return <button key={category} onClick={() => setSelectedProductType(category)} disabled={loading} className={`
                           group relative overflow-hidden flex-shrink-0
                           px-3 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl
                           font-serif text-sm sm:text-base md:text-lg font-semibold
@@ -1396,17 +1310,9 @@ const Catalog = () => {
                 </div>}
 
               {/* Product Showcase Carousel */}
-              {filteredProducts.length > 0 && <motion.div initial={{
-            opacity: 0,
-            y: 20
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            delay: 0.2
-          }} className="mb-8">
+              {filteredProducts.length > 0 && <div className="mb-8 animate-fade-in">
                   <ProductShowcaseCarousel products={filteredProducts} usdRate={usdRate} />
-                </motion.div>}
+                </div>}
 
               {products.length === 0 ? <div className="text-center py-16 sm:py-20">
                   <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 mb-6">
@@ -1496,11 +1402,7 @@ const Catalog = () => {
                     Clear All Filters
                   </Button>
                 </div> : <>
-                  <div key={selectedProductType} className={`
-                      grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6
-                      transition-opacity duration-300
-                      ${transitioning ? 'opacity-0' : 'opacity-100 animate-fade-in'}
-                    `}>
+                  <div key={selectedProductType} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
                     {displayedProducts.map((product, index) => <div key={product.id} className="animate-scale-in" style={{
                   animationDelay: `${index * 30}ms`
                 }}>
@@ -1515,20 +1417,14 @@ const Catalog = () => {
                   </div>
                   
                   {/* Load More Button */}
-                  {hasMoreProducts && <motion.div initial={{
-                opacity: 0,
-                y: 20
-              }} animate={{
-                opacity: 1,
-                y: 0
-              }} className="mt-12 flex justify-center">
+                  {hasMoreProducts && <div className="mt-12 flex justify-center animate-fade-in">
                       <Button onClick={loadMoreProducts} size="lg" className="px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all">
                         Load More Products
                         <span className="ml-2 text-sm opacity-75">
                           ({filteredProducts.length - displayCount} remaining)
                         </span>
                       </Button>
-                    </motion.div>}
+                    </div>}
                   
                   {/* Product count info */}
                   <div className="mt-6 text-center text-sm text-muted-foreground">
