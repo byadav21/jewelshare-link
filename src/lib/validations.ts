@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+// Helper for lenient number parsing
+const lenientNumber = z.union([z.number(), z.string(), z.null()]).transform(val => {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'number') return val;
+  const parsed = parseFloat(String(val).replace(/[^0-9.-]/g, ''));
+  return isNaN(parsed) ? null : parsed;
+}).nullable();
+
 // Custom order validation
 export const customOrderSchema = z.object({
   customer_name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -35,25 +43,27 @@ export const videoRequestSchema = z.object({
   requested_products: z.string().trim().min(1, "Please describe what you'd like to see").max(1000, "Description must be less than 1000 characters"),
 });
 
-// Product import validation (more lenient - auto-calculations handle missing fields)
+// Product import validation (lenient - auto-calculations handle missing fields)
 export const productImportSchema = z.object({
   user_id: z.string().uuid(),
   name: z.string().trim().min(1, "Product name is required").max(200, "Name must be less than 200 characters"),
-  description: z.string().max(1000, "Description must be less than 1000 characters").nullable().optional(),
-  sku: z.string().max(100, "SKU must be less than 100 characters").nullable().optional(),
-  category: z.string().max(100, "Category must be less than 100 characters").nullable().optional(),
-  metal_type: z.string().max(50, "Metal type must be less than 50 characters").nullable().optional(),
-  gemstone: z.string().max(100, "Gemstone must be less than 100 characters").nullable().optional(),
+  description: z.string().max(1000).nullable().optional(),
+  sku: z.string().max(100).nullable().optional(),
+  category: z.string().max(100).nullable().optional(),
+  metal_type: z.string().max(50).nullable().optional(),
+  gemstone: z.string().max(100).nullable().optional(),
   gemstone_name: z.string().max(100).nullable().optional(),
   gemstone_type: z.string().max(100).nullable().optional(),
   color: z.string().max(100).nullable().optional(),
   diamond_color: z.string().max(100).nullable().optional(),
   clarity: z.string().max(50).nullable().optional(),
   diamond_type: z.string().max(50).nullable().optional(),
-  image_url: z.union([z.string().url("Invalid image URL").max(500), z.literal(""), z.null()]).optional(),
-  image_url_2: z.union([z.string().url().max(500), z.literal(""), z.null()]).optional(),
-  image_url_3: z.union([z.string().url().max(500), z.literal(""), z.null()]).optional(),
-  weight_grams: z.number().min(0, "Weight must be positive").max(100000).nullable().optional(),
+  // Image URLs - very lenient to handle various formats
+  image_url: z.string().max(500).nullable().optional(),
+  image_url_2: z.string().max(500).nullable().optional(),
+  image_url_3: z.string().max(500).nullable().optional(),
+  // Weights - all optional, auto-calculated
+  weight_grams: z.number().min(0).max(100000).nullable().optional(),
   net_weight: z.number().min(0).max(100000).nullable().optional(),
   diamond_weight: z.number().min(0).max(100000).nullable().optional(),
   carat_weight: z.number().min(0).max(100000).nullable().optional(),
@@ -70,10 +80,11 @@ export const productImportSchema = z.object({
   total_usd: z.number().min(0).nullable().optional(),
   price_inr: z.number().min(0).nullable().optional(),
   price_usd: z.number().min(0).nullable().optional(),
+  // Prices - required but have defaults from calculation
   cost_price: z.number().min(0.01, "Cost price must be greater than 0").max(100000000),
   retail_price: z.number().min(0.01, "Retail price must be greater than 0").max(100000000),
-  stock_quantity: z.number().int().min(0, "Stock must be non-negative").max(100000),
-  delivery_type: z.enum(['immediate', 'scheduled']).optional(),
+  stock_quantity: z.number().int().min(0).max(100000).optional().default(1),
+  delivery_type: z.enum(['immediate', 'scheduled']).optional().default('immediate'),
   dispatches_in_days: z.number().int().nullable().optional(),
   product_type: z.literal('Jewellery').optional(),
 });

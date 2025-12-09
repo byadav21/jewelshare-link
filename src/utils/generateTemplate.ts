@@ -138,22 +138,22 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
 
     XLSX.writeFile(wb, 'diamond_import_template.xlsx');
   } else {
-    // Jewellery template - Clean format with auto-calculated fields
+    // Jewellery template - Clean format matching import processor exactly
     const sampleData = [
       {
         'SKU': 'DLR001',
         'Prodcut': 'Diamond Ladies Ring 18K',
         'Category': 'DIAMOND LADIES RING',
         'Metal Type': '18K Gold',
+        'Gross Weight': 2.31,
+        'PURITY_FRACTION_USED': 18,
         'Diamond Color': 'GH',
         'Diamond CLARITY': 'VS',
         'Diamond Weight 1': 0.08,
         'Diamond Weight 2': 0,
-        'Gross Weight': 2.31,
-        'Center stone TYPE': 'DIAMOND',
-        'PURITY_FRACTION_USED': 18,
         'Diamond RATE 1': 65000,
         'Diamond Rate 2': 0,
+        'Center stone TYPE': 'DIAMOND',
         'Certification cost': 2000,
         'Gemstone cost': 0,
         'IMAGE_URL': 'https://example.com/image1.jpg|https://example.com/image2.jpg',
@@ -164,18 +164,18 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
         'Prodcut': 'Diamond Pendant Set 18K',
         'Category': 'DIAMOND PENDANT SET',
         'Metal Type': '18K Gold',
+        'Gross Weight': 5.16,
+        'PURITY_FRACTION_USED': 18,
         'Diamond Color': 'GH',
         'Diamond CLARITY': 'VS',
         'Diamond Weight 1': 0.12,
         'Diamond Weight 2': 0.14,
-        'Gross Weight': 5.16,
-        'Center stone TYPE': 'DIAMOND',
-        'PURITY_FRACTION_USED': 18,
         'Diamond RATE 1': 65000,
         'Diamond Rate 2': 65000,
+        'Center stone TYPE': 'DIAMOND',
         'Certification cost': 2000,
         'Gemstone cost': 0,
-        'IMAGE_URL': 'https://example.com/pendant1.jpg|https://example.com/pendant2.jpg',
+        'IMAGE_URL': 'https://example.com/pendant1.jpg',
         'STOCK QUANTITY': 1,
       }
     ];
@@ -184,47 +184,51 @@ export const generateProductTemplate = (productType: ProductType = 'Jewellery') 
       ['JEWELLERY IMPORT TEMPLATE'],
       [''],
       ['REQUIRED COLUMNS:'],
-      ['- SKU: Unique product code (e.g., DLR001, DPS001)'],
       ['- Prodcut: Product name/title'],
-      ['- Gross Weight: Total weight in grams'],
-      ['- PURITY_FRACTION_USED: Karat value (14, 18, 22, 24) or decimal (0.75)'],
+      ['- Gross Weight: Total weight in grams (G WT also accepted)'],
+      ['- PURITY_FRACTION_USED: Karat value (14, 18, 22, 24) - 18 = 18K gold'],
       [''],
       ['OPTIONAL COLUMNS:'],
+      ['- SKU: Unique product code (auto-generated if empty)'],
       ['- Category: Product category (DIAMOND LADIES RING, etc.)'],
       ['- Metal Type: Metal description (18K Gold, etc.)'],
-      ['- Diamond Color: Color grade (GH, VS, etc.)'],
-      ['- Diamond CLARITY: Clarity grade'],
-      ['- Diamond Weight 1: Primary diamond weight (carats)'],
-      ['- Diamond Weight 2: Secondary diamond weight (carats)'],
+      ['- Diamond Color: Color grade (GH, F, etc.)'],
+      ['- Diamond CLARITY: Clarity grade (VS, VVS, SI)'],
+      ['- Diamond Weight 1: Primary diamond weight in carats'],
+      ['- Diamond Weight 2: Secondary diamond weight in carats'],
+      ['- Diamond RATE 1: Price per carat for primary diamonds (INR)'],
+      ['- Diamond Rate 2: Price per carat for secondary diamonds (INR)'],
       ['- Center stone TYPE: DIAMOND, LAB DIAMOND, MOISSANITE'],
-      ['- Diamond RATE 1: Price per carat for primary diamonds'],
-      ['- Diamond Rate 2: Price per carat for secondary diamonds'],
       ['- Certification cost: Certificate charges in INR'],
       ['- Gemstone cost: Total gemstone cost in INR'],
-      ['- IMAGE_URL: Image URLs separated by | (pipe)'],
+      ['- IMAGE_URL: Image URLs separated by | (pipe character)'],
       ['- STOCK QUANTITY: Number in stock (default: 1)'],
       [''],
-      ['AUTO-CALCULATED FIELDS (Leave Blank):'],
-      ['- NET Weight, D VALUE, Making Charges, GOLD Cost, TOTAL, TOTAL_USD'],
-      ['- These use your Vendor Profile Gold Rate and Making Charges'],
+      ['AUTO-CALCULATED (uses Vendor Profile rates):'],
+      ['- NET Weight = Gross Weight - (Diamond Weight / 5)'],
+      ['- Making Charges = Gross Weight x Making Charges Per Gram'],
+      ['- GOLD Cost = NET Weight x Purity x Gold Rate'],
+      ['- D VALUE = Diamond Weights x Diamond Rates'],
+      ['- TOTAL = D VALUE + Making + GOLD + Certification + Gemstone'],
       [''],
-      ['PURITY FORMAT:'],
-      ['- Use karat value: 14, 18, 22, 24'],
-      ['- Or percentage: 75%, 91.7%'],
-      ['- Or decimal: 0.75, 0.916'],
+      ['PURITY FORMAT EXAMPLES:'],
+      ['- 18 = 18K gold (75% pure)'],
+      ['- 22 = 22K gold (91.7% pure)'],
+      ['- 14 = 14K gold (58.3% pure)'],
+      ['- 24 = 24K gold (100% pure)'],
       [''],
       ['BEFORE IMPORTING:'],
-      ['1. Set Gold Rate and Making Charges in Vendor Profile'],
-      ['2. Delete this Instructions sheet OR just use Products sheet'],
-      ['3. Save as .xlsx format'],
+      ['1. Go to Vendor Profile and set Gold Rate + Making Charges'],
+      ['2. Fill in the Products sheet with your jewelry data'],
+      ['3. Save as .xlsx format and upload'],
     ];
 
     const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
-    wsInstructions['!cols'] = [{ wch: 80 }];
+    wsInstructions['!cols'] = [{ wch: 70 }];
     XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
 
     const wsData = XLSX.utils.json_to_sheet(sampleData);
-    wsData['!cols'] = Array(17).fill({ wch: 18 });
+    wsData['!cols'] = Array(17).fill({ wch: 16 });
     XLSX.utils.book_append_sheet(wb, wsData, 'Products');
 
     XLSX.writeFile(wb, 'jewellery_import_template.xlsx');

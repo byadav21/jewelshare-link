@@ -342,30 +342,23 @@ const Import = () => {
         }> = [];
 
         if (selectedProductType === 'Jewellery') {
-          // Jewelry-specific mappings - support GEMHUB format and other Excel formats
+          // Jewelry-specific mappings - aligned with template
           const jewelryMappings = [
+            { excel: 'Prodcut', db: 'name', type: 'text', required: true, alternatives: ['Prodcut Title', 'Product Title', 'PRODUCT', 'Name'] },
+            { excel: 'Gross Weight', db: 'weight_grams', type: 'number', required: true, alternatives: ['G WT', 'GWT'] },
+            { excel: 'PURITY_FRACTION_USED', db: 'purity_fraction_used', type: 'number', required: true, alternatives: ['Purity'] },
             { excel: 'SKU', db: 'sku', type: 'text', required: false, alternatives: ['CERT', 'SKU ID'] },
             { excel: 'Category', db: 'category', type: 'text', required: false, alternatives: ['CATEGORY'] },
+            { excel: 'Metal Type', db: 'metal_type', type: 'text', required: false, alternatives: ['METAL TYPE'] },
             { excel: 'Diamond Color', db: 'diamond_color', type: 'text', required: false, alternatives: ['DIAMOND COLOR'] },
             { excel: 'Diamond CLARITY', db: 'clarity', type: 'text', required: false, alternatives: ['CLARITY'] },
             { excel: 'Diamond Weight 1', db: 'd_wt_1', type: 'number', required: false, alternatives: ['D.WT 1', 'D WT 1'] },
             { excel: 'Diamond Weight 2', db: 'd_wt_2', type: 'number', required: false, alternatives: ['D.WT 2', 'D WT 2'] },
-            { excel: 'Total Diamond Weight', db: 'diamond_weight', type: 'number', required: false, alternatives: ['T DWT'] },
-            { excel: 'Gross Weight', db: 'weight_grams', type: 'number', required: true, alternatives: ['G WT', 'GWT'] },
-            { excel: 'Center stone TYPE', db: 'diamond_type', type: 'text', required: false, alternatives: ['CS TYPE', 'Diamond Type'] },
-            { excel: 'NET Weight', db: 'net_weight', type: 'number', required: false, alternatives: ['NET WT'] },
-            { excel: 'PURITY_FRACTION_USED', db: 'purity_fraction_used', type: 'number', required: true, alternatives: ['Purity'] },
             { excel: 'Diamond RATE 1', db: 'd_rate_1', type: 'number', required: false, alternatives: ['D RATE 1'] },
             { excel: 'Diamond Rate 2', db: 'pointer_diamond', type: 'number', required: false, alternatives: ['Pointer diamond'] },
-            { excel: 'D VALUE', db: 'd_value', type: 'number', required: false, alternatives: [] },
-            { excel: 'GEMSTONE Name', db: 'gemstone_name', type: 'text', required: false, alternatives: ['GEMSTONE', 'Gemstone Name'] },
-            { excel: 'Making Charges', db: 'mkg', type: 'number', required: false, alternatives: ['MKG'], note: 'Auto-calculated from vendor profile' },
-            { excel: 'GOLD Cost', db: 'gold_per_gram_price', type: 'number', required: false, alternatives: ['GOLD'], note: 'Auto-calculated from vendor profile' },
+            { excel: 'Center stone TYPE', db: 'diamond_type', type: 'text', required: false, alternatives: ['CS TYPE', 'Diamond Type'] },
             { excel: 'Certification cost', db: 'certification_cost', type: 'number', required: false, alternatives: [] },
             { excel: 'Gemstone cost', db: 'gemstone_cost', type: 'number', required: false, alternatives: [] },
-            { excel: 'TOTAL', db: 'retail_price', type: 'number', required: false, alternatives: ['Total'], note: 'Auto-calculated if empty' },
-            { excel: 'TOTAL_USD', db: 'total_usd', type: 'number', required: false, alternatives: ['Total USD'] },
-            { excel: 'Prodcut', db: 'name', type: 'text', required: false, alternatives: ['Prodcut Title', 'Product Title', 'PRODUCT', 'Name'] },
             { excel: 'IMAGE_URL', db: 'image_url', type: 'url', required: false, alternatives: ['Image URL', 'Images'] },
             { excel: 'STOCK QUANTITY', db: 'stock_quantity', type: 'number', required: false, alternatives: ['Stock', 'Stock Quantity'] },
           ];
