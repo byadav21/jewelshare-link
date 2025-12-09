@@ -15,16 +15,24 @@ export interface LineItem {
   item_name: string;
   description: string;
   image_url: string;
+  certificate_image_url?: string;
   diamond_weight: number;
   diamond_per_carat_price: number;
   diamond_color: string;
   diamond_clarity: string;
   diamond_cut: string;
   diamond_certification: string;
+  diamond_shape?: string;
+  diamond_fluorescence?: string;
+  diamond_measurements?: string;
   gemstone_weight: number;
   gemstone_type: string;
   gemstone_color: string;
   gemstone_clarity: string;
+  gemstone_origin?: string;
+  gemstone_treatment?: string;
+  gemstone_shape?: string;
+  gemstone_per_carat_price?: number;
   net_weight: number;
   gross_weight: number;
   purity_fraction: number;
@@ -56,16 +64,24 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
       item_name: "",
       description: "",
       image_url: "",
+      certificate_image_url: "",
       diamond_weight: 0,
       diamond_per_carat_price: 0,
       diamond_color: "",
       diamond_clarity: "",
       diamond_cut: "",
       diamond_certification: "",
+      diamond_shape: "",
+      diamond_fluorescence: "",
+      diamond_measurements: "",
       gemstone_weight: 0,
       gemstone_type: "",
       gemstone_color: "",
       gemstone_clarity: "",
+      gemstone_origin: "",
+      gemstone_treatment: "",
+      gemstone_shape: "",
+      gemstone_per_carat_price: 0,
       net_weight: 0,
       gross_weight: 0,
       purity_fraction: purityFraction,
@@ -98,6 +114,11 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
     // Auto-calculate diamond cost from weight × per carat price
     if (field === 'diamond_weight' || field === 'diamond_per_carat_price') {
       item.diamond_cost = item.diamond_weight * item.diamond_per_carat_price;
+    }
+    
+    // Auto-calculate gemstone cost from weight × per carat price (if per carat price is set)
+    if ((field === 'gemstone_weight' || field === 'gemstone_per_carat_price') && item.gemstone_per_carat_price) {
+      item.gemstone_cost = item.gemstone_weight * item.gemstone_per_carat_price;
     }
     
     // Auto-calculate gold cost and subtotal using item's own purity fraction
@@ -155,6 +176,38 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
 
   const removeImage = (index: number) => {
     updateItem(index, 'image_url', '');
+  };
+
+  const handleCertificateUpload = async (index: number, file: File) => {
+    try {
+      setUploadingImage(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `cert-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('manufacturing-estimates')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const imagePath = data.path;
+      updateItem(index, 'certificate_image_url', imagePath);
+      toast.success("Certificate uploaded successfully");
+    } catch (error: any) {
+      console.error('Error uploading certificate:', error);
+      toast.error("Failed to upload certificate");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeCertificate = (index: number) => {
+    updateItem(index, 'certificate_image_url', '');
   };
 
   return (
@@ -413,6 +466,82 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                     </div>
 
                     <div>
+                      <Label>Diamond Shape</Label>
+                      <Input
+                        value={item.diamond_shape || ''}
+                        onChange={(e) => updateItem(index, 'diamond_shape', e.target.value)}
+                        placeholder="e.g., Round, Princess, Oval"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Diamond Fluorescence</Label>
+                      <Input
+                        value={item.diamond_fluorescence || ''}
+                        onChange={(e) => updateItem(index, 'diamond_fluorescence', e.target.value)}
+                        placeholder="e.g., None, Faint, Medium"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <Label>Diamond Measurements</Label>
+                      <Input
+                        value={item.diamond_measurements || ''}
+                        onChange={(e) => updateItem(index, 'diamond_measurements', e.target.value)}
+                        placeholder="e.g., 6.5 x 6.5 x 4.0 mm"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <Label>Certificate Image</Label>
+                      <div className="mt-2">
+                        {item.certificate_image_url ? (
+                          <div className="relative inline-block">
+                            <EstimateImage
+                              src={item.certificate_image_url}
+                              alt="Certificate"
+                              className="h-32 w-auto object-contain rounded border"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2"
+                              onClick={() => removeCertificate(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="file"
+                              accept="image/*,.pdf"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleCertificateUpload(index, file);
+                              }}
+                              disabled={uploadingImage}
+                            />
+                            {uploadingImage && <span className="text-sm text-muted-foreground">Uploading...</span>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-span-2 border-t my-2 pt-4">
+                      <h5 className="font-medium text-sm text-muted-foreground mb-3">Gemstone Details</h5>
+                    </div>
+
+                    <div>
+                      <Label>Gemstone Type</Label>
+                      <Input
+                        value={item.gemstone_type}
+                        onChange={(e) => updateItem(index, 'gemstone_type', e.target.value)}
+                        placeholder="e.g., Ruby, Sapphire, Emerald"
+                      />
+                    </div>
+
+                    <div>
                       <Label>Gemstone Weight (ct)</Label>
                       <Input
                         type="number"
@@ -423,21 +552,22 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                     </div>
 
                     <div>
-                      <Label>Gemstone Cost (₹)</Label>
+                      <Label>Gemstone Per Carat Price (₹/ct)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={item.gemstone_per_carat_price || 0}
+                        onChange={(e) => updateItem(index, 'gemstone_per_carat_price', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Gemstone Cost (₹) <span className="text-muted-foreground text-xs">(Auto/Manual)</span></Label>
                       <Input
                         type="number"
                         step="0.01"
                         value={item.gemstone_cost}
                         onChange={(e) => updateItem(index, 'gemstone_cost', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Gemstone Type</Label>
-                      <Input
-                        value={item.gemstone_type}
-                        onChange={(e) => updateItem(index, 'gemstone_type', e.target.value)}
-                        placeholder="e.g., Ruby, Sapphire, Emerald"
                       />
                     </div>
 
@@ -459,7 +589,36 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                       />
                     </div>
 
-                    <div className="col-span-2"></div>
+                    <div>
+                      <Label>Gemstone Origin</Label>
+                      <Input
+                        value={item.gemstone_origin || ''}
+                        onChange={(e) => updateItem(index, 'gemstone_origin', e.target.value)}
+                        placeholder="e.g., Burma, Kashmir, Colombia"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Gemstone Treatment</Label>
+                      <Input
+                        value={item.gemstone_treatment || ''}
+                        onChange={(e) => updateItem(index, 'gemstone_treatment', e.target.value)}
+                        placeholder="e.g., None, Heated, Untreated"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Gemstone Shape</Label>
+                      <Input
+                        value={item.gemstone_shape || ''}
+                        onChange={(e) => updateItem(index, 'gemstone_shape', e.target.value)}
+                        placeholder="e.g., Oval, Cushion, Cabochon"
+                      />
+                    </div>
+
+                    <div className="col-span-2 border-t my-2 pt-4">
+                      <h5 className="font-medium text-sm text-muted-foreground mb-3">Additional Charges</h5>
+                    </div>
 
                     <div>
                       <Label>Making Charges (₹)</Label>

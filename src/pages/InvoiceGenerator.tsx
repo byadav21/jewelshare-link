@@ -43,7 +43,7 @@ const InvoiceGenerator = () => {
   const [paymentTerms, setPaymentTerms] = useState("Net 30");
   const [paymentDueDate, setPaymentDueDate] = useState<Date>();
   const [invoiceNotes, setInvoiceNotes] = useState("");
-  const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury' | 'loose_diamond'>('detailed');
+  const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury' | 'loose_diamond' | 'gemstone'>('detailed');
   const [invoiceType, setInvoiceType] = useState<'tax' | 'export' | 'proforma'>('tax');
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'partial'>('pending');
   const [estimateCategory, setEstimateCategory] = useState<'jewelry' | 'loose_diamond' | 'gemstone'>('jewelry');
@@ -205,9 +205,11 @@ const InvoiceGenerator = () => {
     setProfitMargin(estimate.profit_margin_percentage || 0);
     setFinalSellingPrice(estimate.final_selling_price || 0);
     
-    // Auto-select loose diamond template if category is loose_diamond
+    // Auto-select appropriate template based on category
     if (estimate.estimate_category === 'loose_diamond') {
-      setInvoiceTemplate('loose_diamond' as any);
+      setInvoiceTemplate('loose_diamond');
+    } else if (estimate.estimate_category === 'gemstone') {
+      setInvoiceTemplate('gemstone');
     }
     
     if (estimate.invoice_number) {
@@ -551,6 +553,7 @@ const InvoiceGenerator = () => {
                     <SelectItem value="modern">Modern - Clean Minimalist</SelectItem>
                     <SelectItem value="luxury">Luxury - Premium Elegant</SelectItem>
                     <SelectItem value="loose_diamond">Loose Diamond - Diamond Specialist</SelectItem>
+                    <SelectItem value="gemstone">Gemstone - Colored Stone Invoice</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
