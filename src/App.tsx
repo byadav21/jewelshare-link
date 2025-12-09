@@ -127,6 +127,18 @@ const AppContent = () => {
         path={ROUTES.ORDER_TRACKING} 
         element={<RouteSuspense><Pages.OrderTracking /></RouteSuspense>} 
       />
+      <Route 
+        path={ROUTES.PRIVACY_POLICY} 
+        element={<RouteSuspense><Pages.PrivacyPolicy /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.TERMS_OF_SERVICE} 
+        element={<RouteSuspense><Pages.TermsOfService /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.COOKIE_POLICY} 
+        element={<RouteSuspense><Pages.CookiePolicyPage /></RouteSuspense>} 
+      />
 
       {/* Auth-only route (requires login but not approval) */}
       <Route 
@@ -442,6 +454,14 @@ const AppContent = () => {
         element={
           <AdminGuard>
             <RouteSuspense><Pages.AdminDiamondPrices /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
+      <Route 
+        path={ROUTES.ADMIN_LEGAL_PAGES} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminLegalPages /></RouteSuspense>
           </AdminGuard>
         } 
       />
