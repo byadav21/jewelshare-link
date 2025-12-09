@@ -106,7 +106,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
     
     const item = updatedItems[index];
     
-    // Auto-calculate net weight if in gross weight mode
+    // Auto-calculate net weight if in gross weight mode (jewelry only)
     if (item.weight_mode === 'gross' && (field === 'gross_weight' || field === 'diamond_weight' || field === 'gemstone_weight')) {
       const totalStoneWeight = (item.diamond_weight + item.gemstone_weight) / 5;
       item.net_weight = Math.max(0, item.gross_weight - totalStoneWeight);
@@ -122,16 +122,28 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
       item.gemstone_cost = item.gemstone_weight * item.gemstone_per_carat_price;
     }
     
-    // Auto-calculate gold cost and subtotal using item's own purity fraction
+    // Auto-calculate gold cost (only applies to jewelry)
     item.gold_cost = item.net_weight * item.purity_fraction * goldRate24k;
-    item.subtotal = 
-      item.gold_cost +
-      item.making_charges +
-      item.certification_cost +
-      item.cad_design_charges +
-      item.camming_charges +
-      item.diamond_cost +
-      item.gemstone_cost;
+    
+    // Calculate subtotal based on category context
+    // For loose diamonds: only diamond cost + certification
+    // For gemstones: only gemstone cost + certification  
+    // For jewelry: everything
+    if (estimateCategory === 'loose_diamond') {
+      item.subtotal = item.diamond_cost + item.certification_cost;
+    } else if (estimateCategory === 'gemstone') {
+      item.subtotal = item.gemstone_cost + item.certification_cost;
+    } else {
+      // Jewelry - full calculation
+      item.subtotal = 
+        item.gold_cost +
+        item.making_charges +
+        item.certification_cost +
+        item.cad_design_charges +
+        item.camming_charges +
+        item.diamond_cost +
+        item.gemstone_cost;
+    }
     
     onChange(updatedItems);
   };
@@ -749,58 +761,56 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
                       <EstimateImage
                         src={item.image_url}
                         alt={item.item_name}
-                        className="h-24 w-24 object-cover rounded border"
+                        className="h-20 w-20 object-cover rounded border flex-shrink-0"
                       />
                     )}
-                    <div className="flex-1">
-                      <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-                      <div className="grid grid-cols-2 gap-2 text-sm mb-2">
-                        {item.diamond_weight > 0 && (
+                    <div className="flex-1 min-w-0">
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground mb-2 truncate">{item.description}</p>
+                      )}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-sm">
+                        {/* Loose Diamond Summary */}
+                        {estimateCategory === 'loose_diamond' && item.diamond_weight > 0 && (
                           <>
-                            <div>
-                              <span className="text-muted-foreground">Diamond:</span> {item.diamond_weight}ct
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Color/Clarity:</span> {item.diamond_color || 'N/A'}/{item.diamond_clarity || 'N/A'}
-                            </div>
-                            {item.diamond_cut && (
-                              <div>
-                                <span className="text-muted-foreground">Cut:</span> {item.diamond_cut}
-                              </div>
+                            <div><span className="text-muted-foreground">Carat:</span> {item.diamond_weight}ct</div>
+                            <div><span className="text-muted-foreground">Color:</span> {item.diamond_color || '-'}</div>
+                            <div><span className="text-muted-foreground">Clarity:</span> {item.diamond_clarity || '-'}</div>
+                            <div><span className="text-muted-foreground">Cut:</span> {item.diamond_cut || '-'}</div>
+                            <div><span className="text-muted-foreground">Shape:</span> {item.diamond_shape || '-'}</div>
+                            <div><span className="text-muted-foreground">Cert:</span> {item.diamond_certification || '-'}</div>
+                          </>
+                        )}
+                        
+                        {/* Gemstone Summary */}
+                        {estimateCategory === 'gemstone' && item.gemstone_weight > 0 && (
+                          <>
+                            <div><span className="text-muted-foreground">Type:</span> {item.gemstone_type || '-'}</div>
+                            <div><span className="text-muted-foreground">Carat:</span> {item.gemstone_weight}ct</div>
+                            <div><span className="text-muted-foreground">Color:</span> {item.gemstone_color || '-'}</div>
+                            <div><span className="text-muted-foreground">Origin:</span> {item.gemstone_origin || '-'}</div>
+                            <div><span className="text-muted-foreground">Treatment:</span> {item.gemstone_treatment || '-'}</div>
+                            <div><span className="text-muted-foreground">Shape:</span> {item.gemstone_shape || '-'}</div>
+                          </>
+                        )}
+                        
+                        {/* Jewelry Summary */}
+                        {estimateCategory === 'jewelry' && (
+                          <>
+                            {item.net_weight > 0 && (
+                              <div><span className="text-muted-foreground">Gold:</span> {item.net_weight}g ({(item.purity_fraction * 100).toFixed(0)}%)</div>
                             )}
-                            {item.diamond_certification && (
-                              <div>
-                                <span className="text-muted-foreground">Cert:</span> {item.diamond_certification}
-                              </div>
+                            {item.diamond_weight > 0 && (
+                              <div><span className="text-muted-foreground">Diamond:</span> {item.diamond_weight}ct {item.diamond_color}/{item.diamond_clarity}</div>
+                            )}
+                            {item.gemstone_weight > 0 && (
+                              <div><span className="text-muted-foreground">Gemstone:</span> {item.gemstone_weight}ct {item.gemstone_type}</div>
                             )}
                           </>
                         )}
-                        {item.gemstone_weight > 0 && (
-                          <>
-                            <div>
-                              <span className="text-muted-foreground">Gemstone:</span> {item.gemstone_weight}ct
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Type:</span> {item.gemstone_type || 'N/A'}
-                            </div>
-                            {item.gemstone_color && (
-                              <div>
-                                <span className="text-muted-foreground">Color:</span> {item.gemstone_color}
-                              </div>
-                            )}
-                            {item.gemstone_clarity && (
-                              <div>
-                                <span className="text-muted-foreground">Clarity:</span> {item.gemstone_clarity}
-                              </div>
-                            )}
-                          </>
-                        )}
-                        <div>
-                          <span className="text-muted-foreground">Gold:</span> {item.net_weight}g
-                        </div>
                       </div>
-                      <div className="mt-2 font-semibold">
-                        Subtotal: ₹{item.subtotal.toFixed(2)}
+                      <div className="mt-2 pt-2 border-t flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Subtotal:</span>
+                        <span className="font-bold text-primary">₹{item.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
                   </div>
