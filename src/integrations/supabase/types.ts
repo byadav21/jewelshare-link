@@ -481,6 +481,7 @@ export type Database = {
           invoice_notes: string | null
           invoice_number: string | null
           invoice_status: string | null
+          is_archived: boolean | null
           is_customer_visible: boolean | null
           is_invoice_generated: boolean | null
           last_reminder_sent_at: string | null
@@ -522,6 +523,7 @@ export type Database = {
           invoice_notes?: string | null
           invoice_number?: string | null
           invoice_status?: string | null
+          is_archived?: boolean | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
           last_reminder_sent_at?: string | null
@@ -563,6 +565,7 @@ export type Database = {
           invoice_notes?: string | null
           invoice_number?: string | null
           invoice_status?: string | null
+          is_archived?: boolean | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
           last_reminder_sent_at?: string | null

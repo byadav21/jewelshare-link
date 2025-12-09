@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, FileText, Eye, ArrowLeft, FileCheck, Trash2 } from "lucide-react";
+import { Search, FileText, Eye, ArrowLeft, FileCheck, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
 import {
   Select,
@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Estimate {
   id: string;
@@ -37,6 +38,7 @@ interface Estimate {
   final_selling_price: number;
   status: string;
   updated_at: string;
+  is_archived?: boolean;
 }
 
 const EstimateHistory = () => {
@@ -45,20 +47,23 @@ const EstimateHistory = () => {
   const [filteredEstimates, setFilteredEstimates] = useState<Estimate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [estimateToDelete, setEstimateToDelete] = useState<Estimate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   useEffect(() => {
     fetchEstimates();
-  }, []);
+  }, [viewMode]);
 
   useEffect(() => {
     filterEstimates();
   }, [searchTerm, statusFilter, estimates]);
 
   const fetchEstimates = async () => {
+    setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -67,12 +72,20 @@ const EstimateHistory = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("manufacturing_cost_estimates")
         .select("*")
         .eq("user_id", user.id)
         .or("is_invoice_generated.is.null,is_invoice_generated.eq.false")
         .order("created_at", { ascending: false });
+
+      if (viewMode === "archived") {
+        query = query.eq("is_archived", true);
+      } else {
+        query = query.or("is_archived.is.null,is_archived.eq.false");
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -130,7 +143,7 @@ const EstimateHistory = () => {
       if (error) throw error;
 
       setEstimates(prev => prev.filter(e => e.id !== estimateToDelete.id));
-      toast.success("Estimate deleted successfully");
+      toast.success("Estimate deleted permanently");
     } catch (error: any) {
       toast.error("Failed to delete estimate");
       console.error("Error deleting estimate:", error);
@@ -138,6 +151,46 @@ const EstimateHistory = () => {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
       setEstimateToDelete(null);
+    }
+  };
+
+  const handleArchive = async (estimate: Estimate) => {
+    setIsArchiving(true);
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .update({ is_archived: true })
+        .eq("id", estimate.id);
+
+      if (error) throw error;
+
+      setEstimates(prev => prev.filter(e => e.id !== estimate.id));
+      toast.success("Estimate archived successfully");
+    } catch (error: any) {
+      toast.error("Failed to archive estimate");
+      console.error("Error archiving estimate:", error);
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
+  const handleRestore = async (estimate: Estimate) => {
+    setIsArchiving(true);
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .update({ is_archived: false })
+        .eq("id", estimate.id);
+
+      if (error) throw error;
+
+      setEstimates(prev => prev.filter(e => e.id !== estimate.id));
+      toast.success("Estimate restored successfully");
+    } catch (error: any) {
+      toast.error("Failed to restore estimate");
+      console.error("Error restoring estimate:", error);
+    } finally {
+      setIsArchiving(false);
     }
   };
 
@@ -168,6 +221,19 @@ const EstimateHistory = () => {
             </div>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "active" | "archived")} className="w-full">
+              <TabsList className="grid w-full max-w-xs grid-cols-2">
+                <TabsTrigger value="active" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Active
+                </TabsTrigger>
+                <TabsTrigger value="archived" className="flex items-center gap-2">
+                  <Archive className="h-4 w-4" />
+                  Archived
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -276,7 +342,7 @@ const EstimateHistory = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-2 md:gap-3">
+                        <div className="flex gap-2 md:gap-3 flex-wrap">
                           <Button
                             variant="outline"
                             size="default"
@@ -286,14 +352,39 @@ const EstimateHistory = () => {
                             <Eye className="h-4 w-4 mr-2 transition-transform group-hover/btn:scale-110" />
                             View
                           </Button>
-                          <Button
-                            size="default"
-                            onClick={() => handleConvertToInvoice(estimate.id)}
-                            className="group/btn bg-primary hover:bg-primary/90"
-                          >
-                            <FileCheck className="h-4 w-4 mr-2 transition-transform group-hover/btn:scale-110" />
-                            Create Invoice
-                          </Button>
+                          {viewMode === "active" ? (
+                            <>
+                              <Button
+                                size="default"
+                                onClick={() => handleConvertToInvoice(estimate.id)}
+                                className="group/btn bg-primary hover:bg-primary/90"
+                              >
+                                <FileCheck className="h-4 w-4 mr-2 transition-transform group-hover/btn:scale-110" />
+                                Create Invoice
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="default"
+                                onClick={() => handleArchive(estimate)}
+                                disabled={isArchiving}
+                                className="group/btn"
+                              >
+                                <Archive className="h-4 w-4 md:mr-2 transition-transform group-hover/btn:scale-110" />
+                                <span className="hidden md:inline">Archive</span>
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="secondary"
+                              size="default"
+                              onClick={() => handleRestore(estimate)}
+                              disabled={isArchiving}
+                              className="group/btn"
+                            >
+                              <ArchiveRestore className="h-4 w-4 md:mr-2 transition-transform group-hover/btn:scale-110" />
+                              <span className="hidden md:inline">Restore</span>
+                            </Button>
+                          )}
                           <Button
                             variant="destructive"
                             size="default"
