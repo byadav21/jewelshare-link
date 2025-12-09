@@ -762,7 +762,7 @@ const ManufacturingCost = () => {
             <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
           </CardHeader>
           <CardContent>
-            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} />
+            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} estimateCategory={estimateCategory} />
           </CardContent>
         </Card>
 
