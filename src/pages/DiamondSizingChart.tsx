@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { cn } from "@/lib/utils";
@@ -23,9 +24,14 @@ import {
   Search,
   ArrowRightLeft,
   CircleDot,
-  Layers
+  Layers,
+  RotateCcw,
+  Box
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Lazy load 3D viewer for performance
+const Diamond3DViewer = lazy(() => import("@/components/Diamond3DViewer"));
 
 // Ring size data with inner diameter in mm
 const RING_SIZES = [
@@ -350,6 +356,9 @@ const DiamondSizingChart = () => {
   const [multiOverlayMode, setMultiOverlayMode] = useState(false);
   const [selectedShapesForOverlay, setSelectedShapesForOverlay] = useState<ShapeKey[]>(["round", "oval", "princess"]);
   const [overlayCaratIndex, setOverlayCaratIndex] = useState(3); // Default to 1.00 carat
+
+  // 3D Viewer state
+  const [autoRotate3D, setAutoRotate3D] = useState(true);
 
   const shapeData = DIAMOND_SHAPES[selectedShape];
   const compareShapeData = DIAMOND_SHAPES[compareShape];
@@ -767,6 +776,111 @@ const DiamondSizingChart = () => {
             </Card>
           </ScrollReveal>
         </div>
+
+        {/* 3D Diamond Viewer */}
+        <ScrollReveal delay={0.25}>
+          <Card className="mt-8">
+            <CardHeader className="bg-gradient-to-r from-slate-900/10 via-primary/10 to-slate-900/10">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Box className="h-5 w-5" />
+                    3D Diamond Viewer
+                  </CardTitle>
+                  <CardDescription>
+                    Rotate and explore diamond shapes in 3D - click and drag to rotate
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="auto-rotate"
+                      checked={autoRotate3D}
+                      onCheckedChange={setAutoRotate3D}
+                    />
+                    <Label htmlFor="auto-rotate" className="text-sm">
+                      Auto-rotate
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="grid lg:grid-cols-2">
+                {/* 3D Viewer */}
+                <div className="h-[400px] relative">
+                  <Suspense fallback={
+                    <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span>Loading 3D viewer...</span>
+                      </div>
+                    </div>
+                  }>
+                    <Diamond3DViewer 
+                      shape={selectedShape} 
+                      autoRotate={autoRotate3D}
+                      color="#ffffff"
+                    />
+                  </Suspense>
+                  
+                  {/* Shape Badge Overlay */}
+                  <div className="absolute top-4 left-4">
+                    <Badge className="bg-background/80 backdrop-blur-sm text-foreground border">
+                      {shapeData.name}
+                    </Badge>
+                  </div>
+                  
+                  {/* Controls Hint */}
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="flex items-center justify-center gap-4 text-xs text-white/60">
+                      <span className="flex items-center gap-1">
+                        <RotateCcw className="h-3 w-3" /> Drag to rotate
+                      </span>
+                      <span>Scroll to zoom</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Shape Quick Selector */}
+                <div className="p-6 bg-muted/30">
+                  <h3 className="text-sm font-medium mb-4">Select Shape to View</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {(Object.keys(DIAMOND_SHAPES) as ShapeKey[]).map((shape) => (
+                      <motion.button
+                        key={shape}
+                        onClick={() => setSelectedShape(shape)}
+                        className={cn(
+                          "p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2",
+                          selectedShape === shape
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <DiamondShapeSVG shape={shape} size={32} />
+                        <span className="text-[10px] font-medium">
+                          {DIAMOND_SHAPES[shape].name.split(" ")[0]}
+                        </span>
+                      </motion.button>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-6 p-4 rounded-lg bg-background border">
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Info className="h-4 w-4 text-primary" />
+                      About {shapeData.name}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {shapeData.description}. At 1 carat, this shape measures approximately {DIAMOND_SHAPES[selectedShape].sizes.find(s => s.carat === 1)?.mm} mm.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </ScrollReveal>
 
         {/* MM to Carat Reverse Lookup */}
         <ScrollReveal delay={0.3}>
