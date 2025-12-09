@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, ExternalLink, Newspaper } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 interface PressRelease {
   id: string;
@@ -205,6 +206,8 @@ const Press = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

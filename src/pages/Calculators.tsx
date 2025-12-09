@@ -2,7 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Calculator, Gem, Wrench, ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { TiltCard } from "@/components/TiltCard";
 
@@ -85,9 +86,10 @@ const Calculators = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 py-4 md:py-8 px-3 md:px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+      <Header />
+      <div className="py-4 md:py-8 px-3 md:px-4">
       <div className="container max-w-6xl mx-auto">
-        <BackToHomeButton />
         
         <ScrollReveal>
           <div className="text-center mb-8 md:mb-12">
@@ -217,6 +219,8 @@ const Calculators = () => {
           </Card>
         </ScrollReveal>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };

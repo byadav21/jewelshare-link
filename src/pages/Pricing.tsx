@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, Gem, ArrowRight, Sparkles } from "lucide-react";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -272,6 +273,8 @@ const Pricing = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

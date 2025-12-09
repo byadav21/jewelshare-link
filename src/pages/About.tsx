@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import {
   Target, 
   Users, 
@@ -248,6 +249,8 @@ const About = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
