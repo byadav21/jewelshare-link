@@ -23,6 +23,9 @@ export const ROUTES = {
   CALCULATORS: "/calculators",
   ABOUT: "/about",
   CONTACT: "/contact",
+  PRIVACY_POLICY: "/privacy-policy",
+  TERMS_OF_SERVICE: "/terms-of-service",
+  COOKIE_POLICY: "/cookie-policy",
   AUTH: "/auth",
   RESET_PASSWORD: "/reset-password",
 
@@ -60,6 +63,7 @@ export const ROUTES = {
   ADMIN_REWARDS: "/admin/rewards",
   ADMIN_DIAMOND_PRICES: "/admin/diamond-prices",
   ADMIN_MANUFACTURING_ORDERS: "/admin/manufacturing-orders",
+  ADMIN_LEGAL_PAGES: "/admin/legal-pages",
   SCRATCH_LEADS: "/admin/scratch-leads",
   
   SUPER_ADMIN: "/super-admin",

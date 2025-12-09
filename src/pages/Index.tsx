@@ -843,13 +843,34 @@ const Index = () => {
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <p className="text-sm text-muted-foreground">© 2024 Cataleon. All rights reserved.</p>
               <div className="flex gap-6 text-sm text-muted-foreground">
-                <a href="#" className="transition-colors hover:text-foreground">
+                <a
+                  href="#"
+                  className="transition-colors hover:text-foreground"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/privacy-policy");
+                  }}
+                >
                   Privacy Policy
                 </a>
-                <a href="#" className="transition-colors hover:text-foreground">
+                <a
+                  href="#"
+                  className="transition-colors hover:text-foreground"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/terms-of-service");
+                  }}
+                >
                   Terms of Service
                 </a>
-                <a href="#" className="transition-colors hover:text-foreground">
+                <a
+                  href="#"
+                  className="transition-colors hover:text-foreground"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/cookie-policy");
+                  }}
+                >
                   Cookie Policy
                 </a>
               </div>
