@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -117,7 +118,7 @@ const Press = () => {
                           )}
                           <div
                             className="prose prose-invert mb-6 max-w-none text-sm"
-                            dangerouslySetInnerHTML={{ __html: release.content }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(release.content) }}
                           />
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
