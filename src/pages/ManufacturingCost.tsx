@@ -73,7 +73,7 @@ const ManufacturingCost = () => {
     gstin: ""
   });
   const [vendorGSTIN, setVendorGSTIN] = useState("");
-  const [gstMode, setGstMode] = useState<'sgst_cgst' | 'igst'>('sgst_cgst');
+  const [gstMode, setGstMode] = useState<'sgst_cgst' | 'igst' | 'none'>('sgst_cgst');
   const [sgstPercentage, setSgstPercentage] = useState(9);
   const [cgstPercentage, setCgstPercentage] = useState(9);
   const [igstPercentage, setIgstPercentage] = useState(18);
