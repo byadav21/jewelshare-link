@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText, Calendar, Copy, Check, Building2, User, Coins, Diamond, Gem, Percent } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -800,6 +801,7 @@ const ManufacturingCost = () => {
       </div>
 
       <InvoicePreviewDialog open={showInvoicePreview} onOpenChange={setShowInvoicePreview} invoiceData={previewInvoiceData} onConfirmDownload={handleConfirmDownload} />
+      <Footer />
       <ThemeSwitcher />
     </div>
   );

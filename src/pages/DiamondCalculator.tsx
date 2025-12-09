@@ -19,6 +19,7 @@ import { DiamondCalculatorUpgradeBanner } from "@/components/DiamondCalculatorUp
 import { UnlimitedUnlockedCelebration } from "@/components/UnlimitedUnlockedCelebration";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useNavigate } from "react-router-dom";
 
@@ -1049,6 +1050,7 @@ const DiamondCalculator = () => {
           )}
         </AnimatePresence>
       </div>
+      <Footer />
       <ThemeSwitcher />
     </div>
   );

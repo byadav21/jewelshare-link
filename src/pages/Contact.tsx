@@ -10,6 +10,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import {
   Mail, 
   Phone, 
@@ -330,6 +331,8 @@ const Contact = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
