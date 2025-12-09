@@ -362,6 +362,22 @@ const ManufacturingCost = () => {
       return;
     }
 
+    // Store extra details in line_items metadata
+    const lineItemsWithMeta = lineItems.length > 0 ? {
+      items: lineItems,
+      meta: {
+        customer_gstin: customerDetails.gstin,
+        vendor_gstin: vendorGSTIN,
+        gst_mode: gstMode,
+        sgst_percentage: sgstPercentage,
+        cgst_percentage: cgstPercentage,
+        igst_percentage: igstPercentage,
+        shipping_charges: shippingCharges,
+        shipping_zone: shippingZone,
+        exchange_rate: exchangeRate
+      }
+    } : null;
+
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
@@ -387,18 +403,7 @@ const ManufacturingCost = () => {
       estimated_completion_date: estimatedCompletionDate?.toISOString() || null,
       is_customer_visible: isCustomerVisible,
       share_token: shareToken || `EST-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      line_items: (lineItems.length > 0 ? lineItems : null) as any,
-      details: {
-        customer_gstin: customerDetails.gstin,
-        vendor_gstin: vendorGSTIN,
-        gst_mode: gstMode,
-        sgst_percentage: sgstPercentage,
-        cgst_percentage: cgstPercentage,
-        igst_percentage: igstPercentage,
-        shipping_charges: shippingCharges,
-        shipping_zone: shippingZone,
-        exchange_rate: exchangeRate
-      }
+      line_items: lineItemsWithMeta as any
     };
 
     let result;
@@ -436,7 +441,18 @@ const ManufacturingCost = () => {
     }
   };
   const handleLoad = (estimate: any) => {
-    const details = estimate.details as any;
+    // Handle both old format (array) and new format (object with items and meta)
+    const lineItemsData = estimate.line_items;
+    let items: any[] = [];
+    let meta: any = {};
+    
+    if (Array.isArray(lineItemsData)) {
+      items = lineItemsData;
+    } else if (lineItemsData?.items) {
+      items = lineItemsData.items;
+      meta = lineItemsData.meta || {};
+    }
+
     setFormData({
       purityFraction: estimate.purity_fraction || 0.76,
       goldRate24k: estimate.gold_rate_24k || 0
@@ -450,17 +466,17 @@ const ManufacturingCost = () => {
       phone: estimate.customer_phone || "",
       email: estimate.customer_email || "",
       address: estimate.customer_address || "",
-      gstin: details?.customer_gstin || ""
+      gstin: meta?.customer_gstin || ""
     });
-    setVendorGSTIN(details?.vendor_gstin || "");
-    setGstMode(details?.gst_mode || 'sgst_cgst');
-    setSgstPercentage(details?.sgst_percentage || 9);
-    setCgstPercentage(details?.cgst_percentage || 9);
-    setIgstPercentage(details?.igst_percentage || 18);
-    setShippingCharges(details?.shipping_charges || 0);
-    setShippingZone(details?.shipping_zone || 'local');
-    setExchangeRate(details?.exchange_rate || 83);
-    setLineItems(estimate.line_items || []);
+    setVendorGSTIN(meta?.vendor_gstin || "");
+    setGstMode(meta?.gst_mode || 'sgst_cgst');
+    setSgstPercentage(meta?.sgst_percentage || 9);
+    setCgstPercentage(meta?.cgst_percentage || 9);
+    setIgstPercentage(meta?.igst_percentage || 18);
+    setShippingCharges(meta?.shipping_charges || 0);
+    setShippingZone(meta?.shipping_zone || 'local');
+    setExchangeRate(meta?.exchange_rate || 83);
+    setLineItems(items);
     setEstimateStatus(estimate.status || "draft");
     setEstimatedCompletionDate(estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined);
     setIsCustomerVisible(estimate.is_customer_visible || false);
