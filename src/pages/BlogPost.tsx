@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -208,7 +209,7 @@ const BlogPost = () => {
             {/* Content */}
             <div 
               className="prose prose-lg max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
             />
 
             {/* Tags */}

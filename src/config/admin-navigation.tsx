@@ -25,6 +25,7 @@ import {
   Diamond,
   Package,
   Calculator,
+  Scale,
 } from "lucide-react";
 import { NavigationItem, NavigationGroup } from "@/types";
 import { ROUTES } from "@/constants/routes";
@@ -42,6 +43,7 @@ export const CONTENT_MANAGEMENT_ITEMS: NavigationItem[] = [
   { title: "Comments", url: ROUTES.ADMIN_COMMENTS, icon: MessageSquare },
   { title: "Newsletter", url: ROUTES.ADMIN_NEWSLETTER, icon: Mail },
   { title: "Press Releases", url: ROUTES.ADMIN_PRESS, icon: Newspaper },
+  { title: "Legal Pages", url: ROUTES.ADMIN_LEGAL_PAGES, icon: Scale },
   { title: "Scratch Leads", url: ROUTES.SCRATCH_LEADS, icon: Gift },
   { title: "Rewards", url: ROUTES.ADMIN_REWARDS, icon: Crown },
   { title: "Diamond Prices", url: ROUTES.ADMIN_DIAMOND_PRICES, icon: Diamond },

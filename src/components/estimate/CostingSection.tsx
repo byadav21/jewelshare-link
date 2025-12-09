@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Percent, IndianRupee } from "lucide-react";
 
 interface CostingSectionProps {
-  gstMode: 'sgst_cgst' | 'igst';
-  onGstModeChange: (mode: 'sgst_cgst' | 'igst') => void;
+  gstMode: 'sgst_cgst' | 'igst' | 'none';
+  onGstModeChange: (mode: 'sgst_cgst' | 'igst' | 'none') => void;
   sgstPercentage: number;
   cgstPercentage: number;
   igstPercentage: number;
@@ -46,7 +46,17 @@ export const CostingSection = ({
   costs,
 }: CostingSectionProps) => {
   const applyQuickGSTRate = (rate: number) => {
-    if (gstMode === 'sgst_cgst') {
+    if (rate === 0) {
+      onGstModeChange('none');
+      onSgstChange(0);
+      onCgstChange(0);
+      onIgstChange(0);
+    } else if (gstMode === 'none') {
+      // If currently no GST, switch to SGST+CGST mode
+      onGstModeChange('sgst_cgst');
+      onSgstChange(rate / 2);
+      onCgstChange(rate / 2);
+    } else if (gstMode === 'sgst_cgst') {
       onSgstChange(rate / 2);
       onCgstChange(rate / 2);
     } else {
@@ -67,7 +77,24 @@ export const CostingSection = ({
         {/* GST Mode Selection */}
         <div className="space-y-3">
           <Label className="text-sm font-semibold">GST Type</Label>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="radio"
+                id="no-gst-mode"
+                checked={gstMode === 'none'}
+                onChange={() => {
+                  onGstModeChange('none');
+                  onSgstChange(0);
+                  onCgstChange(0);
+                  onIgstChange(0);
+                }}
+                className="h-4 w-4"
+              />
+              <Label htmlFor="no-gst-mode" className="text-sm cursor-pointer">
+                No GST
+              </Label>
+            </div>
             <div className="flex items-center space-x-2">
               <input
                 type="radio"
@@ -96,79 +123,86 @@ export const CostingSection = ({
         </div>
 
         {/* GST Rate Presets */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold">Quick GST Rate Selection</Label>
-          <div className="flex flex-wrap gap-2">
-            {[0, 3, 5, 12, 18, 28].map((rate) => (
-              <Button
-                key={rate}
-                type="button"
-                variant={
-                  (gstMode === 'sgst_cgst' && sgstPercentage === rate / 2) ||
-                  (gstMode === 'igst' && igstPercentage === rate)
-                    ? 'default'
-                    : 'outline'
-                }
-                size="sm"
-                onClick={() => applyQuickGSTRate(rate)}
-              >
-                {rate}%
-              </Button>
-            ))}
+        {gstMode !== 'none' && (
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">Quick GST Rate Selection</Label>
+            <div className="flex flex-wrap gap-2">
+              {[1.5, 3, 5, 12, 18, 28].map((rate) => (
+                <Button
+                  key={rate}
+                  type="button"
+                  variant={
+                    (gstMode === 'sgst_cgst' && sgstPercentage === rate / 2) ||
+                    (gstMode === 'igst' && igstPercentage === rate)
+                      ? 'default'
+                      : 'outline'
+                  }
+                  size="sm"
+                  onClick={() => applyQuickGSTRate(rate)}
+                >
+                  {rate}%
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* GST Input Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {gstMode === 'sgst_cgst' ? (
-            <>
-              <div className="space-y-1">
-                <Label htmlFor="sgst" className="text-sm">
-                  SGST (%)
+        {gstMode !== 'none' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {gstMode === 'sgst_cgst' ? (
+              <>
+                <div className="space-y-1">
+                  <Label htmlFor="sgst" className="text-sm">
+                    SGST (%)
+                  </Label>
+                  <Input
+                    id="sgst"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    value={sgstPercentage}
+                    onChange={(e) => onSgstChange(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="cgst" className="text-sm">
+                    CGST (%)
+                  </Label>
+                  <Input
+                    id="cgst"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    value={cgstPercentage}
+                    onChange={(e) => onCgstChange(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-1 md:col-span-2">
+                <Label htmlFor="igst" className="text-sm">
+                  IGST (%)
                 </Label>
                 <Input
-                  id="sgst"
+                  id="igst"
                   type="number"
                   min={0}
                   max={100}
                   step={0.1}
-                  value={sgstPercentage}
-                  onChange={(e) => onSgstChange(parseFloat(e.target.value) || 0)}
+                  value={igstPercentage}
+                  onChange={(e) => onIgstChange(parseFloat(e.target.value) || 0)}
                 />
               </div>
+            )}
+          </div>
+        )}
 
-              <div className="space-y-1">
-                <Label htmlFor="cgst" className="text-sm">
-                  CGST (%)
-                </Label>
-                <Input
-                  id="cgst"
-                  type="number"
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  value={cgstPercentage}
-                  onChange={(e) => onCgstChange(parseFloat(e.target.value) || 0)}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="space-y-1 md:col-span-2">
-              <Label htmlFor="igst" className="text-sm">
-                IGST (%)
-              </Label>
-              <Input
-                id="igst"
-                type="number"
-                min={0}
-                max={100}
-                step={0.1}
-                value={igstPercentage}
-                onChange={(e) => onIgstChange(parseFloat(e.target.value) || 0)}
-              />
-            </div>
-          )}
-
+        {/* Exchange Rate */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <Label htmlFor="exchange-rate" className="text-sm">
               Exchange Rate (USD to INR)
@@ -181,6 +215,14 @@ export const CostingSection = ({
               value={exchangeRate}
               onChange={(e) => onExchangeRateChange(parseFloat(e.target.value) || 0)}
             />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-sm text-muted-foreground">Auto-calculated USD Amount</Label>
+            <div className="flex items-center h-10 px-3 bg-muted/50 rounded-md border">
+              <span className="font-medium text-primary">
+                ${costs.totalInUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -206,13 +248,13 @@ export const CostingSection = ({
         {/* Cost Breakdown Display */}
         <div className="border-t pt-4 space-y-3">
           <h4 className="font-semibold text-sm text-muted-foreground">Cost Breakdown</h4>
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
               <span className="text-muted-foreground">Subtotal (Before Tax):</span>
               <span className="font-semibold">₹{costs.finalSellingPrice.toLocaleString('en-IN')}</span>
             </div>
 
-            {gstMode === 'sgst_cgst' ? (
+            {gstMode === 'sgst_cgst' && (
               <>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">SGST ({sgstPercentage}%):</span>
@@ -224,10 +266,19 @@ export const CostingSection = ({
                   <span className="font-semibold">₹{costs.cgstAmount.toLocaleString('en-IN')}</span>
                 </div>
               </>
-            ) : (
+            )}
+
+            {gstMode === 'igst' && (
               <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
                 <span className="text-muted-foreground">IGST ({igstPercentage}%):</span>
                 <span className="font-semibold">₹{costs.igstAmount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+
+            {gstMode === 'none' && (
+              <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                <span className="text-muted-foreground">GST:</span>
+                <span className="font-semibold text-muted-foreground">Not Applicable</span>
               </div>
             )}
 

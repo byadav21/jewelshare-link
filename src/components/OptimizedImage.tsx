@@ -1,11 +1,10 @@
 /**
- * Optimized Image component with lazy loading and modern formats
- * Automatically handles WebP/AVIF with fallbacks, lazy loading, and responsive images
+ * Optimized Image component with lazy loading and blur-up placeholder
+ * Handles lazy loading with Intersection Observer and graceful error handling
  */
 
-import { useState, useEffect, useRef, ImgHTMLAttributes } from "react";
+import { useState, useEffect, useRef, ImgHTMLAttributes, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> {
   src: string;
@@ -14,13 +13,22 @@ interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 
   height?: number;
   lazy?: boolean;
   priority?: boolean;
-  quality?: number;
-  sizes?: string;
   className?: string;
   objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
   onLoad?: () => void;
   onError?: () => void;
+  blurPlaceholder?: boolean;
 }
+
+// Generate a tiny placeholder color based on image URL for consistent blur effect
+const generatePlaceholderColor = (src: string): string => {
+  let hash = 0;
+  for (let i = 0; i < src.length; i++) {
+    hash = src.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash % 360);
+  return `hsl(${h}, 20%, 85%)`;
+};
 
 export const OptimizedImage = ({
   src,
@@ -29,82 +37,50 @@ export const OptimizedImage = ({
   height,
   lazy = true,
   priority = false,
-  quality = 85,
-  sizes,
   className,
   objectFit = "cover",
   onLoad,
   onError,
+  blurPlaceholder = true,
   ...props
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(!lazy || priority);
   const imgRef = useRef<HTMLImageElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Memoize placeholder color for consistent blur effect
+  const placeholderColor = useMemo(() => generatePlaceholderColor(src || ''), [src]);
+
+  // Reset state when src changes
+  useEffect(() => {
+    setIsLoaded(false);
+    setHasError(false);
+  }, [src]);
 
   // Lazy loading with Intersection Observer
   useEffect(() => {
     if (!lazy || priority || isInView) return;
 
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsInView(true);
-            observerRef.current?.disconnect();
+            observer.disconnect();
           }
         });
       },
-      {
-        rootMargin: "50px", // Start loading 50px before entering viewport
-      }
+      { rootMargin: "200px", threshold: 0.01 }
     );
 
-    if (imgRef.current) {
-      observerRef.current.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
-    return () => {
-      observerRef.current?.disconnect();
-    };
+    return () => observer.disconnect();
   }, [lazy, priority, isInView]);
-
-  // Generate srcset for responsive images
-  const generateSrcSet = (baseSrc: string): string => {
-    if (!width) return baseSrc;
-    
-    const widths = [320, 640, 768, 1024, 1920];
-    return widths
-      .map((w) => `${baseSrc}?w=${w}&q=${quality} ${w}w`)
-      .join(", ");
-  };
-
-  // Generate WebP and AVIF sources
-  const getImageSources = () => {
-    const sources = [];
-    
-    // AVIF (best compression, if supported)
-    sources.push(
-      <source
-        key="avif"
-        type="image/avif"
-        srcSet={`${src}?format=avif&q=${quality}`}
-      />
-    );
-    
-    // WebP (good compression, widely supported)
-    sources.push(
-      <source
-        key="webp"
-        type="image/webp"
-        srcSet={generateSrcSet(src)}
-        sizes={sizes}
-      />
-    );
-    
-    return sources;
-  };
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -116,12 +92,6 @@ export const OptimizedImage = ({
     onError?.();
   };
 
-  const imageClasses = cn(
-    "transition-opacity duration-300 max-w-full h-auto",
-    isLoaded ? "opacity-100" : "opacity-0",
-    className
-  );
-
   const objectFitClass = {
     contain: "object-contain",
     cover: "object-cover",
@@ -130,15 +100,27 @@ export const OptimizedImage = ({
     "scale-down": "object-scale-down",
   }[objectFit];
 
-  // Show skeleton while loading
+  // Show placeholder while not in view
   if (!isInView) {
     return (
       <div
-        ref={imgRef}
-        className={cn("relative", className)}
-        style={{ width, height }}
+        ref={containerRef}
+        className={cn("relative overflow-hidden", className)}
+        style={{ 
+          width, 
+          height,
+          backgroundColor: blurPlaceholder ? placeholderColor : undefined
+        }}
       >
-        <Skeleton className="w-full h-full" />
+        {/* Blur placeholder with shimmer effect */}
+        <div 
+          className="absolute inset-0 animate-pulse"
+          style={{ 
+            background: `linear-gradient(90deg, ${placeholderColor} 0%, hsl(0, 0%, 90%) 50%, ${placeholderColor} 100%)`,
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
       </div>
     );
   }
@@ -153,39 +135,38 @@ export const OptimizedImage = ({
         )}
         style={{ width, height }}
       >
-        <span className="text-sm">Failed to load image</span>
+        <span className="text-xs">Image unavailable</span>
       </div>
     );
   }
 
   return (
-    <div className={cn("relative", !isLoaded && "overflow-hidden")}>
-      {!isLoaded && <Skeleton className="absolute inset-0" />}
-      
-      <picture>
-        {getImageSources()}
-        
-        {/* Fallback to original format */}
-        <img
-          ref={imgRef}
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          loading={lazy && !priority ? "lazy" : "eager"}
-          decoding={priority ? "sync" : "async"}
-          onLoad={handleLoad}
-          onError={handleError}
-          className={cn(imageClasses, objectFitClass)}
-          {...props}
-        />
-      </picture>
+    <div 
+      ref={containerRef} 
+      className={cn("relative overflow-hidden", className)}
+    >
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={lazy && !priority ? "lazy" : "eager"}
+        decoding="async"
+        onLoad={handleLoad}
+        onError={handleError}
+        className={cn(
+          "w-full h-full",
+          objectFitClass
+        )}
+        {...props}
+      />
     </div>
   );
 };
 
 /**
- * Background Image component with lazy loading
+ * Background Image component with lazy loading and blur-up placeholder
  */
 interface OptimizedBackgroundImageProps {
   src: string;
@@ -195,6 +176,16 @@ interface OptimizedBackgroundImageProps {
   overlay?: boolean;
   overlayOpacity?: number;
 }
+
+// Generate placeholder color for background images
+const generateBgPlaceholderColor = (src: string): string => {
+  let hash = 0;
+  for (let i = 0; i < src.length; i++) {
+    hash = src.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash % 360);
+  return `hsl(${h}, 15%, 80%)`;
+};
 
 export const OptimizedBackgroundImage = ({
   src,
@@ -207,6 +198,7 @@ export const OptimizedBackgroundImage = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(!lazy);
   const divRef = useRef<HTMLDivElement>(null);
+  const placeholderColor = useMemo(() => generateBgPlaceholderColor(src || ''), [src]);
 
   useEffect(() => {
     if (!lazy || isInView) return;
@@ -220,7 +212,7 @@ export const OptimizedBackgroundImage = ({
           }
         });
       },
-      { rootMargin: "50px" }
+      { rootMargin: "200px" }
     );
 
     if (divRef.current) {
@@ -241,14 +233,24 @@ export const OptimizedBackgroundImage = ({
   return (
     <div
       ref={divRef}
-      className={cn("relative", className)}
+      className={cn("relative overflow-hidden", className)}
       style={{
         backgroundImage: isLoaded ? `url(${src})` : undefined,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundColor: !isLoaded ? placeholderColor : undefined,
       }}
     >
-      {!isLoaded && <Skeleton className="absolute inset-0" />}
+      {/* Blur-up placeholder for background */}
+      {!isLoaded && (
+        <div 
+          className="absolute inset-0 animate-pulse"
+          style={{ 
+            background: `linear-gradient(135deg, ${placeholderColor} 0%, hsl(0, 0%, 85%) 100%)`,
+            filter: 'blur(4px)'
+          }}
+        />
+      )}
       
       {overlay && isLoaded && (
         <div

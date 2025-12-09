@@ -21,12 +21,15 @@ import { ScratchCard } from "@/components/ScratchCard";
 import { FeaturesGrid } from "@/components/home/FeaturesGrid";
 import { ToolsShowcase } from "@/components/home/ToolsShowcase";
 import { CatalogFeatures } from "@/components/home/CatalogFeatures";
+import { SizingChartPreview } from "@/components/home/SizingChartPreview";
+import { CalculatorPreview } from "@/components/home/CalculatorPreview";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
 import analyticsFeature from "@/assets/analytics-feature.jpg";
 
 // const JewelryViewer3D = lazy(() => import("@/components/JewelryViewer3D"));
+import { Footer } from "@/components/Footer";
 import {
   Gem,
   Share2,
@@ -46,13 +49,6 @@ import {
   Quote,
   Star,
   Play,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Mail,
-  Phone,
-  MapPin,
   Calculator,
 } from "lucide-react";
 
@@ -385,6 +381,12 @@ const Index = () => {
       {/* Tools Showcase Section */}
       <ToolsShowcase />
 
+      {/* Diamond Sizing Chart Preview */}
+      <SizingChartPreview />
+
+      {/* Diamond Calculator Preview */}
+      <CalculatorPreview />
+
       {/* Catalog Features Section */}
       <CatalogFeatures />
 
@@ -630,234 +632,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-muted/30">
-        <div className="container mx-auto px-4 py-16">
-          <ScrollReveal>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {/* Brand */}
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
-                  <Gem className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xl font-bold">Cataleon</span>
-              </div>
-              <p className="mb-4 text-sm text-muted-foreground">
-                Professional jewelry inventory management with shareable catalogs and custom pricing for modern vendors.
-              </p>
-              <div className="flex gap-3">
-                <a
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
-                >
-                  <Facebook className="h-4 w-4" />
-                </a>
-                <a
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
-                >
-                  <Twitter className="h-4 w-4" />
-                </a>
-                <a
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
-                >
-                  <Instagram className="h-4 w-4" />
-                </a>
-                <a
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border bg-background transition-colors hover:bg-accent"
-                >
-                  <Linkedin className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-
-            {/* Product */}
-            <div>
-              <h3 className="mb-4 font-semibold">Product</h3>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li>
-                  <a href="#" className="transition-colors hover:text-foreground">
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/pricing");
-                    }}
-                  >
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/catalog");
-                    }}
-                  >
-                    Catalog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-foreground">
-                    Demo
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-foreground">
-                    Analytics
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="#" 
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/calculators");
-                    }}
-                  >
-                    Calculators
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-foreground">
-                    Security
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h3 className="mb-4 font-semibold">Company</h3>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li>
-                  <a
-                    href="#"
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/about");
-                    }}
-                  >
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-foreground">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/blog");
-                    }}
-                  >
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/press");
-                    }}
-                  >
-                    Press
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/demo");
-                    }}
-                  >
-                    Demo
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-foreground">
-                    Partners
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h3 className="mb-4 font-semibold">Contact</h3>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <Mail className="mt-0.5 h-4 w-4 shrink-0" />
-                  <a href="mailto:support@jewelrycatalog.com" className="transition-colors hover:text-foreground">
-                    support@jewelrycatalog.com
-                  </a>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Phone className="mt-0.5 h-4 w-4 shrink-0" />
-                  <a href="tel:+1234567890" className="transition-colors hover:text-foreground">
-                    +1 (234) 567-890
-                  </a>
-                </li>
-                <li className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>Mumbai, Maharashtra, India</span>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="transition-colors hover:text-foreground"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/contact");
-                    }}
-                  >
-                    Contact Form →
-                  </a>
-                </li>
-              </ul>
-            </div>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.2}>
-            <div className="mt-12 border-t pt-8">
-            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <p className="text-sm text-muted-foreground">© 2024 Cataleon. All rights reserved.</p>
-              <div className="flex gap-6 text-sm text-muted-foreground">
-                <a href="#" className="transition-colors hover:text-foreground">
-                  Privacy Policy
-                </a>
-                <a href="#" className="transition-colors hover:text-foreground">
-                  Terms of Service
-                </a>
-                <a href="#" className="transition-colors hover:text-foreground">
-                  Cookie Policy
-                </a>
-              </div>
-            </div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Floating Components */}
       <ThemeSwitcher />

@@ -9,17 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, X, Loader2, AlertCircle } from "lucide-react";
 import { useVendorPermissions } from "@/hooks/useVendorPermissions";
 import { JewelleryForm } from "@/components/forms/JewelleryForm";
 import { GemstonesForm } from "@/components/forms/GemstonesForm";
 import { LooseDiamondsForm } from "@/components/forms/LooseDiamondsForm";
-import { Upload, X, Loader2 } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { useRewardsSystem } from "@/hooks/useRewardsSystem";
 import { jewelleryProductSchema } from "@/lib/validations";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { normalizePurity } from "@/utils/jewelryCalculations";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -58,7 +57,7 @@ const AddProduct = () => {
     diamond_weight: "",
     d_wt_1: "",
     d_wt_2: "",
-    purity_fraction_used: "",
+    purity_fraction_used: "18",
     d_rate_1: "",
     pointer_diamond: "",
     d_value: "",
@@ -77,7 +76,7 @@ const AddProduct = () => {
     image_url: "",
     image_url_2: "",
     image_url_3: "",
-    delivery_type: "immediate delivery",
+    delivery_type: "immediate",
     dispatches_in_days: "",
   });
 
@@ -145,7 +144,7 @@ const AddProduct = () => {
           cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
           retail_price: formData.retail_price ? parseFloat(formData.retail_price) : undefined,
           stock_quantity: parseInt(formData.stock_quantity),
-          delivery_type: formData.delivery_type === 'immediate delivery' ? 'immediate' : formData.delivery_type as 'immediate' | 'scheduled',
+          delivery_type: formData.delivery_type as 'immediate' | 'scheduled',
           image_url: formData.image_url || null,
           image_url_2: formData.image_url_2 || null,
           image_url_3: formData.image_url_3 || null,
@@ -196,7 +195,7 @@ const AddProduct = () => {
           diamond_weight: formData.diamond_weight ? parseFloat(formData.diamond_weight) : null,
           d_wt_1: formData.d_wt_1 ? parseFloat(formData.d_wt_1) : null,
           d_wt_2: formData.d_wt_2 ? parseFloat(formData.d_wt_2) : null,
-          purity_fraction_used: formData.purity_fraction_used ? parseFloat(formData.purity_fraction_used) : null,
+          purity_fraction_used: formData.purity_fraction_used ? normalizePurity(formData.purity_fraction_used) : null,
           d_rate_1: formData.d_rate_1 ? parseFloat(formData.d_rate_1) : null,
           pointer_diamond: formData.pointer_diamond ? parseFloat(formData.pointer_diamond) : null,
           d_value: formData.d_value ? parseFloat(formData.d_value) : null,

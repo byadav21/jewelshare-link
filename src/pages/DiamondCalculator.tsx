@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale, Download } from "lucide-react";
+import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale, Download, Ruler, Volume2, VolumeX } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -18,6 +18,12 @@ import autoTable from "jspdf-autotable";
 import { DiamondCalculatorUpgradeBanner } from "@/components/DiamondCalculatorUpgradeBanner";
 import { UnlimitedUnlockedCelebration } from "@/components/UnlimitedUnlockedCelebration";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { useNavigate } from "react-router-dom";
+import confetti from "canvas-confetti";
+import { playSparkleSound } from "@/utils/celebrationSounds";
 
 interface ComparisonItem {
   id: string;
@@ -39,6 +45,7 @@ interface ComparisonItem {
 }
 
 const DiamondCalculator = () => {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [guestUsageCount, setGuestUsageCount] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -56,6 +63,40 @@ const DiamondCalculator = () => {
     currency: string;
   } | null>(null);
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Confetti celebration effect
+  const fireConfetti = useCallback(() => {
+    const colors = ["#60a5fa", "#a78bfa", "#f472b6", "#fbbf24", "#ffffff"];
+    
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6, x: 0.5 },
+      colors,
+      shapes: ["star", "circle"],
+      scalar: 1.2,
+    });
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 40,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0.3, y: 0.65 },
+        colors,
+        shapes: ["star"],
+      });
+      confetti({
+        particleCount: 40,
+        angle: 120,
+        spread: 55,
+        origin: { x: 0.7, y: 0.65 },
+        colors,
+        shapes: ["star"],
+      });
+    }, 150);
+  }, []);
 
   // Check authentication status and show celebration on sign in
   useEffect(() => {
@@ -210,6 +251,12 @@ const DiamondCalculator = () => {
         totalPrice,
         currency: data.currency,
       });
+
+      // Celebration effects
+      fireConfetti();
+      if (soundEnabled) {
+        playSparkleSound();
+      }
 
       incrementGuestUsage();
       toast.success("Price calculated successfully!");
@@ -390,6 +437,7 @@ const DiamondCalculator = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90">
+      <Header />
       <UnlimitedUnlockedCelebration 
         show={showCelebration} 
         onClose={() => setShowCelebration(false)} 
@@ -401,21 +449,29 @@ const DiamondCalculator = () => {
         </div>
         
         <ScrollReveal>
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 md:mb-12">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
-              className="inline-block mb-4"
+              className="inline-block mb-3 md:mb-4"
             >
-              <Diamond className="h-16 w-16 text-primary mx-auto" />
+              <Diamond className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto" />
             </motion.div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent px-4">
               Diamond Price Calculator
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get instant estimates based on the 4Cs: Carat, Color, Clarity, and Cut
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+              Get instant estimates based on the 4Cs
             </p>
+            <Button
+              variant="outline"
+              className="mt-4 gap-2"
+              onClick={() => navigate("/diamond-sizing-chart")}
+            >
+              <Ruler className="h-4 w-4" />
+              View Diamond Sizing Chart
+            </Button>
           </div>
         </ScrollReveal>
 
@@ -430,32 +486,32 @@ const DiamondCalculator = () => {
           </ScrollReveal>
         )}
 
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-4 md:gap-6">
           <ScrollReveal delay={0.1} className="lg:col-span-2">
             <Card className="shadow-xl border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 bg-gradient-to-br from-card via-card to-primary/5">
-              <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
+              <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-2xl">
-                      <Calculator className="h-6 w-6 text-primary" />
-                      Diamond Specifications
+                    <CardTitle className="flex items-center gap-2 text-lg md:text-2xl">
+                      <Calculator className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                      Diamond Specs
                     </CardTitle>
-                    <CardDescription className="mt-2">
-                      Enter the 4Cs to calculate your diamond's value
+                    <CardDescription className="mt-1 md:mt-2 text-sm">
+                      Enter the 4Cs to calculate value
                     </CardDescription>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <Diamond className="h-12 w-12 text-primary/20" />
+                    <Diamond className="h-8 w-8 md:h-12 md:w-12 text-primary/20" />
                     {!isAuthenticated && (
                       <Badge variant={guestUsageCount >= 5 ? "destructive" : guestUsageCount >= 3 ? "secondary" : "outline"} className="text-xs">
-                        {guestUsageCount}/5 today
+                        {guestUsageCount}/5
                       </Badge>
                     )}
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="grid md:grid-cols-2 gap-4">
+              <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
+                <div className="grid gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="carat" className="text-sm font-semibold flex items-center gap-2">
                       <Diamond className="h-4 w-4" />
@@ -540,18 +596,20 @@ const DiamondCalculator = () => {
                   </div>
                 </div>
 
-                <div className="border-t border-border/50 pt-6">
+                <div className="border-t border-border/50 pt-4 md:pt-6">
                   <Tabs value={adjustmentType} onValueChange={(v) => setAdjustmentType(v as "discount" | "markup")}>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
                       <Label className="text-sm font-semibold">Price Adjustment</Label>
-                      <TabsList className="grid w-[240px] grid-cols-2">
-                        <TabsTrigger value="discount" className="flex items-center gap-1">
+                      <TabsList className="grid w-full sm:w-[200px] grid-cols-2">
+                        <TabsTrigger value="discount" className="flex items-center gap-1 text-xs sm:text-sm">
                           <TrendingDown className="h-3 w-3" />
-                          Discount
+                          <span className="hidden sm:inline">Discount</span>
+                          <span className="sm:hidden">-</span>
                         </TabsTrigger>
-                        <TabsTrigger value="markup" className="flex items-center gap-1">
+                        <TabsTrigger value="markup" className="flex items-center gap-1 text-xs sm:text-sm">
                           <TrendingUp className="h-3 w-3" />
-                          Markup
+                          <span className="hidden sm:inline">Markup</span>
+                          <span className="sm:hidden">+</span>
                         </TabsTrigger>
                       </TabsList>
                     </div>
@@ -622,6 +680,14 @@ const DiamondCalculator = () => {
                     size="lg"
                   >
                     <RotateCcw className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    variant="outline"
+                    size="lg"
+                    title={soundEnabled ? "Mute celebration sound" : "Enable celebration sound"}
+                  >
+                    {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                   </Button>
                 </div>
               </CardContent>
@@ -1034,6 +1100,8 @@ const DiamondCalculator = () => {
           )}
         </AnimatePresence>
       </div>
+      <Footer />
+      <ThemeSwitcher />
     </div>
   );
 };

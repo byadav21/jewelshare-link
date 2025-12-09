@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
@@ -16,12 +16,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import { ArrowLeft, Copy, ExternalLink, ChevronDown, BarChart3 } from "lucide-react";
 import { PlanLimitWarning } from "@/components/PlanLimitWarning";
-import { useRewardsSystem } from "@/hooks/useRewardsSystem";
+import { useRewardsSystemLazy } from "@/hooks/useRewardsSystemLazy";
 
 const Share = () => {
   const navigate = useNavigate();
-  const { awardPoints } = useRewardsSystem();
+  const { awardPoints } = useRewardsSystemLazy();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [shareLinks, setShareLinks] = useState<any[]>([]);
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [expandedAnalytics, setExpandedAnalytics] = useState<string | null>(null);
@@ -33,31 +34,47 @@ const Share = () => {
     shared_categories: ["Jewellery", "Gemstones", "Loose Diamonds"],
   });
 
+  // Fetch all data in parallel on mount
   useEffect(() => {
-    fetchShareLinks();
-    fetchVendorProfile();
+    const fetchAllData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setInitialLoading(false);
+          return;
+        }
+
+        // Parallel fetch for share links and vendor profile
+        const [shareLinksResult, vendorProfileResult] = await Promise.all([
+          supabase
+            .from("share_links")
+            .select("*")
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("vendor_profiles")
+            .select("business_name")
+            .eq("user_id", user.id)
+            .maybeSingle()
+        ]);
+
+        if (!shareLinksResult.error) {
+          setShareLinks(shareLinksResult.data || []);
+        }
+        
+        if (!vendorProfileResult.error && vendorProfileResult.data) {
+          setVendorProfile(vendorProfileResult.data);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    fetchAllData();
   }, []);
 
-  const fetchVendorProfile = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("vendor_profiles")
-        .select("business_name")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!error && data) {
-        setVendorProfile(data);
-      }
-    } catch (error) {
-      console.error("Error fetching vendor profile:", error);
-    }
-  };
-
-  const fetchShareLinks = async () => {
+  const fetchShareLinks = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("share_links")
@@ -69,7 +86,7 @@ const Share = () => {
     } catch (error: any) {
       toast.error("Failed to load share links");
     }
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,6 +181,25 @@ const Share = () => {
       toast.error("Failed to update link status");
     }
   };
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-background py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="h-10 w-32 bg-muted animate-pulse rounded mb-6" />
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="h-24 bg-muted animate-pulse rounded" />
+              <div className="h-10 bg-muted animate-pulse rounded" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ApprovalGuard>

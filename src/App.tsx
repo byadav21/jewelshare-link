@@ -8,11 +8,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RouteSuspense } from "@/components/RouteSuspense";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { AdminGuard } from "@/components/AdminGuard";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { ROUTES } from "@/constants/routes";
 import { usePWA } from "@/hooks/usePWA";
 
@@ -98,6 +100,10 @@ const AppContent = () => {
         element={<RouteSuspense><Pages.DiamondCalculator /></RouteSuspense>} 
       />
       <Route 
+        path={ROUTES.DIAMOND_SIZING_CHART} 
+        element={<RouteSuspense><Pages.DiamondSizingChart /></RouteSuspense>} 
+      />
+      <Route 
         path={ROUTES.MANUFACTURING_COST} 
         element={<RouteSuspense><Pages.ManufacturingCost /></RouteSuspense>} 
       />
@@ -124,6 +130,18 @@ const AppContent = () => {
       <Route 
         path={ROUTES.ORDER_TRACKING} 
         element={<RouteSuspense><Pages.OrderTracking /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.PRIVACY_POLICY} 
+        element={<RouteSuspense><Pages.PrivacyPolicy /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.TERMS_OF_SERVICE} 
+        element={<RouteSuspense><Pages.TermsOfService /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.COOKIE_POLICY} 
+        element={<RouteSuspense><Pages.CookiePolicyPage /></RouteSuspense>} 
       />
 
       {/* Auth-only route (requires login but not approval) */}
@@ -443,6 +461,14 @@ const AppContent = () => {
           </AdminGuard>
         } 
       />
+      <Route 
+        path={ROUTES.ADMIN_LEGAL_PAGES} 
+        element={
+          <AdminGuard>
+            <RouteSuspense><Pages.AdminLegalPages /></RouteSuspense>
+          </AdminGuard>
+        } 
+      />
       
       {/* 404 - must be last */}
       <Route 
@@ -455,15 +481,18 @@ const AppContent = () => {
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ThemeSwitcher />
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   </ErrorBoundary>
 );
 

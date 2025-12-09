@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.check-overdue-invoices]
 verify_jwt = false
+
+[functions.cleanup-archived-estimates]
+verify_jwt = false

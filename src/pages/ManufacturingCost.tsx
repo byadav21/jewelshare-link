@@ -8,6 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText, Calendar, Copy, Check, Building2, User, Coins, Diamond, Gem, Percent } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EstimateWorkflowSteps } from "@/components/estimate/EstimateWorkflowSteps";
@@ -42,6 +45,7 @@ const ManufacturingCost = () => {
   const [notes, setNotes] = useState("");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
+  const [estimateCategory, setEstimateCategory] = useState<'jewelry' | 'loose_diamond' | 'gemstone'>('jewelry');
   const [estimateStatus, setEstimateStatus] = useState("draft");
   const [estimatedCompletionDate, setEstimatedCompletionDate] = useState<Date>();
   const [isCustomerVisible, setIsCustomerVisible] = useState(false);
@@ -73,7 +77,7 @@ const ManufacturingCost = () => {
     gstin: ""
   });
   const [vendorGSTIN, setVendorGSTIN] = useState("");
-  const [gstMode, setGstMode] = useState<'sgst_cgst' | 'igst'>('sgst_cgst');
+  const [gstMode, setGstMode] = useState<'sgst_cgst' | 'igst' | 'none'>('sgst_cgst');
   const [sgstPercentage, setSgstPercentage] = useState(9);
   const [cgstPercentage, setCgstPercentage] = useState(9);
   const [igstPercentage, setIgstPercentage] = useState(18);
@@ -135,6 +139,20 @@ const ManufacturingCost = () => {
     checkUsageAndAuth();
   }, []);
 
+  // Fetch live exchange rate
+  const fetchLiveExchangeRate = async (): Promise<number> => {
+    try {
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      if (data.rates?.INR) {
+        return data.rates.INR;
+      }
+    } catch (error) {
+      console.error('Failed to fetch live exchange rate:', error);
+    }
+    return 87.50; // Fallback rate
+  };
+
   // Fetch vendor profile for branding and auto-populate pricing
   const fetchVendorProfile = async () => {
     const {
@@ -143,20 +161,31 @@ const ManufacturingCost = () => {
       }
     } = await supabase.auth.getUser();
     if (!user) return;
-    const {
-      data,
-      error
-    } = await supabase.from('vendor_profiles').select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram').eq('user_id', user.id).maybeSingle();
-    if (error) {
-      console.error('Error fetching vendor profile:', error);
-    } else if (data) {
-      setVendorProfile(data);
+
+    // Fetch profile and live rate in parallel
+    const [profileResult, liveRate] = await Promise.all([
+      supabase.from('vendor_profiles').select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram, usd_exchange_rate').eq('user_id', user.id).maybeSingle(),
+      fetchLiveExchangeRate()
+    ]);
+
+    if (profileResult.error) {
+      console.error('Error fetching vendor profile:', profileResult.error);
+      setExchangeRate(liveRate);
+    } else if (profileResult.data) {
+      setVendorProfile(profileResult.data);
       // Auto-populate gold rate and making charges from profile
       setFormData(prev => ({
         ...prev,
-        goldRate24k: data.gold_rate_24k_per_gram || 0,
-        makingCharges: data.making_charges_per_gram || 0
+        goldRate24k: profileResult.data.gold_rate_24k_per_gram || 0,
+        makingCharges: profileResult.data.making_charges_per_gram || 0
       }));
+      // Use live exchange rate
+      setExchangeRate(liveRate);
+      
+      // Update profile with live rate
+      await supabase.from('vendor_profiles').update({ usd_exchange_rate: liveRate }).eq('user_id', user.id);
+    } else {
+      setExchangeRate(liveRate);
     }
   };
 
@@ -337,9 +366,26 @@ const ManufacturingCost = () => {
       return;
     }
 
+    // Store extra details in line_items metadata
+    const lineItemsWithMeta = lineItems.length > 0 ? {
+      items: lineItems,
+      meta: {
+        customer_gstin: customerDetails.gstin,
+        vendor_gstin: vendorGSTIN,
+        gst_mode: gstMode,
+        sgst_percentage: sgstPercentage,
+        cgst_percentage: cgstPercentage,
+        igst_percentage: igstPercentage,
+        shipping_charges: shippingCharges,
+        shipping_zone: shippingZone,
+        exchange_rate: exchangeRate
+      }
+    } : null;
+
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
+      estimate_category: estimateCategory,
       customer_name: customerDetails.name || null,
       customer_phone: customerDetails.phone || null,
       customer_email: customerDetails.email || null,
@@ -362,18 +408,7 @@ const ManufacturingCost = () => {
       estimated_completion_date: estimatedCompletionDate?.toISOString() || null,
       is_customer_visible: isCustomerVisible,
       share_token: shareToken || `EST-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      line_items: (lineItems.length > 0 ? lineItems : null) as any,
-      details: {
-        customer_gstin: customerDetails.gstin,
-        vendor_gstin: vendorGSTIN,
-        gst_mode: gstMode,
-        sgst_percentage: sgstPercentage,
-        cgst_percentage: cgstPercentage,
-        igst_percentage: igstPercentage,
-        shipping_charges: shippingCharges,
-        shipping_zone: shippingZone,
-        exchange_rate: exchangeRate
-      }
+      line_items: lineItemsWithMeta as any
     };
 
     let result;
@@ -396,9 +431,10 @@ const ManufacturingCost = () => {
     }
 
     if (result.error) {
+      console.error('Save estimate error:', result.error);
       toast({
         title: "Error",
-        description: "Failed to save estimate",
+        description: result.error.message || "Failed to save estimate",
         variant: "destructive"
       });
     } else {
@@ -411,7 +447,18 @@ const ManufacturingCost = () => {
     }
   };
   const handleLoad = (estimate: any) => {
-    const details = estimate.details as any;
+    // Handle both old format (array) and new format (object with items and meta)
+    const lineItemsData = estimate.line_items;
+    let items: any[] = [];
+    let meta: any = {};
+    
+    if (Array.isArray(lineItemsData)) {
+      items = lineItemsData;
+    } else if (lineItemsData?.items) {
+      items = lineItemsData.items;
+      meta = lineItemsData.meta || {};
+    }
+
     setFormData({
       purityFraction: estimate.purity_fraction || 0.76,
       goldRate24k: estimate.gold_rate_24k || 0
@@ -425,18 +472,19 @@ const ManufacturingCost = () => {
       phone: estimate.customer_phone || "",
       email: estimate.customer_email || "",
       address: estimate.customer_address || "",
-      gstin: details?.customer_gstin || ""
+      gstin: meta?.customer_gstin || ""
     });
-    setVendorGSTIN(details?.vendor_gstin || "");
-    setGstMode(details?.gst_mode || 'sgst_cgst');
-    setSgstPercentage(details?.sgst_percentage || 9);
-    setCgstPercentage(details?.cgst_percentage || 9);
-    setIgstPercentage(details?.igst_percentage || 18);
-    setShippingCharges(details?.shipping_charges || 0);
-    setShippingZone(details?.shipping_zone || 'local');
-    setExchangeRate(details?.exchange_rate || 83);
-    setLineItems(estimate.line_items || []);
+    setVendorGSTIN(meta?.vendor_gstin || "");
+    setGstMode(meta?.gst_mode || 'sgst_cgst');
+    setSgstPercentage(meta?.sgst_percentage || 9);
+    setCgstPercentage(meta?.cgst_percentage || 9);
+    setIgstPercentage(meta?.igst_percentage || 18);
+    setShippingCharges(meta?.shipping_charges || 0);
+    setShippingZone(meta?.shipping_zone || 'local');
+    setExchangeRate(meta?.exchange_rate || 83);
+    setLineItems(items);
     setEstimateStatus(estimate.status || "draft");
+    setEstimateCategory(estimate.estimate_category || 'jewelry');
     setEstimatedCompletionDate(estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined);
     setIsCustomerVisible(estimate.is_customer_visible || false);
     setShareToken(estimate.share_token || "");
@@ -474,48 +522,50 @@ const ManufacturingCost = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
+      <Header />
       {/* Guest Usage Limit Dialog */}
       <Dialog open={showUsageLimitDialog} onOpenChange={setShowUsageLimitDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Usage Limit Reached</DialogTitle>
-            <DialogDescription>
-              You've reached the limit of 5 uses per 24 hours for guest users. Sign in to get unlimited access to the Manufacturing Cost Estimator, or wait 24 hours for your limit to reset.
+            <DialogTitle className="text-lg">Usage Limit Reached</DialogTitle>
+            <DialogDescription className="text-sm">
+              You've reached 5 uses in 24 hours. Sign in for unlimited access.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-4">
-            <Button onClick={() => navigate('/auth')} className="flex-1">
+          <div className="flex gap-3">
+            <Button onClick={() => navigate('/auth')} className="flex-1" size="sm">
               Sign In
             </Button>
-            <Button variant="outline" onClick={() => navigate('/')} className="flex-1">
+            <Button variant="outline" onClick={() => navigate('/')} className="flex-1" size="sm">
               Go Home
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      <BackToHomeButton />
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="py-4 md:py-8 px-3 md:px-4">
+        <BackToHomeButton />
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full mb-4">
-            <Calculator className="h-8 w-8 text-primary" />
+        <div className="text-center space-y-3 md:space-y-4 px-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full mb-2 md:mb-4">
+            <Calculator className="h-6 w-6 md:h-8 md:w-8 text-primary" />
           </div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-gradient">
-            Manufacturing Cost Estimator
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary">
+            Cost Estimator
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Professional jewelry cost estimation and invoice generation workflow
+          <p className="text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl mx-auto">
+            Professional jewelry estimation & invoicing
           </p>
           
           {/* Guest Usage Counter */}
-          {!user && guestUsageCount > 0 && guestUsageCount < 5 && <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border">
-              <Info className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Guest Usage: {guestUsageCount}/5 uses (resets in 24 hours).
-                <Button variant="link" className="ml-1 p-0 h-auto text-sm underline" onClick={() => navigate('/auth')}>
-                  Sign in for unlimited access
+          {!user && guestUsageCount > 0 && guestUsageCount < 5 && <div className="mt-3 md:mt-4 inline-flex items-center gap-2 px-3 md:px-4 py-2 bg-muted/50 rounded-lg border border-border">
+              <Info className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Guest: {guestUsageCount}/5 uses.
+                <Button variant="link" className="ml-1 p-0 h-auto text-xs md:text-sm underline" onClick={() => navigate('/auth')}>
+                  Sign in
                 </Button>
               </p>
             </div>}
@@ -577,9 +627,36 @@ const ManufacturingCost = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="estimate-name">Estimate Name *</Label>
-                <Input id="estimate-name" value={estimateName} onChange={e => setEstimateName(e.target.value)} placeholder="e.g., Diamond Ring Quote - John Doe" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="estimate-name">Estimate Name *</Label>
+                  <Input id="estimate-name" value={estimateName} onChange={e => setEstimateName(e.target.value)} placeholder="e.g., Diamond Ring Quote - John Doe" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Category *</Label>
+                  <Select value={estimateCategory} onValueChange={(v: 'jewelry' | 'loose_diamond' | 'gemstone') => setEstimateCategory(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="jewelry">
+                        <span className="flex items-center gap-2">
+                          <Gem className="h-4 w-4" /> Jewelry
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="loose_diamond">
+                        <span className="flex items-center gap-2">
+                          <Diamond className="h-4 w-4" /> Loose Diamond
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="gemstone">
+                        <span className="flex items-center gap-2">
+                          <Coins className="h-4 w-4" /> Gemstone
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -690,7 +767,7 @@ const ManufacturingCost = () => {
             <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
           </CardHeader>
           <CardContent>
-            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} />
+            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} estimateCategory={estimateCategory} />
           </CardContent>
         </Card>
 
@@ -720,9 +797,12 @@ const ManufacturingCost = () => {
           onExchangeRateChange={setExchangeRate}
           costs={costs}
         />
+        </div>
       </div>
 
       <InvoicePreviewDialog open={showInvoicePreview} onOpenChange={setShowInvoicePreview} invoiceData={previewInvoiceData} onConfirmDownload={handleConfirmDownload} />
+      <Footer />
+      <ThemeSwitcher />
     </div>
   );
 };

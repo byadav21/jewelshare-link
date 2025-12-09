@@ -6,6 +6,39 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 emails per minute per IP
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// HTML encode user inputs to prevent injection
+function htmlEncode(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 interface OrderStatusNotification {
   estimateId: string;
   customerName: string;
@@ -20,6 +53,22 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limiting
+  const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                   req.headers.get("x-real-ip") || 
+                   "unknown";
+  
+  if (!checkRateLimit(clientIP)) {
+    console.log(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      { 
+        status: 429, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      }
+    );
+  }
+
   try {
     const { estimateId, customerName, customerEmail, status, estimatedCompletionDate, shareToken }: OrderStatusNotification = await req.json();
     
@@ -30,8 +79,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('RESEND_API_KEY is not configured');
     }
 
+    // Sanitize user inputs
+    const safeCustomerName = htmlEncode(customerName);
+    const safeShareToken = encodeURIComponent(shareToken || '');
+
     // Generate tracking URL
-    const trackingUrl = `${req.headers.get('origin') || 'https://your-domain.com'}/order-tracking/${shareToken}`;
+    const trackingUrl = `${req.headers.get('origin') || 'https://your-domain.com'}/order-tracking/${safeShareToken}`;
 
     // Status-specific email content
     const statusMessages: Record<string, { subject: string; message: string; color: string }> = {
@@ -90,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <!-- Content -->
                   <tr>
                     <td style="padding: 40px 30px;">
-                      <p style="margin: 0 0 20px 0; color: #111827; font-size: 16px;">Hello ${customerName},</p>
+                      <p style="margin: 0 0 20px 0; color: #111827; font-size: 16px;">Hello ${safeCustomerName},</p>
                       
                       <div style="background-color: ${statusInfo.color}15; border-left: 4px solid ${statusInfo.color}; padding: 16px; margin: 20px 0; border-radius: 4px;">
                         <p style="margin: 0; color: #111827; font-size: 16px; font-weight: 600;">${statusInfo.message}</p>

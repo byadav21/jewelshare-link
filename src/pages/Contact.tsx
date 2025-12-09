@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import {
   Mail, 
   Phone, 
@@ -144,9 +145,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-6">
-        <BackToHomeButton />
-      </div>
+      <Header />
       
       {/* Hero Section */}
       <section className="border-b bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-20">
@@ -332,6 +331,8 @@ const Contact = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

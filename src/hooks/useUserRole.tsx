@@ -14,6 +14,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getCachedUser } from "@/lib/authCache";
 import { UserRole, UseUserRoleReturn } from "@/types";
 
 export const useUserRole = (): UseUserRoleReturn => {
@@ -26,7 +27,7 @@ export const useUserRole = (): UseUserRoleReturn => {
 
   const fetchUserRole = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       
       if (!user) {
         setRole(null);
