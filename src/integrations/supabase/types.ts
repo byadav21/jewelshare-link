@@ -460,6 +460,7 @@ export type Database = {
       }
       manufacturing_cost_estimates: {
         Row: {
+          archived_at: string | null
           cad_design_charges: number | null
           camming_charges: number | null
           certification_cost: number | null
@@ -502,6 +503,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           cad_design_charges?: number | null
           camming_charges?: number | null
           certification_cost?: number | null
@@ -544,6 +546,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           cad_design_charges?: number | null
           camming_charges?: number | null
           certification_cost?: number | null
