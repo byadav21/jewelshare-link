@@ -159,13 +159,13 @@ const EstimateHistory = () => {
     try {
       const { error } = await supabase
         .from("manufacturing_cost_estimates")
-        .update({ is_archived: true })
+        .update({ is_archived: true, archived_at: new Date().toISOString() })
         .eq("id", estimate.id);
 
       if (error) throw error;
 
       setEstimates(prev => prev.filter(e => e.id !== estimate.id));
-      toast.success("Estimate archived successfully");
+      toast.success("Estimate archived (auto-deletes after 30 days)");
     } catch (error: any) {
       toast.error("Failed to archive estimate");
       console.error("Error archiving estimate:", error);
