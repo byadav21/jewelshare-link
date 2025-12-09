@@ -144,19 +144,7 @@ export const OptimizedImage = ({
     <div 
       ref={containerRef} 
       className={cn("relative overflow-hidden", className)}
-      style={{ 
-        backgroundColor: blurPlaceholder && !isLoaded ? placeholderColor : undefined
-      }}
     >
-      {/* Blur-up placeholder - overlay that fades out when loaded */}
-      {blurPlaceholder && !isLoaded && (
-        <div 
-          className="absolute inset-0 animate-pulse z-10"
-          style={{ 
-            background: `linear-gradient(135deg, ${placeholderColor} 0%, hsl(0, 0%, 88%) 100%)`,
-          }}
-        />
-      )}
       <img
         ref={imgRef}
         src={src}
