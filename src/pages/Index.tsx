@@ -21,6 +21,7 @@ import { ScratchCard } from "@/components/ScratchCard";
 import { FeaturesGrid } from "@/components/home/FeaturesGrid";
 import { ToolsShowcase } from "@/components/home/ToolsShowcase";
 import { CatalogFeatures } from "@/components/home/CatalogFeatures";
+import { SizingChartPreview } from "@/components/home/SizingChartPreview";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -378,6 +379,9 @@ const Index = () => {
 
       {/* Tools Showcase Section */}
       <ToolsShowcase />
+
+      {/* Diamond Sizing Chart Preview */}
+      <SizingChartPreview />
 
       {/* Catalog Features Section */}
       <CatalogFeatures />
