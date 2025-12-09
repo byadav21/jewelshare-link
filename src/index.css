@@ -1,4 +1,10 @@
 @tailwind base;
+
+/* Shimmer animation for image placeholders */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 @tailwind components;
 @tailwind utilities;
 
@@ -7,76 +13,80 @@ All colors MUST be HSL.
 */
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   :root {
-    --background: 220 25% 8%;
-    --foreground: 45 100% 95%;
+    --background: 0 0% 100%;
+    --foreground: 220 25% 10%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 45 100% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 10%;
 
-    --popover: 220 25% 10%;
-    --popover-foreground: 45 100% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
 
-    --primary: 45 95% 65%;
-    --primary-foreground: 220 25% 10%;
+    --primary: 45 95% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 45 100% 95%;
+    --secondary: 220 15% 95%;
+    --secondary-foreground: 220 25% 10%;
 
-    --muted: 220 15% 20%;
-    --muted-foreground: 45 40% 70%;
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 45 95% 65%;
-    --accent-foreground: 220 25% 10%;
+    --accent: 45 95% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 45 100% 95%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 22%;
-    --input: 220 15% 22%;
-    --ring: 45 95% 65%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 45 95% 55%;
 
     --radius: 0.75rem;
     
     /* Status colors */
     --success: 142 76% 36%;
-    --success-foreground: 45 100% 95%;
+    --success-foreground: 0 0% 100%;
     --info: 200 90% 55%;
-    --info-foreground: 45 100% 95%;
+    --info-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
-    --warning-foreground: 220 25% 10%;
+    --warning-foreground: 0 0% 100%;
     
     /* Premium category styling */
-    --category-jewellery: 45 95% 65%;
-    --category-gemstone: 280 85% 70%;
-    --category-diamond: 200 90% 75%;
-    --category-glow: 45 100% 75%;
+    --category-jewellery: 45 95% 55%;
+    --category-gemstone: 280 85% 60%;
+    --category-diamond: 200 90% 65%;
+    --category-glow: 45 100% 65%;
     
     /* Gradients - Admin UI */
-    --gradient-primary: linear-gradient(135deg, hsl(45 95% 65% / 0.2), hsl(45 95% 55% / 0.05));
-    --gradient-card: linear-gradient(135deg, hsl(220 20% 14%), hsl(220 20% 12%));
+    --gradient-primary: linear-gradient(135deg, hsl(45 95% 55% / 0.2), hsl(45 95% 45% / 0.05));
+    --gradient-card: linear-gradient(135deg, hsl(220 20% 98%), hsl(220 20% 96%));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36% / 0.15), hsl(142 76% 36% / 0.05));
     --gradient-info: linear-gradient(135deg, hsl(200 90% 55% / 0.15), hsl(200 90% 55% / 0.05));
     
     /* Category gradients */
-    --gradient-jewellery: linear-gradient(135deg, hsl(45 95% 65% / 0.15), hsl(45 95% 65% / 0.05));
-    --gradient-gemstone: linear-gradient(135deg, hsl(280 85% 70% / 0.15), hsl(280 85% 70% / 0.05));
-    --gradient-diamond: linear-gradient(135deg, hsl(200 90% 75% / 0.15), hsl(200 90% 75% / 0.05));
+    --gradient-jewellery: linear-gradient(135deg, hsl(45 95% 55% / 0.15), hsl(45 95% 55% / 0.05));
+    --gradient-gemstone: linear-gradient(135deg, hsl(280 85% 60% / 0.15), hsl(280 85% 60% / 0.05));
+    --gradient-diamond: linear-gradient(135deg, hsl(200 90% 65% / 0.15), hsl(200 90% 65% / 0.05));
     
     /* Shadows */
-    --shadow-sm: 0 2px 8px hsl(220 25% 5% / 0.3);
-    --shadow-md: 0 4px 16px hsl(220 25% 5% / 0.4);
-    --shadow-lg: 0 8px 32px hsl(220 25% 5% / 0.5);
-    --shadow-glow: 0 0 20px hsl(45 95% 65% / 0.2);
+    --shadow-sm: 0 2px 8px hsl(220 25% 20% / 0.08);
+    --shadow-md: 0 4px 16px hsl(220 25% 20% / 0.12);
+    --shadow-lg: 0 8px 32px hsl(220 25% 20% / 0.16);
+    --shadow-glow: 0 0 20px hsl(45 95% 55% / 0.2);
 
-    --sidebar-background: 220 25% 8%;
-    --sidebar-foreground: 45 100% 95%;
-    --sidebar-primary: 45 95% 65%;
-    --sidebar-primary-foreground: 220 25% 10%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 45 100% 95%;
-    --sidebar-border: 220 15% 22%;
-    --sidebar-ring: 45 95% 65%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 25% 10%;
+    --sidebar-primary: 45 95% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 95%;
+    --sidebar-accent-foreground: 220 25% 10%;
+    --sidebar-border: 220 15% 88%;
+    --sidebar-ring: 45 95% 55%;
   }
 
   .dark {

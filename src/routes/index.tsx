@@ -21,9 +21,13 @@ export const CustomOrder = lazy(() => import("@/pages/CustomOrder"));
 export const NotFound = lazy(() => import("@/pages/NotFound"));
 export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizationDemo"));
 export const DiamondCalculator = lazy(() => import("@/pages/DiamondCalculator"));
+export const DiamondSizingChart = lazy(() => import("@/pages/DiamondSizingChart"));
 export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"));
 export const Calculators = lazy(() => import("@/pages/Calculators"));
 export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
+export const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+export const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
+export const CookiePolicyPage = lazy(() => import("@/pages/CookiePolicyPage"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));
@@ -66,5 +70,6 @@ export const ScratchLeads = lazy(() => import("@/pages/ScratchLeads"));
 export const AdminRewards = lazy(() => import("@/pages/AdminRewards"));
 export const AdminDiamondPrices = lazy(() => import("@/pages/AdminDiamondPrices"));
 export const AdminManufacturingOrders = lazy(() => import("@/pages/AdminManufacturingOrders"));
+export const AdminLegalPages = lazy(() => import("@/pages/AdminLegalPages"));
 export const GuestCalculatorAnalytics = lazy(() => import("@/pages/GuestCalculatorAnalytics"));
 export const Wishlist = lazy(() => import("@/pages/Wishlist"));

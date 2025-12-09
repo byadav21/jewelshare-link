@@ -7,6 +7,39 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 emails per minute per IP
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// HTML encode user inputs to prevent injection
+function htmlEncode(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 interface PaymentReminderRequest {
   invoiceId: string;
   customerEmail: string;
@@ -20,6 +53,22 @@ interface PaymentReminderRequest {
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting
+  const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                   req.headers.get("x-real-ip") || 
+                   "unknown";
+  
+  if (!checkRateLimit(clientIP)) {
+    console.log(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      { 
+        status: 429, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      }
+    );
   }
 
   try {
@@ -38,9 +87,13 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
+    // Sanitize user inputs
+    const safeCustomerName = htmlEncode(customerName);
+    const safeInvoiceNumber = htmlEncode(invoiceNumber);
+
     const subject = daysOverdue > 0
-      ? `Payment Overdue: Invoice ${invoiceNumber}`
-      : `Payment Reminder: Invoice ${invoiceNumber}`;
+      ? `Payment Overdue: Invoice ${safeInvoiceNumber}`
+      : `Payment Reminder: Invoice ${safeInvoiceNumber}`;
 
     const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -49,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
           </h1>
           
           <p style="font-size: 16px; color: #374151; margin-bottom: 15px;">
-            Dear ${customerName},
+            Dear ${safeCustomerName},
           </p>
           
           ${daysOverdue > 0 
@@ -63,10 +116,10 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 10px 0; color: #374151;">
-              <strong>Invoice Number:</strong> ${invoiceNumber}
+              <strong>Invoice Number:</strong> ${safeInvoiceNumber}
             </p>
             <p style="margin: 10px 0; color: #374151;">
-              <strong>Amount Due:</strong> ₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              <strong>Amount Due:</strong> Rs.${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </p>
             <p style="margin: 10px 0; color: #374151;">
               <strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString('en-IN', { 

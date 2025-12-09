@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, FileText, Eye, ArrowLeft, FileCheck } from "lucide-react";
+import { Search, FileText, Eye, ArrowLeft, FileCheck, Trash2, Archive, ArchiveRestore, AlertTriangle } from "lucide-react";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
 import {
   Select,
@@ -15,6 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Estimate {
   id: string;
@@ -27,7 +38,20 @@ interface Estimate {
   final_selling_price: number;
   status: string;
   updated_at: string;
+  is_archived?: boolean;
+  archived_at?: string;
 }
+
+const getDaysUntilDeletion = (archivedAt: string | undefined): number | null => {
+  if (!archivedAt) return null;
+  const archiveDate = new Date(archivedAt);
+  const deletionDate = new Date(archiveDate);
+  deletionDate.setDate(deletionDate.getDate() + 30);
+  const now = new Date();
+  const diffTime = deletionDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+};
 
 const EstimateHistory = () => {
   const navigate = useNavigate();
@@ -35,17 +59,23 @@ const EstimateHistory = () => {
   const [filteredEstimates, setFilteredEstimates] = useState<Estimate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"active" | "archived">("active");
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [estimateToDelete, setEstimateToDelete] = useState<Estimate | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   useEffect(() => {
     fetchEstimates();
-  }, []);
+  }, [viewMode]);
 
   useEffect(() => {
     filterEstimates();
   }, [searchTerm, statusFilter, estimates]);
 
   const fetchEstimates = async () => {
+    setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -54,12 +84,20 @@ const EstimateHistory = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("manufacturing_cost_estimates")
         .select("*")
         .eq("user_id", user.id)
         .or("is_invoice_generated.is.null,is_invoice_generated.eq.false")
         .order("created_at", { ascending: false });
+
+      if (viewMode === "archived") {
+        query = query.eq("is_archived", true);
+      } else {
+        query = query.or("is_archived.is.null,is_archived.eq.false");
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -99,6 +137,75 @@ const EstimateHistory = () => {
     navigate(`/invoice-generator?estimate=${estimateId}`);
   };
 
+  const handleDeleteClick = (estimate: Estimate) => {
+    setEstimateToDelete(estimate);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!estimateToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .delete()
+        .eq("id", estimateToDelete.id);
+
+      if (error) throw error;
+
+      setEstimates(prev => prev.filter(e => e.id !== estimateToDelete.id));
+      toast.success("Estimate deleted permanently");
+    } catch (error: any) {
+      toast.error("Failed to delete estimate");
+      console.error("Error deleting estimate:", error);
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setEstimateToDelete(null);
+    }
+  };
+
+  const handleArchive = async (estimate: Estimate) => {
+    setIsArchiving(true);
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .update({ is_archived: true, archived_at: new Date().toISOString() })
+        .eq("id", estimate.id);
+
+      if (error) throw error;
+
+      setEstimates(prev => prev.filter(e => e.id !== estimate.id));
+      toast.success("Estimate archived (auto-deletes after 30 days)");
+    } catch (error: any) {
+      toast.error("Failed to archive estimate");
+      console.error("Error archiving estimate:", error);
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
+  const handleRestore = async (estimate: Estimate) => {
+    setIsArchiving(true);
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .update({ is_archived: false })
+        .eq("id", estimate.id);
+
+      if (error) throw error;
+
+      setEstimates(prev => prev.filter(e => e.id !== estimate.id));
+      toast.success("Estimate restored successfully");
+    } catch (error: any) {
+      toast.error("Failed to restore estimate");
+      console.error("Error restoring estimate:", error);
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -126,6 +233,19 @@ const EstimateHistory = () => {
             </div>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "active" | "archived")} className="w-full">
+              <TabsList className="grid w-full max-w-xs grid-cols-2">
+                <TabsTrigger value="active" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Active
+                </TabsTrigger>
+                <TabsTrigger value="archived" className="flex items-center gap-2">
+                  <Archive className="h-4 w-4" />
+                  Archived
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -151,10 +271,68 @@ const EstimateHistory = () => {
               </Select>
             </div>
 
+            {viewMode === "archived" && filteredEstimates.length > 0 && !loading && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-full bg-destructive/10">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-destructive">Archived Estimates</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      You have <span className="font-medium text-foreground">{filteredEstimates.length}</span> archived {filteredEstimates.length === 1 ? "estimate" : "estimates"}.
+                      {(() => {
+                        const estimatesWithDates = filteredEstimates
+                          .filter(e => e.archived_at)
+                          .map(e => ({ ...e, daysLeft: getDaysUntilDeletion(e.archived_at) }))
+                          .filter(e => e.daysLeft !== null)
+                          .sort((a, b) => (a.daysLeft || 0) - (b.daysLeft || 0));
+                        
+                        if (estimatesWithDates.length === 0) return null;
+                        
+                        const nearest = estimatesWithDates[0];
+                        const days = nearest.daysLeft;
+                        
+                        if (days === 0) {
+                          return <> The next deletion is <span className="font-medium text-destructive">today</span>.</>;
+                        } else if (days === 1) {
+                          return <> The next deletion is in <span className="font-medium text-destructive">1 day</span>.</>;
+                        } else {
+                          return <> The next deletion is in <span className="font-medium text-destructive">{days} days</span>.</>;
+                        }
+                      })()}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Archived estimates are automatically deleted after 30 days. Restore them to keep them permanently.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {loading ? (
-              <div className="text-center py-16">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                <p className="text-muted-foreground text-lg">Loading estimates...</p>
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="rounded-lg border bg-card p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-3 flex-1">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-48 bg-muted animate-pulse rounded-lg" />
+                          <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                          <div className="h-4 w-40 bg-muted animate-pulse rounded" />
+                        </div>
+                        <div className="h-6 w-28 bg-muted animate-pulse rounded" />
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="h-10 w-20 bg-muted animate-pulse rounded" />
+                        <div className="h-10 w-32 bg-muted animate-pulse rounded" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredEstimates.length === 0 ? (
               <div className="text-center py-16">
@@ -189,6 +367,21 @@ const EstimateHistory = () => {
                             >
                               {estimate.status?.replace("_", " ")}
                             </Badge>
+                            {viewMode === "archived" && estimate.archived_at && (
+                              <Badge 
+                                variant="destructive" 
+                                className="flex items-center gap-1"
+                              >
+                                <AlertTriangle className="h-3 w-3" />
+                                {(() => {
+                                  const days = getDaysUntilDeletion(estimate.archived_at);
+                                  if (days === null) return "Pending deletion";
+                                  if (days === 0) return "Deleting today";
+                                  if (days === 1) return "1 day left";
+                                  return `${days} days left`;
+                                })()}
+                              </Badge>
+                            )}
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div className="flex items-center gap-2 text-sm">
@@ -215,7 +408,7 @@ const EstimateHistory = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2 md:gap-3 flex-wrap">
                           <Button
                             variant="outline"
                             size="default"
@@ -225,13 +418,47 @@ const EstimateHistory = () => {
                             <Eye className="h-4 w-4 mr-2 transition-transform group-hover/btn:scale-110" />
                             View
                           </Button>
+                          {viewMode === "active" ? (
+                            <>
+                              <Button
+                                size="default"
+                                onClick={() => handleConvertToInvoice(estimate.id)}
+                                className="group/btn bg-primary hover:bg-primary/90"
+                              >
+                                <FileCheck className="h-4 w-4 mr-2 transition-transform group-hover/btn:scale-110" />
+                                Create Invoice
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="default"
+                                onClick={() => handleArchive(estimate)}
+                                disabled={isArchiving}
+                                className="group/btn"
+                              >
+                                <Archive className="h-4 w-4 md:mr-2 transition-transform group-hover/btn:scale-110" />
+                                <span className="hidden md:inline">Archive</span>
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="secondary"
+                              size="default"
+                              onClick={() => handleRestore(estimate)}
+                              disabled={isArchiving}
+                              className="group/btn"
+                            >
+                              <ArchiveRestore className="h-4 w-4 md:mr-2 transition-transform group-hover/btn:scale-110" />
+                              <span className="hidden md:inline">Restore</span>
+                            </Button>
+                          )}
                           <Button
+                            variant="destructive"
                             size="default"
-                            onClick={() => handleConvertToInvoice(estimate.id)}
-                            className="group/btn bg-primary hover:bg-primary/90"
+                            onClick={() => handleDeleteClick(estimate)}
+                            className="group/btn"
                           >
-                            <FileCheck className="h-4 w-4 mr-2 transition-transform group-hover/btn:scale-110" />
-                            Create Invoice
+                            <Trash2 className="h-4 w-4 md:mr-2 transition-transform group-hover/btn:scale-110" />
+                            <span className="hidden md:inline">Delete</span>
                           </Button>
                         </div>
                       </div>
@@ -243,6 +470,27 @@ const EstimateHistory = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Estimate</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{estimateToDelete?.estimate_name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

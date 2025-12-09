@@ -21,28 +21,14 @@ interface GoldRateDialogProps {
 
 export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [goldRate, setGoldRate] = useState(currentGoldRate.toString());
+  const [goldRate, setGoldRate] = useState(""); // Start with blank input
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    // Check if we should show the dialog
-    const lastSkipTimestamp = localStorage.getItem("gold_rate_skip_timestamp");
+    const today = new Date().toDateString();
     const lastPromptDate = localStorage.getItem("gold_rate_last_prompt");
-    const now = new Date();
-    const today = now.toDateString();
 
-    // If user skipped, check if 24 hours have passed
-    if (lastSkipTimestamp) {
-      const skipTime = new Date(parseInt(lastSkipTimestamp));
-      const hoursSinceSkip = (now.getTime() - skipTime.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceSkip < 24) {
-        // Less than 24 hours since skip, don't show
-        return;
-      }
-    }
-
-    // If user updated today, don't show
+    // If already prompted today (either updated or skipped), don't show again
     if (lastPromptDate === today) {
       return;
     }
@@ -88,14 +74,11 @@ export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDi
   };
 
   const handleSkip = () => {
-    const now = new Date();
-    // Store timestamp for 24-hour tracking
-    localStorage.setItem("gold_rate_skip_timestamp", now.getTime().toString());
-    // Also store date to prevent multiple prompts on same day
-    localStorage.setItem("gold_rate_last_prompt", now.toDateString());
+    const today = new Date().toDateString();
+    localStorage.setItem("gold_rate_last_prompt", today);
     setOpen(false);
     onSkip();
-    toast.info("Gold rate update skipped. You won't be asked again for 24 hours.");
+    toast.info("Gold rate update skipped for today.");
   };
 
   return (
@@ -167,7 +150,7 @@ export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDi
                     handleUpdate();
                   }
                 }}
-                placeholder={currentGoldRate.toString()}
+                placeholder="Enter today's rate"
                 min="1000"
                 max="200000"
                 step="100"

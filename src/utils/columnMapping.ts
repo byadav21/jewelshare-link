@@ -63,39 +63,27 @@ export const getExpectedColumns = (productType: ProductType): ExpectedColumns =>
     default:
       return {
         required: [
-          'CERT',
-          'PRODUCT',
-          'G WT',
-          'STOCK QUANTITY'
+          'Prodcut', // Product name - accepts: Prodcut, Product Title, Name, PRODUCT
+          'Gross Weight', // Weight - accepts: Gross Weight, G WT, GWT
+          'PURITY_FRACTION_USED' // Purity - accepts: PURITY_FRACTION_USED, Purity
         ],
         optional: [
-          'CATEGORY',
-          'DESCRIPTION',
-          'METAL TYPE',
-          'GEMSTONE',
+          'SKU',
+          'Category',
+          'Metal Type',
           'Diamond Color',
-          'CLARITY',
-          'D.WT 1',
-          'D.WT 2',
-          'GEMSTONE WT',
-          'T DWT',
-          'CS TYPE',
-          'NET WT',
-          'PURITY_FRACTION_USED',
-          'D RATE 1',
-          'Pointer diamond',
-          'GEMSTONE RATE',
-          'D VALUE',
-          'GEMSTONE TYPE',
-          'MKG',
-          'GOLD',
+          'Diamond CLARITY',
+          'Diamond Weight 1',
+          'Diamond Weight 2',
+          'Diamond RATE 1',
+          'Diamond Rate 2',
+          'Center stone TYPE',
           'Certification cost',
           'Gemstone cost',
-          'TOTAL',
-          'TOTAL_USD',
-          'Product Type',
           'IMAGE_URL',
-          'DELIVERY TYPE'
+          'STOCK QUANTITY',
+          'DELIVERY TYPE',
+          'Description'
         ]
       };
   }

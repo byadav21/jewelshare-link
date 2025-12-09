@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { supabase } from "@/integrations/supabase/client";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { 
   ArrowRight, 
   Calendar, 
@@ -16,8 +18,7 @@ import {
   TrendingUp,
   Sparkles,
   BookOpen,
-  Tag,
-  ArrowLeft
+  Tag
 } from "lucide-react";
 
 interface BlogPost {
@@ -82,17 +83,11 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
+      
       {/* Hero Section */}
       <section className="border-b bg-gradient-to-br from-category-jewellery/10 via-category-gemstone/10 to-category-diamond/10 py-20">
         <div className="container mx-auto px-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="mb-8"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
-          </Button>
           
           <ScrollReveal>
             <div className="mx-auto max-w-3xl text-center">
@@ -229,6 +224,8 @@ const Blog = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, Gem, ArrowRight, Sparkles } from "lucide-react";
-import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -126,11 +127,9 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-6">
-        <BackToHomeButton />
-      </div>
+      <Header />
       
-      {/* Header */}
+      {/* Hero Section */}
       <section className="border-b">
         <div className="container mx-auto px-4 py-16 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm">
@@ -274,6 +273,8 @@ const Pricing = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
