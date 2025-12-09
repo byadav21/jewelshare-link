@@ -32,8 +32,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 const Catalog = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [usdRate, setUsdRate] = useState(87.67);
-  const [goldRate, setGoldRate] = useState(85000);
+  const [goldRate, setGoldRate] = useState(0); // Start with 0, will be set from vendor profile
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [selectedProductType, setSelectedProductType] = useState<string>("Jewellery");
@@ -78,8 +79,8 @@ const Catalog = () => {
   const { permissions, loading: permissionsLoading } = useVendorPermissions();
   const { canAddProducts, canAddShareLinks, productsRemaining, shareLinksRemaining } = usePlanLimits();
 
-  const [displayCount, setDisplayCount] = useState(100);
-  const LOAD_MORE_COUNT = 100;
+  const [displayCount, setDisplayCount] = useState(50); // Reduced for faster initial load
+  const LOAD_MORE_COUNT = 50;
 
   // Redirect admin to admin dashboard
   useEffect(() => {
@@ -88,30 +89,39 @@ const Catalog = () => {
     }
   }, [isAdmin, roleLoading, navigate]);
 
-  // Initial data fetch
+  // Optimized parallel initial data fetch
   useEffect(() => {
-    const cachedRate = sessionStorage.getItem('usd_rate');
-    const cachedTime = sessionStorage.getItem('usd_rate_time');
-    if (cachedRate && cachedTime && Date.now() - parseInt(cachedTime) < 3600000) {
-      setUsdRate(parseFloat(cachedRate));
-    } else {
-      fetchUSDRate();
-    }
+    const initializeData = async () => {
+      // Check cached USD rate first (sync)
+      const cachedRate = sessionStorage.getItem('usd_rate');
+      const cachedTime = sessionStorage.getItem('usd_rate_time');
+      if (cachedRate && cachedTime && Date.now() - parseInt(cachedTime) < 3600000) {
+        setUsdRate(parseFloat(cachedRate));
+      }
+      
+      // Parallel fetch for faster load
+      await Promise.all([
+        fetchVendorProfile(),
+        fetchApprovedCategories(),
+        !cachedRate ? fetchUSDRate() : Promise.resolve()
+      ]);
+      
+      setInitialLoadComplete(true);
+    };
     
-    fetchVendorProfile();
-    fetchApprovedCategories();
+    initializeData();
   }, []);
 
   // Fetch products when product type changes
   useEffect(() => {
-    if (selectedProductType) {
+    if (selectedProductType && initialLoadComplete) {
       fetchProducts();
     }
-  }, [selectedProductType]);
+  }, [selectedProductType, initialLoadComplete]);
 
   // Reset display count on filter change
   useEffect(() => {
-    setDisplayCount(100);
+    setDisplayCount(50);
   }, [filters, selectedProductType]);
 
   const fetchApprovedCategories = async () => {
@@ -826,7 +836,7 @@ const Catalog = () => {
 
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+              {Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
             </div>
           ) : (
             <div className="animate-fade-in">

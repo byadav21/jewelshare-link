@@ -21,7 +21,7 @@ interface GoldRateDialogProps {
 
 export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [goldRate, setGoldRate] = useState(currentGoldRate.toString());
+  const [goldRate, setGoldRate] = useState(""); // Start with blank input
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
@@ -167,7 +167,7 @@ export const GoldRateDialog = ({ currentGoldRate, onUpdate, onSkip }: GoldRateDi
                     handleUpdate();
                   }
                 }}
-                placeholder={currentGoldRate.toString()}
+                placeholder="Enter today's rate"
                 min="1000"
                 max="200000"
                 step="100"
