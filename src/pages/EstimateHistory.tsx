@@ -152,9 +152,28 @@ const EstimateHistory = () => {
             </div>
 
             {loading ? (
-              <div className="text-center py-16">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                <p className="text-muted-foreground text-lg">Loading estimates...</p>
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="rounded-lg border bg-card p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-3 flex-1">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-48 bg-muted animate-pulse rounded-lg" />
+                          <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                          <div className="h-4 w-40 bg-muted animate-pulse rounded" />
+                        </div>
+                        <div className="h-6 w-28 bg-muted animate-pulse rounded" />
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="h-10 w-20 bg-muted animate-pulse rounded" />
+                        <div className="h-10 w-32 bg-muted animate-pulse rounded" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredEstimates.length === 0 ? (
               <div className="text-center py-16">

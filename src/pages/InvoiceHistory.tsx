@@ -70,7 +70,7 @@ const InvoiceHistory = () => {
     filterInvoices();
   }, [searchTerm, statusFilter, paymentStatusFilter, invoices, dateFrom, dateTo]);
 
-  const fetchInvoices = async () => {
+const fetchInvoices = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -81,7 +81,7 @@ const InvoiceHistory = () => {
 
       const { data, error } = await supabase
         .from("manufacturing_cost_estimates")
-        .select("*")
+        .select("id, invoice_number, invoice_date, customer_name, customer_email, customer_phone, final_selling_price, status, invoice_status, payment_date, payment_due_date, estimate_name, created_at, last_reminder_sent_at")
         .eq("user_id", user.id)
         .eq("is_invoice_generated", true)
         .not("invoice_number", "is", null)
@@ -603,9 +603,33 @@ const InvoiceHistory = () => {
             </div>
 
             {loading ? (
-              <div className="text-center py-16">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                <p className="text-muted-foreground text-lg">Loading invoices...</p>
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="rounded-lg border bg-card p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="h-5 w-5 bg-muted animate-pulse rounded mt-1" />
+                        <div className="space-y-3 flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-36 bg-muted animate-pulse rounded-lg" />
+                            <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
+                            <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                            <div className="h-4 w-40 bg-muted animate-pulse rounded" />
+                          </div>
+                          <div className="h-7 w-32 bg-muted animate-pulse rounded" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <div className="h-9 w-24 bg-muted animate-pulse rounded" />
+                        <div className="h-9 w-24 bg-muted animate-pulse rounded" />
+                        <div className="h-9 w-20 bg-muted animate-pulse rounded" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredInvoices.length === 0 ? (
               <div className="text-center py-16">

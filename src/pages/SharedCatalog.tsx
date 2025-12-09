@@ -60,59 +60,58 @@ const SharedCatalog = () => {
   });
 
   useEffect(() => {
-    const cachedRate = sessionStorage.getItem('usd_rate');
-    const cachedTime = sessionStorage.getItem('usd_rate_time');
+    if (!token) return;
     
-    if (cachedRate && cachedTime && Date.now() - parseInt(cachedTime) < 3600000) {
-      setUsdToInr(parseFloat(cachedRate));
-    } else {
-      fetchExchangeRate();
-    }
+    const fetchData = async () => {
+      const decodedToken = decodeURIComponent(token);
+      
+      // Check cached exchange rate
+      const cachedRate = sessionStorage.getItem('usd_rate');
+      const cachedTime = sessionStorage.getItem('usd_rate_time');
+      const useCache = cachedRate && cachedTime && Date.now() - parseInt(cachedTime) < 3600000;
+      
+      // Fetch catalog and exchange rate in parallel
+      const [catalogResult, rateResult] = await Promise.allSettled([
+        supabase.functions.invoke("get-shared-catalog", { body: { shareToken: decodedToken } }),
+        useCache ? Promise.resolve(null) : fetch('https://api.exchangerate-api.com/v4/latest/USD').then(r => r.json())
+      ]);
+      
+      // Process exchange rate
+      if (rateResult.status === 'fulfilled' && rateResult.value?.rates?.INR) {
+        setUsdToInr(rateResult.value.rates.INR);
+        sessionStorage.setItem('usd_rate', rateResult.value.rates.INR.toString());
+        sessionStorage.setItem('usd_rate_time', Date.now().toString());
+      } else if (useCache && cachedRate) {
+        setUsdToInr(parseFloat(cachedRate));
+      }
+      
+      // Process catalog data
+      if (catalogResult.status === 'fulfilled') {
+        const { data, error } = catalogResult.value;
+        if (error) {
+          setError(error.message || "Failed to load catalog");
+        } else if (data?.error) {
+          setError(data.error);
+        } else {
+          setProducts(data?.products || []);
+          setShareLinkId(data?.shareLinkId || null);
+          setShareLinkData(data?.shareLink || null);
+          setVendorProfile(data?.vendorProfile || null);
+          setShowVendorDetails(data?.shareLink?.show_vendor_details ?? true);
+        }
+      } else {
+        setError("Failed to load catalog");
+      }
+      
+      setLoading(false);
+    };
     
-    if (token) fetchSharedCatalog();
+    fetchData();
   }, [token]);
 
   useEffect(() => {
     setDisplayCount(60);
   }, [filters]);
-
-  const fetchExchangeRate = async () => {
-    try {
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-      const data = await response.json();
-      if (data.rates?.INR) {
-        setUsdToInr(data.rates.INR);
-        sessionStorage.setItem('usd_rate', data.rates.INR.toString());
-        sessionStorage.setItem('usd_rate_time', Date.now().toString());
-      }
-    } catch (err) {
-      console.error('Failed to fetch exchange rate');
-    }
-  };
-
-  const fetchSharedCatalog = async () => {
-    try {
-      const decodedToken = token ? decodeURIComponent(token) : '';
-      const { data, error } = await supabase.functions.invoke("get-shared-catalog", {
-        body: { shareToken: decodedToken },
-      });
-
-      if (error) throw error;
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setProducts(data.products || []);
-        setShareLinkId(data.shareLinkId || null);
-        setShareLinkData(data.shareLink || null);
-        setVendorProfile(data.vendorProfile || null);
-        setShowVendorDetails(data.shareLink?.show_vendor_details ?? true);
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to load catalog");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCustomOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,13 +193,32 @@ const SharedCatalog = () => {
     });
   }, [products, filters]);
 
-  // Loading state
+  // Loading state with skeleton
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Gem className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-xl text-foreground">Loading catalog...</p>
+      <div className="min-h-screen bg-background p-4">
+        <div className="container mx-auto">
+          {/* Header skeleton */}
+          <div className="mb-6 space-y-4">
+            <div className="h-12 w-48 bg-muted animate-pulse rounded-lg" />
+            <div className="h-6 w-64 bg-muted animate-pulse rounded" />
+            <div className="flex gap-2">
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            </div>
+          </div>
+          {/* Products grid skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="rounded-lg border bg-card overflow-hidden">
+                <div className="aspect-square bg-muted animate-pulse" />
+                <div className="p-3 space-y-2">
+                  <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
+                  <div className="h-5 w-1/2 bg-muted animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
