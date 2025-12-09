@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { cn } from "@/lib/utils";
@@ -17,9 +19,23 @@ import {
   ChevronLeft,
   ChevronRight,
   ZoomIn,
-  Hand
+  Hand,
+  Search,
+  ArrowRightLeft,
+  CircleDot
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Ring size data with inner diameter in mm
+const RING_SIZES = [
+  { size: 4, diameterMM: 14.9, circumference: 46.8 },
+  { size: 5, diameterMM: 15.7, circumference: 49.3 },
+  { size: 6, diameterMM: 16.5, circumference: 51.9 },
+  { size: 7, diameterMM: 17.3, circumference: 54.4 },
+  { size: 8, diameterMM: 18.1, circumference: 56.9 },
+  { size: 9, diameterMM: 19.0, circumference: 59.5 },
+  { size: 10, diameterMM: 19.8, circumference: 62.1 },
+];
 
 // Diamond shape data with mm sizes for different carat weights
 const DIAMOND_SHAPES = {
@@ -306,6 +322,14 @@ const DiamondSizingChart = () => {
   const [selectedCaratIndex, setSelectedCaratIndex] = useState(3); // Default to 1.00 carat
   const [compareMode, setCompareMode] = useState(false);
   const [compareShape, setCompareShape] = useState<ShapeKey>("princess");
+  
+  // MM to Carat lookup state
+  const [mmInput, setMmInput] = useState("");
+  const [mmWidthInput, setMmWidthInput] = useState("");
+  
+  // Ring size overlay state
+  const [selectedRingSize, setSelectedRingSize] = useState(6);
+  const [showRingOverlay, setShowRingOverlay] = useState(false);
 
   const shapeData = DIAMOND_SHAPES[selectedShape];
   const compareShapeData = DIAMOND_SHAPES[compareShape];
@@ -318,6 +342,76 @@ const DiamondSizingChart = () => {
     const scale = baseScale + (carat * 30);
     return Math.min(scale, 200);
   };
+
+  // Parse mm value from string (handles "x.x x x.x" format)
+  const parseMM = (mmString: string): { length: number; width: number } | null => {
+    const cleaned = mmString.replace(/\s+/g, "");
+    if (cleaned.includes("x")) {
+      const parts = cleaned.split("x").map(p => parseFloat(p));
+      if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        return { length: parts[0], width: parts[1] };
+      }
+    } else {
+      const val = parseFloat(cleaned);
+      if (!isNaN(val)) {
+        return { length: val, width: val };
+      }
+    }
+    return null;
+  };
+
+  // MM to Carat reverse lookup
+  const mmToCaratResults = useMemo(() => {
+    const searchLength = parseFloat(mmInput);
+    const searchWidth = mmWidthInput ? parseFloat(mmWidthInput) : searchLength;
+    
+    if (isNaN(searchLength) || searchLength <= 0) return [];
+    
+    const results: Array<{
+      shape: ShapeKey;
+      shapeName: string;
+      carat: number;
+      mm: string;
+      matchScore: number;
+    }> = [];
+    
+    (Object.keys(DIAMOND_SHAPES) as ShapeKey[]).forEach(shape => {
+      const shapeInfo = DIAMOND_SHAPES[shape];
+      
+      shapeInfo.sizes.forEach(size => {
+        const parsed = parseMM(size.mm);
+        if (!parsed) return;
+        
+        // Calculate match score (lower is better)
+        const lengthDiff = Math.abs(parsed.length - searchLength);
+        const widthDiff = Math.abs(parsed.width - searchWidth);
+        const matchScore = lengthDiff + widthDiff;
+        
+        // Only include if reasonably close (within 2mm)
+        if (matchScore <= 4) {
+          results.push({
+            shape,
+            shapeName: shapeInfo.name,
+            carat: size.carat,
+            mm: size.mm,
+            matchScore
+          });
+        }
+      });
+    });
+    
+    // Sort by match score
+    return results.sort((a, b) => a.matchScore - b.matchScore).slice(0, 10);
+  }, [mmInput, mmWidthInput]);
+
+  // Get ring diameter for visual
+  const getRingDiameter = (ringSize: number) => {
+    const ring = RING_SIZES.find(r => r.size === ringSize);
+    return ring?.diameterMM || 16.5;
+  };
+
+  // Scale for ring overlay visualization (pixels per mm)
+  const ringScale = 8;
 
   return (
     <div className="min-h-screen bg-background">
@@ -628,8 +722,271 @@ const DiamondSizingChart = () => {
           </ScrollReveal>
         </div>
 
-        {/* Quick Reference Grid */}
+        {/* MM to Carat Reverse Lookup */}
         <ScrollReveal delay={0.3}>
+          <Card className="mt-8">
+            <CardHeader className="bg-gradient-to-r from-gemstone-from/10 to-diamond-from/10">
+              <CardTitle className="flex items-center gap-2">
+                <ArrowRightLeft className="h-5 w-5" />
+                MM to Carat Lookup
+              </CardTitle>
+              <CardDescription>
+                Enter millimeter dimensions to find approximate carat weight
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="mm-length" className="text-sm font-medium">
+                        Length (mm)
+                      </Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="mm-length"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          placeholder="e.g., 6.5"
+                          value={mmInput}
+                          onChange={(e) => setMmInput(e.target.value)}
+                          className="pl-9"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="mm-width" className="text-sm font-medium">
+                        Width (mm) <span className="text-muted-foreground text-xs">(optional)</span>
+                      </Label>
+                      <Input
+                        id="mm-width"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        placeholder="Same as length"
+                        value={mmWidthInput}
+                        onChange={(e) => setMmWidthInput(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Enter length for round diamonds, or both length and width for fancy shapes
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm font-medium">Matching Results</p>
+                  {mmToCaratResults.length > 0 ? (
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                      {mmToCaratResults.map((result, index) => (
+                        <motion.div
+                          key={`${result.shape}-${result.carat}`}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className={cn(
+                            "flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all",
+                            result.matchScore < 0.5 
+                              ? "bg-primary/10 border-primary/30" 
+                              : "bg-muted/30 hover:bg-muted/50"
+                          )}
+                          onClick={() => {
+                            setSelectedShape(result.shape);
+                            const idx = DIAMOND_SHAPES[result.shape].sizes.findIndex(s => s.carat === result.carat);
+                            if (idx !== -1) setSelectedCaratIndex(idx);
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <DiamondShapeSVG shape={result.shape} size={24} />
+                            <div>
+                              <p className="font-medium text-sm">{result.shapeName}</p>
+                              <p className="text-xs text-muted-foreground">{result.mm} mm</p>
+                            </div>
+                          </div>
+                          <Badge variant={result.matchScore < 0.5 ? "default" : "secondary"}>
+                            ~{result.carat} ct
+                          </Badge>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : mmInput ? (
+                    <div className="p-4 rounded-lg bg-muted/30 text-center text-muted-foreground">
+                      <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No matching sizes found</p>
+                      <p className="text-xs mt-1">Try adjusting your measurements</p>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg bg-muted/30 text-center text-muted-foreground">
+                      <Ruler className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Enter dimensions to search</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </ScrollReveal>
+
+        {/* Ring Size Overlay */}
+        <ScrollReveal delay={0.4}>
+          <Card className="mt-8">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-gemstone-from/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <CircleDot className="h-5 w-5" />
+                    Ring Size Overlay
+                  </CardTitle>
+                  <CardDescription>
+                    See how diamonds look on different finger sizes
+                  </CardDescription>
+                </div>
+                <Button
+                  variant={showRingOverlay ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowRingOverlay(!showRingOverlay)}
+                >
+                  {showRingOverlay ? "Hide Overlay" : "Show Overlay"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <AnimatePresence mode="wait">
+                {showRingOverlay ? (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-6"
+                  >
+                    {/* Ring Size Selector */}
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {RING_SIZES.map((ring) => (
+                        <Button
+                          key={ring.size}
+                          variant={selectedRingSize === ring.size ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedRingSize(ring.size)}
+                          className="min-w-[60px]"
+                        >
+                          Size {ring.size}
+                        </Button>
+                      ))}
+                    </div>
+
+                    {/* Visual Overlay */}
+                    <div className="relative flex items-center justify-center py-8">
+                      {/* Finger representation */}
+                      <div className="relative">
+                        {/* Finger shape */}
+                        <motion.div
+                          className="relative bg-gradient-to-b from-amber-200/60 to-amber-300/60 dark:from-amber-800/40 dark:to-amber-900/40 rounded-t-full"
+                          style={{
+                            width: getRingDiameter(selectedRingSize) * ringScale + 20,
+                            height: 200,
+                          }}
+                          initial={{ scale: 0.9 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring" }}
+                        >
+                          {/* Ring band */}
+                          <div 
+                            className="absolute top-8 left-1/2 -translate-x-1/2 rounded-full border-4 border-yellow-500/80 dark:border-yellow-400/60"
+                            style={{
+                              width: getRingDiameter(selectedRingSize) * ringScale + 16,
+                              height: 24,
+                            }}
+                          />
+                          
+                          {/* Diamond on ring */}
+                          <motion.div
+                            className="absolute left-1/2 -translate-x-1/2"
+                            style={{ top: -10 }}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.2, type: "spring" }}
+                          >
+                            <DiamondShapeSVG 
+                              shape={selectedShape} 
+                              size={parseFloat(selectedSize.mm.split("x")[0] || selectedSize.mm) * ringScale}
+                            />
+                          </motion.div>
+                        </motion.div>
+
+                        {/* Size info */}
+                        <div className="absolute -right-32 top-1/2 -translate-y-1/2 text-sm space-y-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-primary/60" />
+                            <span className="text-muted-foreground">Ring Size {selectedRingSize}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                            <span className="text-muted-foreground">{getRingDiameter(selectedRingSize)} mm</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ring Size Reference Table */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                      {RING_SIZES.map((ring) => (
+                        <motion.div
+                          key={ring.size}
+                          className={cn(
+                            "p-3 rounded-lg text-center border transition-all cursor-pointer",
+                            selectedRingSize === ring.size
+                              ? "bg-primary/10 border-primary"
+                              : "bg-muted/30 hover:bg-muted/50"
+                          )}
+                          onClick={() => setSelectedRingSize(ring.size)}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <p className="font-semibold">Size {ring.size}</p>
+                          <p className="text-xs text-muted-foreground">{ring.diameterMM} mm</p>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Comparison Info */}
+                    <div className="p-4 rounded-lg bg-muted/30 border">
+                      <div className="flex items-start gap-3">
+                        <Hand className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="text-sm">
+                          <p className="font-medium mb-1">
+                            {selectedSize.carat} ct {shapeData.name} on Size {selectedRingSize} Finger
+                          </p>
+                          <p className="text-muted-foreground">
+                            Diamond measures {selectedSize.mm} mm on a finger with {getRingDiameter(selectedRingSize)} mm diameter. 
+                            {" "}
+                            {parseFloat(selectedSize.mm.split("x")[0] || selectedSize.mm) / getRingDiameter(selectedRingSize) > 0.45
+                              ? "The diamond will appear substantial and eye-catching."
+                              : parseFloat(selectedSize.mm.split("x")[0] || selectedSize.mm) / getRingDiameter(selectedRingSize) > 0.35
+                              ? "The diamond will have a balanced, elegant appearance."
+                              : "The diamond will appear delicate and subtle."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    <Hand className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>Click "Show Overlay" to visualize diamond sizes on different ring sizes</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </ScrollReveal>
+
+        {/* Quick Reference Grid */}
+        <ScrollReveal delay={0.5}>
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Diamond className="h-6 w-6 text-primary" />
