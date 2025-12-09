@@ -12,11 +12,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const AdminDiamondPrices = () => {
   const [uploading, setUploading] = useState(false);
   const [pearFile, setPearFile] = useState<File | null>(null);
   const [roundFile, setRoundFile] = useState<File | null>(null);
+  const [replaceAllPear, setReplaceAllPear] = useState(true);
+  const [replaceAllRound, setReplaceAllRound] = useState(true);
   const [displayCount, setDisplayCount] = useState(100);
   const queryClient = useQueryClient();
 
@@ -174,6 +177,8 @@ const AdminDiamondPrices = () => {
       return;
     }
 
+    const shouldReplace = targetShape === 'pear' ? replaceAllPear : replaceAllRound;
+
     setUploading(true);
     try {
       const text = await file.text();
@@ -244,16 +249,27 @@ const AdminDiamondPrices = () => {
         return;
       }
 
-      // Insert records in batches
+      // Delete existing prices if replace all is checked
+      if (shouldReplace) {
+        if (targetShape === 'round') {
+          await supabase.from("diamond_prices").delete().eq("shape", "Round");
+        } else {
+          // Delete all non-round shapes for fancy
+          await supabase.from("diamond_prices").delete().neq("shape", "Round");
+        }
+      }
+
+      // Insert records
       const { error } = await supabase
         .from("diamond_prices")
         .insert(records);
 
       if (error) throw error;
 
+      const replaceMsg = shouldReplace ? " (replaced existing)" : "";
       const message = skippedRows > 0 
-        ? `Imported ${records.length} records (${skippedRows} rows skipped)`
-        : `Successfully imported ${records.length} price records!`;
+        ? `Imported ${records.length} records${replaceMsg} (${skippedRows} rows skipped)`
+        : `Successfully imported ${records.length} price records${replaceMsg}!`;
       
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["diamond-prices"] });
@@ -340,6 +356,16 @@ const AdminDiamondPrices = () => {
                     onChange={(e) => setPearFile(e.target.files?.[0] || null)}
                   />
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="replace-pear" 
+                    checked={replaceAllPear}
+                    onCheckedChange={(checked) => setReplaceAllPear(checked === true)}
+                  />
+                  <Label htmlFor="replace-pear" className="text-sm font-normal cursor-pointer">
+                    Replace all existing fancy shape prices
+                  </Label>
+                </div>
                 <Button
                   onClick={() => handleFileUpload(pearFile, 'pear')}
                   disabled={!pearFile || uploading}
@@ -363,6 +389,16 @@ const AdminDiamondPrices = () => {
                     accept=".csv"
                     onChange={(e) => setRoundFile(e.target.files?.[0] || null)}
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="replace-round" 
+                    checked={replaceAllRound}
+                    onCheckedChange={(checked) => setReplaceAllRound(checked === true)}
+                  />
+                  <Label htmlFor="replace-round" className="text-sm font-normal cursor-pointer">
+                    Replace all existing round prices
+                  </Label>
                 </div>
                 <Button
                   onClick={() => handleFileUpload(roundFile, 'round')}
