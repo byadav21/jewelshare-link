@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Diamond, Ruler, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PREVIEW_SHAPES = [
   { key: "round", name: "Round", mm: "6.5mm", carat: "1.00ct" },
@@ -14,6 +14,13 @@ const PREVIEW_SHAPES = [
   { key: "emerald", name: "Emerald", mm: "7.0 x 5.0mm", carat: "1.00ct" },
   { key: "pear", name: "Pear", mm: "8.5 x 5.5mm", carat: "1.00ct" },
 ];
+
+interface Sparkle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+}
 
 const ShapeIcon = ({ shape, isHovered }: { shape: string; isHovered?: boolean }) => {
   const shapes: Record<string, JSX.Element> = {
@@ -82,9 +89,56 @@ const ShapeIcon = ({ shape, isHovered }: { shape: string; isHovered?: boolean })
   return shapes[shape] || null;
 };
 
+const SparkleParticle = ({ x, y, size }: { x: number; y: number; size: number }) => (
+  <motion.div
+    className="absolute pointer-events-none"
+    style={{ left: x, top: y }}
+    initial={{ scale: 0, opacity: 1 }}
+    animate={{ scale: 1, opacity: 0 }}
+    exit={{ scale: 0, opacity: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+  >
+    <svg width={size} height={size} viewBox="0 0 24 24" className="text-primary">
+      <path
+        fill="currentColor"
+        d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"
+      />
+    </svg>
+  </motion.div>
+);
+
 const ShapeCard = ({ shape, index, navigate }: { shape: typeof PREVIEW_SHAPES[0]; index: number; navigate: (path: string) => void }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
+  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const sparkleIdRef = useRef(0);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isHovered || !cardRef.current) return;
+    
+    // Only create sparkle occasionally
+    if (Math.random() > 0.3) return;
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - 6;
+    const y = e.clientY - rect.top - 6;
+    const size = Math.random() * 8 + 6;
+    
+    const newSparkle: Sparkle = {
+      id: sparkleIdRef.current++,
+      x,
+      y,
+      size,
+    };
+    
+    setSparkles(prev => [...prev.slice(-5), newSparkle]);
+    
+    // Remove sparkle after animation
+    setTimeout(() => {
+      setSparkles(prev => prev.filter(s => s.id !== newSparkle.id));
+    }, 600);
+  }, [isHovered]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -93,13 +147,35 @@ const ShapeCard = ({ shape, index, navigate }: { shape: typeof PREVIEW_SHAPES[0]
       whileHover={{ y: -5 }}
     >
       <Card 
-        className="p-4 text-center hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 border-primary/10 hover:border-primary/30 cursor-pointer overflow-hidden"
+        ref={cardRef}
+        className="p-4 text-center hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 border-primary/10 hover:border-primary/30 cursor-pointer overflow-hidden relative"
         onClick={() => navigate("/diamond-sizing-chart")}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setSparkles([]);
+        }}
+        onMouseMove={handleMouseMove}
       >
+        {/* Sparkle particles */}
+        <AnimatePresence>
+          {sparkles.map(sparkle => (
+            <SparkleParticle key={sparkle.id} x={sparkle.x} y={sparkle.y} size={sparkle.size} />
+          ))}
+        </AnimatePresence>
+
+        {/* Shimmer overlay */}
+        {isHovered && (
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+            initial={{ x: "-100%" }}
+            animate={{ x: "200%" }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+        )}
+
         <motion.div 
-          className="w-12 h-12 mx-auto mb-3"
+          className="w-12 h-12 mx-auto mb-3 relative z-10"
           animate={{ 
             scale: isHovered ? 1.2 : 1,
             rotate: isHovered ? [0, -5, 5, 0] : 0
@@ -109,14 +185,14 @@ const ShapeCard = ({ shape, index, navigate }: { shape: typeof PREVIEW_SHAPES[0]
           <ShapeIcon shape={shape.key} isHovered={isHovered} />
         </motion.div>
         <motion.h3 
-          className="font-semibold text-sm mb-1"
+          className="font-semibold text-sm mb-1 relative z-10"
           animate={{ color: isHovered ? "hsl(var(--primary))" : "hsl(var(--foreground))" }}
         >
           {shape.name}
         </motion.h3>
-        <p className="text-xs text-muted-foreground">{shape.mm}</p>
+        <p className="text-xs text-muted-foreground relative z-10">{shape.mm}</p>
         <motion.p 
-          className="text-xs font-medium"
+          className="text-xs font-medium relative z-10"
           animate={{ 
             scale: isHovered ? 1.1 : 1,
             color: "hsl(var(--primary))"
