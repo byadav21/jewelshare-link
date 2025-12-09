@@ -100,6 +100,10 @@ const AppContent = () => {
         element={<RouteSuspense><Pages.DiamondCalculator /></RouteSuspense>} 
       />
       <Route 
+        path={ROUTES.DIAMOND_SIZING_CHART} 
+        element={<RouteSuspense><Pages.DiamondSizingChart /></RouteSuspense>} 
+      />
+      <Route 
         path={ROUTES.MANUFACTURING_COST} 
         element={<RouteSuspense><Pages.ManufacturingCost /></RouteSuspense>} 
       />

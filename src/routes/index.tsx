@@ -21,6 +21,7 @@ export const CustomOrder = lazy(() => import("@/pages/CustomOrder"));
 export const NotFound = lazy(() => import("@/pages/NotFound"));
 export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizationDemo"));
 export const DiamondCalculator = lazy(() => import("@/pages/DiamondCalculator"));
+export const DiamondSizingChart = lazy(() => import("@/pages/DiamondSizingChart"));
 export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"));
 export const Calculators = lazy(() => import("@/pages/Calculators"));
 export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
