@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, FileText, Eye, ArrowLeft, FileCheck } from "lucide-react";
+import { Search, FileText, Eye, ArrowLeft, FileCheck, Trash2 } from "lucide-react";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
 import {
   Select,
@@ -15,6 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Estimate {
   id: string;
@@ -36,6 +46,9 @@ const EstimateHistory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [estimateToDelete, setEstimateToDelete] = useState<Estimate | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchEstimates();
@@ -97,6 +110,35 @@ const EstimateHistory = () => {
 
   const handleConvertToInvoice = (estimateId: string) => {
     navigate(`/invoice-generator?estimate=${estimateId}`);
+  };
+
+  const handleDeleteClick = (estimate: Estimate) => {
+    setEstimateToDelete(estimate);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!estimateToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("manufacturing_cost_estimates")
+        .delete()
+        .eq("id", estimateToDelete.id);
+
+      if (error) throw error;
+
+      setEstimates(prev => prev.filter(e => e.id !== estimateToDelete.id));
+      toast.success("Estimate deleted successfully");
+    } catch (error: any) {
+      toast.error("Failed to delete estimate");
+      console.error("Error deleting estimate:", error);
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setEstimateToDelete(null);
+    }
   };
 
   return (
@@ -234,7 +276,7 @@ const EstimateHistory = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2 md:gap-3">
                           <Button
                             variant="outline"
                             size="default"
@@ -252,6 +294,15 @@ const EstimateHistory = () => {
                             <FileCheck className="h-4 w-4 mr-2 transition-transform group-hover/btn:scale-110" />
                             Create Invoice
                           </Button>
+                          <Button
+                            variant="destructive"
+                            size="default"
+                            onClick={() => handleDeleteClick(estimate)}
+                            className="group/btn"
+                          >
+                            <Trash2 className="h-4 w-4 md:mr-2 transition-transform group-hover/btn:scale-110" />
+                            <span className="hidden md:inline">Delete</span>
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -262,6 +313,27 @@ const EstimateHistory = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Estimate</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{estimateToDelete?.estimate_name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
