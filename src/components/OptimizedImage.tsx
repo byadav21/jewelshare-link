@@ -148,14 +148,12 @@ export const OptimizedImage = ({
         backgroundColor: blurPlaceholder && !isLoaded ? placeholderColor : undefined
       }}
     >
-      {/* Blur-up placeholder */}
+      {/* Blur-up placeholder - overlay that fades out when loaded */}
       {blurPlaceholder && !isLoaded && (
         <div 
-          className="absolute inset-0 animate-pulse"
+          className="absolute inset-0 animate-pulse z-10"
           style={{ 
             background: `linear-gradient(135deg, ${placeholderColor} 0%, hsl(0, 0%, 88%) 100%)`,
-            filter: 'blur(8px)',
-            transform: 'scale(1.1)'
           }}
         />
       )}
@@ -170,8 +168,7 @@ export const OptimizedImage = ({
         onLoad={handleLoad}
         onError={handleError}
         className={cn(
-          "transition-all duration-300 ease-out w-full h-full",
-          isLoaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-105",
+          "w-full h-full",
           objectFitClass
         )}
         {...props}
