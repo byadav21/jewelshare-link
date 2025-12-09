@@ -1,0 +1,16 @@
+{
+  "name": "cataleon-mongodb-migration",
+  "version": "1.0.0",
+  "description": "Migration script for transferring Cataleon data from PostgreSQL to MongoDB",
+  "main": "migrate-to-mongodb.js",
+  "scripts": {
+    "migrate": "node migrate-to-mongodb.js migrate",
+    "export": "node migrate-to-mongodb.js export",
+    "import": "node import-to-mongodb.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.75.1",
+    "dotenv": "^16.3.1",
+    "mongodb": "^6.3.0"
+  }
+}
