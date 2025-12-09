@@ -13,6 +13,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const AdminDiamondPrices = () => {
   const [uploading, setUploading] = useState(false);
@@ -21,6 +31,7 @@ const AdminDiamondPrices = () => {
   const [replaceAllPear, setReplaceAllPear] = useState(true);
   const [replaceAllRound, setReplaceAllRound] = useState(true);
   const [displayCount, setDisplayCount] = useState(100);
+  const [pendingUpload, setPendingUpload] = useState<{ file: File; targetShape: 'pear' | 'round' } | null>(null);
   const queryClient = useQueryClient();
 
   // Filter states
@@ -171,7 +182,7 @@ const AdminDiamondPrices = () => {
     };
   };
 
-  const handleFileUpload = async (file: File | null, targetShape: 'pear' | 'round') => {
+  const handleFileUpload = (file: File | null, targetShape: 'pear' | 'round') => {
     if (!file) {
       toast.error("Please select a CSV file");
       return;
@@ -179,6 +190,16 @@ const AdminDiamondPrices = () => {
 
     const shouldReplace = targetShape === 'pear' ? replaceAllPear : replaceAllRound;
 
+    if (shouldReplace) {
+      // Show confirmation dialog
+      setPendingUpload({ file, targetShape });
+    } else {
+      // Proceed directly without confirmation
+      executeUpload(file, targetShape, false);
+    }
+  };
+
+  const executeUpload = async (file: File, targetShape: 'pear' | 'round', shouldReplace: boolean) => {
     setUploading(true);
     try {
       const text = await file.text();
@@ -639,6 +660,31 @@ const AdminDiamondPrices = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!pendingUpload} onOpenChange={(open) => !open && setPendingUpload(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Replace All Prices?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all existing {pendingUpload?.targetShape === 'round' ? 'round' : 'fancy shape'} diamond prices before importing the new data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingUpload) {
+                  const shouldReplace = pendingUpload.targetShape === 'pear' ? replaceAllPear : replaceAllRound;
+                  executeUpload(pendingUpload.file, pendingUpload.targetShape, shouldReplace);
+                  setPendingUpload(null);
+                }
+              }}
+            >
+              Yes, Replace All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
