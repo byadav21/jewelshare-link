@@ -60,7 +60,10 @@ const InvoiceHistory = () => {
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
-  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [paymentDateDialogOpen, setPaymentDateDialogOpen] = useState(false);
+  const [paymentDateInvoice, setPaymentDateInvoice] = useState<Invoice | null>(null);
+  const [selectedPaymentDate, setSelectedPaymentDate] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchInvoices();
@@ -249,11 +252,21 @@ const fetchInvoices = async () => {
     }
   };
 
-  const handlePaymentStatusUpdate = async (invoiceId: string, newPaymentStatus: string) => {
+  const handlePaymentStatusChange = (invoice: Invoice, newStatus: string) => {
+    if (newStatus === "paid") {
+      setPaymentDateInvoice(invoice);
+      setSelectedPaymentDate(new Date());
+      setPaymentDateDialogOpen(true);
+    } else {
+      handlePaymentStatusUpdate(invoice.id, newStatus, null);
+    }
+  };
+
+  const handlePaymentStatusUpdate = async (invoiceId: string, newPaymentStatus: string, paymentDate: Date | null) => {
     try {
       const updateData: any = { invoice_status: newPaymentStatus };
-      if (newPaymentStatus === "paid") {
-        updateData.payment_date = new Date().toISOString();
+      if (newPaymentStatus === "paid" && paymentDate) {
+        updateData.payment_date = paymentDate.toISOString();
       } else if (newPaymentStatus === "pending" || newPaymentStatus === "cancelled") {
         updateData.payment_date = null;
       }
@@ -271,6 +284,13 @@ const fetchInvoices = async () => {
       console.error("Error updating payment status:", error);
       toast.error("Failed to update payment status");
     }
+  };
+
+  const handleConfirmPaymentDate = async () => {
+    if (!paymentDateInvoice) return;
+    await handlePaymentStatusUpdate(paymentDateInvoice.id, "paid", selectedPaymentDate);
+    setPaymentDateDialogOpen(false);
+    setPaymentDateInvoice(null);
   };
 
   const handleSendPaymentReminder = async (invoice: Invoice) => {
@@ -733,14 +753,14 @@ const fetchInvoices = async () => {
                             <div className="flex flex-wrap gap-2 pt-2">
                               <Select 
                                 value={invoice.invoice_status || "pending"}
-                                onValueChange={(value) => handlePaymentStatusUpdate(invoice.id, value)}
+                                onValueChange={(value) => handlePaymentStatusChange(invoice, value)}
                               >
                                 <SelectTrigger className="w-[150px] h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="paid">Paid</SelectItem>
+                                  <SelectItem value="paid">Mark as Paid</SelectItem>
                                   <SelectItem value="overdue">Overdue</SelectItem>
                                   <SelectItem value="cancelled">Cancelled</SelectItem>
                                 </SelectContent>
@@ -810,6 +830,44 @@ const fetchInvoices = async () => {
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete Invoice
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={paymentDateDialogOpen} onOpenChange={setPaymentDateDialogOpen}>
+          <AlertDialogContent className="sm:max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                Mark Invoice as Paid
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Select the payment date for invoice <strong>{paymentDateInvoice?.invoice_number}</strong>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-sm font-medium text-muted-foreground">Payment Date</div>
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedPaymentDate}
+                  onSelect={(date) => date && setSelectedPaymentDate(date)}
+                  className="rounded-md border"
+                  initialFocus
+                />
+                <div className="text-sm text-muted-foreground">
+                  Selected: <span className="font-medium text-foreground">{format(selectedPaymentDate, "MMMM dd, yyyy")}</span>
+                </div>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setPaymentDateInvoice(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmPaymentDate}
+                className="bg-green-600 text-white hover:bg-green-700"
+              >
+                Confirm Payment
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
