@@ -1,12 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { BackToTop } from "@/components/BackToTop";
 import { Gem, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from "lucide-react";
 
 export const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="border-t bg-card/50 backdrop-blur-sm">
+    <>
+      <BackToTop />
+      <footer className="border-t bg-card/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-16">
         <ScrollReveal>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -146,5 +149,6 @@ export const Footer = () => {
         </ScrollReveal>
       </div>
     </footer>
+    </>
   );
 };
