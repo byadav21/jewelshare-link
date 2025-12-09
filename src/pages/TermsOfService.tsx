@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import DOMPurify from "dompurify";
+import { DEFAULT_TERMS_OF_SERVICE } from "@/constants/legalDefaults";
 
 const TermsOfService = () => {
   const [content, setContent] = useState<string>("");
@@ -16,8 +17,10 @@ const TermsOfService = () => {
         .eq("key", "terms_of_service")
         .single();
       
-      if (data?.value) {
-        setContent(typeof data.value === "string" ? data.value : JSON.stringify(data.value));
+      if (data?.value && typeof data.value === "string" && data.value.trim()) {
+        setContent(data.value);
+      } else {
+        setContent(DEFAULT_TERMS_OF_SERVICE);
       }
       setLoading(false);
     };
@@ -30,24 +33,19 @@ const TermsOfService = () => {
       <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
-          
           {loading ? (
             <div className="space-y-4">
+              <Skeleton className="h-10 w-1/3" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-3/4" />
               <Skeleton className="h-6 w-5/6" />
               <Skeleton className="h-6 w-2/3" />
             </div>
-          ) : content ? (
+          ) : (
             <div 
               className="prose prose-lg dark:prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
             />
-          ) : (
-            <p className="text-muted-foreground">
-              Terms of service content has not been configured yet.
-            </p>
           )}
         </div>
       </main>

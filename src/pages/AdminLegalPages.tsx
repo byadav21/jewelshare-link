@@ -2,11 +2,27 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Save, FileText, Shield, Cookie } from "lucide-react";
+import { Loader2, Save, FileText, Shield, Cookie, RotateCcw } from "lucide-react";
+import {
+  DEFAULT_PRIVACY_POLICY,
+  DEFAULT_TERMS_OF_SERVICE,
+  DEFAULT_COOKIE_POLICY,
+} from "@/constants/legalDefaults";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const AdminLegalPages = () => {
   const [loading, setLoading] = useState(true);
@@ -32,19 +48,41 @@ const AdminLegalPages = () => {
           const value = typeof item.value === "string" ? item.value : "";
           switch (item.key) {
             case "privacy_policy":
-              setPrivacyPolicy(value);
+              setPrivacyPolicy(value || DEFAULT_PRIVACY_POLICY);
               break;
             case "terms_of_service":
-              setTermsOfService(value);
+              setTermsOfService(value || DEFAULT_TERMS_OF_SERVICE);
               break;
             case "cookie_policy":
-              setCookiePolicy(value);
+              setCookiePolicy(value || DEFAULT_COOKIE_POLICY);
               break;
           }
         });
       }
+
+      // Set defaults if no data exists
+      if (!data || data.length === 0) {
+        setPrivacyPolicy(DEFAULT_PRIVACY_POLICY);
+        setTermsOfService(DEFAULT_TERMS_OF_SERVICE);
+        setCookiePolicy(DEFAULT_COOKIE_POLICY);
+      } else {
+        // Check each individually
+        if (!data.find((d) => d.key === "privacy_policy")?.value) {
+          setPrivacyPolicy(DEFAULT_PRIVACY_POLICY);
+        }
+        if (!data.find((d) => d.key === "terms_of_service")?.value) {
+          setTermsOfService(DEFAULT_TERMS_OF_SERVICE);
+        }
+        if (!data.find((d) => d.key === "cookie_policy")?.value) {
+          setCookiePolicy(DEFAULT_COOKIE_POLICY);
+        }
+      }
     } catch (error) {
       toast.error("Failed to load content");
+      // Set defaults on error
+      setPrivacyPolicy(DEFAULT_PRIVACY_POLICY);
+      setTermsOfService(DEFAULT_TERMS_OF_SERVICE);
+      setCookiePolicy(DEFAULT_COOKIE_POLICY);
     } finally {
       setLoading(false);
     }
@@ -73,6 +111,23 @@ const AdminLegalPages = () => {
     }
   };
 
+  const handleResetToDefault = (key: string) => {
+    switch (key) {
+      case "privacy_policy":
+        setPrivacyPolicy(DEFAULT_PRIVACY_POLICY);
+        toast.success("Reset to default. Click Save to apply.");
+        break;
+      case "terms_of_service":
+        setTermsOfService(DEFAULT_TERMS_OF_SERVICE);
+        toast.success("Reset to default. Click Save to apply.");
+        break;
+      case "cookie_policy":
+        setCookiePolicy(DEFAULT_COOKIE_POLICY);
+        toast.success("Reset to default. Click Save to apply.");
+        break;
+    }
+  };
+
   if (loading) {
     return (
       <AdminLayout>
@@ -97,15 +152,18 @@ const AdminLegalPages = () => {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="privacy" className="gap-2">
               <Shield className="h-4 w-4" />
-              Privacy Policy
+              <span className="hidden sm:inline">Privacy Policy</span>
+              <span className="sm:hidden">Privacy</span>
             </TabsTrigger>
             <TabsTrigger value="terms" className="gap-2">
               <FileText className="h-4 w-4" />
-              Terms of Service
+              <span className="hidden sm:inline">Terms of Service</span>
+              <span className="sm:hidden">Terms</span>
             </TabsTrigger>
             <TabsTrigger value="cookies" className="gap-2">
               <Cookie className="h-4 w-4" />
-              Cookie Policy
+              <span className="hidden sm:inline">Cookie Policy</span>
+              <span className="sm:hidden">Cookies</span>
             </TabsTrigger>
           </TabsList>
 
@@ -114,27 +172,50 @@ const AdminLegalPages = () => {
               <CardHeader>
                 <CardTitle>Privacy Policy</CardTitle>
                 <CardDescription>
-                  Edit your privacy policy content. HTML is supported for formatting.
+                  Edit your privacy policy content using the rich text editor below.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Textarea
-                  value={privacyPolicy}
-                  onChange={(e) => setPrivacyPolicy(e.target.value)}
-                  placeholder="Enter your privacy policy content here... (HTML supported)"
-                  className="min-h-[400px] font-mono text-sm"
+                <RichTextEditor
+                  content={privacyPolicy}
+                  onChange={setPrivacyPolicy}
                 />
-                <Button
-                  onClick={() => handleSave("privacy_policy", privacyPolicy)}
-                  disabled={saving === "privacy_policy"}
-                >
-                  {saving === "privacy_policy" ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Save Privacy Policy
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleSave("privacy_policy", privacyPolicy)}
+                    disabled={saving === "privacy_policy"}
+                  >
+                    {saving === "privacy_policy" ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Save Privacy Policy
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline">
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Reset to Default
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reset to Default?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will replace the current content with the default template.
+                          You will need to save to apply the changes.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleResetToDefault("privacy_policy")}>
+                          Reset
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -144,27 +225,50 @@ const AdminLegalPages = () => {
               <CardHeader>
                 <CardTitle>Terms of Service</CardTitle>
                 <CardDescription>
-                  Edit your terms of service content. HTML is supported for formatting.
+                  Edit your terms of service content using the rich text editor below.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Textarea
-                  value={termsOfService}
-                  onChange={(e) => setTermsOfService(e.target.value)}
-                  placeholder="Enter your terms of service content here... (HTML supported)"
-                  className="min-h-[400px] font-mono text-sm"
+                <RichTextEditor
+                  content={termsOfService}
+                  onChange={setTermsOfService}
                 />
-                <Button
-                  onClick={() => handleSave("terms_of_service", termsOfService)}
-                  disabled={saving === "terms_of_service"}
-                >
-                  {saving === "terms_of_service" ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Save Terms of Service
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleSave("terms_of_service", termsOfService)}
+                    disabled={saving === "terms_of_service"}
+                  >
+                    {saving === "terms_of_service" ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Save Terms of Service
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline">
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Reset to Default
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reset to Default?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will replace the current content with the default template.
+                          You will need to save to apply the changes.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleResetToDefault("terms_of_service")}>
+                          Reset
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -174,27 +278,50 @@ const AdminLegalPages = () => {
               <CardHeader>
                 <CardTitle>Cookie Policy</CardTitle>
                 <CardDescription>
-                  Edit your cookie policy content. HTML is supported for formatting.
+                  Edit your cookie policy content using the rich text editor below.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Textarea
-                  value={cookiePolicy}
-                  onChange={(e) => setCookiePolicy(e.target.value)}
-                  placeholder="Enter your cookie policy content here... (HTML supported)"
-                  className="min-h-[400px] font-mono text-sm"
+                <RichTextEditor
+                  content={cookiePolicy}
+                  onChange={setCookiePolicy}
                 />
-                <Button
-                  onClick={() => handleSave("cookie_policy", cookiePolicy)}
-                  disabled={saving === "cookie_policy"}
-                >
-                  {saving === "cookie_policy" ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Save Cookie Policy
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleSave("cookie_policy", cookiePolicy)}
+                    disabled={saving === "cookie_policy"}
+                  >
+                    {saving === "cookie_policy" ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Save Cookie Policy
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline">
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Reset to Default
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reset to Default?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will replace the current content with the default template.
+                          You will need to save to apply the changes.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleResetToDefault("cookie_policy")}>
+                          Reset
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
