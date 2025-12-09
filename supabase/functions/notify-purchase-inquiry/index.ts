@@ -7,6 +7,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 emails per minute per IP
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface NotificationRequest {
@@ -19,6 +41,22 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limiting
+  const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                   req.headers.get("x-real-ip") || 
+                   "unknown";
+  
+  if (!checkRateLimit(clientIP)) {
+    console.log(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      { 
+        status: 429, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      }
+    );
+  }
+
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -26,6 +64,8 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const { inquiry_id }: NotificationRequest = await req.json();
+
+    console.log("Processing purchase inquiry notification for:", inquiry_id);
 
     // Fetch inquiry details with related product and vendor info
     const { data: inquiry, error: inquiryError } = await supabaseClient
@@ -71,8 +111,8 @@ const handler = async (req: Request): Promise<Response> => {
             <p><strong>Product:</strong> ${inquiry.products.name}</p>
             ${inquiry.products.sku ? `<p><strong>SKU:</strong> ${inquiry.products.sku}</p>` : ""}
             <p><strong>Quantity:</strong> ${inquiry.quantity}</p>
-            <p><strong>Unit Price:</strong> ₹${inquiry.products.retail_price.toLocaleString("en-IN")}</p>
-            <p><strong>Total Value:</strong> ₹${(inquiry.products.retail_price * inquiry.quantity).toLocaleString("en-IN")}</p>
+            <p><strong>Unit Price:</strong> Rs.${inquiry.products.retail_price.toLocaleString("en-IN")}</p>
+            <p><strong>Total Value:</strong> Rs.${(inquiry.products.retail_price * inquiry.quantity).toLocaleString("en-IN")}</p>
           </div>
 
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
