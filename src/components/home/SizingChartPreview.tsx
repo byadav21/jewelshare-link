@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { Diamond, Ruler, ArrowRight, Sparkles } from "lucide-react";
+import { Diamond, Ruler, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 const PREVIEW_SHAPES = [
@@ -14,46 +15,118 @@ const PREVIEW_SHAPES = [
   { key: "pear", name: "Pear", mm: "8.5 x 5.5mm", carat: "1.00ct" },
 ];
 
-const ShapeIcon = ({ shape }: { shape: string }) => {
+const ShapeIcon = ({ shape, isHovered }: { shape: string; isHovered?: boolean }) => {
   const shapes: Record<string, JSX.Element> = {
     round: (
       <svg viewBox="0 0 40 40" className="w-full h-full">
-        <circle cx="20" cy="20" r="16" fill="url(#previewGrad)" opacity="0.3" />
-        <circle cx="20" cy="20" r="16" fill="none" stroke="url(#previewGrad)" strokeWidth="2" />
+        <defs>
+          <filter id="glow-round" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <circle cx="20" cy="20" r="16" fill="url(#previewGrad)" className={`transition-all duration-300 ${isHovered ? 'opacity-50' : 'opacity-30'}`} />
+        <circle cx="20" cy="20" r="16" fill="none" stroke="url(#previewGrad)" strokeWidth="2" filter={isHovered ? "url(#glow-round)" : ""} />
+        {isHovered && <circle cx="20" cy="20" r="10" fill="none" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />}
       </svg>
     ),
     princess: (
       <svg viewBox="0 0 40 40" className="w-full h-full">
-        <rect x="6" y="6" width="28" height="28" fill="url(#previewGrad)" opacity="0.3" />
+        <rect x="6" y="6" width="28" height="28" fill="url(#previewGrad)" className={`transition-all duration-300 ${isHovered ? 'opacity-50' : 'opacity-30'}`} />
         <rect x="6" y="6" width="28" height="28" fill="none" stroke="url(#previewGrad)" strokeWidth="2" />
+        {isHovered && (
+          <>
+            <line x1="6" y1="6" x2="34" y2="34" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />
+            <line x1="34" y1="6" x2="6" y2="34" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />
+          </>
+        )}
       </svg>
     ),
     oval: (
       <svg viewBox="0 0 40 40" className="w-full h-full">
-        <ellipse cx="20" cy="20" rx="16" ry="11" fill="url(#previewGrad)" opacity="0.3" />
+        <ellipse cx="20" cy="20" rx="16" ry="11" fill="url(#previewGrad)" className={`transition-all duration-300 ${isHovered ? 'opacity-50' : 'opacity-30'}`} />
         <ellipse cx="20" cy="20" rx="16" ry="11" fill="none" stroke="url(#previewGrad)" strokeWidth="2" />
+        {isHovered && <ellipse cx="20" cy="20" rx="10" ry="7" fill="none" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />}
       </svg>
     ),
     cushion: (
       <svg viewBox="0 0 40 40" className="w-full h-full">
-        <rect x="6" y="6" width="28" height="28" rx="6" fill="url(#previewGrad)" opacity="0.3" />
+        <rect x="6" y="6" width="28" height="28" rx="6" fill="url(#previewGrad)" className={`transition-all duration-300 ${isHovered ? 'opacity-50' : 'opacity-30'}`} />
         <rect x="6" y="6" width="28" height="28" rx="6" fill="none" stroke="url(#previewGrad)" strokeWidth="2" />
+        {isHovered && <rect x="12" y="12" width="16" height="16" rx="3" fill="none" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />}
       </svg>
     ),
     emerald: (
       <svg viewBox="0 0 40 40" className="w-full h-full">
-        <polygon points="8,8 32,8 34,32 6,32" fill="url(#previewGrad)" opacity="0.3" />
+        <polygon points="8,8 32,8 34,32 6,32" fill="url(#previewGrad)" className={`transition-all duration-300 ${isHovered ? 'opacity-50' : 'opacity-30'}`} />
         <polygon points="8,8 32,8 34,32 6,32" fill="none" stroke="url(#previewGrad)" strokeWidth="2" />
+        {isHovered && (
+          <>
+            <line x1="10" y1="15" x2="30" y2="15" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />
+            <line x1="9" y1="22" x2="31" y2="22" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />
+          </>
+        )}
       </svg>
     ),
     pear: (
       <svg viewBox="0 0 40 40" className="w-full h-full">
-        <path d="M20 4 C8 16, 6 26, 20 38 C34 26, 32 16, 20 4" fill="url(#previewGrad)" opacity="0.3" />
+        <path d="M20 4 C8 16, 6 26, 20 38 C34 26, 32 16, 20 4" fill="url(#previewGrad)" className={`transition-all duration-300 ${isHovered ? 'opacity-50' : 'opacity-30'}`} />
         <path d="M20 4 C8 16, 6 26, 20 38 C34 26, 32 16, 20 4" fill="none" stroke="url(#previewGrad)" strokeWidth="2" />
+        {isHovered && <circle cx="20" cy="22" r="6" fill="none" stroke="url(#previewGrad)" strokeWidth="1" className="animate-pulse opacity-60" />}
       </svg>
     ),
   };
   return shapes[shape] || null;
+};
+
+const ShapeCard = ({ shape, index, navigate }: { shape: typeof PREVIEW_SHAPES[0]; index: number; navigate: (path: string) => void }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      whileHover={{ y: -5 }}
+    >
+      <Card 
+        className="p-4 text-center hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 border-primary/10 hover:border-primary/30 cursor-pointer overflow-hidden"
+        onClick={() => navigate("/diamond-sizing-chart")}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <motion.div 
+          className="w-12 h-12 mx-auto mb-3"
+          animate={{ 
+            scale: isHovered ? 1.2 : 1,
+            rotate: isHovered ? [0, -5, 5, 0] : 0
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <ShapeIcon shape={shape.key} isHovered={isHovered} />
+        </motion.div>
+        <motion.h3 
+          className="font-semibold text-sm mb-1"
+          animate={{ color: isHovered ? "hsl(var(--primary))" : "hsl(var(--foreground))" }}
+        >
+          {shape.name}
+        </motion.h3>
+        <p className="text-xs text-muted-foreground">{shape.mm}</p>
+        <motion.p 
+          className="text-xs font-medium"
+          animate={{ 
+            scale: isHovered ? 1.1 : 1,
+            color: "hsl(var(--primary))"
+          }}
+        >
+          {shape.carat}
+        </motion.p>
+      </Card>
+    </motion.div>
+  );
 };
 
 export const SizingChartPreview = () => {
@@ -93,23 +166,7 @@ export const SizingChartPreview = () => {
         <ScrollReveal delay={0.1}>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
             {PREVIEW_SHAPES.map((shape, index) => (
-              <motion.div
-                key={shape.key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="p-4 text-center hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 border-primary/10 hover:border-primary/30 group cursor-pointer"
-                  onClick={() => navigate("/diamond-sizing-chart")}
-                >
-                  <div className="w-12 h-12 mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <ShapeIcon shape={shape.key} />
-                  </div>
-                  <h3 className="font-semibold text-sm mb-1">{shape.name}</h3>
-                  <p className="text-xs text-muted-foreground">{shape.mm}</p>
-                  <p className="text-xs text-primary font-medium">{shape.carat}</p>
-                </Card>
-              </motion.div>
+              <ShapeCard key={shape.key} shape={shape} index={index} navigate={navigate} />
             ))}
           </div>
         </ScrollReveal>
