@@ -18,6 +18,8 @@ import autoTable from "jspdf-autotable";
 import { DiamondCalculatorUpgradeBanner } from "@/components/DiamondCalculatorUpgradeBanner";
 import { UnlimitedUnlockedCelebration } from "@/components/UnlimitedUnlockedCelebration";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useNavigate } from "react-router-dom";
 
 interface ComparisonItem {
@@ -392,6 +394,7 @@ const DiamondCalculator = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90">
+      <Header />
       <UnlimitedUnlockedCelebration 
         show={showCelebration} 
         onClose={() => setShowCelebration(false)} 
@@ -1046,6 +1049,7 @@ const DiamondCalculator = () => {
           )}
         </AnimatePresence>
       </div>
+      <ThemeSwitcher />
     </div>
   );
 };

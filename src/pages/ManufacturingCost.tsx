@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Calculator, IndianRupee, Save, FolderOpen, Trash2, TrendingUp, Upload, X, Image as ImageIcon, Info, FileText, Calendar, Copy, Check, Building2, User, Coins, Diamond, Gem, Percent } from "lucide-react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EstimateWorkflowSteps } from "@/components/estimate/EstimateWorkflowSteps";
@@ -519,7 +521,8 @@ const ManufacturingCost = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background py-4 md:py-8 px-3 md:px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
+      <Header />
       {/* Guest Usage Limit Dialog */}
       <Dialog open={showUsageLimitDialog} onOpenChange={setShowUsageLimitDialog}>
         <DialogContent className="sm:max-w-md">
@@ -540,8 +543,9 @@ const ManufacturingCost = () => {
         </DialogContent>
       </Dialog>
 
-      <BackToHomeButton />
-      <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+      <div className="py-4 md:py-8 px-3 md:px-4">
+        <BackToHomeButton />
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <div className="text-center space-y-3 md:space-y-4 px-4">
           <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full mb-2 md:mb-4">
@@ -792,9 +796,11 @@ const ManufacturingCost = () => {
           onExchangeRateChange={setExchangeRate}
           costs={costs}
         />
+        </div>
       </div>
 
       <InvoicePreviewDialog open={showInvoicePreview} onOpenChange={setShowInvoicePreview} invoiceData={previewInvoiceData} onConfirmDownload={handleConfirmDownload} />
+      <ThemeSwitcher />
     </div>
   );
 };
