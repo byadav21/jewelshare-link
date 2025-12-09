@@ -852,15 +852,6 @@ const renderTotalsSection = (
   doc.text(formatCurrency(data.totalCost), pageWidth - 20, lineY, { align: 'right' });
   lineY += 6;
   
-  // Profit Margin
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(80, 80, 90);
-  doc.text(`Profit Margin (${data.profitMargin}%):`, 20, lineY);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(22, 163, 74);
-  doc.text(formatCurrency((data.finalSellingPrice - data.totalCost)), pageWidth - 20, lineY, { align: 'right' });
-  lineY += 6;
-  
   // Amount before tax with subtle separator
   doc.setDrawColor(220, 225, 235);
   doc.setLineWidth(0.3);
