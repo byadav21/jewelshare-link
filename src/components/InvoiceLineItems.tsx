@@ -52,9 +52,10 @@ interface InvoiceLineItemsProps {
   onChange: (items: LineItem[]) => void;
   goldRate24k: number;
   purityFraction: number;
+  estimateCategory?: 'jewelry' | 'loose_diamond' | 'gemstone';
 }
 
-export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction }: InvoiceLineItemsProps) => {
+export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction, estimateCategory = 'jewelry' }: InvoiceLineItemsProps) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -312,344 +313,409 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                       </div>
                     </div>
 
-                    <div className="col-span-2 space-y-4 p-4 border rounded-lg bg-card">
-                      <div>
-                        <h4 className="font-semibold text-base mb-1">Weight & Purity</h4>
-                        <p className="text-sm text-muted-foreground">Enter weights and purity details</p>
-                      </div>
+                    {/* Weight & Purity Section - Only for Jewelry */}
+                    {estimateCategory === 'jewelry' && (
+                      <div className="col-span-2 space-y-4 p-4 border rounded-lg bg-card">
+                        <div>
+                          <h4 className="font-semibold text-base mb-1">Weight & Purity</h4>
+                          <p className="text-sm text-muted-foreground">Enter weights and purity details</p>
+                        </div>
 
-                      <div>
-                        <Label className="mb-2 block">Weight Entry Mode:</Label>
-                        <Select
-                          value={item.weight_mode}
-                          onValueChange={(value: 'gross' | 'net') => updateItem(index, 'weight_mode', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="gross">Gross Weight Mode (Auto-calculate Net Weight)</SelectItem>
-                            <SelectItem value="net">Net Weight Mode (Direct Entry)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                        <div>
+                          <Label className="mb-2 block">Weight Entry Mode:</Label>
+                          <Select
+                            value={item.weight_mode}
+                            onValueChange={(value: 'gross' | 'net') => updateItem(index, 'weight_mode', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="gross">Gross Weight Mode (Auto-calculate Net Weight)</SelectItem>
+                              <SelectItem value="net">Net Weight Mode (Direct Entry)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                      {item.weight_mode === 'gross' ? (
-                        <>
-                          <div>
-                            <Label>Gross Weight (grams)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={item.gross_weight}
-                              onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
-                              className="mt-1.5"
-                            />
-                          </div>
+                        {item.weight_mode === 'gross' ? (
+                          <>
+                            <div>
+                              <Label>Gross Weight (grams)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={item.gross_weight}
+                                onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
+                                className="mt-1.5"
+                              />
+                            </div>
 
-                          <div>
-                            <Label>Net Weight (grams) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={item.net_weight}
-                              disabled
-                              className="mt-1.5 bg-muted"
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div>
-                            <Label>Gross Weight (grams)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={item.gross_weight}
-                              onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
-                              className="mt-1.5"
-                            />
-                          </div>
-
-                          <div>
-                            <Label>Net Weight (grams)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={item.net_weight}
-                              onChange={(e) => updateItem(index, 'net_weight', parseFloat(e.target.value) || 0)}
-                              className="mt-1.5"
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      <div>
-                        <Label>Purity Fraction (e.g., 0.76 for 18K)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="1"
-                          value={item.purity_fraction}
-                          onChange={(e) => updateItem(index, 'purity_fraction', parseFloat(e.target.value) || 0)}
-                          className="mt-1.5"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Diamond Weight (ct)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.diamond_weight}
-                        onChange={(e) => updateItem(index, 'diamond_weight', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Per Carat Price (₹/ct)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.diamond_per_carat_price}
-                        onChange={(e) => updateItem(index, 'diamond_per_carat_price', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Cost (₹) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.diamond_cost}
-                        disabled
-                        className="bg-muted"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Color</Label>
-                      <Input
-                        value={item.diamond_color}
-                        onChange={(e) => updateItem(index, 'diamond_color', e.target.value)}
-                        placeholder="e.g., D, E, F"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Clarity</Label>
-                      <Input
-                        value={item.diamond_clarity}
-                        onChange={(e) => updateItem(index, 'diamond_clarity', e.target.value)}
-                        placeholder="e.g., VVS1, VS1, SI1"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Cut</Label>
-                      <Input
-                        value={item.diamond_cut}
-                        onChange={(e) => updateItem(index, 'diamond_cut', e.target.value)}
-                        placeholder="e.g., Excellent, Very Good"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Certification</Label>
-                      <Input
-                        value={item.diamond_certification}
-                        onChange={(e) => updateItem(index, 'diamond_certification', e.target.value)}
-                        placeholder="e.g., GIA, IGI"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Shape</Label>
-                      <Input
-                        value={item.diamond_shape || ''}
-                        onChange={(e) => updateItem(index, 'diamond_shape', e.target.value)}
-                        placeholder="e.g., Round, Princess, Oval"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Diamond Fluorescence</Label>
-                      <Input
-                        value={item.diamond_fluorescence || ''}
-                        onChange={(e) => updateItem(index, 'diamond_fluorescence', e.target.value)}
-                        placeholder="e.g., None, Faint, Medium"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <Label>Diamond Measurements</Label>
-                      <Input
-                        value={item.diamond_measurements || ''}
-                        onChange={(e) => updateItem(index, 'diamond_measurements', e.target.value)}
-                        placeholder="e.g., 6.5 x 6.5 x 4.0 mm"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <Label>Certificate Image</Label>
-                      <div className="mt-2">
-                        {item.certificate_image_url ? (
-                          <div className="relative inline-block">
-                            <EstimateImage
-                              src={item.certificate_image_url}
-                              alt="Certificate"
-                              className="h-32 w-auto object-contain rounded border"
-                            />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="absolute -top-2 -right-2"
-                              onClick={() => removeCertificate(index)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
+                            <div>
+                              <Label>Net Weight (grams) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={item.net_weight}
+                                disabled
+                                className="mt-1.5 bg-muted"
+                              />
+                            </div>
+                          </>
                         ) : (
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="file"
-                              accept="image/*,.pdf"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleCertificateUpload(index, file);
-                              }}
-                              disabled={uploadingImage}
-                            />
-                            {uploadingImage && <span className="text-sm text-muted-foreground">Uploading...</span>}
-                          </div>
+                          <>
+                            <div>
+                              <Label>Gross Weight (grams)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={item.gross_weight}
+                                onChange={(e) => updateItem(index, 'gross_weight', parseFloat(e.target.value) || 0)}
+                                className="mt-1.5"
+                              />
+                            </div>
+
+                            <div>
+                              <Label>Net Weight (grams)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={item.net_weight}
+                                onChange={(e) => updateItem(index, 'net_weight', parseFloat(e.target.value) || 0)}
+                                className="mt-1.5"
+                              />
+                            </div>
+                          </>
                         )}
+
+                        <div>
+                          <Label>Purity Fraction (e.g., 0.76 for 18K)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="1"
+                            value={item.purity_fraction}
+                            onChange={(e) => updateItem(index, 'purity_fraction', parseFloat(e.target.value) || 0)}
+                            className="mt-1.5"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div className="col-span-2 border-t my-2 pt-4">
-                      <h5 className="font-medium text-sm text-muted-foreground mb-3">Gemstone Details</h5>
-                    </div>
+                    {/* Diamond Section - Show for jewelry and loose_diamond only */}
+                    {(estimateCategory === 'jewelry' || estimateCategory === 'loose_diamond') && (
+                      <>
+                        <div className="col-span-2 border-t my-2 pt-4">
+                          <h5 className="font-medium text-sm text-muted-foreground mb-3">Diamond Details</h5>
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Type</Label>
-                      <Input
-                        value={item.gemstone_type}
-                        onChange={(e) => updateItem(index, 'gemstone_type', e.target.value)}
-                        placeholder="e.g., Ruby, Sapphire, Emerald"
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Weight (ct)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.diamond_weight}
+                            onChange={(e) => updateItem(index, 'diamond_weight', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Weight (ct)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.gemstone_weight}
-                        onChange={(e) => updateItem(index, 'gemstone_weight', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Per Carat Price (₹/ct)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.diamond_per_carat_price}
+                            onChange={(e) => updateItem(index, 'diamond_per_carat_price', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Per Carat Price (₹/ct)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.gemstone_per_carat_price || 0}
-                        onChange={(e) => updateItem(index, 'gemstone_per_carat_price', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Cost (₹) <span className="text-muted-foreground text-xs">(Auto-calculated)</span></Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.diamond_cost}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
+                      </>
+                    )}
 
-                    <div>
-                      <Label>Gemstone Cost (₹) <span className="text-muted-foreground text-xs">(Auto/Manual)</span></Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.gemstone_cost}
-                        onChange={(e) => updateItem(index, 'gemstone_cost', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
+                    {/* Diamond 4Cs and Details - Show for jewelry and loose_diamond only */}
+                    {(estimateCategory === 'jewelry' || estimateCategory === 'loose_diamond') && (
+                      <>
+                        <div>
+                          <Label>Diamond Color</Label>
+                          <Input
+                            value={item.diamond_color}
+                            onChange={(e) => updateItem(index, 'diamond_color', e.target.value)}
+                            placeholder="e.g., D, E, F"
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Color</Label>
-                      <Input
-                        value={item.gemstone_color}
-                        onChange={(e) => updateItem(index, 'gemstone_color', e.target.value)}
-                        placeholder="e.g., Pigeon Blood Red"
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Clarity</Label>
+                          <Input
+                            value={item.diamond_clarity}
+                            onChange={(e) => updateItem(index, 'diamond_clarity', e.target.value)}
+                            placeholder="e.g., VVS1, VS1, SI1"
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Clarity</Label>
-                      <Input
-                        value={item.gemstone_clarity}
-                        onChange={(e) => updateItem(index, 'gemstone_clarity', e.target.value)}
-                        placeholder="e.g., Eye Clean, VVS"
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Cut</Label>
+                          <Input
+                            value={item.diamond_cut}
+                            onChange={(e) => updateItem(index, 'diamond_cut', e.target.value)}
+                            placeholder="e.g., Excellent, Very Good"
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Origin</Label>
-                      <Input
-                        value={item.gemstone_origin || ''}
-                        onChange={(e) => updateItem(index, 'gemstone_origin', e.target.value)}
-                        placeholder="e.g., Burma, Kashmir, Colombia"
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Certification</Label>
+                          <Input
+                            value={item.diamond_certification}
+                            onChange={(e) => updateItem(index, 'diamond_certification', e.target.value)}
+                            placeholder="e.g., GIA, IGI"
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Treatment</Label>
-                      <Input
-                        value={item.gemstone_treatment || ''}
-                        onChange={(e) => updateItem(index, 'gemstone_treatment', e.target.value)}
-                        placeholder="e.g., None, Heated, Untreated"
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Shape</Label>
+                          <Input
+                            value={item.diamond_shape || ''}
+                            onChange={(e) => updateItem(index, 'diamond_shape', e.target.value)}
+                            placeholder="e.g., Round, Princess, Oval"
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Gemstone Shape</Label>
-                      <Input
-                        value={item.gemstone_shape || ''}
-                        onChange={(e) => updateItem(index, 'gemstone_shape', e.target.value)}
-                        placeholder="e.g., Oval, Cushion, Cabochon"
-                      />
-                    </div>
+                        <div>
+                          <Label>Diamond Fluorescence</Label>
+                          <Input
+                            value={item.diamond_fluorescence || ''}
+                            onChange={(e) => updateItem(index, 'diamond_fluorescence', e.target.value)}
+                            placeholder="e.g., None, Faint, Medium"
+                          />
+                        </div>
 
-                    <div className="col-span-2 border-t my-2 pt-4">
-                      <h5 className="font-medium text-sm text-muted-foreground mb-3">Additional Charges</h5>
-                    </div>
+                        <div className="col-span-2">
+                          <Label>Diamond Measurements</Label>
+                          <Input
+                            value={item.diamond_measurements || ''}
+                            onChange={(e) => updateItem(index, 'diamond_measurements', e.target.value)}
+                            placeholder="e.g., 6.5 x 6.5 x 4.0 mm"
+                          />
+                        </div>
 
-                    <div>
-                      <Label>Making Charges (₹)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.making_charges}
-                        onChange={(e) => updateItem(index, 'making_charges', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
+                        <div className="col-span-2">
+                          <Label>Certificate Image</Label>
+                          <div className="mt-2">
+                            {item.certificate_image_url ? (
+                              <div className="relative inline-block">
+                                <EstimateImage
+                                  src={item.certificate_image_url}
+                                  alt="Certificate"
+                                  className="h-32 w-auto object-contain rounded border"
+                                />
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute -top-2 -right-2"
+                                  onClick={() => removeCertificate(index)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="file"
+                                  accept="image/*,.pdf"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleCertificateUpload(index, file);
+                                  }}
+                                  disabled={uploadingImage}
+                                />
+                                {uploadingImage && <span className="text-sm text-muted-foreground">Uploading...</span>}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
 
-                    <div>
-                      <Label>CAD Design Charges (₹)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.cad_design_charges}
-                        onChange={(e) => updateItem(index, 'cad_design_charges', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
+                    {/* Gemstone Section - Show for jewelry and gemstone only */}
+                    {(estimateCategory === 'jewelry' || estimateCategory === 'gemstone') && (
+                      <>
+                        <div className="col-span-2 border-t my-2 pt-4">
+                          <h5 className="font-medium text-sm text-muted-foreground mb-3">Gemstone Details</h5>
+                        </div>
 
-                    <div>
-                      <Label>Camming Charges (₹)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={item.camming_charges}
-                        onChange={(e) => updateItem(index, 'camming_charges', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
+                        <div>
+                          <Label>Gemstone Type</Label>
+                          <Input
+                            value={item.gemstone_type}
+                            onChange={(e) => updateItem(index, 'gemstone_type', e.target.value)}
+                            placeholder="e.g., Ruby, Sapphire, Emerald"
+                          />
+                        </div>
 
+                        <div>
+                          <Label>Gemstone Weight (ct)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.gemstone_weight}
+                            onChange={(e) => updateItem(index, 'gemstone_weight', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Gemstone Per Carat Price (₹/ct)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.gemstone_per_carat_price || 0}
+                            onChange={(e) => updateItem(index, 'gemstone_per_carat_price', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Gemstone Cost (₹) <span className="text-muted-foreground text-xs">(Auto/Manual)</span></Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.gemstone_cost}
+                            onChange={(e) => updateItem(index, 'gemstone_cost', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Gemstone Color</Label>
+                          <Input
+                            value={item.gemstone_color}
+                            onChange={(e) => updateItem(index, 'gemstone_color', e.target.value)}
+                            placeholder="e.g., Pigeon Blood Red"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Gemstone Clarity</Label>
+                          <Input
+                            value={item.gemstone_clarity}
+                            onChange={(e) => updateItem(index, 'gemstone_clarity', e.target.value)}
+                            placeholder="e.g., Eye Clean, VVS"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Gemstone Origin</Label>
+                          <Input
+                            value={item.gemstone_origin || ''}
+                            onChange={(e) => updateItem(index, 'gemstone_origin', e.target.value)}
+                            placeholder="e.g., Burma, Kashmir, Colombia"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Gemstone Treatment</Label>
+                          <Input
+                            value={item.gemstone_treatment || ''}
+                            onChange={(e) => updateItem(index, 'gemstone_treatment', e.target.value)}
+                            placeholder="e.g., None, Heated, Untreated"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Gemstone Shape</Label>
+                          <Input
+                            value={item.gemstone_shape || ''}
+                            onChange={(e) => updateItem(index, 'gemstone_shape', e.target.value)}
+                            placeholder="e.g., Oval, Cushion, Cabochon"
+                          />
+                        </div>
+
+                        {/* Certificate for Gemstones */}
+                        <div className="col-span-2">
+                          <Label>Certificate Image</Label>
+                          <div className="mt-2">
+                            {item.certificate_image_url ? (
+                              <div className="relative inline-block">
+                                <EstimateImage
+                                  src={item.certificate_image_url}
+                                  alt="Certificate"
+                                  className="h-32 w-auto object-contain rounded border"
+                                />
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute -top-2 -right-2"
+                                  onClick={() => removeCertificate(index)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="file"
+                                  accept="image/*,.pdf"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleCertificateUpload(index, file);
+                                  }}
+                                  disabled={uploadingImage}
+                                />
+                                {uploadingImage && <span className="text-sm text-muted-foreground">Uploading...</span>}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Additional Charges Section - Only for Jewelry */}
+                    {estimateCategory === 'jewelry' && (
+                      <>
+                        <div className="col-span-2 border-t my-2 pt-4">
+                          <h5 className="font-medium text-sm text-muted-foreground mb-3">Additional Charges</h5>
+                        </div>
+
+                        <div>
+                          <Label>Making Charges (₹)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.making_charges}
+                            onChange={(e) => updateItem(index, 'making_charges', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>CAD Design Charges (₹)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.cad_design_charges}
+                            onChange={(e) => updateItem(index, 'cad_design_charges', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Camming Charges (₹)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={item.camming_charges}
+                            onChange={(e) => updateItem(index, 'camming_charges', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Certification Cost - Show for all categories */}
                     <div>
                       <Label>Certification Cost (₹)</Label>
                       <Input
@@ -660,11 +726,15 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction 
                       />
                     </div>
 
+                    {/* Totals Section */}
                     <div className="col-span-2 pt-4 border-t">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold">Gold Cost (Auto-calculated):</span>
-                        <span className="text-lg">₹{item.gold_cost.toFixed(2)}</span>
-                      </div>
+                      {/* Gold Cost - Only for Jewelry */}
+                      {estimateCategory === 'jewelry' && (
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold">Gold Cost (Auto-calculated):</span>
+                          <span className="text-lg">₹{item.gold_cost.toFixed(2)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center mt-2">
                         <span className="font-bold text-lg">Item Subtotal:</span>
                         <span className="text-xl font-bold text-primary">₹{item.subtotal.toFixed(2)}</span>
