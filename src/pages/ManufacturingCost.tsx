@@ -146,17 +146,21 @@ const ManufacturingCost = () => {
     const {
       data,
       error
-    } = await supabase.from('vendor_profiles').select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram').eq('user_id', user.id).maybeSingle();
+    } = await supabase.from('vendor_profiles').select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram, usd_exchange_rate').eq('user_id', user.id).maybeSingle();
     if (error) {
       console.error('Error fetching vendor profile:', error);
     } else if (data) {
       setVendorProfile(data);
-      // Auto-populate gold rate and making charges from profile
+      // Auto-populate gold rate, making charges, and exchange rate from profile
       setFormData(prev => ({
         ...prev,
         goldRate24k: data.gold_rate_24k_per_gram || 0,
         makingCharges: data.making_charges_per_gram || 0
       }));
+      // Set exchange rate from profile
+      if (data.usd_exchange_rate) {
+        setExchangeRate(data.usd_exchange_rate);
+      }
     }
   };
 

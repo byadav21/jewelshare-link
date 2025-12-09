@@ -1522,6 +1522,7 @@ export type Database = {
           seller_categories: string[] | null
           state: string | null
           updated_at: string | null
+          usd_exchange_rate: number | null
           user_id: string
           whatsapp_number: string | null
           whatsapp_qr_url: string | null
@@ -1552,6 +1553,7 @@ export type Database = {
           seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null
+          usd_exchange_rate?: number | null
           user_id: string
           whatsapp_number?: string | null
           whatsapp_qr_url?: string | null
@@ -1582,6 +1584,7 @@ export type Database = {
           seller_categories?: string[] | null
           state?: string | null
           updated_at?: string | null
+          usd_exchange_rate?: number | null
           user_id?: string
           whatsapp_number?: string | null
           whatsapp_qr_url?: string | null
