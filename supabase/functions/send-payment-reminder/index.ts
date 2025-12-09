@@ -29,6 +29,17 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+// HTML encode user inputs to prevent injection
+function htmlEncode(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 interface PaymentReminderRequest {
   invoiceId: string;
   customerEmail: string;
@@ -76,9 +87,13 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
+    // Sanitize user inputs
+    const safeCustomerName = htmlEncode(customerName);
+    const safeInvoiceNumber = htmlEncode(invoiceNumber);
+
     const subject = daysOverdue > 0
-      ? `Payment Overdue: Invoice ${invoiceNumber}`
-      : `Payment Reminder: Invoice ${invoiceNumber}`;
+      ? `Payment Overdue: Invoice ${safeInvoiceNumber}`
+      : `Payment Reminder: Invoice ${safeInvoiceNumber}`;
 
     const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -87,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
           </h1>
           
           <p style="font-size: 16px; color: #374151; margin-bottom: 15px;">
-            Dear ${customerName},
+            Dear ${safeCustomerName},
           </p>
           
           ${daysOverdue > 0 
@@ -101,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 10px 0; color: #374151;">
-              <strong>Invoice Number:</strong> ${invoiceNumber}
+              <strong>Invoice Number:</strong> ${safeInvoiceNumber}
             </p>
             <p style="margin: 10px 0; color: #374151;">
               <strong>Amount Due:</strong> Rs.${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}

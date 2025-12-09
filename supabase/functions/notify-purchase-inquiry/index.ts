@@ -29,6 +29,17 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+// HTML encode user inputs to prevent injection
+function htmlEncode(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface NotificationRequest {
@@ -97,30 +108,38 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Sanitize all user inputs
+    const safeProductName = htmlEncode(inquiry.products?.name);
+    const safeProductSku = htmlEncode(inquiry.products?.sku);
+    const safeCustomerName = htmlEncode(inquiry.customer_name);
+    const safeCustomerEmail = htmlEncode(inquiry.customer_email);
+    const safeCustomerPhone = htmlEncode(inquiry.customer_phone);
+    const safeMessage = htmlEncode(inquiry.message);
+
     // Send email notification
     const emailResponse = await resend.emails.send({
       from: "Jewelry Platform <onboarding@resend.dev>",
       to: [vendorProfile.email],
-      subject: `New Purchase Inquiry: ${inquiry.products.name}`,
+      subject: `New Purchase Inquiry: ${safeProductName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">New Purchase Inquiry Received</h2>
           
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #555;">Product Details</h3>
-            <p><strong>Product:</strong> ${inquiry.products.name}</p>
-            ${inquiry.products.sku ? `<p><strong>SKU:</strong> ${inquiry.products.sku}</p>` : ""}
+            <p><strong>Product:</strong> ${safeProductName}</p>
+            ${safeProductSku ? `<p><strong>SKU:</strong> ${safeProductSku}</p>` : ""}
             <p><strong>Quantity:</strong> ${inquiry.quantity}</p>
-            <p><strong>Unit Price:</strong> Rs.${inquiry.products.retail_price.toLocaleString("en-IN")}</p>
-            <p><strong>Total Value:</strong> Rs.${(inquiry.products.retail_price * inquiry.quantity).toLocaleString("en-IN")}</p>
+            <p><strong>Unit Price:</strong> Rs.${inquiry.products?.retail_price?.toLocaleString("en-IN") || 'N/A'}</p>
+            <p><strong>Total Value:</strong> Rs.${((inquiry.products?.retail_price || 0) * inquiry.quantity).toLocaleString("en-IN")}</p>
           </div>
 
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #555;">Customer Information</h3>
-            <p><strong>Name:</strong> ${inquiry.customer_name}</p>
-            <p><strong>Email:</strong> ${inquiry.customer_email}</p>
-            ${inquiry.customer_phone ? `<p><strong>Phone:</strong> ${inquiry.customer_phone}</p>` : ""}
-            ${inquiry.message ? `<p><strong>Message:</strong><br/>${inquiry.message}</p>` : ""}
+            <p><strong>Name:</strong> ${safeCustomerName}</p>
+            <p><strong>Email:</strong> ${safeCustomerEmail}</p>
+            ${safeCustomerPhone ? `<p><strong>Phone:</strong> ${safeCustomerPhone}</p>` : ""}
+            ${safeMessage ? `<p><strong>Message:</strong><br/>${safeMessage}</p>` : ""}
           </div>
 
           <p style="color: #666; margin-top: 30px;">
