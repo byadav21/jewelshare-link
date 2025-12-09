@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale, Download, Ruler } from "lucide-react";
+import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale, Download, Ruler, Volume2, VolumeX } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -22,6 +22,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useNavigate } from "react-router-dom";
+import confetti from "canvas-confetti";
+import { playSparkleSound } from "@/utils/celebrationSounds";
 
 interface ComparisonItem {
   id: string;
@@ -61,6 +63,40 @@ const DiamondCalculator = () => {
     currency: string;
   } | null>(null);
   const [comparisonList, setComparisonList] = useState<ComparisonItem[]>([]);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Confetti celebration effect
+  const fireConfetti = useCallback(() => {
+    const colors = ["#60a5fa", "#a78bfa", "#f472b6", "#fbbf24", "#ffffff"];
+    
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6, x: 0.5 },
+      colors,
+      shapes: ["star", "circle"],
+      scalar: 1.2,
+    });
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 40,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0.3, y: 0.65 },
+        colors,
+        shapes: ["star"],
+      });
+      confetti({
+        particleCount: 40,
+        angle: 120,
+        spread: 55,
+        origin: { x: 0.7, y: 0.65 },
+        colors,
+        shapes: ["star"],
+      });
+    }, 150);
+  }, []);
 
   // Check authentication status and show celebration on sign in
   useEffect(() => {
@@ -215,6 +251,12 @@ const DiamondCalculator = () => {
         totalPrice,
         currency: data.currency,
       });
+
+      // Celebration effects
+      fireConfetti();
+      if (soundEnabled) {
+        playSparkleSound();
+      }
 
       incrementGuestUsage();
       toast.success("Price calculated successfully!");
@@ -638,6 +680,14 @@ const DiamondCalculator = () => {
                     size="lg"
                   >
                     <RotateCcw className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    variant="outline"
+                    size="lg"
+                    title={soundEnabled ? "Mute celebration sound" : "Enable celebration sound"}
+                  >
+                    {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                   </Button>
                 </div>
               </CardContent>
