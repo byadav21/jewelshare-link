@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale, Download } from "lucide-react";
+import { Calculator, Diamond, Sparkles, TrendingDown, TrendingUp, RotateCcw, Plus, X, Scale, Download, Ruler } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -18,6 +18,7 @@ import autoTable from "jspdf-autotable";
 import { DiamondCalculatorUpgradeBanner } from "@/components/DiamondCalculatorUpgradeBanner";
 import { UnlimitedUnlockedCelebration } from "@/components/UnlimitedUnlockedCelebration";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { useNavigate } from "react-router-dom";
 
 interface ComparisonItem {
   id: string;
@@ -39,6 +40,7 @@ interface ComparisonItem {
 }
 
 const DiamondCalculator = () => {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [guestUsageCount, setGuestUsageCount] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -416,6 +418,14 @@ const DiamondCalculator = () => {
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
               Get instant estimates based on the 4Cs
             </p>
+            <Button
+              variant="outline"
+              className="mt-4 gap-2"
+              onClick={() => navigate("/diamond-sizing-chart")}
+            >
+              <Ruler className="h-4 w-4" />
+              View Diamond Sizing Chart
+            </Button>
           </div>
         </ScrollReveal>
 
