@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Calculator, Sparkles, ArrowRight, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 
 const DEMO_SHAPES = ["Round", "Princess", "Oval", "Cushion"];
 const DEMO_COLORS = ["D", "E", "F", "G", "H"];
@@ -32,8 +33,44 @@ export const CalculatorPreview = () => {
 
   const estimatedPrice = calculateDemoPrice(carat, selectedColor, selectedClarity);
 
+  const fireConfetti = useCallback(() => {
+    // Diamond sparkle colors
+    const colors = ["#60a5fa", "#a78bfa", "#f472b6", "#fbbf24", "#ffffff"];
+    
+    // Center burst
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6, x: 0.5 },
+      colors,
+      shapes: ["star", "circle"],
+      scalar: 1.2,
+    });
+
+    // Side bursts with delay
+    setTimeout(() => {
+      confetti({
+        particleCount: 40,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0.3, y: 0.65 },
+        colors,
+        shapes: ["star"],
+      });
+      confetti({
+        particleCount: 40,
+        angle: 120,
+        spread: 55,
+        origin: { x: 0.7, y: 0.65 },
+        colors,
+        shapes: ["star"],
+      });
+    }, 150);
+  }, []);
+
   const handleCalculate = () => {
     setShowResult(true);
+    fireConfetti();
   };
 
   return (
