@@ -53,11 +53,14 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
   useEffect(() => {
     const checkIfPlayed = async () => {
       const sessionId = getSessionId();
+      
+      // Create a client with session header for RLS validation
       const { data, error } = await supabase
         .from("scratch_rewards")
         .select("*")
         .eq("session_id", sessionId)
-        .single();
+        .single()
+        .setHeader("x-scratch-session-id", sessionId);
 
       if (data && !error) {
         setHasPlayed(true);
@@ -255,7 +258,8 @@ export function ScratchCard({ onClose }: ScratchCardProps) {
     const { error } = await supabase
       .from("scratch_rewards")
       .update({ claimed: true, claimed_at: new Date().toISOString() })
-      .eq("session_id", sessionId);
+      .eq("session_id", sessionId)
+      .setHeader("x-scratch-session-id", sessionId);
 
     if (error) {
       toast.error("Failed to claim reward. Please contact support.");

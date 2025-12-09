@@ -1738,6 +1738,7 @@ export type Database = {
           points: number
         }[]
       }
+      get_scratch_session_id: { Args: never; Returns: string }
       hard_delete_products: {
         Args: { product_ids: string[] }
         Returns: undefined
