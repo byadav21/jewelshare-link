@@ -135,6 +135,20 @@ const ManufacturingCost = () => {
     checkUsageAndAuth();
   }, []);
 
+  // Fetch live exchange rate
+  const fetchLiveExchangeRate = async (): Promise<number> => {
+    try {
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      if (data.rates?.INR) {
+        return data.rates.INR;
+      }
+    } catch (error) {
+      console.error('Failed to fetch live exchange rate:', error);
+    }
+    return 87.50; // Fallback rate
+  };
+
   // Fetch vendor profile for branding and auto-populate pricing
   const fetchVendorProfile = async () => {
     const {
@@ -143,24 +157,31 @@ const ManufacturingCost = () => {
       }
     } = await supabase.auth.getUser();
     if (!user) return;
-    const {
-      data,
-      error
-    } = await supabase.from('vendor_profiles').select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram, usd_exchange_rate').eq('user_id', user.id).maybeSingle();
-    if (error) {
-      console.error('Error fetching vendor profile:', error);
-    } else if (data) {
-      setVendorProfile(data);
-      // Auto-populate gold rate, making charges, and exchange rate from profile
+
+    // Fetch profile and live rate in parallel
+    const [profileResult, liveRate] = await Promise.all([
+      supabase.from('vendor_profiles').select('business_name, logo_url, primary_brand_color, secondary_brand_color, brand_tagline, email, phone, address_line1, address_line2, city, state, pincode, country, gold_rate_24k_per_gram, making_charges_per_gram, usd_exchange_rate').eq('user_id', user.id).maybeSingle(),
+      fetchLiveExchangeRate()
+    ]);
+
+    if (profileResult.error) {
+      console.error('Error fetching vendor profile:', profileResult.error);
+      setExchangeRate(liveRate);
+    } else if (profileResult.data) {
+      setVendorProfile(profileResult.data);
+      // Auto-populate gold rate and making charges from profile
       setFormData(prev => ({
         ...prev,
-        goldRate24k: data.gold_rate_24k_per_gram || 0,
-        makingCharges: data.making_charges_per_gram || 0
+        goldRate24k: profileResult.data.gold_rate_24k_per_gram || 0,
+        makingCharges: profileResult.data.making_charges_per_gram || 0
       }));
-      // Set exchange rate from profile
-      if (data.usd_exchange_rate) {
-        setExchangeRate(data.usd_exchange_rate);
-      }
+      // Use live exchange rate
+      setExchangeRate(liveRate);
+      
+      // Update profile with live rate
+      await supabase.from('vendor_profiles').update({ usd_exchange_rate: liveRate }).eq('user_id', user.id);
+    } else {
+      setExchangeRate(liveRate);
     }
   };
 
