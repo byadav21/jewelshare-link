@@ -39,8 +39,9 @@ export const normalizePurity = (value: any): number => {
 /**
  * Get purity percentage for display
  */
-export const getPurityPercentage = (purityDecimal: number): string => {
-  return (purityDecimal * 100).toFixed(1);
+export const getPurityPercentage = (purityValue: any): string => {
+  const normalized = normalizePurity(purityValue);
+  return (normalized * 100).toFixed(1);
 };
 
 /**
