@@ -1,0 +1,611 @@
+================================================================================
+CATALEON POSTGRESQL TO MONGODB MIGRATION TOOLKIT
+================================================================================
+Download Date: December 2024
+Version: 1.0.0
+
+This bundle contains all files needed for migrating your PostgreSQL/Supabase 
+database to MongoDB. Extract each section to its respective file.
+
+================================================================================
+FILE: package.json
+================================================================================
+{
+  "name": "cataleon-mongodb-migration",
+  "version": "1.0.0",
+  "description": "Migration script for transferring Cataleon data from PostgreSQL to MongoDB",
+  "main": "migrate-to-mongodb.js",
+  "scripts": {
+    "migrate": "node migrate-to-mongodb.js migrate",
+    "export": "node migrate-to-mongodb.js export",
+    "import": "node import-to-mongodb.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.75.1",
+    "dotenv": "^16.3.1",
+    "mongodb": "^6.3.0"
+  }
+}
+
+================================================================================
+FILE: .env.example
+================================================================================
+# Supabase Configuration
+SUPABASE_URL=https://mznwzwuyhcmuaewqsojo.supabase.co
+SUPABASE_SERVICE_KEY=your_service_role_key_here
+
+# MongoDB Configuration
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB_NAME=cataleon
+
+================================================================================
+FILE: migrate-to-mongodb.js
+================================================================================
+/**
+ * Cataleon PostgreSQL to MongoDB Migration Script
+ * 
+ * This script migrates all data from Supabase (PostgreSQL) to MongoDB.
+ * 
+ * Usage:
+ *   node migrate-to-mongodb.js migrate  - Direct migration to MongoDB
+ *   node migrate-to-mongodb.js export   - Export to JSON files only
+ */
+
+require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
+const { MongoClient } = require('mongodb');
+const fs = require('fs').promises;
+const path = require('path');
+
+// Configuration
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || 'cataleon';
+
+// Initialize Supabase client with service role key
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+// All tables to migrate
+const TABLES = [
+  'audit_logs',
+  'blog_posts',
+  'blog_comments',
+  'brands',
+  'catalog_inquiries',
+  'custom_orders',
+  'diamond_prices',
+  'diamond_price_history',
+  'guest_calculator_usage',
+  'invoice_templates',
+  'manufacturing_cost_estimates',
+  'newsletter_subscribers',
+  'permission_templates',
+  'points_history',
+  'press_releases',
+  'product_interests',
+  'products',
+  'purchase_inquiries',
+  'redemptions',
+  'rewards_catalog',
+  'scratch_leads',
+  'scratch_rewards',
+  'settings',
+  'share_links',
+  'share_link_product_views',
+  'user_approval_status',
+  'user_roles',
+  'user_sessions',
+  'vendor_milestones',
+  'vendor_permissions',
+  'vendor_points',
+  'vendor_profiles',
+  'video_requests',
+  'wishlist_items',
+  'wishlists'
+];
+
+// Indexes to create for each collection
+const COLLECTION_INDEXES = {
+  audit_logs: [{ user_id: 1 }, { entity_type: 1 }, { created_at: -1 }],
+  blog_posts: [{ slug: 1 }, { published: 1 }, { created_at: -1 }],
+  blog_comments: [{ blog_post_id: 1 }, { status: 1 }],
+  brands: [{ name: 1 }, { active: 1 }],
+  catalog_inquiries: [{ share_link_id: 1 }, { created_at: -1 }],
+  custom_orders: [{ share_link_id: 1 }, { status: 1 }],
+  diamond_prices: [{ shape: 1, color_grade: 1, clarity_grade: 1 }],
+  diamond_price_history: [{ price_id: 1 }, { changed_at: -1 }],
+  guest_calculator_usage: [{ ip_address: 1 }, { used_at: -1 }],
+  invoice_templates: [{ user_id: 1 }, { is_default: 1 }],
+  manufacturing_cost_estimates: [{ user_id: 1 }, { status: 1 }, { created_at: -1 }],
+  newsletter_subscribers: [{ email: 1 }, { is_active: 1 }],
+  permission_templates: [{ name: 1 }],
+  points_history: [{ user_id: 1 }, { created_at: -1 }],
+  press_releases: [{ published_date: -1 }, { featured: 1 }],
+  product_interests: [{ product_id: 1 }, { share_link_id: 1 }],
+  products: [{ user_id: 1 }, { category: 1 }, { deleted_at: 1 }, { sku: 1 }],
+  purchase_inquiries: [{ product_id: 1 }, { share_link_id: 1 }, { status: 1 }],
+  redemptions: [{ user_id: 1 }, { reward_id: 1 }, { status: 1 }],
+  rewards_catalog: [{ reward_type: 1 }, { is_active: 1 }],
+  scratch_leads: [{ session_id: 1 }, { email: 1 }],
+  scratch_rewards: [{ session_id: 1 }],
+  settings: [{ key: 1 }],
+  share_links: [{ user_id: 1 }, { share_token: 1 }, { is_active: 1 }],
+  share_link_product_views: [{ share_link_id: 1 }, { product_id: 1 }],
+  user_approval_status: [{ user_id: 1 }, { status: 1 }],
+  user_roles: [{ user_id: 1 }, { role: 1 }],
+  user_sessions: [{ user_id: 1 }, { session_id: 1 }],
+  vendor_milestones: [{ user_id: 1 }, { milestone_type: 1 }],
+  vendor_permissions: [{ user_id: 1 }, { subscription_plan: 1 }],
+  vendor_points: [{ user_id: 1 }],
+  vendor_profiles: [{ user_id: 1 }, { business_name: 1 }],
+  video_requests: [{ share_link_id: 1 }, { status: 1 }],
+  wishlist_items: [{ wishlist_id: 1 }, { product_id: 1 }],
+  wishlists: [{ user_id: 1 }, { share_token: 1 }]
+};
+
+/**
+ * Fetch all data from a Supabase table with pagination
+ */
+async function fetchTableData(tableName) {
+  console.log(`  Fetching ${tableName}...`);
+  
+  let allData = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) {
+      console.error(`  Error fetching ${tableName}:`, error.message);
+      return allData;
+    }
+
+    if (data && data.length > 0) {
+      allData = allData.concat(data);
+      page++;
+      hasMore = data.length === pageSize;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  console.log(`  Fetched ${allData.length} records from ${tableName}`);
+  return allData;
+}
+
+/**
+ * Transform PostgreSQL data for MongoDB
+ */
+function transformData(data, tableName) {
+  return data.map(record => {
+    const transformed = { ...record };
+    
+    // Rename 'id' to 'postgres_id' to preserve original IDs
+    if (transformed.id) {
+      transformed.postgres_id = transformed.id;
+      delete transformed.id;
+    }
+    
+    // Convert timestamp strings to Date objects
+    const timestampFields = [
+      'created_at', 'updated_at', 'deleted_at', 'expires_at', 
+      'published_at', 'reviewed_at', 'achieved_at', 'redeemed_at',
+      'applied_at', 'claimed_at', 'used_at', 'viewed_at', 'added_at',
+      'changed_at', 'subscribed_at', 'moderated_at', 'last_activity',
+      'gold_rate_updated_at', 'plan_updated_at', 'trial_ends_at',
+      'invoice_date', 'payment_date', 'payment_due_date', 
+      'estimated_completion_date', 'last_reminder_sent_at',
+      'published_date', 'requested_at'
+    ];
+    
+    timestampFields.forEach(field => {
+      if (transformed[field] && typeof transformed[field] === 'string') {
+        transformed[field] = new Date(transformed[field]);
+      }
+    });
+    
+    return transformed;
+  });
+}
+
+/**
+ * Export all tables to JSON files
+ */
+async function exportToJson() {
+  console.log('\n=== Starting JSON Export ===\n');
+  
+  const exportDir = path.join(__dirname, 'exports');
+  await fs.mkdir(exportDir, { recursive: true });
+  
+  const summary = {};
+  
+  for (const tableName of TABLES) {
+    const data = await fetchTableData(tableName);
+    const transformedData = transformData(data, tableName);
+    
+    const filePath = path.join(exportDir, `${tableName}.json`);
+    await fs.writeFile(filePath, JSON.stringify(transformedData, null, 2));
+    
+    summary[tableName] = transformedData.length;
+    console.log(`  Exported ${tableName}.json (${transformedData.length} records)`);
+  }
+  
+  // Write summary
+  const summaryPath = path.join(exportDir, '_migration_summary.json');
+  await fs.writeFile(summaryPath, JSON.stringify({
+    exportDate: new Date().toISOString(),
+    tables: summary,
+    totalRecords: Object.values(summary).reduce((a, b) => a + b, 0)
+  }, null, 2));
+  
+  console.log('\n=== Export Complete ===');
+  console.log(`Files saved to: ${exportDir}`);
+  console.log(`Total records exported: ${Object.values(summary).reduce((a, b) => a + b, 0)}`);
+}
+
+/**
+ * Migrate directly to MongoDB
+ */
+async function migrateToMongoDB() {
+  console.log('\n=== Starting Direct Migration to MongoDB ===\n');
+  
+  const mongoClient = new MongoClient(MONGODB_URI);
+  
+  try {
+    await mongoClient.connect();
+    console.log('Connected to MongoDB');
+    
+    const db = mongoClient.db(MONGODB_DB_NAME);
+    const summary = {};
+    
+    for (const tableName of TABLES) {
+      // Fetch data from Supabase
+      const data = await fetchTableData(tableName);
+      
+      if (data.length === 0) {
+        console.log(`  Skipping ${tableName} (no data)`);
+        summary[tableName] = 0;
+        continue;
+      }
+      
+      // Transform data
+      const transformedData = transformData(data, tableName);
+      
+      // Drop existing collection and insert new data
+      const collection = db.collection(tableName);
+      
+      try {
+        await collection.drop();
+      } catch (e) {
+        // Collection might not exist, ignore error
+      }
+      
+      await collection.insertMany(transformedData);
+      
+      // Create indexes
+      if (COLLECTION_INDEXES[tableName]) {
+        for (const index of COLLECTION_INDEXES[tableName]) {
+          await collection.createIndex(index);
+        }
+      }
+      
+      summary[tableName] = transformedData.length;
+      console.log(`  Migrated ${tableName} (${transformedData.length} records)`);
+    }
+    
+    // Create migration log
+    await db.collection('_migration_log').insertOne({
+      migratedAt: new Date(),
+      source: 'supabase',
+      tables: summary,
+      totalRecords: Object.values(summary).reduce((a, b) => a + b, 0)
+    });
+    
+    console.log('\n=== Migration Complete ===');
+    console.log(`Total records migrated: ${Object.values(summary).reduce((a, b) => a + b, 0)}`);
+    
+  } finally {
+    await mongoClient.close();
+  }
+}
+
+// Main execution
+const command = process.argv[2] || 'migrate';
+
+if (command === 'export') {
+  exportToJson().catch(console.error);
+} else if (command === 'migrate') {
+  migrateToMongoDB().catch(console.error);
+} else {
+  console.log('Usage: node migrate-to-mongodb.js [migrate|export]');
+  console.log('  migrate - Direct migration to MongoDB');
+  console.log('  export  - Export to JSON files only');
+}
+
+================================================================================
+FILE: import-to-mongodb.js
+================================================================================
+/**
+ * Cataleon JSON to MongoDB Import Script
+ * 
+ * This script imports JSON files (exported from PostgreSQL) into MongoDB.
+ * 
+ * Usage:
+ *   node import-to-mongodb.js
+ */
+
+require('dotenv').config();
+const { MongoClient } = require('mongodb');
+const fs = require('fs').promises;
+const path = require('path');
+
+// Configuration
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || 'cataleon';
+
+// Indexes to create for each collection
+const COLLECTION_INDEXES = {
+  audit_logs: [{ user_id: 1 }, { entity_type: 1 }, { created_at: -1 }],
+  blog_posts: [{ slug: 1 }, { published: 1 }, { created_at: -1 }],
+  blog_comments: [{ blog_post_id: 1 }, { status: 1 }],
+  brands: [{ name: 1 }, { active: 1 }],
+  catalog_inquiries: [{ share_link_id: 1 }, { created_at: -1 }],
+  custom_orders: [{ share_link_id: 1 }, { status: 1 }],
+  diamond_prices: [{ shape: 1, color_grade: 1, clarity_grade: 1 }],
+  diamond_price_history: [{ price_id: 1 }, { changed_at: -1 }],
+  guest_calculator_usage: [{ ip_address: 1 }, { used_at: -1 }],
+  invoice_templates: [{ user_id: 1 }, { is_default: 1 }],
+  manufacturing_cost_estimates: [{ user_id: 1 }, { status: 1 }, { created_at: -1 }],
+  newsletter_subscribers: [{ email: 1 }, { is_active: 1 }],
+  permission_templates: [{ name: 1 }],
+  points_history: [{ user_id: 1 }, { created_at: -1 }],
+  press_releases: [{ published_date: -1 }, { featured: 1 }],
+  product_interests: [{ product_id: 1 }, { share_link_id: 1 }],
+  products: [{ user_id: 1 }, { category: 1 }, { deleted_at: 1 }, { sku: 1 }],
+  purchase_inquiries: [{ product_id: 1 }, { share_link_id: 1 }, { status: 1 }],
+  redemptions: [{ user_id: 1 }, { reward_id: 1 }, { status: 1 }],
+  rewards_catalog: [{ reward_type: 1 }, { is_active: 1 }],
+  scratch_leads: [{ session_id: 1 }, { email: 1 }],
+  scratch_rewards: [{ session_id: 1 }],
+  settings: [{ key: 1 }],
+  share_links: [{ user_id: 1 }, { share_token: 1 }, { is_active: 1 }],
+  share_link_product_views: [{ share_link_id: 1 }, { product_id: 1 }],
+  user_approval_status: [{ user_id: 1 }, { status: 1 }],
+  user_roles: [{ user_id: 1 }, { role: 1 }],
+  user_sessions: [{ user_id: 1 }, { session_id: 1 }],
+  vendor_milestones: [{ user_id: 1 }, { milestone_type: 1 }],
+  vendor_permissions: [{ user_id: 1 }, { subscription_plan: 1 }],
+  vendor_points: [{ user_id: 1 }],
+  vendor_profiles: [{ user_id: 1 }, { business_name: 1 }],
+  video_requests: [{ share_link_id: 1 }, { status: 1 }],
+  wishlist_items: [{ wishlist_id: 1 }, { product_id: 1 }],
+  wishlists: [{ user_id: 1 }, { share_token: 1 }]
+};
+
+/**
+ * Convert date strings back to Date objects
+ */
+function convertDates(data) {
+  return data.map(record => {
+    const converted = { ...record };
+    
+    const timestampFields = [
+      'created_at', 'updated_at', 'deleted_at', 'expires_at', 
+      'published_at', 'reviewed_at', 'achieved_at', 'redeemed_at',
+      'applied_at', 'claimed_at', 'used_at', 'viewed_at', 'added_at',
+      'changed_at', 'subscribed_at', 'moderated_at', 'last_activity',
+      'gold_rate_updated_at', 'plan_updated_at', 'trial_ends_at',
+      'invoice_date', 'payment_date', 'payment_due_date', 
+      'estimated_completion_date', 'last_reminder_sent_at',
+      'published_date', 'requested_at', 'migratedAt', 'exportDate'
+    ];
+    
+    timestampFields.forEach(field => {
+      if (converted[field] && typeof converted[field] === 'string') {
+        converted[field] = new Date(converted[field]);
+      }
+    });
+    
+    return converted;
+  });
+}
+
+async function importFromJson() {
+  console.log('\n=== Starting MongoDB Import from JSON ===\n');
+  
+  const exportDir = path.join(__dirname, 'exports');
+  const mongoClient = new MongoClient(MONGODB_URI);
+  
+  try {
+    // Check if exports directory exists
+    try {
+      await fs.access(exportDir);
+    } catch {
+      console.error('Error: exports directory not found. Run export first.');
+      console.log('  node migrate-to-mongodb.js export');
+      return;
+    }
+    
+    await mongoClient.connect();
+    console.log('Connected to MongoDB');
+    
+    const db = mongoClient.db(MONGODB_DB_NAME);
+    const files = await fs.readdir(exportDir);
+    const jsonFiles = files.filter(f => f.endsWith('.json') && !f.startsWith('_'));
+    
+    const summary = {};
+    
+    for (const file of jsonFiles) {
+      const tableName = file.replace('.json', '');
+      const filePath = path.join(exportDir, file);
+      
+      console.log(`  Importing ${tableName}...`);
+      
+      const content = await fs.readFile(filePath, 'utf-8');
+      const data = JSON.parse(content);
+      
+      if (data.length === 0) {
+        console.log(`  Skipping ${tableName} (no data)`);
+        summary[tableName] = 0;
+        continue;
+      }
+      
+      // Convert date strings to Date objects
+      const convertedData = convertDates(data);
+      
+      // Drop existing collection and insert new data
+      const collection = db.collection(tableName);
+      
+      try {
+        await collection.drop();
+      } catch (e) {
+        // Collection might not exist, ignore error
+      }
+      
+      await collection.insertMany(convertedData);
+      
+      // Create indexes
+      if (COLLECTION_INDEXES[tableName]) {
+        for (const index of COLLECTION_INDEXES[tableName]) {
+          await collection.createIndex(index);
+        }
+      }
+      
+      summary[tableName] = convertedData.length;
+      console.log(`  Imported ${tableName} (${convertedData.length} records)`);
+    }
+    
+    // Create import log
+    await db.collection('_migration_log').insertOne({
+      importedAt: new Date(),
+      source: 'json_export',
+      tables: summary,
+      totalRecords: Object.values(summary).reduce((a, b) => a + b, 0)
+    });
+    
+    console.log('\n=== Import Complete ===');
+    console.log(`Total records imported: ${Object.values(summary).reduce((a, b) => a + b, 0)}`);
+    
+  } finally {
+    await mongoClient.close();
+  }
+}
+
+importFromJson().catch(console.error);
+
+================================================================================
+FILE: README.md
+================================================================================
+# Cataleon PostgreSQL to MongoDB Migration
+
+This directory contains scripts to migrate data from Cataleon's PostgreSQL 
+(Supabase) database to MongoDB.
+
+## Prerequisites
+
+1. **Node.js** v18 or higher
+2. **MongoDB** instance (local or remote)
+3. **Supabase Service Role Key** (from Supabase dashboard)
+
+## Installation
+
+```bash
+cd scripts/mongodb-migration
+npm install
+```
+
+## Configuration
+
+1. Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` with your credentials:
+```
+SUPABASE_URL=https://mznwzwuyhcmuaewqsojo.supabase.co
+SUPABASE_SERVICE_KEY=your_service_role_key_here
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB_NAME=cataleon
+```
+
+## Usage
+
+### Option 1: Direct Migration
+Migrate data directly from PostgreSQL to MongoDB:
+```bash
+npm run migrate
+```
+
+### Option 2: Two-Step Migration
+First export to JSON files, then import to MongoDB:
+
+```bash
+# Step 1: Export all tables to JSON files
+npm run export
+
+# Step 2: Import JSON files to MongoDB
+npm run import
+```
+
+## Tables Migrated
+
+The migration includes all 35 tables:
+
+| Table | Description |
+|-------|-------------|
+| audit_logs | System audit trail |
+| blog_posts | Blog content |
+| blog_comments | Blog comments |
+| brands | Jewelry brands |
+| products | Product catalog |
+| vendor_profiles | Vendor information |
+| vendor_permissions | Permission settings |
+| share_links | Shareable catalog links |
+| manufacturing_cost_estimates | Cost estimates |
+| diamond_prices | Diamond pricing data |
+| ... and 25 more tables |
+
+## Data Transformations
+
+During migration, the following transformations are applied:
+
+1. **UUID to ObjectId**: PostgreSQL UUIDs are preserved as `postgres_id` field
+2. **Timestamps**: String timestamps are converted to MongoDB Date objects
+3. **Indexes**: Appropriate indexes are created for query optimization
+
+## MongoDB Schema
+
+After migration, each collection will have:
+- `_id`: MongoDB generated ObjectId
+- `postgres_id`: Original PostgreSQL UUID
+- All original fields with proper types
+
+## Troubleshooting
+
+### Connection Issues
+- Ensure MongoDB is running: `mongod --dbpath /path/to/data`
+- Verify Supabase service key has correct permissions
+
+### Memory Issues
+For large datasets, increase Node.js memory:
+```bash
+NODE_OPTIONS="--max-old-space-size=4096" npm run migrate
+```
+
+================================================================================
+END OF BUNDLE
+================================================================================
+
+INSTRUCTIONS:
+1. Create a new folder: mongodb-migration/
+2. Extract each FILE section to its respective filename
+3. Run: npm install
+4. Configure .env with your credentials
+5. Run: npm run migrate (or npm run export for JSON files)
