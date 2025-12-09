@@ -48,6 +48,7 @@ export interface InvoiceData {
   paymentTerms?: string;
   estimateName: string;
   status: string;
+  invoiceType?: 'tax' | 'export' | 'proforma';
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
@@ -88,6 +89,15 @@ export interface InvoiceData {
 }
 
 type InvoiceTemplate = 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
+
+// Helper function to get invoice type label
+const getInvoiceTypeLabel = (type?: 'tax' | 'export' | 'proforma'): string => {
+  switch (type) {
+    case 'export': return 'EXPORT INVOICE';
+    case 'proforma': return 'PROFORMA INVOICE';
+    default: return 'TAX INVOICE';
+  }
+};
 
 // Helper function for consistent currency formatting (PDF-safe)
 const formatCurrency = (amount: number) => {
@@ -242,14 +252,16 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
       doc.text(data.vendorBranding.tagline, nameStartX, 28, { align: nameAlign });
     }
     
-    // INVOICE label
+    // INVOICE label with type
+    const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text('TAX INVOICE', nameStartX, 36, { align: nameAlign });
+    doc.text(invoiceLabel, nameStartX, 36, { align: nameAlign });
   } else {
+    const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
     doc.setFontSize(26);
-    doc.text('TAX INVOICE', pageWidth / 2, 28, { align: 'center' });
+    doc.text(invoiceLabel, pageWidth / 2, 28, { align: 'center' });
   }
   
   // Reset text color
@@ -354,6 +366,30 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
     doc.text('Terms:', 20, infoY);
     doc.setFont('helvetica', 'normal');
     doc.text(data.paymentTerms, 35, infoY);
+  }
+  
+  // Payment status badge
+  if (data.status) {
+    const statusColors: Record<string, { bg: [number, number, number]; text: [number, number, number] }> = {
+      paid: { bg: [220, 252, 231], text: [22, 163, 74] },
+      partial: { bg: [254, 249, 195], text: [202, 138, 4] },
+      pending: { bg: [254, 226, 226], text: [220, 38, 38] },
+    };
+    const statusLabels: Record<string, string> = {
+      paid: 'PAID',
+      partial: 'PARTIAL',
+      pending: 'UNPAID',
+    };
+    const statusConfig = statusColors[data.status] || statusColors.pending;
+    const statusLabel = statusLabels[data.status] || 'UNPAID';
+    
+    doc.setFillColor(...statusConfig.bg);
+    doc.roundedRect(pageWidth - 50, 55, 36, 10, 2, 2, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...statusConfig.text);
+    doc.text(statusLabel, pageWidth - 32, 61.5, { align: 'center' });
+    doc.setTextColor(40, 40, 50);
   }
   
   // Customer Details Section with enhanced design
@@ -977,7 +1013,8 @@ const generateSummaryInvoice = async (data: InvoiceData) => {
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('INVOICE', pageWidth / 2, 22, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, 22, { align: 'center' });
   
   doc.setTextColor(0, 0, 0);
   
@@ -1052,7 +1089,8 @@ const generateMinimalInvoice = async (data: InvoiceData) => {
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('INVOICE', pageWidth / 2, 30, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, 30, { align: 'center' });
   
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(12);
@@ -1154,12 +1192,12 @@ const generateTraditionalInvoice = async (data: InvoiceData) => {
   doc.line(lineMargin, yPos, pageWidth - lineMargin, yPos);
   doc.circle(pageWidth / 2, yPos, 1, 'F');
   
-  // INVOICE title
   yPos += 12;
   doc.setFontSize(24);
   doc.setFont('times', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('INVOICE', pageWidth / 2, yPos, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, yPos, { align: 'center' });
   
   // Invoice details box
   yPos += 15;
@@ -1329,7 +1367,8 @@ const generateModernInvoice = async (data: InvoiceData) => {
   doc.setFontSize(48);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('INVOICE', 20, 50);
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, 20, 50);
   
   // Invoice details - clean alignment
   let yPos = 65;
@@ -1509,7 +1548,8 @@ const generateLuxuryInvoice = async (data: InvoiceData) => {
   doc.setFontSize(20);
   doc.setFont('times', 'bold');
   doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
-  doc.text('INVOICE', pageWidth / 2, yPos, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, yPos, { align: 'center' });
   
   // Elegant info boxes
   yPos += 15;

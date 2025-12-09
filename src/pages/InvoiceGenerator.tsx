@@ -44,6 +44,8 @@ const InvoiceGenerator = () => {
   const [paymentDueDate, setPaymentDueDate] = useState<Date>();
   const [invoiceNotes, setInvoiceNotes] = useState("");
   const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury'>('detailed');
+  const [invoiceType, setInvoiceType] = useState<'tax' | 'export' | 'proforma'>('tax');
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'partial'>('pending');
   const [estimateName, setEstimateName] = useState("");
   
   // Customer details
@@ -296,7 +298,8 @@ const InvoiceGenerator = () => {
       paymentDueDate: paymentDueDate?.toISOString(),
       paymentTerms,
       estimateName,
-      status: "draft",
+      status: paymentStatus,
+      invoiceType,
       customerName,
       customerPhone,
       customerEmail,
@@ -344,7 +347,7 @@ const InvoiceGenerator = () => {
             payment_due_date: paymentDueDate?.toISOString(),
             invoice_notes: invoiceNotes,
             is_invoice_generated: true,
-            invoice_status: "pending",
+            invoice_status: paymentStatus,
           })
           .eq('id', estimateId);
 
@@ -362,7 +365,7 @@ const InvoiceGenerator = () => {
             payment_due_date: paymentDueDate?.toISOString(),
             invoice_notes: invoiceNotes,
             is_invoice_generated: true,
-            invoice_status: "pending",
+            invoice_status: paymentStatus,
             customer_name: customerName,
             customer_phone: customerPhone,
             customer_email: customerEmail,
@@ -539,6 +542,34 @@ const InvoiceGenerator = () => {
                     <SelectItem value="traditional">Traditional - Classic Serif Style</SelectItem>
                     <SelectItem value="modern">Modern - Clean Minimalist</SelectItem>
                     <SelectItem value="luxury">Luxury - Premium Elegant</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Invoice Type</Label>
+                <Select value={invoiceType} onValueChange={(value: any) => setInvoiceType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tax">Tax Invoice</SelectItem>
+                    <SelectItem value="export">Export Invoice</SelectItem>
+                    <SelectItem value="proforma">Proforma Invoice</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Payment Status</Label>
+                <Select value={paymentStatus} onValueChange={(value: any) => setPaymentStatus(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="partial">Partial Payment</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
