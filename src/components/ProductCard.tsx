@@ -67,9 +67,11 @@ const ProductCardComponent = ({ product, isSelected, onToggleSelection, usdRate,
           <OptimizedImage
             src={images[currentImageIndex]}
             alt={`${product.name} - Image ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-all duration-300"
+            className="w-full h-full object-cover"
             width={400}
             height={400}
+            blurPlaceholder={true}
+            priority={false}
           />
           {images.length > 1 && (
             <>

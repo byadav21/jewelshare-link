@@ -1,11 +1,10 @@
 /**
- * Optimized Image component with lazy loading
+ * Optimized Image component with lazy loading and blur-up placeholder
  * Handles lazy loading with Intersection Observer and graceful error handling
  */
 
-import { useState, useEffect, useRef, ImgHTMLAttributes } from "react";
+import { useState, useEffect, useRef, ImgHTMLAttributes, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> {
   src: string;
@@ -18,7 +17,18 @@ interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 
   objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
   onLoad?: () => void;
   onError?: () => void;
+  blurPlaceholder?: boolean;
 }
+
+// Generate a tiny placeholder color based on image URL for consistent blur effect
+const generatePlaceholderColor = (src: string): string => {
+  let hash = 0;
+  for (let i = 0; i < src.length; i++) {
+    hash = src.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash % 360);
+  return `hsl(${h}, 20%, 85%)`;
+};
 
 export const OptimizedImage = ({
   src,
@@ -31,6 +41,7 @@ export const OptimizedImage = ({
   objectFit = "cover",
   onLoad,
   onError,
+  blurPlaceholder = true,
   ...props
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -38,6 +49,9 @@ export const OptimizedImage = ({
   const [isInView, setIsInView] = useState(!lazy || priority);
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Memoize placeholder color for consistent blur effect
+  const placeholderColor = useMemo(() => generatePlaceholderColor(src || ''), [src]);
 
   // Reset state when src changes
   useEffect(() => {
@@ -58,7 +72,7 @@ export const OptimizedImage = ({
           }
         });
       },
-      { rootMargin: "100px" }
+      { rootMargin: "200px", threshold: 0.01 }
     );
 
     if (containerRef.current) {
@@ -86,15 +100,27 @@ export const OptimizedImage = ({
     "scale-down": "object-scale-down",
   }[objectFit];
 
-  // Show skeleton while not in view
+  // Show placeholder while not in view
   if (!isInView) {
     return (
       <div
         ref={containerRef}
-        className={cn("relative bg-muted", className)}
-        style={{ width, height }}
+        className={cn("relative overflow-hidden", className)}
+        style={{ 
+          width, 
+          height,
+          backgroundColor: blurPlaceholder ? placeholderColor : undefined
+        }}
       >
-        <Skeleton className="w-full h-full" />
+        {/* Blur placeholder with shimmer effect */}
+        <div 
+          className="absolute inset-0 animate-pulse"
+          style={{ 
+            background: `linear-gradient(90deg, ${placeholderColor} 0%, hsl(0, 0%, 90%) 50%, ${placeholderColor} 100%)`,
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
       </div>
     );
   }
@@ -115,8 +141,24 @@ export const OptimizedImage = ({
   }
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
-      {!isLoaded && <Skeleton className="absolute inset-0" />}
+    <div 
+      ref={containerRef} 
+      className={cn("relative overflow-hidden", className)}
+      style={{ 
+        backgroundColor: blurPlaceholder && !isLoaded ? placeholderColor : undefined
+      }}
+    >
+      {/* Blur-up placeholder */}
+      {blurPlaceholder && !isLoaded && (
+        <div 
+          className="absolute inset-0 animate-pulse"
+          style={{ 
+            background: `linear-gradient(135deg, ${placeholderColor} 0%, hsl(0, 0%, 88%) 100%)`,
+            filter: 'blur(8px)',
+            transform: 'scale(1.1)'
+          }}
+        />
+      )}
       <img
         ref={imgRef}
         src={src}
@@ -128,8 +170,8 @@ export const OptimizedImage = ({
         onLoad={handleLoad}
         onError={handleError}
         className={cn(
-          "transition-opacity duration-200 max-w-full h-auto",
-          isLoaded ? "opacity-100" : "opacity-0",
+          "transition-all duration-300 ease-out max-w-full h-auto",
+          isLoaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-105",
           objectFitClass
         )}
         {...props}
@@ -139,7 +181,7 @@ export const OptimizedImage = ({
 };
 
 /**
- * Background Image component with lazy loading
+ * Background Image component with lazy loading and blur-up placeholder
  */
 interface OptimizedBackgroundImageProps {
   src: string;
@@ -149,6 +191,16 @@ interface OptimizedBackgroundImageProps {
   overlay?: boolean;
   overlayOpacity?: number;
 }
+
+// Generate placeholder color for background images
+const generateBgPlaceholderColor = (src: string): string => {
+  let hash = 0;
+  for (let i = 0; i < src.length; i++) {
+    hash = src.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash % 360);
+  return `hsl(${h}, 15%, 80%)`;
+};
 
 export const OptimizedBackgroundImage = ({
   src,
@@ -161,6 +213,7 @@ export const OptimizedBackgroundImage = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(!lazy);
   const divRef = useRef<HTMLDivElement>(null);
+  const placeholderColor = useMemo(() => generateBgPlaceholderColor(src || ''), [src]);
 
   useEffect(() => {
     if (!lazy || isInView) return;
@@ -174,7 +227,7 @@ export const OptimizedBackgroundImage = ({
           }
         });
       },
-      { rootMargin: "100px" }
+      { rootMargin: "200px" }
     );
 
     if (divRef.current) {
@@ -195,14 +248,24 @@ export const OptimizedBackgroundImage = ({
   return (
     <div
       ref={divRef}
-      className={cn("relative", className)}
+      className={cn("relative overflow-hidden", className)}
       style={{
         backgroundImage: isLoaded ? `url(${src})` : undefined,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundColor: !isLoaded ? placeholderColor : undefined,
       }}
     >
-      {!isLoaded && <Skeleton className="absolute inset-0" />}
+      {/* Blur-up placeholder for background */}
+      {!isLoaded && (
+        <div 
+          className="absolute inset-0 animate-pulse"
+          style={{ 
+            background: `linear-gradient(135deg, ${placeholderColor} 0%, hsl(0, 0%, 85%) 100%)`,
+            filter: 'blur(4px)'
+          }}
+        />
+      )}
       
       {overlay && isLoaded && (
         <div
