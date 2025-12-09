@@ -43,9 +43,10 @@ const InvoiceGenerator = () => {
   const [paymentTerms, setPaymentTerms] = useState("Net 30");
   const [paymentDueDate, setPaymentDueDate] = useState<Date>();
   const [invoiceNotes, setInvoiceNotes] = useState("");
-  const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury'>('detailed');
+  const [invoiceTemplate, setInvoiceTemplate] = useState<'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury' | 'loose_diamond'>('detailed');
   const [invoiceType, setInvoiceType] = useState<'tax' | 'export' | 'proforma'>('tax');
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'partial'>('pending');
+  const [estimateCategory, setEstimateCategory] = useState<'jewelry' | 'loose_diamond' | 'gemstone'>('jewelry');
   const [estimateName, setEstimateName] = useState("");
   
   // Customer details
@@ -184,6 +185,7 @@ const InvoiceGenerator = () => {
 
   const loadFromEstimate = (estimate: any) => {
     setEstimateName(estimate.estimate_name);
+    setEstimateCategory(estimate.estimate_category || 'jewelry');
     setCustomerName(estimate.customer_name || "");
     setCustomerPhone(estimate.customer_phone || "");
     setCustomerEmail(estimate.customer_email || "");
@@ -202,6 +204,11 @@ const InvoiceGenerator = () => {
     setTotalCost(estimate.total_cost || 0);
     setProfitMargin(estimate.profit_margin_percentage || 0);
     setFinalSellingPrice(estimate.final_selling_price || 0);
+    
+    // Auto-select loose diamond template if category is loose_diamond
+    if (estimate.estimate_category === 'loose_diamond') {
+      setInvoiceTemplate('loose_diamond' as any);
+    }
     
     if (estimate.invoice_number) {
       setInvoiceNumber(estimate.invoice_number);
@@ -320,6 +327,7 @@ const InvoiceGenerator = () => {
       finalSellingPrice,
       invoiceNotes,
       template: invoiceTemplate,
+      estimateCategory,
       vendorBranding: vendorProfile ? {
         name: vendorProfile.business_name,
         logo: vendorProfile.logo_url,
@@ -542,6 +550,7 @@ const InvoiceGenerator = () => {
                     <SelectItem value="traditional">Traditional - Classic Serif Style</SelectItem>
                     <SelectItem value="modern">Modern - Clean Minimalist</SelectItem>
                     <SelectItem value="luxury">Luxury - Premium Elegant</SelectItem>
+                    <SelectItem value="loose_diamond">Loose Diamond - Diamond Specialist</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

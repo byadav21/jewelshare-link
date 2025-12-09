@@ -42,6 +42,7 @@ const ManufacturingCost = () => {
   const [notes, setNotes] = useState("");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
+  const [estimateCategory, setEstimateCategory] = useState<'jewelry' | 'loose_diamond' | 'gemstone'>('jewelry');
   const [estimateStatus, setEstimateStatus] = useState("draft");
   const [estimatedCompletionDate, setEstimatedCompletionDate] = useState<Date>();
   const [isCustomerVisible, setIsCustomerVisible] = useState(false);
@@ -381,6 +382,7 @@ const ManufacturingCost = () => {
     const estimateData = {
       user_id: user.id,
       estimate_name: estimateName,
+      estimate_category: estimateCategory,
       customer_name: customerDetails.name || null,
       customer_phone: customerDetails.phone || null,
       customer_email: customerDetails.email || null,
@@ -479,6 +481,7 @@ const ManufacturingCost = () => {
     setExchangeRate(meta?.exchange_rate || 83);
     setLineItems(items);
     setEstimateStatus(estimate.status || "draft");
+    setEstimateCategory(estimate.estimate_category || 'jewelry');
     setEstimatedCompletionDate(estimate.estimated_completion_date ? new Date(estimate.estimated_completion_date) : undefined);
     setIsCustomerVisible(estimate.is_customer_visible || false);
     setShareToken(estimate.share_token || "");
@@ -619,9 +622,36 @@ const ManufacturingCost = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="estimate-name">Estimate Name *</Label>
-                <Input id="estimate-name" value={estimateName} onChange={e => setEstimateName(e.target.value)} placeholder="e.g., Diamond Ring Quote - John Doe" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="estimate-name">Estimate Name *</Label>
+                  <Input id="estimate-name" value={estimateName} onChange={e => setEstimateName(e.target.value)} placeholder="e.g., Diamond Ring Quote - John Doe" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Category *</Label>
+                  <Select value={estimateCategory} onValueChange={(v: 'jewelry' | 'loose_diamond' | 'gemstone') => setEstimateCategory(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="jewelry">
+                        <span className="flex items-center gap-2">
+                          <Gem className="h-4 w-4" /> Jewelry
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="loose_diamond">
+                        <span className="flex items-center gap-2">
+                          <Diamond className="h-4 w-4" /> Loose Diamond
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="gemstone">
+                        <span className="flex items-center gap-2">
+                          <Coins className="h-4 w-4" /> Gemstone
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-4">

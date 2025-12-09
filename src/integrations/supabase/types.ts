@@ -469,6 +469,7 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           diamond_cost: number | null
+          estimate_category: string | null
           estimate_name: string
           estimated_completion_date: string | null
           final_selling_price: number | null
@@ -509,6 +510,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           diamond_cost?: number | null
+          estimate_category?: string | null
           estimate_name: string
           estimated_completion_date?: string | null
           final_selling_price?: number | null
@@ -549,6 +551,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           diamond_cost?: number | null
+          estimate_category?: string | null
           estimate_name?: string
           estimated_completion_date?: string | null
           final_selling_price?: number | null
