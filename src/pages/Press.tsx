@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, ExternalLink, Newspaper, ArrowLeft } from "lucide-react";
+import { Calendar, ExternalLink, Newspaper } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { Header } from "@/components/Header";
 
 interface PressRelease {
   id: string;
@@ -53,17 +54,11 @@ const Press = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      <Header />
+      
+      {/* Hero Section */}
       <section className="border-b">
         <div className="container mx-auto px-4 py-16">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="mb-8"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
-          </Button>
           
           <div className="text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm">
