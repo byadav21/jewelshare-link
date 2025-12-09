@@ -1753,16 +1753,34 @@ const generateLooseDiamondInvoice = async (data: InvoiceData) => {
   doc.setFont('helvetica', 'normal');
   doc.text(`Invoice: ${data.invoiceNumber}`, 20, 38);
   
-  // Vendor info on header right
+  // Vendor logo on header right
+  let logoWidth = 0;
+  if (data.vendorBranding?.logo) {
+    try {
+      const logoBase64 = await loadImageAsBase64(data.vendorBranding.logo);
+      if (logoBase64) {
+        // Add white background for logo
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(pageWidth - 45, 8, 30, 30, 2, 2, 'F');
+        doc.addImage(logoBase64, 'PNG', pageWidth - 43, 10, 26, 26);
+        logoWidth = 35;
+      }
+    } catch (error) {
+      console.error('Error loading logo:', error);
+    }
+  }
+  
+  // Vendor info on header right (adjusted for logo)
+  const vendorTextX = logoWidth > 0 ? pageWidth - 50 : pageWidth - 20;
   if (data.vendorBranding?.name) {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(data.vendorBranding.name, pageWidth - 20, 28, { align: 'right' });
+    doc.text(data.vendorBranding.name, vendorTextX, 28, { align: 'right' });
   }
   if (data.vendorBranding?.phone) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Tel: ${data.vendorBranding.phone}`, pageWidth - 20, 38, { align: 'right' });
+    doc.text(`Tel: ${data.vendorBranding.phone}`, vendorTextX, 38, { align: 'right' });
   }
   
   let yPos = 55;
@@ -2205,16 +2223,34 @@ const generateGemstoneInvoice = async (data: InvoiceData) => {
   doc.setFont('helvetica', 'normal');
   doc.text(`Invoice: ${data.invoiceNumber}`, 20, 38);
   
-  // Vendor info on header right
+  // Vendor logo on header right
+  let logoWidth = 0;
+  if (data.vendorBranding?.logo) {
+    try {
+      const logoBase64 = await loadImageAsBase64(data.vendorBranding.logo);
+      if (logoBase64) {
+        // Add white background for logo
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(pageWidth - 45, 8, 30, 30, 2, 2, 'F');
+        doc.addImage(logoBase64, 'PNG', pageWidth - 43, 10, 26, 26);
+        logoWidth = 35;
+      }
+    } catch (error) {
+      console.error('Error loading logo:', error);
+    }
+  }
+  
+  // Vendor info on header right (adjusted for logo)
+  const vendorTextX = logoWidth > 0 ? pageWidth - 50 : pageWidth - 20;
   if (data.vendorBranding?.name) {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(data.vendorBranding.name, pageWidth - 20, 28, { align: 'right' });
+    doc.text(data.vendorBranding.name, vendorTextX, 28, { align: 'right' });
   }
   if (data.vendorBranding?.phone) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Tel: ${data.vendorBranding.phone}`, pageWidth - 20, 38, { align: 'right' });
+    doc.text(`Tel: ${data.vendorBranding.phone}`, vendorTextX, 38, { align: 'right' });
   }
   
   let yPos = 55;
