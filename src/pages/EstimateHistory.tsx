@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, FileText, Eye, ArrowLeft, FileCheck, Trash2, Archive, ArchiveRestore } from "lucide-react";
+import { Search, FileText, Eye, ArrowLeft, FileCheck, Trash2, Archive, ArchiveRestore, AlertTriangle } from "lucide-react";
 import { exportCatalogToPDF } from "@/utils/pdfExport";
 import {
   Select,
@@ -39,7 +39,19 @@ interface Estimate {
   status: string;
   updated_at: string;
   is_archived?: boolean;
+  archived_at?: string;
 }
+
+const getDaysUntilDeletion = (archivedAt: string | undefined): number | null => {
+  if (!archivedAt) return null;
+  const archiveDate = new Date(archivedAt);
+  const deletionDate = new Date(archiveDate);
+  deletionDate.setDate(deletionDate.getDate() + 30);
+  const now = new Date();
+  const diffTime = deletionDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+};
 
 const EstimateHistory = () => {
   const navigate = useNavigate();
@@ -316,6 +328,21 @@ const EstimateHistory = () => {
                             >
                               {estimate.status?.replace("_", " ")}
                             </Badge>
+                            {viewMode === "archived" && estimate.archived_at && (
+                              <Badge 
+                                variant="destructive" 
+                                className="flex items-center gap-1"
+                              >
+                                <AlertTriangle className="h-3 w-3" />
+                                {(() => {
+                                  const days = getDaysUntilDeletion(estimate.archived_at);
+                                  if (days === null) return "Pending deletion";
+                                  if (days === 0) return "Deleting today";
+                                  if (days === 1) return "1 day left";
+                                  return `${days} days left`;
+                                })()}
+                              </Badge>
+                            )}
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div className="flex items-center gap-2 text-sm">
