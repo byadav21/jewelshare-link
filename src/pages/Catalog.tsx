@@ -24,7 +24,7 @@ import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import { BulkEditDialog } from "@/components/BulkEditDialog";
 import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog";
-import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { NavLink } from "@/components/NavLink";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -554,11 +554,8 @@ const Catalog = () => {
       <QuickActionsMenu onExportPDF={exportToPDF} onAutoCategorize={handleAutoCategorizationClick} />
 
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background relative overflow-hidden">
+        <Header />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
-        
-        <div className="absolute top-4 left-4 z-20">
-          <BackToHomeButton />
-        </div>
 
         {/* Breadcrumb */}
         <div className="relative bg-background/50 backdrop-blur-sm border-b border-border/30 z-10">
