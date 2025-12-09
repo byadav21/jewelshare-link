@@ -170,7 +170,7 @@ export const OptimizedImage = ({
         onLoad={handleLoad}
         onError={handleError}
         className={cn(
-          "transition-all duration-300 ease-out max-w-full h-auto",
+          "transition-all duration-300 ease-out w-full h-full",
           isLoaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-105",
           objectFitClass
         )}
