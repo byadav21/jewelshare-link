@@ -31,37 +31,35 @@ export const PlanLimitWarning = () => {
   const fetchLimitsAndUsage = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-      // Fetch vendor permissions (includes limits)
-      const { data: permissions, error: permError } = await supabase
-        .from("vendor_permissions")
-        .select("subscription_plan, max_products, max_share_links, max_team_members, max_product_images")
-        .eq("user_id", user.id)
-        .single();
+      // Parallel fetch for all data
+      const [permissionsResult, productsResult, shareLinksResult] = await Promise.all([
+        supabase
+          .from("vendor_permissions")
+          .select("subscription_plan, max_products, max_share_links, max_team_members, max_product_images")
+          .eq("user_id", user.id)
+          .single(),
+        supabase
+          .from("products")
+          .select("id", { count: 'exact', head: true })
+          .eq("user_id", user.id)
+          .is("deleted_at", null),
+        supabase
+          .from("share_links")
+          .select("id", { count: 'exact', head: true })
+          .eq("user_id", user.id)
+      ]);
 
-      if (permError) throw permError;
+      if (permissionsResult.error) throw permissionsResult.error;
 
-      // Fetch current usage
-      const { data: products, error: prodError } = await supabase
-        .from("products")
-        .select("id")
-        .eq("user_id", user.id)
-        .is("deleted_at", null);
-
-      if (prodError) throw prodError;
-
-      const { data: shareLinks, error: shareError } = await supabase
-        .from("share_links")
-        .select("id")
-        .eq("user_id", user.id);
-
-      if (shareError) throw shareError;
-
-      setLimits(permissions);
+      setLimits(permissionsResult.data);
       setUsage({
-        products_count: products?.length || 0,
-        share_links_count: shareLinks?.length || 0,
+        products_count: productsResult.count || 0,
+        share_links_count: shareLinksResult.count || 0,
       });
     } catch (error) {
       console.error("Error fetching limits:", error);
