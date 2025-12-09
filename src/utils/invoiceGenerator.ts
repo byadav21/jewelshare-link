@@ -2298,20 +2298,35 @@ const generateGemstoneInvoice = async (data: InvoiceData) => {
   
   yPos += 15;
   
+  // Collect certificate images for later
+  const certificateImages: { itemName: string; imageUrl: string }[] = [];
+  
   // Line items for gemstones
   if (data.lineItems && data.lineItems.length > 0) {
-    data.lineItems.forEach((item, index) => {
+    for (let index = 0; index < data.lineItems.length; index++) {
+      const item = data.lineItems[index];
+      
       // Alternate row background
       if (index % 2 === 0) {
         doc.setFillColor(248, 250, 252);
-        doc.rect(15, yPos - 4, pageWidth - 30, 40, 'F');
+        doc.rect(15, yPos - 4, pageWidth - 30, 44, 'F');
       }
       
-      // Item name
+      // Item name with certificate indicator
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
-      doc.text(item.item_name || item.gemstone_type || `Gemstone ${index + 1}`, 20, yPos);
+      const itemName = item.item_name || item.gemstone_type || `Gemstone ${index + 1}`;
+      doc.text(itemName, 20, yPos);
+      
+      // If certificate exists, add indicator and store for later
+      if (item.certificate_image_url) {
+        certificateImages.push({ itemName, imageUrl: item.certificate_image_url });
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        doc.text('(Certificate - Page 2)', 20 + doc.getTextWidth(itemName) + 5, yPos);
+      }
       
       // Gemstone specifications
       doc.setFontSize(8);
@@ -2358,8 +2373,8 @@ const generateGemstoneInvoice = async (data: InvoiceData) => {
       doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
       doc.text(formatCurrency(item.gemstone_cost || item.subtotal || 0), pageWidth - 20, yPos, { align: 'right' });
       
-      yPos += 44;
-    });
+      yPos += 48;
+    }
   } else {
     // Single gemstone info from main data
     doc.setFillColor(248, 250, 252);
@@ -2491,9 +2506,94 @@ const generateGemstoneInvoice = async (data: InvoiceData) => {
     doc.text(contactInfo, pageWidth / 2, footerY + 12, { align: 'center' });
   }
   
+  // Calculate total pages
+  const totalPages = certificateImages.length > 0 ? 2 : 1;
+  
   // Page number
   doc.setFontSize(7);
-  doc.text('Page 1 of 1', pageWidth - 20, footerY + 18, { align: 'right' });
+  doc.text(`Page 1 of ${totalPages}`, pageWidth - 20, footerY + 18, { align: 'right' });
+  
+  // Add certificate images page if any certificates exist
+  if (certificateImages.length > 0) {
+    doc.addPage();
+    let certYPos = 20;
+    
+    // Certificate page header
+    doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+    
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('GEMSTONE CERTIFICATES', 20, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Invoice: ${data.invoiceNumber}`, pageWidth - 20, 20, { align: 'right' });
+    
+    certYPos = 45;
+    
+    // Load and add certificate images
+    for (let i = 0; i < certificateImages.length; i++) {
+      const cert = certificateImages[i];
+      
+      // Check if we need a new page (leave room for image + caption)
+      if (certYPos > pageHeight - 100) {
+        doc.addPage();
+        certYPos = 20;
+      }
+      
+      // Certificate label
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+      doc.text(`Certificate for: ${cert.itemName}`, 20, certYPos);
+      certYPos += 8;
+      
+      // Try to load and embed the certificate image
+      try {
+        const imageData = await loadImageAsBase64(cert.imageUrl);
+        if (imageData) {
+          // Calculate image dimensions to fit the page
+          const maxWidth = pageWidth - 40;
+          const maxHeight = 120;
+          
+          // Add image with border
+          doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          doc.setLineWidth(0.5);
+          doc.rect(19, certYPos - 1, maxWidth + 2, maxHeight + 2, 'S');
+          
+          doc.addImage(imageData, 'JPEG', 20, certYPos, maxWidth, maxHeight);
+          certYPos += maxHeight + 15;
+        } else {
+          // Fallback if image fails to load
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+          doc.text('Certificate image could not be loaded', 20, certYPos);
+          certYPos += 15;
+        }
+      } catch (error) {
+        console.error('Error loading certificate image:', error);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+        doc.text('Certificate image could not be loaded', 20, certYPos);
+        certYPos += 15;
+      }
+    }
+    
+    // Footer on certificate page
+    const certFooterY = pageHeight - 15;
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+    doc.text(`Page 2 of ${totalPages}`, pageWidth - 20, certFooterY, { align: 'right' });
+    
+    if (data.vendorBranding?.name) {
+      doc.text(data.vendorBranding.name, 20, certFooterY);
+    }
+  }
   
   const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_Gemstone.pdf`;
   doc.save(fileName);
