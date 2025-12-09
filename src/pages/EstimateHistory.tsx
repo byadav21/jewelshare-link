@@ -271,6 +271,45 @@ const EstimateHistory = () => {
               </Select>
             </div>
 
+            {viewMode === "archived" && filteredEstimates.length > 0 && !loading && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-full bg-destructive/10">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-destructive">Archived Estimates</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      You have <span className="font-medium text-foreground">{filteredEstimates.length}</span> archived {filteredEstimates.length === 1 ? "estimate" : "estimates"}.
+                      {(() => {
+                        const estimatesWithDates = filteredEstimates
+                          .filter(e => e.archived_at)
+                          .map(e => ({ ...e, daysLeft: getDaysUntilDeletion(e.archived_at) }))
+                          .filter(e => e.daysLeft !== null)
+                          .sort((a, b) => (a.daysLeft || 0) - (b.daysLeft || 0));
+                        
+                        if (estimatesWithDates.length === 0) return null;
+                        
+                        const nearest = estimatesWithDates[0];
+                        const days = nearest.daysLeft;
+                        
+                        if (days === 0) {
+                          return <> The next deletion is <span className="font-medium text-destructive">today</span>.</>;
+                        } else if (days === 1) {
+                          return <> The next deletion is in <span className="font-medium text-destructive">1 day</span>.</>;
+                        } else {
+                          return <> The next deletion is in <span className="font-medium text-destructive">{days} days</span>.</>;
+                        }
+                      })()}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Archived estimates are automatically deleted after 30 days. Restore them to keep them permanently.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {loading ? (
               <div className="space-y-4">
                 {[...Array(4)].map((_, i) => (
