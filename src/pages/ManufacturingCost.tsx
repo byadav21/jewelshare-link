@@ -426,9 +426,10 @@ const ManufacturingCost = () => {
     }
 
     if (result.error) {
+      console.error('Save estimate error:', result.error);
       toast({
         title: "Error",
-        description: "Failed to save estimate",
+        description: result.error.message || "Failed to save estimate",
         variant: "destructive"
       });
     } else {
