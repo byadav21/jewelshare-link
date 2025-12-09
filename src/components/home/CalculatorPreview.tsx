@@ -6,9 +6,10 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { Calculator, Sparkles, ArrowRight, TrendingUp } from "lucide-react";
+import { Calculator, Sparkles, ArrowRight, TrendingUp, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import { playSparkleSound } from "@/utils/celebrationSounds";
 
 const DEMO_SHAPES = ["Round", "Princess", "Oval", "Cushion"];
 const DEMO_COLORS = ["D", "E", "F", "G", "H"];
@@ -30,6 +31,7 @@ export const CalculatorPreview = () => {
   const [selectedColor, setSelectedColor] = useState(1);
   const [selectedClarity, setSelectedClarity] = useState(2);
   const [showResult, setShowResult] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const estimatedPrice = calculateDemoPrice(carat, selectedColor, selectedClarity);
 
@@ -71,6 +73,9 @@ export const CalculatorPreview = () => {
   const handleCalculate = () => {
     setShowResult(true);
     fireConfetti();
+    if (soundEnabled) {
+      playSparkleSound();
+    }
   };
 
   return (
@@ -187,14 +192,25 @@ export const CalculatorPreview = () => {
                       </div>
                     </div>
 
-                    <Button
-                      className="w-full bg-gradient-to-r from-gemstone-from to-gemstone-to hover:opacity-90"
-                      size="lg"
-                      onClick={handleCalculate}
-                    >
-                      <Sparkles className="h-5 w-5 mr-2" />
-                      Calculate Estimate
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1 bg-gradient-to-r from-gemstone-from to-gemstone-to hover:opacity-90"
+                        size="lg"
+                        onClick={handleCalculate}
+                      >
+                        <Sparkles className="h-5 w-5 mr-2" />
+                        Calculate Estimate
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => setSoundEnabled(!soundEnabled)}
+                        className="px-3"
+                        title={soundEnabled ? "Mute sound" : "Enable sound"}
+                      >
+                        {soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Result Display */}
