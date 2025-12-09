@@ -1,4 +1,10 @@
 @tailwind base;
+
+/* Shimmer animation for image placeholders */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 @tailwind components;
 @tailwind utilities;
 
