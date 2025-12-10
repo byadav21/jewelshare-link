@@ -66,7 +66,9 @@ const ManufacturingCost = () => {
   const [previewInvoiceData, setPreviewInvoiceData] = useState<InvoiceData | null>(null);
   const [formData, setFormData] = useState({
     purityFraction: 0.76,
-    goldRate24k: 0
+    goldRate24k: 0,
+    platinumRate: 3200, // Default platinum rate per gram
+    silverRate: 95 // Default silver rate per gram
   });
   const [profitMargin, setProfitMargin] = useState(0);
   const [customerDetails, setCustomerDetails] = useState({
@@ -250,7 +252,9 @@ const ManufacturingCost = () => {
   const handleReset = () => {
     setFormData({
       purityFraction: 0.76,
-      goldRate24k: 0
+      goldRate24k: 0,
+      platinumRate: 3200,
+      silverRate: 95
     });
     setProfitMargin(0);
     setCurrentEstimateId(null);
@@ -461,7 +465,9 @@ const ManufacturingCost = () => {
 
     setFormData({
       purityFraction: estimate.purity_fraction || 0.76,
-      goldRate24k: estimate.gold_rate_24k || 0
+      goldRate24k: estimate.gold_rate_24k || 0,
+      platinumRate: 3200, // Default rate
+      silverRate: 95 // Default rate
     });
     setProfitMargin(estimate.profit_margin_percentage || 0);
     setCurrentEstimateId(estimate.id);
@@ -767,7 +773,15 @@ const ManufacturingCost = () => {
             <CardDescription>Add multiple jewelry items with individual pricing details</CardDescription>
           </CardHeader>
           <CardContent>
-            <InvoiceLineItems items={lineItems} onChange={setLineItems} goldRate24k={formData.goldRate24k} purityFraction={formData.purityFraction} estimateCategory={estimateCategory} />
+            <InvoiceLineItems 
+              items={lineItems} 
+              onChange={setLineItems} 
+              goldRate24k={formData.goldRate24k} 
+              platinumRate={formData.platinumRate}
+              silverRate={formData.silverRate}
+              purityFraction={formData.purityFraction} 
+              estimateCategory={estimateCategory} 
+            />
           </CardContent>
         </Card>
 
