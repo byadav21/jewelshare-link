@@ -20,6 +20,7 @@ import { PlanLimitWarning } from "@/components/PlanLimitWarning";
 import { PlanUsageBanner } from "@/components/PlanUsageBanner";
 import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { GoldRateDialog } from "@/components/GoldRateDialog";
+import { MetalRatesCard } from "@/components/MetalRatesCard";
 import { FloatingQRCodes } from "@/components/FloatingQRCodes";
 import { QuickActionsMenu } from "@/components/QuickActionsMenu";
 import { BulkEditDialog } from "@/components/BulkEditDialog";
@@ -34,7 +35,9 @@ const Catalog = () => {
   const [loading, setLoading] = useState(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [usdRate, setUsdRate] = useState(87.67);
-  const [goldRate, setGoldRate] = useState(0); // Start with 0, will be set from vendor profile
+  const [goldRate, setGoldRate] = useState(0);
+  const [silverRate, setSilverRate] = useState(95);
+  const [platinumRate, setPlatinumRate] = useState(3200);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [vendorProfile, setVendorProfile] = useState<any>(null);
   const [selectedProductType, setSelectedProductType] = useState<string>("Jewellery");
@@ -175,6 +178,12 @@ const Catalog = () => {
         setVendorProfile(data);
         if (data.gold_rate_24k_per_gram) {
           setGoldRate(data.gold_rate_24k_per_gram);
+        }
+        if (data.silver_rate_per_gram) {
+          setSilverRate(data.silver_rate_per_gram);
+        }
+        if (data.platinum_rate_per_gram) {
+          setPlatinumRate(data.platinum_rate_per_gram);
         }
       }
     } catch (error) {
@@ -826,9 +835,19 @@ const Catalog = () => {
         </header>
 
         <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-10 max-w-[1800px]">
-          <div className="mb-6">
+          <div className="mb-6 space-y-4">
             <PlanLimitWarning />
             <PlanUsageBanner />
+            <MetalRatesCard
+              goldRate={goldRate}
+              silverRate={silverRate}
+              platinumRate={platinumRate}
+              onRatesUpdated={(rates) => {
+                setGoldRate(rates.goldRate);
+                setSilverRate(rates.silverRate);
+                setPlatinumRate(rates.platinumRate);
+              }}
+            />
           </div>
 
           {loading ? (
