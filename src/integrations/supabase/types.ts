@@ -1526,9 +1526,11 @@ export type Database = {
           making_charges_per_gram: number | null
           phone: string | null
           pincode: string | null
+          platinum_rate_per_gram: number | null
           primary_brand_color: string | null
           secondary_brand_color: string | null
           seller_categories: string[] | null
+          silver_rate_per_gram: number | null
           state: string | null
           updated_at: string | null
           usd_exchange_rate: number | null
@@ -1557,9 +1559,11 @@ export type Database = {
           making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          platinum_rate_per_gram?: number | null
           primary_brand_color?: string | null
           secondary_brand_color?: string | null
           seller_categories?: string[] | null
+          silver_rate_per_gram?: number | null
           state?: string | null
           updated_at?: string | null
           usd_exchange_rate?: number | null
@@ -1588,9 +1592,11 @@ export type Database = {
           making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          platinum_rate_per_gram?: number | null
           primary_brand_color?: string | null
           secondary_brand_color?: string | null
           seller_categories?: string[] | null
+          silver_rate_per_gram?: number | null
           state?: string | null
           updated_at?: string | null
           usd_exchange_rate?: number | null
