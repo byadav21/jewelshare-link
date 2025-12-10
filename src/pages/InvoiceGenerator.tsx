@@ -153,6 +153,8 @@ const InvoiceGenerator = () => {
     if (!error && data) {
       setVendorProfile(data);
       setGoldRate24k(data.gold_rate_24k_per_gram || 0);
+      setPlatinumRate(data.platinum_rate_per_gram || 3200);
+      setSilverRate(data.silver_rate_per_gram || 95);
     }
   };
 
