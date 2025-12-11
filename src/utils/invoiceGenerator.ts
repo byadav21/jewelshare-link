@@ -12,12 +12,16 @@ export interface VendorBranding {
   address?: string;
 }
 
+export type MetalType = 'gold' | 'platinum' | 'silver';
+
 export interface LineItem {
   id: string;
   item_name: string;
   description: string;
   image_url: string;
   certificate_image_url?: string;
+  metal_type?: MetalType;
+  metal_rate?: number;
   diamond_weight: number;
   diamond_per_carat_price: number;
   diamond_color: string;
@@ -40,6 +44,7 @@ export interface LineItem {
   purity_fraction: number;
   diamond_cost: number;
   gemstone_cost: number;
+  metal_cost?: number;
   gold_cost: number;
   making_charges: number;
   certification_cost: number;

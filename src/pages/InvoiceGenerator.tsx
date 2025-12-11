@@ -64,6 +64,8 @@ const InvoiceGenerator = () => {
   // Pricing
   const [profitMargin, setProfitMargin] = useState(0);
   const [goldRate24k, setGoldRate24k] = useState(0);
+  const [platinumRate, setPlatinumRate] = useState(3200);
+  const [silverRate, setSilverRate] = useState(95);
   const [purityFraction, setPurityFraction] = useState(0.76);
   
   // GST & Shipping
@@ -151,6 +153,8 @@ const InvoiceGenerator = () => {
     if (!error && data) {
       setVendorProfile(data);
       setGoldRate24k(data.gold_rate_24k_per_gram || 0);
+      setPlatinumRate(data.platinum_rate_per_gram || 3200);
+      setSilverRate(data.silver_rate_per_gram || 95);
     }
   };
 
@@ -699,7 +703,9 @@ const InvoiceGenerator = () => {
             <InvoiceLineItems 
               items={lineItems} 
               onChange={setLineItems} 
-              goldRate24k={goldRate24k} 
+              goldRate24k={goldRate24k}
+              platinumRate={platinumRate}
+              silverRate={silverRate}
               purityFraction={purityFraction}
               estimateCategory={estimateCategory}
             />
@@ -714,23 +720,43 @@ const InvoiceGenerator = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {estimateCategory === 'jewelry' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Gold Rate (24K/gram)</Label>
-                    <Input
-                      type="number"
-                      value={goldRate24k}
-                      onChange={(e) => setGoldRate24k(Number(e.target.value))}
-                    />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Gold Rate (24K/gram)</Label>
+                      <Input
+                        type="number"
+                        value={goldRate24k}
+                        onChange={(e) => setGoldRate24k(Number(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Default Purity</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={purityFraction}
+                        onChange={(e) => setPurityFraction(Number(e.target.value))}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Default Purity</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={purityFraction}
-                      onChange={(e) => setPurityFraction(Number(e.target.value))}
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Platinum Rate (/gram)</Label>
+                      <Input
+                        type="number"
+                        value={platinumRate}
+                        onChange={(e) => setPlatinumRate(Number(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Silver Rate (/gram)</Label>
+                      <Input
+                        type="number"
+                        value={silverRate}
+                        onChange={(e) => setSilverRate(Number(e.target.value))}
+                      />
+                    </div>
                   </div>
                 </div>
               )}

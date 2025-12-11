@@ -10,12 +10,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EstimateImage } from "@/components/EstimateImage";
 
+export type MetalType = 'gold' | 'platinum' | 'silver';
+
 export interface LineItem {
   id: string;
   item_name: string;
   description: string;
   image_url: string;
   certificate_image_url?: string;
+  metal_type: MetalType;
+  metal_rate: number; // Rate per gram for selected metal
   diamond_weight: number;
   diamond_per_carat_price: number;
   diamond_color: string;
@@ -38,7 +42,8 @@ export interface LineItem {
   purity_fraction: number;
   diamond_cost: number;
   gemstone_cost: number;
-  gold_cost: number;
+  metal_cost: number; // Renamed from gold_cost to support all metals
+  gold_cost: number; // Keep for backwards compatibility
   making_charges: number;
   certification_cost: number;
   cad_design_charges: number;
@@ -51,13 +56,48 @@ interface InvoiceLineItemsProps {
   items: LineItem[];
   onChange: (items: LineItem[]) => void;
   goldRate24k: number;
+  platinumRate?: number;
+  silverRate?: number;
   purityFraction: number;
   estimateCategory?: 'jewelry' | 'loose_diamond' | 'gemstone';
 }
 
-export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction, estimateCategory = 'jewelry' }: InvoiceLineItemsProps) => {
+// Default market rates (can be overridden by props)
+const DEFAULT_PLATINUM_RATE = 3200; // Rs per gram
+const DEFAULT_SILVER_RATE = 95; // Rs per gram
+
+export const InvoiceLineItems = ({ 
+  items, 
+  onChange, 
+  goldRate24k, 
+  platinumRate = DEFAULT_PLATINUM_RATE,
+  silverRate = DEFAULT_SILVER_RATE,
+  purityFraction, 
+  estimateCategory = 'jewelry' 
+}: InvoiceLineItemsProps) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  const getMetalRate = (metalType: MetalType, purity: number): number => {
+    switch (metalType) {
+      case 'platinum':
+        return platinumRate * purity;
+      case 'silver':
+        return silverRate * purity;
+      case 'gold':
+      default:
+        return goldRate24k * purity;
+    }
+  };
+
+  const getMetalLabel = (metalType: MetalType): string => {
+    switch (metalType) {
+      case 'platinum': return 'Platinum';
+      case 'silver': return 'Silver';
+      case 'gold':
+      default: return 'Gold';
+    }
+  };
 
   const addNewItem = () => {
     const newItem: LineItem = {
@@ -66,6 +106,8 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
       description: "",
       image_url: "",
       certificate_image_url: "",
+      metal_type: 'gold',
+      metal_rate: goldRate24k,
       diamond_weight: 0,
       diamond_per_carat_price: 0,
       diamond_color: "",
@@ -88,6 +130,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
       purity_fraction: purityFraction,
       diamond_cost: 0,
       gemstone_cost: 0,
+      metal_cost: 0,
       gold_cost: 0,
       making_charges: 0,
       certification_cost: 0,
@@ -122,8 +165,26 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
       item.gemstone_cost = item.gemstone_weight * item.gemstone_per_carat_price;
     }
     
-    // Auto-calculate gold cost (only applies to jewelry)
-    item.gold_cost = item.net_weight * item.purity_fraction * goldRate24k;
+    // Update metal rate when metal type changes
+    if (field === 'metal_type') {
+      const metalType = value as MetalType;
+      switch (metalType) {
+        case 'platinum':
+          item.metal_rate = platinumRate;
+          break;
+        case 'silver':
+          item.metal_rate = silverRate;
+          break;
+        case 'gold':
+        default:
+          item.metal_rate = goldRate24k;
+      }
+    }
+    
+    // Auto-calculate metal cost based on selected metal type
+    const effectiveRate = getMetalRate(item.metal_type || 'gold', item.purity_fraction);
+    item.metal_cost = item.net_weight * effectiveRate;
+    item.gold_cost = item.metal_cost; // Keep backwards compatibility
     
     // Calculate subtotal based on category context
     // For loose diamonds: only diamond cost + certification
@@ -136,7 +197,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
     } else {
       // Jewelry - full calculation
       item.subtotal = 
-        item.gold_cost +
+        item.metal_cost +
         item.making_charges +
         item.certification_cost +
         item.cad_design_charges +
@@ -325,28 +386,47 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
                       </div>
                     </div>
 
-                    {/* Weight & Purity Section - Only for Jewelry */}
+                    {/* Metal Type & Weight Section - Only for Jewelry */}
                     {estimateCategory === 'jewelry' && (
                       <div className="col-span-2 space-y-4 p-4 border rounded-lg bg-card">
                         <div>
-                          <h4 className="font-semibold text-base mb-1">Weight & Purity</h4>
-                          <p className="text-sm text-muted-foreground">Enter weights and purity details</p>
+                          <h4 className="font-semibold text-base mb-1">Metal Type & Weight</h4>
+                          <p className="text-sm text-muted-foreground">Select metal and enter weight details</p>
                         </div>
 
-                        <div>
-                          <Label className="mb-2 block">Weight Entry Mode:</Label>
-                          <Select
-                            value={item.weight_mode}
-                            onValueChange={(value: 'gross' | 'net') => updateItem(index, 'weight_mode', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="gross">Gross Weight Mode (Auto-calculate Net Weight)</SelectItem>
-                              <SelectItem value="net">Net Weight Mode (Direct Entry)</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="mb-2 block">Metal Type:</Label>
+                            <Select
+                              value={item.metal_type || 'gold'}
+                              onValueChange={(value: MetalType) => updateItem(index, 'metal_type', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select metal" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="gold">Gold (24K Rate: ₹{goldRate24k.toLocaleString()}/g)</SelectItem>
+                                <SelectItem value="platinum">Platinum (Rate: ₹{platinumRate.toLocaleString()}/g)</SelectItem>
+                                <SelectItem value="silver">Silver (Rate: ₹{silverRate.toLocaleString()}/g)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label className="mb-2 block">Weight Entry Mode:</Label>
+                            <Select
+                              value={item.weight_mode}
+                              onValueChange={(value: 'gross' | 'net') => updateItem(index, 'weight_mode', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="gross">Gross Weight Mode</SelectItem>
+                                <SelectItem value="net">Net Weight Mode</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
 
                         {item.weight_mode === 'gross' ? (
@@ -740,11 +820,11 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
 
                     {/* Totals Section */}
                     <div className="col-span-2 pt-4 border-t">
-                      {/* Gold Cost - Only for Jewelry */}
+                      {/* Metal Cost - Only for Jewelry */}
                       {estimateCategory === 'jewelry' && (
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold">Gold Cost (Auto-calculated):</span>
-                          <span className="text-lg">₹{item.gold_cost.toFixed(2)}</span>
+                          <span className="font-semibold">{getMetalLabel(item.metal_type || 'gold')} Cost (Auto-calculated):</span>
+                          <span className="text-lg">₹{(item.metal_cost || item.gold_cost || 0).toFixed(2)}</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center mt-2">
@@ -797,7 +877,7 @@ export const InvoiceLineItems = ({ items, onChange, goldRate24k, purityFraction,
                         {estimateCategory === 'jewelry' && (
                           <>
                             {item.net_weight > 0 && (
-                              <div><span className="text-muted-foreground">Gold:</span> {item.net_weight}g ({(item.purity_fraction * 100).toFixed(0)}%)</div>
+                              <div><span className="text-muted-foreground">{getMetalLabel(item.metal_type || 'gold')}:</span> {item.net_weight}g ({(item.purity_fraction * 100).toFixed(0)}%)</div>
                             )}
                             {item.diamond_weight > 0 && (
                               <div><span className="text-muted-foreground">Diamond:</span> {item.diamond_weight}ct {item.diamond_color}/{item.diamond_clarity}</div>

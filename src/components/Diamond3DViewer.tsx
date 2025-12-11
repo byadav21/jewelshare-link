@@ -60,7 +60,7 @@ const LightBeams = ({ intensity = 1 }: { intensity?: number }) => {
 };
 
 // Fire dispersion effect
-const FireEffect = ({ shape }: { shape: DiamondShape }) => {
+const FireEffect = () => {
   const fireRef = useRef<THREE.Points>(null);
   const count = 100;
   
@@ -270,7 +270,7 @@ const DiamondMesh = ({ shape, color = "#ffffff", showFire = true }: { shape: Dia
       {showFire && (
         <>
           <LightBeams intensity={hovered ? 1.5 : 1} />
-          <FireEffect shape={shape} />
+          <FireEffect />
         </>
       )}
     </group>

@@ -28,7 +28,7 @@ import heroBanner from "@/assets/hero-banner.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
 import analyticsFeature from "@/assets/analytics-feature.jpg";
 
-// const JewelryViewer3D = lazy(() => import("@/components/JewelryViewer3D"));
+
 import { Footer } from "@/components/Footer";
 import {
   Gem,
@@ -287,36 +287,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* 3D Viewer Section - Temporarily Disabled */}
-      {/* <section className="container mx-auto px-4 py-24">
-        <ScrollReveal>
-          <div className="mb-16 text-center">
-            <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
-              Experience Jewelry in 3D
-            </h2>
-            <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
-              Interactive 3D viewer for showcasing your finest pieces
-            </p>
-          </div>
-        </ScrollReveal>
-        <ScrollReveal delay={0.2}>
-          <div className="mx-auto max-w-5xl">
-            <Suspense fallback={
-              <div className="h-[500px] w-full rounded-2xl overflow-hidden border-2 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-                <div className="text-center">
-                  <Gem className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-                  <p className="text-muted-foreground">Loading 3D Viewer...</p>
-                </div>
-              </div>
-            }>
-              <JewelryViewer3D />
-            </Suspense>
-            <p className="mt-6 text-center text-sm text-muted-foreground">
-              Click and drag to rotate • Scroll to zoom • Auto-rotate enabled
-            </p>
-          </div>
-        </ScrollReveal>
-      </section> */}
 
       {/* Statistics Section */}
       <section className="border-y bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-20">
