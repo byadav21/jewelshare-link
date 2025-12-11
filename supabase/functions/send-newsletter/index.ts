@@ -7,6 +7,33 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// HTML encode user inputs to prevent injection
+function htmlEncode(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// URL encode for safe use in src attributes
+function sanitizeUrl(url: string | undefined | null): string {
+  if (!url) return '';
+  try {
+    // Validate it's a proper URL
+    const parsed = new URL(url);
+    // Only allow http and https protocols
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return '';
+    }
+    return parsed.href;
+  } catch {
+    return '';
+  }
+}
+
 interface NewsletterEmailRequest {
   blogPostTitle: string;
   blogPostExcerpt: string;
@@ -21,6 +48,12 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { blogPostTitle, blogPostExcerpt, blogPostSlug, blogPostImage }: NewsletterEmailRequest = await req.json();
+
+    // Sanitize all user inputs
+    const safeTitle = htmlEncode(blogPostTitle);
+    const safeExcerpt = htmlEncode(blogPostExcerpt);
+    const safeSlug = encodeURIComponent(blogPostSlug || '');
+    const safeImage = sanitizeUrl(blogPostImage);
 
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -49,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emails = subscribers.map((sub: { email: string }) => sub.email);
-    const blogUrl = `${Deno.env.get("SUPABASE_URL")}/blog/${blogPostSlug}`;
+    const blogUrl = `${Deno.env.get("SUPABASE_URL")}/blog/${safeSlug}`;
 
     // Get Resend API key
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -67,7 +100,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "JewelCatalog Pro <onboarding@resend.dev>",
         to: emails,
-        subject: `New Article: ${blogPostTitle}`,
+        subject: `New Article: ${safeTitle}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -124,13 +157,13 @@ const handler = async (req: Request): Promise<Response> => {
             </head>
             <body>
               <div class="header">
-                <h1 style="margin: 0;">📰 New Blog Post</h1>
+                <h1 style="margin: 0;">New Blog Post</h1>
               </div>
               <div class="content">
-                <h2>${blogPostTitle}</h2>
-                ${blogPostImage ? `<img src="${blogPostImage}" alt="${blogPostTitle}" class="blog-image" />` : ''}
-                <p>${blogPostExcerpt}</p>
-                <a href="${blogUrl}" class="button">Read Full Article →</a>
+                <h2>${safeTitle}</h2>
+                ${safeImage ? `<img src="${safeImage}" alt="Blog post image" class="blog-image" />` : ''}
+                <p>${safeExcerpt}</p>
+                <a href="${blogUrl}" class="button">Read Full Article</a>
               </div>
               <div class="footer">
                 <p>You're receiving this email because you subscribed to JewelCatalog Pro updates.</p>

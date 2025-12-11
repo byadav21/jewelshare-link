@@ -2,13 +2,53 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
+
+/**
+ * Validates cron job requests using the service role key as the secret
+ * This prevents unauthorized access to the cleanup function
+ */
+function validateCronRequest(req: Request): boolean {
+  const cronSecret = req.headers.get("x-cron-secret");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  
+  if (!cronSecret || !serviceRoleKey) {
+    return false;
+  }
+  
+  // Constant-time comparison to prevent timing attacks
+  if (cronSecret.length !== serviceRoleKey.length) {
+    return false;
+  }
+  
+  let result = 0;
+  for (let i = 0; i < cronSecret.length; i++) {
+    result |= cronSecret.charCodeAt(i) ^ serviceRoleKey.charCodeAt(i);
+  }
+  
+  return result === 0;
+}
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate cron secret header
+  if (!validateCronRequest(req)) {
+    console.log("Unauthorized: Invalid or missing cron secret");
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Unauthorized",
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      }
+    );
   }
 
   try {

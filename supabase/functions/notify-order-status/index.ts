@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-internal-secret',
 };
 
 // Rate limiting configuration
@@ -39,6 +39,31 @@ function htmlEncode(str: string | undefined | null): string {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * Validates internal API calls using HMAC signature
+ * Uses SUPABASE_SERVICE_ROLE_KEY as the shared secret
+ */
+function validateInternalRequest(req: Request): boolean {
+  const internalSecret = req.headers.get("x-internal-secret");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  
+  if (!internalSecret || !serviceRoleKey) {
+    return false;
+  }
+  
+  // Constant-time comparison to prevent timing attacks
+  if (internalSecret.length !== serviceRoleKey.length) {
+    return false;
+  }
+  
+  let result = 0;
+  for (let i = 0; i < internalSecret.length; i++) {
+    result |= internalSecret.charCodeAt(i) ^ serviceRoleKey.charCodeAt(i);
+  }
+  
+  return result === 0;
+}
+
 interface OrderStatusNotification {
   estimateId: string;
   customerName: string;
@@ -51,6 +76,18 @@ interface OrderStatusNotification {
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate internal API request
+  if (!validateInternalRequest(req)) {
+    console.log("Unauthorized: Invalid or missing internal secret");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { 
+        status: 401, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      }
+    );
   }
 
   // Rate limiting
