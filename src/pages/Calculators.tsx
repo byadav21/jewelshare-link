@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Gem, Wrench, ArrowRight, Sparkles } from "lucide-react";
+import { Calculator, Gem, Wrench, ArrowRight, Sparkles, Ruler, Grid3X3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -38,6 +38,28 @@ const Calculators = () => {
       gradient: "from-diamond-from to-diamond-to",
       path: "/diamond-calculator",
       badge: "Most Popular"
+    },
+    {
+      icon: Grid3X3,
+      title: "Diamond Sieve Size Chart",
+      description:
+        "Interactive reference chart for diamond sieve sizes. Understand the relationship between sieve numbers, mm dimensions, carat weights, and number of stones per carat. Essential for sorting and pricing melee diamonds.",
+      features: [
+        "Complete sieve size reference",
+        "MM to sieve converter",
+        "Carat weight lookup",
+        "Stones per carat calculator",
+        "Interactive search & filter"
+      ],
+      gradient: "from-indigo-500 to-purple-600",
+      path: "/diamond-sieve-chart",
+      badge: "Reference",
+      extraButtons: [
+        {
+          label: "Diamond Sizing Chart",
+          path: "/diamond-sizing-chart"
+        }
+      ]
     },
     {
       icon: Wrench,
