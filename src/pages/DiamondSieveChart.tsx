@@ -5,15 +5,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { SIEVE_DATA, ALL_SIEVE_DATA, SieveDataItem } from "@/constants/sieveData";
 import { cn } from "@/lib/utils";
 import { 
   Diamond, Ruler, Search, Scale, Calculator, Layers, 
-  ArrowRight, Info, Sparkles, Grid3X3
+  ArrowRight, Info, Sparkles, Grid3X3, FileDown, Hash
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
 
 const DiamondSieveChart = () => {
   const [searchMM, setSearchMM] = useState("");
@@ -21,6 +26,78 @@ const DiamondSieveChart = () => {
   const [searchCarat, setSearchCarat] = useState("");
   const [selectedItem, setSelectedItem] = useState<(SieveDataItem & { range: string }) | null>(null);
   const [activeTab, setActiveTab] = useState("chart");
+  
+  // Stone calculator state
+  const [selectedSieveForCalc, setSelectedSieveForCalc] = useState("");
+  const [stoneCount, setStoneCount] = useState("");
+
+  // Calculate total carat weight based on selected sieve and stone count
+  const calculatedTotalCarat = useMemo(() => {
+    if (!selectedSieveForCalc || !stoneCount) return null;
+    const sieveItem = ALL_SIEVE_DATA.find(item => item.sieveSize === selectedSieveForCalc);
+    if (!sieveItem) return null;
+    const count = parseFloat(stoneCount);
+    if (isNaN(count) || count <= 0) return null;
+    return {
+      totalCarat: count * sieveItem.caratWeight,
+      perStoneCarat: sieveItem.caratWeight,
+      mmSize: sieveItem.mmSize,
+      stonesPerCarat: sieveItem.noOfStones
+    };
+  }, [selectedSieveForCalc, stoneCount]);
+
+  // PDF Export function
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Diamond Sieve Size Chart", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 28);
+    
+    let yPos = 35;
+    
+    SIEVE_DATA.forEach((group) => {
+      // Check if we need a new page
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      // Group header
+      doc.setFontSize(12);
+      doc.setTextColor(60, 60, 60);
+      doc.text(`Sieve Size Range: ${group.range}`, 14, yPos);
+      yPos += 5;
+      
+      // Table data
+      const tableData = group.items.map(item => [
+        item.sieveSize,
+        `${item.mmSize} mm`,
+        item.noOfStones.toString(),
+        `${item.caratWeight.toFixed(3)} ct`
+      ]);
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Sieve Size', 'MM Size', 'No. of Stones', 'Ct. Weight/Piece']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [80, 80, 80] },
+        margin: { left: 14 },
+        styles: { fontSize: 9 }
+      });
+      
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    });
+    
+    doc.save("diamond-sieve-chart.pdf");
+    toast.success("PDF exported successfully!");
+  };
 
   // Filter results based on search inputs
   const filteredResults = useMemo(() => {
@@ -75,10 +152,14 @@ const DiamondSieveChart = () => {
                 <span className="text-primary font-medium">Sieve Size Reference</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">Diamond Sieve Size Chart</h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground mb-6">
                 Understand the relationship between sieve sizes, mm dimensions, carat weights, 
                 and number of stones per carat. Essential for diamond sorting and pricing.
               </p>
+              <Button onClick={exportToPDF} variant="outline" className="gap-2">
+                <FileDown className="h-4 w-4" />
+                Export PDF
+              </Button>
             </div>
           </ScrollReveal>
         </div>
@@ -286,6 +367,86 @@ const DiamondSieveChart = () => {
 
           {/* Calculator Tab */}
           <TabsContent value="calculator" className="space-y-6">
+            {/* Stones to Carat Calculator - NEW */}
+            <ScrollReveal>
+              <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-primary" />
+                    Total Carat Weight Calculator
+                  </CardTitle>
+                  <CardDescription>
+                    Calculate total carat weight for a given number of stones of a specific sieve size
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Select Sieve Size</Label>
+                      <Select value={selectedSieveForCalc} onValueChange={setSelectedSieveForCalc}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose sieve size" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {ALL_SIEVE_DATA.map((item) => (
+                            <SelectItem key={item.sieveSize} value={item.sieveSize}>
+                              {item.sieveSize} ({item.mmSize}mm)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Number of Stones</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Enter stone count"
+                        value={stoneCount}
+                        onChange={(e) => setStoneCount(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    {calculatedTotalCarat && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="grid sm:grid-cols-4 gap-4 p-4 rounded-lg bg-background border"
+                      >
+                        <div className="text-center p-3 rounded-lg bg-primary/10">
+                          <p className="text-sm text-muted-foreground mb-1">Total Carat</p>
+                          <p className="text-2xl font-bold text-primary">
+                            {calculatedTotalCarat.totalCarat.toFixed(3)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">ct</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-sm text-muted-foreground mb-1">Per Stone</p>
+                          <p className="text-lg font-semibold">
+                            {calculatedTotalCarat.perStoneCarat.toFixed(3)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">ct/piece</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-sm text-muted-foreground mb-1">MM Size</p>
+                          <p className="text-lg font-semibold">{calculatedTotalCarat.mmSize}</p>
+                          <p className="text-xs text-muted-foreground">mm</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-sm text-muted-foreground mb-1">Stones/Carat</p>
+                          <p className="text-lg font-semibold">{calculatedTotalCarat.stonesPerCarat}</p>
+                          <p className="text-xs text-muted-foreground">pcs</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
+
             <div className="grid lg:grid-cols-2 gap-6">
               {/* MM to Sieve Converter */}
               <ScrollReveal>
