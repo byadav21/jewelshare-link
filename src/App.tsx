@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RouteSuspense } from "@/components/RouteSuspense";
@@ -103,6 +103,9 @@ const AppContent = () => {
         path={ROUTES.DIAMOND_SIZING_CHART} 
         element={<RouteSuspense><Pages.DiamondSizingChart /></RouteSuspense>} 
       />
+      {/* Redirect short URLs to full URLs */}
+      <Route path="/diamond-sizing" element={<Navigate to={ROUTES.DIAMOND_SIZING_CHART} replace />} />
+      <Route path="/diamond-sieve" element={<Navigate to={ROUTES.DIAMOND_SIEVE_CHART} replace />} />
       <Route 
         path={ROUTES.DIAMOND_SIEVE_CHART} 
         element={<RouteSuspense><Pages.DiamondSieveChart /></RouteSuspense>} 
