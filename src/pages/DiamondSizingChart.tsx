@@ -68,22 +68,19 @@ const DiamondSizingChart = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b bg-gradient-to-br from-diamond-from/10 via-background to-gemstone-from/10 py-16">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-10 w-64 h-64 bg-diamond-from/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-80 h-80 bg-gemstone-from/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        </div>
-        
-        <div className="container mx-auto px-4 relative">
+      {/* Hero Section - Clean & Clear */}
+      <section className="relative border-b bg-gradient-to-b from-primary/5 via-background to-background py-12 md:py-16">
+        <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-sm mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm mb-6">
                 <Diamond className="h-4 w-4 text-primary" />
                 <span className="text-primary font-medium">Interactive Size Guide</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">Diamond Sizing Chart</h1>
-              <p className="text-lg text-muted-foreground">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+                Diamond Sizing Chart
+              </h1>
+              <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 Explore diamond dimensions across all shapes. Compare carat weights, 
                 millimeter sizes, and visualize how each shape looks at different sizes.
               </p>
@@ -92,58 +89,63 @@ const DiamondSizingChart = () => {
         </div>
       </section>
 
-      <main className="container mx-auto px-4 py-12">
-        {/* Shape Selector */}
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        {/* Shape Selector - Clear Grid */}
         <ScrollReveal>
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Select Diamond Shape
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
-              {shapeKeys.map((shape) => (
-                <motion.button
-                  key={shape}
-                  onClick={() => setSelectedShape(shape)}
-                  className={cn(
-                    "relative p-4 rounded-xl border-2 transition-all duration-300",
-                    selectedShape === shape
-                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
-                      : "border-border hover:border-primary/50 hover:bg-muted/50"
-                  )}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <DiamondShapeSVG shape={shape} size={40} className="mx-auto mb-2" />
-                  <span className="text-xs font-medium block text-center">
-                    {DIAMOND_SHAPES[shape].name.split(" ")[0]}
-                  </span>
-                  {selectedShape === shape && (
-                    <motion.div
-                      layoutId="shapeIndicator"
-                      className="absolute inset-0 border-2 border-primary rounded-xl"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                </motion.button>
-              ))}
-            </div>
-          </div>
+          <Card className="mb-8 overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Step 1: Select Diamond Shape
+              </CardTitle>
+              <CardDescription>Choose a shape to see its size specifications</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-2 md:gap-3">
+                {shapeKeys.map((shape) => (
+                  <motion.button
+                    key={shape}
+                    onClick={() => setSelectedShape(shape)}
+                    className={cn(
+                      "relative p-3 md:p-4 rounded-xl border-2 transition-all duration-200 bg-card",
+                      selectedShape === shape
+                        ? "border-primary bg-primary/10 shadow-md ring-2 ring-primary/20"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    )}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <DiamondShapeSVG shape={shape} size={32} className="mx-auto mb-1.5" />
+                    <span className="text-[10px] md:text-xs font-medium block text-center text-foreground">
+                      {DIAMOND_SHAPES[shape].name.split(" ")[0]}
+                    </span>
+                    {selectedShape === shape && (
+                      <motion.div
+                        layoutId="shapeIndicator"
+                        className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background"
+                        initial={false}
+                      />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </ScrollReveal>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        {/* Step 2: Size Selection */}
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
           {/* Visual Preview */}
           <ScrollReveal delay={0.1}>
             <Card className="overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-diamond-from/10 to-gemstone-from/10">
+              <CardHeader className="bg-muted/30 border-b">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <ZoomIn className="h-5 w-5" />
-                      {shapeData.name}
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <ZoomIn className="h-5 w-5 text-primary" />
+                      Step 2: {shapeData.name} Preview
                     </CardTitle>
-                    <CardDescription>{shapeData.description}</CardDescription>
+                    <CardDescription>Visual comparison of carat sizes</CardDescription>
                   </div>
                   <Button
                     variant={compareMode ? "default" : "outline"}
@@ -154,12 +156,13 @@ const DiamondSizingChart = () => {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
-                {/* Size Preview */}
-                <div className="relative h-64 flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl mb-6">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-full h-px border-t border-dashed border-muted-foreground/30" />
-                    <div className="absolute h-full w-px border-l border-dashed border-muted-foreground/30" />
+              <CardContent className="p-4 md:p-6">
+                {/* Size Preview - Cleaner Background */}
+                <div className="relative h-56 md:h-64 flex items-center justify-center bg-gradient-to-br from-muted/50 via-muted/30 to-muted/50 rounded-xl mb-6 border border-border/50">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-4 flex items-center justify-center opacity-40">
+                    <div className="w-full h-px border-t border-dashed border-muted-foreground/50" />
+                    <div className="absolute h-full w-px border-l border-dashed border-muted-foreground/50" />
                   </div>
                   
                   <div className={cn("flex items-center gap-8", compareMode && "gap-16")}>
@@ -274,12 +277,12 @@ const DiamondSizingChart = () => {
           {/* Size Table */}
           <ScrollReveal delay={0.2}>
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Ruler className="h-5 w-5" />
-                  Complete Size Chart - {shapeData.name}
+              <CardHeader className="bg-muted/30 border-b">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Ruler className="h-5 w-5 text-primary" />
+                  Size Reference Table
                 </CardTitle>
-                <CardDescription>All measurements are approximate and may vary based on cut quality</CardDescription>
+                <CardDescription>Click any row to select that size • Measurements may vary by cut quality</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-lg border overflow-hidden">
@@ -343,31 +346,31 @@ const DiamondSizingChart = () => {
           </ScrollReveal>
         </div>
 
-        {/* 3D Diamond Viewer */}
+        {/* 3D Diamond Viewer - Much Cleaner */}
         <ScrollReveal delay={0.25}>
-          <Card className="mt-8 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-slate-900/20 via-primary/10 to-violet-900/20 border-b border-primary/10">
+          <Card className="mt-8 overflow-hidden border-2 border-primary/10">
+            <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30 border-b">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     <Box className="h-5 w-5 text-primary" />
-                    3D Diamond Explorer
+                    Step 3: Interactive 3D View
                   </CardTitle>
-                  <CardDescription>Rotate and explore diamond shapes in realistic 3D - click and drag to interact</CardDescription>
+                  <CardDescription>Drag to rotate, scroll to zoom - see your diamond in 3D</CardDescription>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/50 border">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background border">
                     <Switch id="auto-rotate" checked={autoRotate3D} onCheckedChange={setAutoRotate3D} />
-                    <Label htmlFor="auto-rotate" className="text-sm font-medium">Auto-rotate</Label>
+                    <Label htmlFor="auto-rotate" className="text-sm font-medium cursor-pointer">Auto-rotate</Label>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="grid lg:grid-cols-5 gap-0">
-                {/* 3D Viewer - takes more space */}
-                <div className="lg:col-span-3 relative">
-                  <div className="h-[420px]">
+              <div className="grid lg:grid-cols-5">
+                {/* 3D Viewer */}
+                <div className="lg:col-span-3 relative bg-slate-900">
+                  <div className="h-[380px] md:h-[420px]">
                     <Suspense fallback={
                       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
@@ -375,7 +378,7 @@ const DiamondSizingChart = () => {
                             <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
                             <div className="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin" />
                           </div>
-                          <span className="text-sm text-muted-foreground">Loading 3D Diamond...</span>
+                          <span className="text-sm text-white/70">Loading 3D Diamond...</span>
                         </div>
                       </div>
                     }>
@@ -388,68 +391,72 @@ const DiamondSizingChart = () => {
                     </Suspense>
                   </div>
                   
-                  {/* Overlay badges */}
+                  {/* Shape & Size Badges */}
                   <div className="absolute top-4 left-4 flex gap-2">
-                    <Badge className="bg-primary/90 shadow-lg backdrop-blur-sm">
+                    <Badge className="bg-primary text-primary-foreground shadow-lg">
                       <Sparkles className="h-3 w-3 mr-1" />
                       {shapeData.name}
                     </Badge>
-                    <Badge variant="outline" className="bg-black/40 text-white border-white/20 backdrop-blur-sm">
+                    <Badge variant="secondary" className="bg-white/90 text-slate-900 shadow-lg">
                       {selectedSize.carat} ct
                     </Badge>
                   </div>
                   
-                  {/* Interactive hint */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="flex items-center justify-center gap-6 text-xs text-white/60">
-                      <span className="flex items-center gap-1"><Hand className="h-3 w-3" /> Drag to rotate</span>
-                      <span className="flex items-center gap-1"><ZoomIn className="h-3 w-3" /> Scroll to zoom</span>
+                  {/* Controls Hint */}
+                  <div className="absolute bottom-4 left-0 right-0">
+                    <div className="flex items-center justify-center gap-6 text-xs">
+                      <span className="flex items-center gap-1.5 bg-black/60 text-white/90 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        <Hand className="h-3 w-3" /> Drag to rotate
+                      </span>
+                      <span className="flex items-center gap-1.5 bg-black/60 text-white/90 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        <ZoomIn className="h-3 w-3" /> Scroll to zoom
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Details Panel */}
-                <div className="lg:col-span-2 p-6 bg-muted/30 border-l flex flex-col justify-center space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">{shapeData.name}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{shapeData.description}</p>
+                {/* Info Panel - Clear Hierarchy */}
+                <div className="lg:col-span-2 p-5 md:p-6 bg-muted/20 lg:border-l flex flex-col justify-center space-y-4">
+                  <div className="pb-4 border-b">
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">{shapeData.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{shapeData.description}</p>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
                       <Scale className="h-5 w-5 text-primary mb-2" />
-                      <p className="text-xs text-muted-foreground">Carat Weight</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Carat Weight</p>
                       <p className="text-2xl font-bold text-primary">{selectedSize.carat} ct</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-violet-500/5 border border-violet-500/20">
+                    <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20">
                       <Ruler className="h-5 w-5 text-violet-500 mb-2" />
-                      <p className="text-xs text-muted-foreground">Dimensions</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Dimensions</p>
                       <p className="text-2xl font-bold text-violet-500">{selectedSize.mm}</p>
                     </div>
                   </div>
                   
                   <div className="p-4 rounded-xl bg-muted/50 border">
                     <div className="flex items-start gap-3">
-                      <Layers className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <Layers className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-sm">Depth Profile</p>
-                        <p className="text-2xl font-bold">{selectedSize.depth} mm</p>
+                        <p className="font-medium text-sm text-foreground">Depth: {selectedSize.depth} mm</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Total height from table to culet
+                          Total height from table facet to culet point
                         </p>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+                  <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
                     <div className="flex items-start gap-3">
-                      <CircleDot className="h-5 w-5 text-amber-500 mt-0.5" />
+                      <CircleDot className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-sm text-amber-600 dark:text-amber-400">Face-Up Area</p>
+                        <p className="font-medium text-sm text-amber-600 dark:text-amber-400">On-Finger Appearance</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {selectedShape === "round" 
                             ? `This ${selectedSize.carat}ct round appears ${selectedSize.carat >= 1.5 ? "substantial" : selectedSize.carat >= 1 ? "elegant" : "delicate"} when set`
-                            : `Fancy shapes like ${shapeData.name.toLowerCase()} often appear larger than rounds at the same carat weight`
+                            : `${shapeData.name} shapes often appear larger than rounds at the same carat weight`
                           }
                         </p>
                       </div>
