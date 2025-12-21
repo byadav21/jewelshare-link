@@ -9,7 +9,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Link, useNavigate } from "react-router-dom";
-import { Gem, Calculator, Wrench, Menu, Grid3X3 } from "lucide-react";
+import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useVendorProfile } from "@/hooks/useVendorProfile";
@@ -92,6 +92,30 @@ export const Header = () => {
                               </div>
                               <p className="text-sm leading-snug text-muted-foreground">
                                 Calculate complete jewelry costs
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => navigate("/diamond-sizing-chart")}
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500">
+                              <Ruler className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium leading-none mb-1">
+                                Diamond Sizing Chart
+                              </div>
+                              <p className="text-sm leading-snug text-muted-foreground">
+                                Diamond dimensions & measurements
                               </p>
                             </div>
                           </div>
@@ -190,6 +214,18 @@ export const Header = () => {
                   <div>
                     <div className="text-sm font-medium">Cost Estimator</div>
                     <div className="text-xs text-muted-foreground">Calculate manufacturing costs</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => navigate("/diamond-sizing-chart")}
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500">
+                    <Ruler className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">Diamond Sizing Chart</div>
+                    <div className="text-xs text-muted-foreground">Diamond dimensions & measurements</div>
                   </div>
                 </button>
                 <button
