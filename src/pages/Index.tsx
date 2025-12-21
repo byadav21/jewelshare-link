@@ -26,6 +26,7 @@ import { CatalogFeatures } from "@/components/home/CatalogFeatures";
 import { SizingChartPreview } from "@/components/home/SizingChartPreview";
 import { CalculatorPreview } from "@/components/home/CalculatorPreview";
 import { DiamondEducationPreview } from "@/components/home/DiamondEducationPreview";
+import { HowItWorks } from "@/components/home/HowItWorks";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -399,57 +400,7 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="relative border-y bg-muted/30 py-24">
-        <ParallaxSection speed={-0.3} className="absolute inset-0 overflow-hidden opacity-10">
-          <img src={vendorManagement} alt="Vendor using platform" className="h-full w-full object-cover" />
-        </ParallaxSection>
-        <div className="container relative mx-auto px-4">
-          <ScrollReveal>
-            <div className="mb-20 text-center">
-              <h2 className="mb-6 text-5xl font-bold font-serif">How It Works</h2>
-              <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
-                Simple steps to showcase your jewelry collection
-              </p>
-            </div>
-          </ScrollReveal>
-          <div className="grid gap-8 md:grid-cols-3">
-            <ScrollReveal delay={0.1} direction="up">
-              <div className="text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from to-jewellery-to text-2xl font-bold text-white">
-                  1
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Add Your Inventory</h3>
-                <p className="text-muted-foreground">
-                  Upload your diamonds, gemstones, and jewelry pieces with detailed specifications, pricing, and images.
-                </p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.2} direction="up">
-              <div className="text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-gemstone-from to-gemstone-to text-2xl font-bold text-white">
-                  2
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Create Share Links</h3>
-                <p className="text-muted-foreground">
-                  Generate shareable catalog links with custom pricing adjustments and expiry dates for different
-                  clients.
-                </p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.3} direction="up">
-              <div className="text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-diamond-from to-diamond-to text-2xl font-bold text-white">
-                  3
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Manage Inquiries</h3>
-                <p className="text-muted-foreground">
-                  Track customer interests, video requests, and custom orders all in one centralized dashboard.
-                </p>
-              </div>
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* Benefits */}
       <section className="container mx-auto px-4 py-24">
