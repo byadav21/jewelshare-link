@@ -10,6 +10,8 @@ import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import { 
   ArrowRight, 
   Calendar, 
@@ -81,8 +83,28 @@ const Blog = () => {
     });
   };
 
+  // Breadcrumb schema
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.com/" },
+      { name: "Blog", url: "https://cataleon.com/blog" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Jewelry Industry Blog - Tips, Trends & Updates | Cataleon"
+        description="Stay informed with the latest jewelry industry trends, diamond certification updates, pricing strategies, and best practices for managing your jewelry business. Expert insights for jewelry vendors."
+        keywords="jewelry blog, diamond industry news, jewelry business tips, gemstone trends, jewelry vendor guides, catalog management tips, diamond pricing strategies"
+        canonicalUrl="/blog"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={breadcrumbSchema} />
+      
       <Header />
       
       {/* Hero Section */}
