@@ -9,7 +9,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Link, useNavigate } from "react-router-dom";
-import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler, GraduationCap } from "lucide-react";
+import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler, GraduationCap, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useVendorProfile } from "@/hooks/useVendorProfile";
@@ -185,6 +185,12 @@ export const Header = () => {
                   Contact
                 </Link>
               </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link to="/faq" className={navigationMenuTriggerStyle()}>
+                  FAQ
+                </Link>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
 
@@ -277,6 +283,12 @@ export const Header = () => {
                 className="text-lg font-medium transition-colors hover:text-primary"
               >
                 Contact
+              </Link>
+              <Link
+                to="/faq"
+                className="text-lg font-medium transition-colors hover:text-primary"
+              >
+                FAQ
               </Link>
 
               <div className="pt-4 border-t space-y-2">
