@@ -6,8 +6,9 @@ import { DiamondClarityModule } from "@/components/diamond-education/DiamondClar
 import { DiamondCaratModule } from "@/components/diamond-education/DiamondCaratModule";
 import { DiamondCutModule } from "@/components/diamond-education/DiamondCutModule";
 import { DiamondGradingQuiz } from "@/components/diamond-education/DiamondGradingQuiz";
+import { DiamondValueCalculator } from "@/components/diamond-education/DiamondValueCalculator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette, Search, GraduationCap, Scale, Sparkles, Trophy } from "lucide-react";
+import { Palette, Search, GraduationCap, Scale, Sparkles, Trophy, DollarSign } from "lucide-react";
 
 const DiamondEducation = () => {
   useEffect(() => {
@@ -39,7 +40,7 @@ const DiamondEducation = () => {
           </div>
 
           <Tabs defaultValue="color" className="space-y-6">
-            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-5">
+            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-6">
               <TabsTrigger value="color" className="flex items-center gap-1 text-xs md:text-sm">
                 <Palette className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden md:inline">Color</span>
@@ -56,6 +57,10 @@ const DiamondEducation = () => {
                 <Scale className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden md:inline">Carat</span>
               </TabsTrigger>
+              <TabsTrigger value="value" className="flex items-center gap-1 text-xs md:text-sm">
+                <DollarSign className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden md:inline">Value</span>
+              </TabsTrigger>
               <TabsTrigger value="quiz" className="flex items-center gap-1 text-xs md:text-sm">
                 <Trophy className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden md:inline">Quiz</span>
@@ -66,6 +71,7 @@ const DiamondEducation = () => {
             <TabsContent value="clarity"><DiamondClarityModule /></TabsContent>
             <TabsContent value="cut"><DiamondCutModule /></TabsContent>
             <TabsContent value="carat"><DiamondCaratModule /></TabsContent>
+            <TabsContent value="value"><DiamondValueCalculator /></TabsContent>
             <TabsContent value="quiz"><DiamondGradingQuiz /></TabsContent>
           </Tabs>
         </motion.div>
