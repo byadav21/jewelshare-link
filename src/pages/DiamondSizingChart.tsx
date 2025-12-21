@@ -345,51 +345,116 @@ const DiamondSizingChart = () => {
 
         {/* 3D Diamond Viewer */}
         <ScrollReveal delay={0.25}>
-          <Card className="mt-8">
-            <CardHeader className="bg-gradient-to-r from-slate-900/10 via-primary/10 to-slate-900/10">
+          <Card className="mt-8 overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-slate-900/20 via-primary/10 to-violet-900/20 border-b border-primary/10">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <Box className="h-5 w-5" />
-                    3D Diamond Viewer
+                    <Box className="h-5 w-5 text-primary" />
+                    3D Diamond Explorer
                   </CardTitle>
-                  <CardDescription>Rotate and explore diamond shapes in 3D - click and drag to rotate</CardDescription>
+                  <CardDescription>Rotate and explore diamond shapes in realistic 3D - click and drag to interact</CardDescription>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/50 border">
                     <Switch id="auto-rotate" checked={autoRotate3D} onCheckedChange={setAutoRotate3D} />
-                    <Label htmlFor="auto-rotate" className="text-sm">Auto-rotate</Label>
+                    <Label htmlFor="auto-rotate" className="text-sm font-medium">Auto-rotate</Label>
                   </div>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="h-[350px] rounded-xl overflow-hidden">
-                  <Suspense fallback={
-                    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-                      <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-                    </div>
-                  }>
-                    <Diamond3DViewer shape={selectedShape} autoRotate={autoRotate3D} showFire />
-                  </Suspense>
-                </div>
-                <div className="flex flex-col justify-center space-y-4">
-                  <h3 className="text-xl font-semibold">{shapeData.name}</h3>
-                  <p className="text-muted-foreground">{shapeData.description}</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-lg bg-muted/30">
-                      <p className="text-sm text-muted-foreground">Selected Size</p>
-                      <p className="text-2xl font-bold text-primary">{selectedSize.carat} ct</p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-muted/30">
-                      <p className="text-sm text-muted-foreground">Dimensions</p>
-                      <p className="text-2xl font-bold">{selectedSize.mm} mm</p>
+            <CardContent className="p-0">
+              <div className="grid lg:grid-cols-5 gap-0">
+                {/* 3D Viewer - takes more space */}
+                <div className="lg:col-span-3 relative">
+                  <div className="h-[420px]">
+                    <Suspense fallback={
+                      <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="relative w-12 h-12">
+                            <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
+                            <div className="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin" />
+                          </div>
+                          <span className="text-sm text-muted-foreground">Loading 3D Diamond...</span>
+                        </div>
+                      </div>
+                    }>
+                      <Diamond3DViewer 
+                        shape={selectedShape} 
+                        autoRotate={autoRotate3D} 
+                        showFire 
+                        caratSize={selectedSize.carat}
+                      />
+                    </Suspense>
+                  </div>
+                  
+                  {/* Overlay badges */}
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    <Badge className="bg-primary/90 shadow-lg backdrop-blur-sm">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      {shapeData.name}
+                    </Badge>
+                    <Badge variant="outline" className="bg-black/40 text-white border-white/20 backdrop-blur-sm">
+                      {selectedSize.carat} ct
+                    </Badge>
+                  </div>
+                  
+                  {/* Interactive hint */}
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="flex items-center justify-center gap-6 text-xs text-white/60">
+                      <span className="flex items-center gap-1"><Hand className="h-3 w-3" /> Drag to rotate</span>
+                      <span className="flex items-center gap-1"><ZoomIn className="h-3 w-3" /> Scroll to zoom</span>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Use mouse to rotate • Scroll to zoom • The 3D model represents the general shape characteristics
-                  </p>
+                </div>
+
+                {/* Details Panel */}
+                <div className="lg:col-span-2 p-6 bg-muted/30 border-l flex flex-col justify-center space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">{shapeData.name}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{shapeData.description}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                      <Scale className="h-5 w-5 text-primary mb-2" />
+                      <p className="text-xs text-muted-foreground">Carat Weight</p>
+                      <p className="text-2xl font-bold text-primary">{selectedSize.carat} ct</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-violet-500/5 border border-violet-500/20">
+                      <Ruler className="h-5 w-5 text-violet-500 mb-2" />
+                      <p className="text-xs text-muted-foreground">Dimensions</p>
+                      <p className="text-2xl font-bold text-violet-500">{selectedSize.mm}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-xl bg-muted/50 border">
+                    <div className="flex items-start gap-3">
+                      <Layers className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="font-medium text-sm">Depth Profile</p>
+                        <p className="text-2xl font-bold">{selectedSize.depth} mm</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Total height from table to culet
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+                    <div className="flex items-start gap-3">
+                      <CircleDot className="h-5 w-5 text-amber-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-sm text-amber-600 dark:text-amber-400">Face-Up Area</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {selectedShape === "round" 
+                            ? `This ${selectedSize.carat}ct round appears ${selectedSize.carat >= 1.5 ? "substantial" : selectedSize.carat >= 1 ? "elegant" : "delicate"} when set`
+                            : `Fancy shapes like ${shapeData.name.toLowerCase()} often appear larger than rounds at the same carat weight`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
