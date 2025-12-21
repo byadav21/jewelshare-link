@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MediaUpload } from "@/components/MediaUpload";
 import { LogoUpload } from "@/components/LogoUpload";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Palette } from "lucide-react";
+import { ArrowLeft, Upload, Palette, Bell } from "lucide-react";
+import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 
 const brandThemes = {
   elegant: {
@@ -632,6 +633,19 @@ const VendorProfile = () => {
                         <img src={formData.whatsapp_qr_url} alt="WhatsApp QR" className="w-32 h-32 object-cover mt-2" />
                       )}
                     </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    <h3 className="text-lg font-semibold">Notification Settings</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Get instant alerts when customers show interest in your products
+                  </p>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <PushNotificationToggle showLabel={true} />
                   </div>
                 </div>
 
