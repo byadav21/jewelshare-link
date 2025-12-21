@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { TiltCard } from "@/components/TiltCard";
 import { AnimatedIcon } from "@/components/AnimatedIcon";
-import { Gem, Palette, Sparkles, Scale, Lightbulb, GraduationCap, ArrowRight } from "lucide-react";
+import { Gem, Palette, Sparkles, Scale, Lightbulb, GraduationCap, ArrowRight, Quote, Star } from "lucide-react";
 
 const educationTopics = [
   {
@@ -33,6 +33,30 @@ const educationTopics = [
   },
 ];
 
+const educationTestimonials = [
+  {
+    name: "Meera Kapoor",
+    role: "Training Manager",
+    business: "Kapoor Diamonds",
+    content: "We use the Diamond Education module to onboard new sales staff. The interactive 4Cs guides reduced our training time by 60% and improved customer consultations significantly.",
+    rating: 5,
+  },
+  {
+    name: "Amit Joshi",
+    role: "Store Manager",
+    business: "Joshi Jewellers",
+    content: "The grading quizzes are brilliant for testing our team's knowledge. Our staff confidence in explaining diamond quality to customers has improved dramatically.",
+    rating: 5,
+  },
+  {
+    name: "Sunita Agarwal",
+    role: "Sales Director",
+    business: "Agarwal Gems & Co.",
+    content: "The 3D diamond visualizations help our customers understand exactly what they are buying. It has become an essential part of our sales process.",
+    rating: 5,
+  },
+];
+
 export const DiamondEducationPreview = () => {
   const navigate = useNavigate();
 
@@ -55,7 +79,7 @@ export const DiamondEducationPreview = () => {
           </div>
         </ScrollReveal>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-16">
           {educationTopics.map((topic, index) => (
             <ScrollReveal key={topic.title} delay={index * 0.1}>
               <TiltCard maxTilt={8} scale={1.03}>
@@ -75,19 +99,49 @@ export const DiamondEducationPreview = () => {
           ))}
         </div>
 
+        {/* Education Testimonials */}
+        <ScrollReveal delay={0.2}>
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold font-serif text-center mb-8">
+              Trusted by Jewelry Professionals
+            </h3>
+            <div className="grid gap-6 md:grid-cols-3">
+              {educationTestimonials.map((testimonial, index) => (
+                <Card key={testimonial.name} className="border-2 hover:border-primary/20 transition-all duration-300">
+                  <CardContent className="p-6">
+                    <Quote className="h-8 w-8 text-primary/30 mb-4" />
+                    <p className="text-muted-foreground mb-4 italic leading-relaxed">
+                      "{testimonial.content}"
+                    </p>
+                    <div className="flex items-center gap-1 mb-3">
+                      {Array.from({ length: testimonial.rating }).map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                      ))}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{testimonial.name}</p>
+                      <p className="text-sm text-muted-foreground">{testimonial.role}, {testimonial.business}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+
         <ScrollReveal delay={0.4}>
           <div className="text-center">
-            <div className="mb-6 flex items-center justify-center gap-4 text-muted-foreground">
+            <div className="mb-6 flex flex-wrap items-center justify-center gap-4 text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-primary" />
                 <span>Interactive 3D Visualizations</span>
               </div>
-              <span className="text-border">•</span>
+              <span className="text-border hidden sm:inline">•</span>
               <div className="flex items-center gap-2">
                 <GraduationCap className="h-5 w-5 text-primary" />
                 <span>Grading Quizzes</span>
               </div>
-              <span className="text-border">•</span>
+              <span className="text-border hidden sm:inline">•</span>
               <div className="flex items-center gap-2">
                 <Scale className="h-5 w-5 text-primary" />
                 <span>Value Calculator</span>
