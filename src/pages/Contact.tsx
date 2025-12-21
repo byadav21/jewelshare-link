@@ -116,19 +116,19 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      details: "support@jewelrycatalog.com",
-      link: "mailto:support@jewelrycatalog.com"
+      details: "support@cataleon.com",
+      link: "mailto:support@cataleon.com"
     },
     {
       icon: Phone,
       title: "Phone",
-      details: "+1 (234) 567-890",
-      link: "tel:+1234567890"
+      details: "095991 95566",
+      link: "tel:+919599195566"
     },
     {
       icon: MapPin,
       title: "Office",
-      details: "Mumbai, Maharashtra, India",
+      details: "2nd floor, Unit no 201, Green Wood Plaza, Block B, Greenwood City, Sector 45, Gurugram, Haryana 122003",
       link: "#"
     },
     {
@@ -149,15 +149,16 @@ const Contact = () => {
   // Contact page structured data
   const contactStructuredData = {
     type: "Organization" as const,
-    name: "Cataleon",
+    name: "Hamlet E Commerce Pvt. Ltd.",
     description: "Contact Cataleon for jewelry catalog management support, demos, and partnerships.",
     url: "https://cataleon.com",
     logo: "https://cataleon.com/logo.png",
     email: "support@cataleon.com",
-    telephone: "+1-234-567-890",
+    telephone: "+91-95991-95566",
     address: {
-      addressLocality: "Mumbai",
-      addressRegion: "Maharashtra",
+      streetAddress: "2nd floor, Unit no 201, Green Wood Plaza, Block B, Greenwood City, Sector 45",
+      addressLocality: "Gurugram",
+      addressRegion: "Haryana",
       addressCountry: "India"
     }
   };

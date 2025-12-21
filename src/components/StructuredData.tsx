@@ -282,16 +282,17 @@ export const StructuredData = ({ data }: StructuredDataProps) => {
 // Pre-configured schema for the organization
 export const CataleonOrganizationSchema: OrganizationSchema = {
   type: "Organization",
-  name: "Cataleon",
+  name: "Hamlet E Commerce Pvt. Ltd.",
   description:
     "Professional jewelry catalog management platform. Manage inventory, share catalogs with custom pricing, and grow your jewelry business with advanced tools including diamond calculators and manufacturing cost estimators.",
   url: "https://cataleon.com",
   logo: "https://cataleon.com/logo.png",
   email: "support@cataleon.com",
-  telephone: "+1-234-567-890",
+  telephone: "+91-95991-95566",
   address: {
-    addressLocality: "Mumbai",
-    addressRegion: "Maharashtra",
+    streetAddress: "2nd floor, Unit no 201, Green Wood Plaza, Block B, Greenwood City, Sector 45",
+    addressLocality: "Gurugram",
+    addressRegion: "Haryana",
     addressCountry: "India",
   },
   sameAs: [
