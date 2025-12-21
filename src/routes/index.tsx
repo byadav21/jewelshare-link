@@ -25,6 +25,7 @@ export const DiamondSizingChart = lazy(() => import("@/pages/DiamondSizingChart"
 export const DiamondSieveChart = lazy(() => import("@/pages/DiamondSieveChart"));
 export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"));
 export const Calculators = lazy(() => import("@/pages/Calculators"));
+export const DiamondEducation = lazy(() => import("@/pages/DiamondEducation"));
 export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 export const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 export const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
