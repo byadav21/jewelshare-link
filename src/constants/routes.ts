@@ -15,6 +15,7 @@ export const ROUTES = {
   DIAMOND_CALCULATOR: "/diamond-calculator",
   DIAMOND_SIZING_CHART: "/diamond-sizing-chart",
   DIAMOND_SIEVE_CHART: "/diamond-sieve-chart",
+  DIAMOND_EDUCATION: "/diamond-education",
   MANUFACTURING_COST: "/manufacturing-cost",
   INVOICE_HISTORY: "/invoice-history",
   ESTIMATE_HISTORY: "/estimate-history",

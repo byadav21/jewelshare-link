@@ -9,7 +9,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Link, useNavigate } from "react-router-dom";
-import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler } from "lucide-react";
+import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useVendorProfile } from "@/hooks/useVendorProfile";
@@ -140,6 +140,30 @@ export const Header = () => {
                               </div>
                               <p className="text-sm leading-snug text-muted-foreground">
                                 Sieve sizes, MM & carat reference
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => navigate("/diamond-education")}
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                              <GraduationCap className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium leading-none mb-1">
+                                Diamond Education
+                              </div>
+                              <p className="text-sm leading-snug text-muted-foreground">
+                                Interactive Color & Clarity Charts
                               </p>
                             </div>
                           </div>
