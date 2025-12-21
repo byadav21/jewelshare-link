@@ -32,6 +32,7 @@ export const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 export const CookiePolicyPage = lazy(() => import("@/pages/CookiePolicyPage"));
 export const FAQ = lazy(() => import("@/pages/FAQ"));
 export const Sitemap = lazy(() => import("@/pages/Sitemap"));
+export const Install = lazy(() => import("@/pages/Install"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));

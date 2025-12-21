@@ -16,15 +16,20 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "robots.txt"],
+      includeAssets: ["favicon.ico", "robots.txt", "og-image.png"],
       manifest: {
-        name: "Cataleon - Jewelry Management",
+        name: "Cataleon - Jewelry Catalog Management",
         short_name: "Cataleon",
-        description: "Professional jewelry catalog and vendor management platform",
+        description: "Professional jewelry catalog and vendor management platform. Manage inventory, share catalogs, and grow your business.",
         theme_color: "#F5D547",
         background_color: "#1A1F2E",
         display: "standalone",
-        orientation: "portrait",
+        orientation: "portrait-primary",
+        start_url: "/",
+        scope: "/",
+        categories: ["business", "productivity", "shopping"],
+        lang: "en",
+        dir: "ltr",
         icons: [
           {
             src: "/favicon.ico",
@@ -35,15 +40,46 @@ export default defineConfig(({ mode }) => ({
             src: "/placeholder.svg",
             sizes: "192x192",
             type: "image/svg+xml",
-            purpose: "any maskable",
+            purpose: "any",
           },
           {
             src: "/placeholder.svg",
             sizes: "512x512",
             type: "image/svg+xml",
-            purpose: "any maskable",
+            purpose: "any",
+          },
+          {
+            src: "/placeholder.svg",
+            sizes: "512x512",
+            type: "image/svg+xml",
+            purpose: "maskable",
           },
         ],
+        screenshots: [
+          {
+            src: "/og-image.png",
+            sizes: "1200x630",
+            type: "image/png",
+            form_factor: "wide",
+            label: "Cataleon Dashboard"
+          }
+        ],
+        shortcuts: [
+          {
+            name: "View Catalog",
+            short_name: "Catalog",
+            description: "Browse your jewelry catalog",
+            url: "/catalog",
+            icons: [{ src: "/placeholder.svg", sizes: "96x96" }]
+          },
+          {
+            name: "Diamond Calculator",
+            short_name: "Calculator",
+            description: "Calculate diamond prices",
+            url: "/diamond-calculator",
+            icons: [{ src: "/placeholder.svg", sizes: "96x96" }]
+          }
+        ]
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}"],
