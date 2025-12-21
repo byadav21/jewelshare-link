@@ -154,6 +154,10 @@ const AppContent = () => {
         path={ROUTES.COOKIE_POLICY} 
         element={<RouteSuspense><Pages.CookiePolicyPage /></RouteSuspense>} 
       />
+      <Route 
+        path={ROUTES.FAQ} 
+        element={<RouteSuspense><Pages.FAQ /></RouteSuspense>} 
+      />
 
       {/* Auth-only route (requires login but not approval) */}
       <Route 

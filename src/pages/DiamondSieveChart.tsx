@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import { SIEVE_DATA, ALL_SIEVE_DATA, SieveDataItem } from "@/constants/sieveData";
 import { cn } from "@/lib/utils";
 import { 
@@ -133,8 +135,47 @@ const DiamondSieveChart = () => {
   const mmResult = searchMM ? findClosestByMM(parseFloat(searchMM)) : null;
   const caratResult = searchCarat ? findClosestByCarat(parseFloat(searchCarat)) : null;
 
+  // Structured data for SEO
+  const toolSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Diamond Sieve Size Chart",
+    description: "Comprehensive diamond sieve size reference chart. Look up sieve numbers, mm dimensions, carat weights per stone, and stones per carat. Includes calculator for total carat weight.",
+    applicationCategory: "UtilityApplication",
+    operatingSystem: "Web Browser",
+    offers: { price: "0", priceCurrency: "USD" }
+  };
+
+  const faqSchema = {
+    type: "FAQPage" as const,
+    questions: [
+      { question: "What is a diamond sieve size?", answer: "Diamond sieve sizes are standardized classifications used to sort melee diamonds by their diameter. Sieves use numbered plates with holes of specific sizes to separate diamonds." },
+      { question: "How do I convert sieve size to carat weight?", answer: "Each sieve size corresponds to a specific mm diameter and average carat weight. Our chart shows the relationship between sieve numbers, mm size, stones per carat, and individual stone weights." },
+      { question: "How many diamonds are in one carat at a given sieve size?", answer: "The number of stones per carat varies by sieve size. Smaller sieves like +0 have over 200 stones per carat, while larger sieves like +14 have fewer than 5 stones per carat." }
+    ]
+  };
+
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.io/" },
+      { name: "Calculators", url: "https://cataleon.io/calculators" },
+      { name: "Diamond Sieve Chart", url: "https://cataleon.io/diamond-sieve-chart" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Diamond Sieve Size Chart - MM to Carat Conversion | Cataleon"
+        description="Complete diamond sieve size reference chart. Convert between sieve numbers, mm dimensions, and carat weights. Calculate total carat weight for multiple stones. Essential tool for diamond sorting and pricing."
+        keywords="diamond sieve chart, sieve size to carat, mm to carat conversion, melee diamond sizes, stones per carat, diamond sorting, sieve numbers"
+        canonicalUrl="/diamond-sieve-chart"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[toolSchema, faqSchema, breadcrumbSchema]} />
+
       <Header />
       
       {/* Hero Section */}
