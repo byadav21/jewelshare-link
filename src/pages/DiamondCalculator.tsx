@@ -24,6 +24,7 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import { useNavigate } from "react-router-dom";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import confetti from "canvas-confetti";
 import { playSparkleSound } from "@/utils/celebrationSounds";
 
@@ -493,7 +494,8 @@ const DiamondCalculator = () => {
       />
       
       <div className="container mx-auto px-4 py-12">
-        <div className="mb-4">
+        <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
+          <BreadcrumbNav />
           <BackToHomeButton />
         </div>
         

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calculator, Gem, Wrench, ArrowRight, Sparkles, Ruler, Grid3X3 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -141,6 +142,12 @@ const Calculators = () => {
       <StructuredData data={[toolSchema, breadcrumbSchema]} />
 
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
+      
       <div className="py-4 md:py-8 px-3 md:px-4">
       <div className="container max-w-6xl mx-auto">
         

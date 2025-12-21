@@ -22,6 +22,7 @@ import {
   Clock,
   CheckCircle2
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required" }).max(100, { message: "Name must be less than 100 characters" }),
@@ -175,6 +176,11 @@ const Contact = () => {
       <StructuredData data={contactStructuredData} />
       
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="border-b bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-20">

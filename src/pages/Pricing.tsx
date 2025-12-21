@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, Gem, ArrowRight, Sparkles } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
@@ -155,6 +156,11 @@ const Pricing = () => {
       <StructuredData data={pricingSchema} />
       
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="border-b">

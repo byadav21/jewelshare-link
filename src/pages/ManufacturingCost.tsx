@@ -13,6 +13,7 @@ import { Footer } from "@/components/Footer";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EstimateWorkflowSteps } from "@/components/estimate/EstimateWorkflowSteps";
@@ -592,7 +593,10 @@ const ManufacturingCost = () => {
       </Dialog>
 
       <div className="py-4 md:py-8 px-3 md:px-4">
-        <BackToHomeButton />
+        <div className="max-w-6xl mx-auto mb-4 flex items-center justify-between flex-wrap gap-2">
+          <BreadcrumbNav />
+          <BackToHomeButton />
+        </div>
         <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <div className="text-center space-y-3 md:space-y-4 px-4">

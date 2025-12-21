@@ -17,6 +17,7 @@ import { parseMM, getVisualScale, calculateFaceUpArea } from "@/utils/diamondCal
 import { cn } from "@/lib/utils";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { 
   Diamond, Ruler, Scale, Sparkles, Info, ZoomIn, Hand, Search,
   CircleDot, Layers, Box
@@ -108,6 +109,11 @@ const DiamondSizingChart = () => {
       <StructuredData data={[toolSchema, faqSchema, breadcrumbSchema]} />
 
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section - Clean & Clear */}
       <section className="relative border-b bg-gradient-to-b from-primary/5 via-background to-background py-12 md:py-16">
