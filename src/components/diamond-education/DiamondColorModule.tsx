@@ -1,14 +1,13 @@
-import { useState, useMemo, useRef, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Environment, ContactShadows, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Eye, Layers, SplitSquareVertical, Info } from "lucide-react";
+import { Eye, Layers, SplitSquareVertical, Info, Sparkles } from "lucide-react";
+import RealisticDiamond3D, { COLOR_GRADES as DIAMOND_COLOR_GRADES } from "./RealisticDiamond3D";
 
 // Color grades with their properties
 const COLOR_GRADES = [
@@ -26,142 +25,18 @@ const COLOR_GRADES = [
   { grade: "Z", index: 11, name: "Light Yellow/Brown", color: "#FDD88C", warmth: 0.75, market: "Light colored diamonds", recommendation: "Fancy color settings, artistic jewelry" },
 ];
 
-// Diamond mesh component with color
-const ColoredDiamond = ({ color, isRotating }: { color: string; isRotating: boolean }) => {
-  const groupRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    if (groupRef.current && isRotating) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.3;
-    }
-  });
-
-  return (
-    <group ref={groupRef}>
-      {/* Crown */}
-      <mesh position={[0, 0.3, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[1, 1.5, 32, 1]} />
-        <meshPhysicalMaterial
-          color={color}
-          metalness={0.0}
-          roughness={0.0}
-          transmission={0.92}
-          thickness={1.5}
-          envMapIntensity={3}
-          clearcoat={1}
-          ior={2.417}
-          iridescence={0.3}
-        />
-      </mesh>
-      
-      {/* Pavilion */}
-      <mesh position={[0, -0.4, 0]}>
-        <coneGeometry args={[1, 0.8, 32, 1]} />
-        <meshPhysicalMaterial
-          color={color}
-          metalness={0.0}
-          roughness={0.0}
-          transmission={0.92}
-          thickness={1.2}
-          envMapIntensity={3}
-          clearcoat={1}
-          ior={2.417}
-        />
-      </mesh>
-
-      {/* Table */}
-      <mesh position={[0, 0.31, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.6, 32]} />
-        <meshPhysicalMaterial
-          color={color}
-          metalness={0.1}
-          roughness={0.0}
-          transmission={0.95}
-          thickness={0.2}
-          envMapIntensity={4}
-          clearcoat={1}
-          ior={2.417}
-        />
-      </mesh>
-    </group>
-  );
-};
-
-// Side view diamond (rotated)
-const SideViewDiamond = ({ color }: { color: string }) => {
-  return (
-    <group rotation={[Math.PI / 2.5, 0, 0]}>
-      {/* Crown */}
-      <mesh position={[0, 0.3, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[1, 1.5, 32, 1]} />
-        <meshPhysicalMaterial
-          color={color}
-          metalness={0.0}
-          roughness={0.0}
-          transmission={0.85}
-          thickness={1.8}
-          envMapIntensity={2.5}
-          clearcoat={1}
-          ior={2.417}
-        />
-      </mesh>
-      
-      {/* Pavilion */}
-      <mesh position={[0, -0.4, 0]}>
-        <coneGeometry args={[1, 0.8, 32, 1]} />
-        <meshPhysicalMaterial
-          color={color}
-          metalness={0.0}
-          roughness={0.0}
-          transmission={0.85}
-          thickness={1.5}
-          envMapIntensity={2.5}
-          clearcoat={1}
-          ior={2.417}
-        />
-      </mesh>
-    </group>
-  );
+const gradeToKey = (grade: string): keyof typeof DIAMOND_COLOR_GRADES => {
+  return grade as keyof typeof DIAMOND_COLOR_GRADES;
 };
 
 const LoadingFallback = () => (
-  <Html center>
+  <div className="flex items-center justify-center h-full">
     <div className="flex items-center gap-2 text-muted-foreground">
-      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      <span className="text-sm">Loading...</span>
+      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <span className="text-sm">Loading Diamond...</span>
     </div>
-  </Html>
+  </div>
 );
-
-const DiamondScene = ({ color, viewMode, isRotating }: { color: string; viewMode: "face-up" | "side"; isRotating: boolean }) => {
-  return (
-    <Canvas camera={{ position: [0, viewMode === "side" ? 2 : 0, 4], fov: 45 }} dpr={[1, 2]}>
-      <Suspense fallback={<LoadingFallback />}>
-        <ambientLight intensity={0.5} />
-        <spotLight position={[5, 5, 5]} angle={0.3} penumbra={1} intensity={2} castShadow />
-        <spotLight position={[-5, 5, -5]} angle={0.3} penumbra={1} intensity={1.5} />
-        <pointLight position={[0, 3, 0]} intensity={1.2} />
-        
-        {viewMode === "face-up" ? (
-          <ColoredDiamond color={color} isRotating={isRotating} />
-        ) : (
-          <SideViewDiamond color={color} />
-        )}
-        
-        <Environment preset="studio" />
-        <ContactShadows position={[0, -1.5, 0]} opacity={0.4} scale={10} blur={2} />
-        <OrbitControls 
-          enableZoom={true} 
-          enablePan={false} 
-          autoRotate={isRotating && viewMode === "face-up"}
-          autoRotateSpeed={1.5}
-          minDistance={2}
-          maxDistance={8}
-        />
-      </Suspense>
-    </Canvas>
-  );
-};
 
 export const DiamondColorModule = () => {
   const [colorIndex, setColorIndex] = useState(0);
@@ -235,13 +110,23 @@ export const DiamondColorModule = () => {
         </div>
 
         {/* Diamond Visualization */}
-        <div className={`grid ${comparisonMode ? "grid-cols-3" : "grid-cols-1"} gap-4`}>
+        <div className={`grid ${comparisonMode ? "lg:grid-cols-3 grid-cols-1" : "grid-cols-1"} gap-4`}>
           {comparisonMode && (
             <div className="relative">
-              <div className="h-64 rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                <DiamondScene color={gradeD.color} viewMode={viewMode} isRotating={false} />
-              </div>
-              <Badge className="absolute top-2 left-2 bg-sky-500">D Grade (Reference)</Badge>
+              <Suspense fallback={<LoadingFallback />}>
+                <div className="h-72 rounded-xl overflow-hidden">
+                  <RealisticDiamond3D 
+                    colorGrade="D"
+                    clarityGrade="VS1"
+                    autoRotate={false}
+                    viewMode={viewMode === "face-up" ? "faceUp" : "side"}
+                  />
+                </div>
+              </Suspense>
+              <Badge className="absolute top-2 left-2 bg-sky-500 shadow-lg">
+                <Sparkles className="h-3 w-3 mr-1" />
+                D Grade (Reference)
+              </Badge>
             </div>
           )}
           
@@ -250,19 +135,23 @@ export const DiamondColorModule = () => {
             layout
             transition={{ duration: 0.3 }}
           >
-            <div className="h-64 rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-              <DiamondScene 
-                color={currentGrade.interpolatedColor} 
-                viewMode={viewMode} 
-                isRotating={isRotating} 
-              />
-            </div>
-            <Badge className="absolute top-2 left-2 bg-primary">
+            <Suspense fallback={<LoadingFallback />}>
+              <div className="h-72 rounded-xl overflow-hidden">
+                <RealisticDiamond3D 
+                  colorGrade={gradeToKey(COLOR_GRADES[Math.round(colorIndex)].grade)}
+                  clarityGrade="VS1"
+                  autoRotate={isRotating}
+                  viewMode={viewMode === "face-up" ? "faceUp" : "side"}
+                />
+              </div>
+            </Suspense>
+            <Badge className="absolute top-2 left-2 bg-primary shadow-lg">
+              <Sparkles className="h-3 w-3 mr-1" />
               {COLOR_GRADES[Math.round(colorIndex)].grade} Grade (Selected)
             </Badge>
             <button
               onClick={() => setIsRotating(!isRotating)}
-              className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+              className="absolute top-2 right-2 p-2.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-all shadow-lg backdrop-blur-sm"
             >
               {isRotating ? "⏸" : "▶"}
             </button>
@@ -270,10 +159,20 @@ export const DiamondColorModule = () => {
 
           {comparisonMode && (
             <div className="relative">
-              <div className="h-64 rounded-xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                <DiamondScene color={gradeG.color} viewMode={viewMode} isRotating={false} />
-              </div>
-              <Badge className="absolute top-2 left-2 bg-amber-500">G Grade (Reference)</Badge>
+              <Suspense fallback={<LoadingFallback />}>
+                <div className="h-72 rounded-xl overflow-hidden">
+                  <RealisticDiamond3D 
+                    colorGrade="G"
+                    clarityGrade="VS1"
+                    autoRotate={false}
+                    viewMode={viewMode === "face-up" ? "faceUp" : "side"}
+                  />
+                </div>
+              </Suspense>
+              <Badge className="absolute top-2 left-2 bg-amber-500 shadow-lg">
+                <Sparkles className="h-3 w-3 mr-1" />
+                G Grade (Reference)
+              </Badge>
             </div>
           )}
         </div>
