@@ -6,6 +6,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { TiltCard } from "@/components/TiltCard";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 
 const Calculators = () => {
   const navigate = useNavigate();
@@ -107,8 +109,37 @@ const Calculators = () => {
     }
   ];
 
+  // Structured data for SEO
+  const toolSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Cataleon Jewelry Tools",
+    description: "Professional jewelry tools including diamond price calculator, sieve size chart, manufacturing cost estimator, and invoice generator. Essential tools for jewelry vendors and wholesalers.",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web Browser",
+    offers: { price: "0", priceCurrency: "USD" }
+  };
+
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.io/" },
+      { name: "Calculators", url: "https://cataleon.io/calculators" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Jewelry Calculators & Tools - Diamond Pricing, Estimating | Cataleon"
+        description="Free professional jewelry tools: Diamond price calculator with Rapaport pricing, sieve size chart, manufacturing cost estimator, and invoice generator. Essential tools for jewelry businesses."
+        keywords="diamond calculator, jewelry tools, manufacturing cost estimator, diamond price calculator, jewelry invoice generator, sieve chart, carat calculator"
+        canonicalUrl="/calculators"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[toolSchema, breadcrumbSchema]} />
+
       <Header />
       <div className="py-4 md:py-8 px-3 md:px-4">
       <div className="container max-w-6xl mx-auto">

@@ -15,6 +15,8 @@ import { DIAMOND_SHAPES, SHAPE_COLORS, RING_SIZES, ShapeKey } from "@/constants/
 import { useDiamondComparison } from "@/hooks/useDiamondComparison";
 import { parseMM, getVisualScale, calculateFaceUpArea } from "@/utils/diamondCalculations";
 import { cn } from "@/lib/utils";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import { 
   Diamond, Ruler, Scale, Sparkles, Info, ZoomIn, Hand, Search,
   CircleDot, Layers, Box
@@ -64,8 +66,47 @@ const DiamondSizingChart = () => {
   const ringScale = 8;
   const shapeKeys = Object.keys(DIAMOND_SHAPES) as ShapeKey[];
 
+  // Structured data for SEO
+  const toolSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Diamond Sizing Chart",
+    description: "Interactive diamond sizing chart to compare carat weights, millimeter sizes, and visualize diamond shapes. Features 3D viewing, ring finger overlay, and multi-shape comparison.",
+    applicationCategory: "UtilityApplication",
+    operatingSystem: "Web Browser",
+    offers: { price: "0", priceCurrency: "USD" }
+  };
+
+  const faqSchema = {
+    type: "FAQPage" as const,
+    questions: [
+      { question: "How do diamond sizes compare across different shapes?", answer: "Different diamond shapes have varying face-up areas at the same carat weight. Elongated shapes like oval and marquise appear larger than round diamonds of the same weight due to their greater spread." },
+      { question: "What is the relationship between carat weight and millimeter size?", answer: "Carat weight measures mass while millimeter size measures physical dimensions. A 1 carat round diamond is approximately 6.5mm, but this varies by shape and cut quality." },
+      { question: "How do I know what diamond size will fit my ring?", answer: "Use our ring finger overlay feature to see how different carat weights look on various ring sizes. The 3D viewer helps visualize the diamond's presence on your finger." }
+    ]
+  };
+
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.io/" },
+      { name: "Calculators", url: "https://cataleon.io/calculators" },
+      { name: "Diamond Sizing Chart", url: "https://cataleon.io/diamond-sizing-chart" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Diamond Sizing Chart - Compare Carat Weights & MM Sizes | Cataleon"
+        description="Interactive diamond sizing chart to compare carat weights and millimeter dimensions across all diamond shapes. Features 3D viewing, ring finger overlay preview, and side-by-side shape comparison. Free online tool."
+        keywords="diamond size chart, carat to mm conversion, diamond dimensions, diamond shape comparison, carat weight visualization, diamond sizing guide, 3D diamond viewer"
+        canonicalUrl="/diamond-sizing-chart"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[toolSchema, faqSchema, breadcrumbSchema]} />
+
       <Header />
       
       {/* Hero Section - Clean & Clear */}
