@@ -25,6 +25,7 @@ import { ToolsShowcase } from "@/components/home/ToolsShowcase";
 import { CatalogFeatures } from "@/components/home/CatalogFeatures";
 import { SizingChartPreview } from "@/components/home/SizingChartPreview";
 import { CalculatorPreview } from "@/components/home/CalculatorPreview";
+import { DiamondEducationPreview } from "@/components/home/DiamondEducationPreview";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -317,6 +318,9 @@ const Index = () => {
 
       {/* Diamond Calculator Preview */}
       <CalculatorPreview />
+
+      {/* Diamond Education Preview */}
+      <DiamondEducationPreview />
 
       {/* Catalog Features Section */}
       <CatalogFeatures />
