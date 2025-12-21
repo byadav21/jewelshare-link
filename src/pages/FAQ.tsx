@@ -14,6 +14,7 @@ import {
   HelpCircle, Search, Gem, Calculator, Users, Shield, 
   CreditCard, Share2, ArrowRight, MessageCircle 
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const FAQ = () => {
   const navigate = useNavigate();
@@ -219,6 +220,11 @@ const FAQ = () => {
       <StructuredData data={[faqSchema, breadcrumbSchema]} />
 
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="relative border-b bg-gradient-to-b from-primary/5 via-background to-background py-16 md:py-24">

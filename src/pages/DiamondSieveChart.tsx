@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { SIEVE_DATA, ALL_SIEVE_DATA, SieveDataItem } from "@/constants/sieveData";
 import { cn } from "@/lib/utils";
 import { 
@@ -177,6 +178,11 @@ const DiamondSieveChart = () => {
       <StructuredData data={[toolSchema, faqSchema, breadcrumbSchema]} />
 
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b bg-gradient-to-br from-primary/10 via-background to-accent/10 py-16">

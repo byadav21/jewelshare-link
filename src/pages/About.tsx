@@ -21,6 +21,7 @@ import {
   Twitter,
   Mail
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const About = () => {
   const navigate = useNavigate();
@@ -109,6 +110,11 @@ const About = () => {
       <StructuredData data={breadcrumbSchema} />
       
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-24">

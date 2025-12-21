@@ -16,6 +16,7 @@ import {
   Tag,
   User
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 // Extended blog posts data with full content
 const blogPostsData = {
@@ -194,8 +195,16 @@ const BlogPost = () => {
       {/* Structured Data */}
       <StructuredData data={[articleSchema, breadcrumbSchema]} />
       
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav items={[
+          { label: "Blog", href: "/blog" },
+          { label: post.title }
+        ]} />
+      </div>
+      
       {/* Hero Image */}
-      <div className="relative h-96 overflow-hidden border-b">
+      <div className="relative h-96 overflow-hidden border-b mt-4">
         <img
           src={post.image}
           alt={post.title}

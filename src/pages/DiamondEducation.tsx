@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import { Palette, Search, GraduationCap, Scale, Sparkles, Trophy, DollarSign, Lightbulb } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const DiamondEducation = () => {
   // Educational content schema
@@ -59,6 +60,9 @@ const DiamondEducation = () => {
       <StructuredData data={[educationSchema, faqSchema]} />
       
       <div className="container mx-auto px-4 py-8">
+        <div className="mb-4">
+          <BreadcrumbNav />
+        </div>
         <BackToHomeButton />
         
         <motion.div

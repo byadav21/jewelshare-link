@@ -22,6 +22,7 @@ import {
   BookOpen,
   Tag
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface BlogPost {
   id: string;
@@ -106,6 +107,11 @@ const Blog = () => {
       <StructuredData data={breadcrumbSchema} />
       
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="border-b bg-gradient-to-br from-category-jewellery/10 via-category-gemstone/10 to-category-diamond/10 py-20">
