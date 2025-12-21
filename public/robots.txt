@@ -1,10 +1,13 @@
 # Cataleon Robots.txt - Professional Jewelry Catalog Management Platform
-# https://cataleon.com
+# https://cataleon.io
 
 # Allow all major search engines
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
+Crawl-delay: 0
+
+User-agent: Googlebot-Image
+Allow: /
 
 User-agent: Bingbot
 Allow: /
@@ -16,9 +19,32 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
 # AI Search Engines & Assistants
 User-agent: GPTBot
 Allow: /
+Allow: /blog/
+Allow: /faq
+Allow: /diamond-calculator
+Allow: /diamond-education
+Allow: /diamond-sizing-chart
+Allow: /diamond-sieve-chart
+Allow: /calculators
+Allow: /manufacturing-cost
+Allow: /about
+Allow: /pricing
+Allow: /contact
 
 User-agent: ChatGPT-User
 Allow: /
@@ -26,7 +52,7 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-User-agent: Anthropic-AI
+User-agent: anthropic-ai
 Allow: /
 
 User-agent: Claude-Web
@@ -41,25 +67,46 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
+User-agent: cohere-ai
+Allow: /
+
 # Default rule for all other bots
 User-agent: *
 Allow: /
 
 # Disallow admin and authenticated-only areas
+Disallow: /admin/
 Disallow: /admin/*
 Disallow: /catalog
-Disallow: /invoice/*
+Disallow: /invoice-history
 Disallow: /estimate-history
 Disallow: /interests
 Disallow: /video-requests
-Disallow: /vendor/*
-Disallow: /team-management
+Disallow: /vendor-profile
+Disallow: /vendor-analytics
+Disallow: /vendor-management
+Disallow: /vendor-approvals
+Disallow: /team
 Disallow: /audit-logs
 Disallow: /active-sessions
 Disallow: /login-history
 Disallow: /rewards
 Disallow: /purchase-inquiries
 Disallow: /global-search
+Disallow: /pending-approval
+Disallow: /settings
+Disallow: /super-admin
+Disallow: /export-reports
+Disallow: /migrate-images
+Disallow: /image-optimization-demo
+Disallow: /add-product
+Disallow: /import
+Disallow: /share
+Disallow: /custom-order
+Disallow: /order-tracking
+Disallow: /wishlist
+Disallow: /reset-password
+Disallow: /shared/*
 
 # Allow public tools and pages
 Allow: /calculators
@@ -68,19 +115,23 @@ Allow: /diamond-sizing-chart
 Allow: /diamond-sieve-chart
 Allow: /diamond-education
 Allow: /manufacturing-cost
+Allow: /invoice-generator
+Allow: /invoice-templates
 Allow: /about
 Allow: /contact
 Allow: /pricing
 Allow: /blog
+Allow: /blog/*
 Allow: /press
+Allow: /faq
+Allow: /demo
 Allow: /privacy-policy
 Allow: /terms-of-service
 Allow: /cookie-policy
 Allow: /auth
-Allow: /share/*
 
 # Sitemap location
-Sitemap: https://cataleon.com/sitemap.xml
+Sitemap: https://cataleon.io/sitemap.xml
 
 # Host
-Host: https://cataleon.com
+Host: https://cataleon.io
