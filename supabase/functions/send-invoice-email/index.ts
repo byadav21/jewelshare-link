@@ -143,9 +143,11 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
+    // Log detailed error server-side only for debugging
     console.error("Error sending invoice email:", error);
+    // Return generic error message to client - never expose internal error details
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Unable to send invoice email. Please try again later." }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

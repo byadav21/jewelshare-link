@@ -185,11 +185,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
+    // Log detailed error server-side only for debugging
     console.error("Error in send-contact-email function:", error);
+    // Return generic error message to client - never expose internal error details
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: "Failed to send email. Please try again or contact support directly."
+        error: "Unable to send email. Please try again later or contact support directly."
       }),
       {
         status: 500,
