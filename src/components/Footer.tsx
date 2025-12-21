@@ -111,6 +111,11 @@ export const Footer = () => {
                     Invoice Generator
                   </button>
                 </li>
+                <li>
+                  <button onClick={() => navigate("/install")} className="transition-colors hover:text-foreground">
+                    📱 Install App
+                  </button>
+                </li>
               </ul>
             </div>
 

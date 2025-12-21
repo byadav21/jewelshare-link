@@ -15,6 +15,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { AdminGuard } from "@/components/AdminGuard";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ROUTES } from "@/constants/routes";
 import { usePWA } from "@/hooks/usePWA";
 
@@ -37,6 +38,8 @@ const AppContent = () => {
   usePWA();
 
   return (
+    <>
+    <PWAInstallPrompt />
     <Routes>
       {/* Public routes */}
       <Route 
@@ -161,6 +164,10 @@ const AppContent = () => {
       <Route 
         path={ROUTES.SITEMAP} 
         element={<RouteSuspense><Pages.Sitemap /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INSTALL} 
+        element={<RouteSuspense><Pages.Install /></RouteSuspense>} 
       />
 
       {/* Auth-only route (requires login but not approval) */}
@@ -495,6 +502,7 @@ const AppContent = () => {
         element={<RouteSuspense><Pages.NotFound /></RouteSuspense>} 
       />
     </Routes>
+    </>
   );
 };
 

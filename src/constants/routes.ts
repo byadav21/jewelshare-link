@@ -31,6 +31,7 @@ export const ROUTES = {
   COOKIE_POLICY: "/cookie-policy",
   FAQ: "/faq",
   SITEMAP: "/sitemap",
+  INSTALL: "/install",
   AUTH: "/auth",
   RESET_PASSWORD: "/reset-password",
 
