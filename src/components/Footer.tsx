@@ -75,6 +75,11 @@ export const Footer = () => {
                   </button>
                 </li>
                 <li>
+                  <button onClick={() => navigate("/sitemap")} className="transition-colors hover:text-foreground">
+                    Sitemap
+                  </button>
+                </li>
+                <li>
                   <button onClick={() => navigate("/press")} className="transition-colors hover:text-foreground">
                     Press
                   </button>

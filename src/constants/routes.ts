@@ -30,6 +30,7 @@ export const ROUTES = {
   TERMS_OF_SERVICE: "/terms-of-service",
   COOKIE_POLICY: "/cookie-policy",
   FAQ: "/faq",
+  SITEMAP: "/sitemap",
   AUTH: "/auth",
   RESET_PASSWORD: "/reset-password",
 
