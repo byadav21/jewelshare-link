@@ -11,6 +11,8 @@ import { AnimatedIcon } from "@/components/AnimatedIcon";
 import { ParallaxSection } from "@/components/ParallaxSection";
 import { TiltCard } from "@/components/TiltCard";
 import { InteractiveROICalculator } from "@/components/InteractiveROICalculator";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 
 import { useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
@@ -209,14 +211,35 @@ const Index = () => {
     { icon: Sparkles, text: "Premium jewelry-focused interface" },
   ];
 
+  // FAQ schema for structured data
+  const faqSchema = {
+    type: "FAQPage" as const,
+    questions: faqs.map(faq => ({
+      question: faq.question,
+      answer: faq.answer
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Cataleon - Professional Jewelry Catalog Management Platform"
+        description="Cataleon is the leading jewelry catalog management platform. Manage inventory, share catalogs with custom pricing, calculate diamond prices using Rapaport-based pricing, and track customer inquiries. Trusted by 500+ jewelry vendors worldwide."
+        keywords="jewelry catalog software, diamond price calculator, jewelry inventory management, jewelry B2B platform, loose diamonds, gemstones, jewelry vendors, Rapaport pricing, manufacturing cost estimator"
+        canonicalUrl="/"
+      />
+      
+      {/* Structured Data for FAQ */}
+      <StructuredData data={faqSchema} />
+
       {/* Animated background elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-jewellery-from/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-40 right-20 w-96 h-96 bg-gemstone-from/10 rounded-full blur-3xl animate-pulse delay-1000" />
         <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-diamond-from/10 rounded-full blur-3xl animate-pulse delay-2000" />
       </div>
+
 
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b">

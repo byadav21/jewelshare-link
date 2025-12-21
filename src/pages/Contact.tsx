@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import {
   Mail, 
   Phone, 
@@ -143,8 +145,35 @@ const Contact = () => {
     { value: "partnership", label: "Partnership" }
   ];
 
+  // Contact page structured data
+  const contactStructuredData = {
+    type: "Organization" as const,
+    name: "Cataleon",
+    description: "Contact Cataleon for jewelry catalog management support, demos, and partnerships.",
+    url: "https://cataleon.com",
+    logo: "https://cataleon.com/logo.png",
+    email: "support@cataleon.com",
+    telephone: "+1-234-567-890",
+    address: {
+      addressLocality: "Mumbai",
+      addressRegion: "Maharashtra",
+      addressCountry: "India"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Contact Cataleon - Get Support, Request Demo, or Partner With Us"
+        description="Contact the Cataleon team for jewelry catalog management support, product demos, partnership opportunities, or general inquiries. We respond within 24 hours. Email: support@cataleon.com"
+        keywords="contact Cataleon, jewelry software support, request demo, jewelry platform help, B2B jewelry partnership"
+        canonicalUrl="/contact"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={contactStructuredData} />
+      
       <Header />
       
       {/* Hero Section */}
@@ -152,6 +181,10 @@ const Contact = () => {
         <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="mx-auto max-w-3xl text-center">
+              {/* AI Summary */}
+              <p className="sr-only">
+                Contact Cataleon for support, demos, or partnerships. Email: support@cataleon.com. Phone: +1 (234) 567-890. Office: Mumbai, Maharashtra, India. Business Hours: Mon-Fri 9AM-6PM IST. We respond within 24 hours.
+              </p>
               <h1 className="mb-4 text-5xl font-bold">Get in Touch</h1>
               <p className="text-xl text-muted-foreground">
                 Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
