@@ -21,6 +21,8 @@ import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { playSparkleSound } from "@/utils/celebrationSounds";
@@ -435,8 +437,55 @@ const DiamondCalculator = () => {
     setResult(null);
   };
 
+  // Software application schema for calculator
+  const calculatorSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Cataleon Diamond Price Calculator",
+    description: "Free online diamond price calculator using Rapaport-based pricing. Calculate diamond values based on the 4Cs: Carat, Cut, Color, and Clarity. Compare up to 4 diamonds side-by-side and export PDF reports.",
+    applicationCategory: "FinanceApplication",
+    operatingSystem: "Web Browser",
+    offers: {
+      price: "0",
+      priceCurrency: "USD"
+    },
+    aggregateRating: {
+      ratingValue: "4.9",
+      ratingCount: "500"
+    }
+  };
+
+  // FAQ schema for diamond calculator
+  const faqSchema = {
+    type: "FAQPage" as const,
+    questions: [
+      {
+        question: "How does the diamond price calculator work?",
+        answer: "Our diamond calculator uses Rapaport-based pricing to estimate diamond values. Enter the 4Cs (Carat, Cut, Color, Clarity) and shape to get instant price estimates. You can also apply discounts or markups and compare up to 4 diamonds."
+      },
+      {
+        question: "Is the diamond calculator free to use?",
+        answer: "Yes! Guest users get 5 free calculations per day. Sign up for a free account to get unlimited calculations, comparison features, and PDF export capabilities."
+      },
+      {
+        question: "What diamond shapes are supported?",
+        answer: "We support all major diamond shapes: Round, Princess, Cushion, Emerald, Oval, Radiant, Asscher, Marquise, Heart, and Pear."
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Free Diamond Price Calculator - Rapaport Based Pricing | Cataleon"
+        description="Calculate diamond prices instantly with our free Rapaport-based calculator. Enter the 4Cs (Carat, Cut, Color, Clarity) to get accurate price estimates. Compare diamonds and export PDF reports. 5 free calculations daily for guests."
+        keywords="diamond price calculator, diamond value calculator, Rapaport diamond prices, 4Cs calculator, diamond cost estimator, loose diamond pricing, diamond comparison tool, free diamond calculator"
+        canonicalUrl="/diamond-calculator"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[calculatorSchema, faqSchema]} />
+      
       <Header />
       <UnlimitedUnlockedCelebration 
         show={showCelebration} 

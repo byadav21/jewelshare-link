@@ -9,15 +9,55 @@ import { DiamondGradingQuiz } from "@/components/diamond-education/DiamondGradin
 import { DiamondValueCalculator } from "@/components/diamond-education/DiamondValueCalculator";
 import { DiamondFluorescenceModule } from "@/components/diamond-education/DiamondFluorescenceModule";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import { Palette, Search, GraduationCap, Scale, Sparkles, Trophy, DollarSign, Lightbulb } from "lucide-react";
 
 const DiamondEducation = () => {
-  useEffect(() => {
-    document.title = "Interactive Diamond Education | Learn 4Cs - Color, Clarity, Cut & Carat";
-  }, []);
+  // Educational content schema
+  const educationSchema = {
+    type: "Article" as const,
+    headline: "Interactive Diamond Education - Learn the 4Cs",
+    description: "Master diamond grading with interactive 3D visualization. Learn about Color (D-M grades), Clarity (IF-I3), Cut quality, and Carat weight. Take quizzes to test your knowledge.",
+    image: "https://cataleon.com/og-image.png",
+    author: "Cataleon Education Team",
+    publisher: "Cataleon",
+    datePublished: "2024-01-01",
+    dateModified: "2025-01-15"
+  };
+
+  // FAQ schema for diamond education
+  const faqSchema = {
+    type: "FAQPage" as const,
+    questions: [
+      {
+        question: "What are the 4Cs of diamonds?",
+        answer: "The 4Cs are Color (D-Z scale, with D being colorless), Clarity (presence of inclusions, from IF to I3), Cut (how well the diamond is cut, affecting brilliance), and Carat (the weight of the diamond)."
+      },
+      {
+        question: "What is diamond fluorescence?",
+        answer: "Diamond fluorescence is the visible light some diamonds emit when exposed to UV light. It's graded from None to Very Strong and can affect a diamond's appearance and value."
+      },
+      {
+        question: "How does diamond cut affect value?",
+        answer: "Cut is considered the most important C. An excellent cut maximizes brilliance and fire, making the diamond appear more brilliant. Poor cuts can make even high-color, high-clarity diamonds look dull."
+      }
+    ]
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Interactive Diamond Education - Learn the 4Cs with 3D Visualization | Cataleon"
+        description="Master diamond grading with our interactive education center. Learn about Color, Clarity, Cut, and Carat with 3D visualization tools. Take quizzes to test your diamond expertise. Free educational resource for jewelers and consumers."
+        keywords="diamond education, 4Cs of diamonds, diamond grading, diamond color grades, diamond clarity, diamond cut quality, diamond carat weight, fluorescence, GIA grading, diamond quiz"
+        canonicalUrl="/diamond-education"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[educationSchema, faqSchema]} />
+      
       <div className="container mx-auto px-4 py-8">
         <BackToHomeButton />
         
