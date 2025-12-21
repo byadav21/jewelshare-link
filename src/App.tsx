@@ -158,6 +158,10 @@ const AppContent = () => {
         path={ROUTES.FAQ} 
         element={<RouteSuspense><Pages.FAQ /></RouteSuspense>} 
       />
+      <Route 
+        path={ROUTES.SITEMAP} 
+        element={<RouteSuspense><Pages.Sitemap /></RouteSuspense>} 
+      />
 
       {/* Auth-only route (requires login but not approval) */}
       <Route 
