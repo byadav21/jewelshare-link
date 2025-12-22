@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Package manager files
+package-lock.json
+bun.lockb
+
+# Auto-generated files
+src/integrations/supabase/types.ts
+
+# Config files that shouldn't be formatted
+*.md
+*.svg

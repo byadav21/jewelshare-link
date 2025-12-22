@@ -11,9 +11,12 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { DiamondShapeSVG } from "@/components/diamond/DiamondShapeSVG";
-import { DIAMOND_SHAPES, SHAPE_COLORS, RING_SIZES, ShapeKey } from "@/constants/diamondData";
+import { DiamondSizePreview } from "@/components/diamond/DiamondSizePreview";
+import { DiamondSizeTable } from "@/components/diamond/DiamondSizeTable";
+import { RingSizeOverlay } from "@/components/diamond/RingSizeOverlay";
+import { MultiShapeOverlay } from "@/components/diamond/MultiShapeOverlay";
+import { DIAMOND_SHAPES, ShapeKey } from "@/constants/diamondData";
 import { useDiamondComparison } from "@/hooks/useDiamondComparison";
-import { parseMM, getVisualScale, calculateFaceUpArea } from "@/utils/diamondCalculations";
 import { cn } from "@/lib/utils";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
@@ -59,12 +62,6 @@ const DiamondSizingChart = () => {
     });
   }, []);
 
-  const getRingDiameter = (ringSize: number) => {
-    const ring = RING_SIZES.find(r => r.size === ringSize);
-    return ring?.diameterMM || 16.5;
-  };
-
-  const ringScale = 8;
   const shapeKeys = Object.keys(DIAMOND_SHAPES) as ShapeKey[];
 
   // Structured data for SEO
@@ -332,48 +329,11 @@ const DiamondSizingChart = () => {
                 <CardDescription>Click any row to select that size • Measurements may vary by cut quality</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-lg border overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-muted/50">
-                          <th className="px-4 py-3 text-left text-sm font-semibold">Carat</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold">Dimensions (mm)</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold">Depth (mm)</th>
-                          <th className="px-4 py-3 text-center text-sm font-semibold">Visual</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {shapeData.sizes.map((size, index) => (
-                          <tr
-                            key={size.carat}
-                            className={cn(
-                              "border-t transition-colors cursor-pointer",
-                              index === selectedCaratIndex ? "bg-primary/10" : "hover:bg-muted/30"
-                            )}
-                            onClick={() => setSelectedCaratIndex(index)}
-                          >
-                            <td className="px-4 py-3">
-                              <Badge variant={index === selectedCaratIndex ? "default" : "outline"} className="font-mono">
-                                {size.carat} ct
-                              </Badge>
-                            </td>
-                            <td className="px-4 py-3 font-medium">{size.mm}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{size.depth}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex justify-center">
-                                <div 
-                                  className="rounded-full bg-gradient-to-br from-diamond-from to-diamond-to opacity-60"
-                                  style={{ width: Math.max(8, size.carat * 12), height: Math.max(8, size.carat * 12) }}
-                                />
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                <DiamondSizeTable
+                  sizes={shapeData.sizes}
+                  selectedCaratIndex={selectedCaratIndex}
+                  onSelectIndex={setSelectedCaratIndex}
+                />
 
                 <div className="mt-4 p-4 rounded-lg bg-muted/30 border">
                   <div className="flex items-start gap-3">
@@ -518,7 +478,7 @@ const DiamondSizingChart = () => {
         {/* MM to Carat Lookup */}
         <ScrollReveal delay={0.3}>
           <Card className="mt-8">
-            <CardHeader className="bg-gradient-to-r from-gemstone-from/10 to-diamond-from/10">
+            <CardHeader className="bg-gradient-to-r from-accent/5 to-primary/5">
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5" />
                 MM to Carat Lookup
@@ -617,7 +577,7 @@ const DiamondSizingChart = () => {
         {/* Ring Size Overlay */}
         <ScrollReveal delay={0.4}>
           <Card className="mt-8">
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-gemstone-from/10">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
@@ -642,97 +602,13 @@ const DiamondSizingChart = () => {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="space-y-6"
                   >
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {RING_SIZES.map((ring) => (
-                        <Button
-                          key={ring.size}
-                          variant={selectedRingSize === ring.size ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSelectedRingSize(ring.size)}
-                          className="min-w-[60px]"
-                        >
-                          Size {ring.size}
-                        </Button>
-                      ))}
-                    </div>
-
-                    <div className="relative flex items-center justify-center py-8">
-                      <div className="relative">
-                        <motion.div
-                          className="relative bg-gradient-to-b from-amber-200/60 to-amber-300/60 dark:from-amber-800/40 dark:to-amber-900/40 rounded-t-full"
-                          style={{ width: getRingDiameter(selectedRingSize) * ringScale + 20, height: 200 }}
-                          initial={{ scale: 0.9 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring" }}
-                        >
-                          <div 
-                            className="absolute top-8 left-1/2 -translate-x-1/2 rounded-full border-4 border-yellow-500/80 dark:border-yellow-400/60"
-                            style={{ width: getRingDiameter(selectedRingSize) * ringScale + 16, height: 24 }}
-                          />
-                          <motion.div
-                            className="absolute left-1/2 -translate-x-1/2"
-                            style={{ top: -10 }}
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.2, type: "spring" }}
-                          >
-                            <DiamondShapeSVG 
-                              shape={selectedShape} 
-                              size={parseFloat(selectedSize.mm.split("x")[0] || selectedSize.mm) * ringScale}
-                            />
-                          </motion.div>
-                        </motion.div>
-
-                        <div className="absolute -right-32 top-1/2 -translate-y-1/2 text-sm space-y-1 hidden md:block">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-primary/60" />
-                            <span className="text-muted-foreground">Ring Size {selectedRingSize}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                            <span className="text-muted-foreground">{getRingDiameter(selectedRingSize)} mm</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
-                      {RING_SIZES.map((ring) => (
-                        <div
-                          key={ring.size}
-                          className={cn(
-                            "p-3 rounded-lg text-center border transition-all cursor-pointer",
-                            selectedRingSize === ring.size ? "bg-primary/10 border-primary" : "bg-muted/30 hover:bg-muted/50"
-                          )}
-                          onClick={() => setSelectedRingSize(ring.size)}
-                        >
-                          <p className="font-semibold">Size {ring.size}</p>
-                          <p className="text-xs text-muted-foreground">{ring.diameterMM} mm</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="p-4 rounded-lg bg-muted/30 border">
-                      <div className="flex items-start gap-3">
-                        <Hand className="h-5 w-5 text-primary mt-0.5" />
-                        <div className="text-sm">
-                          <p className="font-medium mb-1">
-                            {selectedSize.carat} ct {shapeData.name} on Size {selectedRingSize} Finger
-                          </p>
-                          <p className="text-muted-foreground">
-                            Diamond measures {selectedSize.mm} mm on a finger with {getRingDiameter(selectedRingSize)} mm diameter.
-                            {" "}
-                            {parseFloat(selectedSize.mm.split("x")[0] || selectedSize.mm) / getRingDiameter(selectedRingSize) > 0.45
-                              ? "The diamond will appear substantial and eye-catching."
-                              : parseFloat(selectedSize.mm.split("x")[0] || selectedSize.mm) / getRingDiameter(selectedRingSize) > 0.35
-                              ? "The diamond will have a balanced, elegant appearance."
-                              : "The diamond will appear delicate and subtle."}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <RingSizeOverlay
+                      selectedShape={selectedShape}
+                      selectedSize={selectedSize}
+                      selectedRingSize={selectedRingSize}
+                      onRingSizeChange={setSelectedRingSize}
+                    />
                   </motion.div>
                 ) : (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8 text-muted-foreground">
@@ -748,7 +624,7 @@ const DiamondSizingChart = () => {
         {/* Multi-Shape Overlay */}
         <ScrollReveal delay={0.45}>
           <Card className="mt-8">
-            <CardHeader className="bg-gradient-to-r from-diamond-from/10 via-primary/10 to-gemstone-from/10">
+            <CardHeader className="bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
@@ -773,157 +649,14 @@ const DiamondSizingChart = () => {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="space-y-6"
                   >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">Select shapes to compare (2-5)</p>
-                        <Badge variant="secondary">{selectedShapesForOverlay.length} selected</Badge>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2">
-                        {shapeKeys.map((shape) => {
-                          const isSelected = selectedShapesForOverlay.includes(shape);
-                          return (
-                            <motion.button
-                              key={shape}
-                              onClick={() => toggleShapeForOverlay(shape)}
-                              className={cn(
-                                "relative p-3 rounded-lg border-2 transition-all",
-                                isSelected ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
-                              )}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <DiamondShapeSVG shape={shape} size={28} className="mx-auto" />
-                              <span className="text-[10px] block text-center mt-1 font-medium">
-                                {DIAMOND_SHAPES[shape].name.split(" ")[0]}
-                              </span>
-                              {isSelected && (
-                                <div className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ backgroundColor: SHAPE_COLORS[shape] }} />
-                              )}
-                            </motion.button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium flex items-center gap-2">
-                          <Scale className="h-4 w-4" />
-                          Carat Weight
-                        </span>
-                        <Badge className="text-lg px-3 py-1">{overlayCaratWeight} ct</Badge>
-                      </div>
-                      <Slider
-                        value={[overlayCaratIndex]}
-                        onValueChange={(value) => setOverlayCaratIndex(value[0])}
-                        max={DIAMOND_SHAPES.round.sizes.length - 1}
-                        step={1}
-                        className="py-4"
-                      />
-                    </div>
-
-                    <div className="relative h-80 flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl overflow-hidden">
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-full h-px border-t border-dashed border-muted-foreground/20" />
-                        <div className="absolute h-full w-px border-l border-dashed border-muted-foreground/20" />
-                      </div>
-
-                      <div className="relative">
-                        {selectedShapesForOverlay.map((shape, index) => {
-                          const shapeInfo = DIAMOND_SHAPES[shape];
-                          const sizeData = shapeInfo.sizes[overlayCaratIndex];
-                          if (!sizeData) return null;
-                          
-                          const parsed = parseMM(sizeData.mm);
-                          if (!parsed) return null;
-                          
-                          const width = parsed.length * 12;
-                          const height = parsed.width * 12;
-                          
-                          return (
-                            <motion.div
-                              key={shape}
-                              className="absolute"
-                              style={{
-                                left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-                                zIndex: selectedShapesForOverlay.length - index,
-                              }}
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 0.7 }}
-                              transition={{ delay: index * 0.1, type: "spring" }}
-                            >
-                              <DiamondShapeSVG 
-                                shape={shape} 
-                                size={Math.max(width, height)} 
-                                fillColor={SHAPE_COLORS[shape]} 
-                                strokeColor={SHAPE_COLORS[shape]}
-                                useGradient={false}
-                              />
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap justify-center gap-3">
-                      {selectedShapesForOverlay.map((shape) => {
-                        const sizeData = DIAMOND_SHAPES[shape].sizes[overlayCaratIndex];
-                        return (
-                          <div key={shape} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: SHAPE_COLORS[shape] }} />
-                            <span className="text-sm font-medium">{DIAMOND_SHAPES[shape].name.split(" ")[0]}</span>
-                            <span className="text-xs text-muted-foreground">{sizeData?.mm} mm</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="rounded-lg border overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="bg-muted/50">
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Shape</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Dimensions</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Depth</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Face-Up Area</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedShapesForOverlay.map((shape, index) => {
-                            const sizeData = DIAMOND_SHAPES[shape].sizes[overlayCaratIndex];
-                            return (
-                              <tr key={shape} className={cn("border-t", index % 2 === 0 && "bg-muted/20")}>
-                                <td className="px-4 py-3">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: SHAPE_COLORS[shape] }} />
-                                    <span className="font-medium">{DIAMOND_SHAPES[shape].name}</span>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-3">{sizeData?.mm} mm</td>
-                                <td className="px-4 py-3 text-muted-foreground">{sizeData?.depth} mm</td>
-                                <td className="px-4 py-3">~{calculateFaceUpArea(sizeData?.mm || "0")} mm²</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                      <div className="flex items-start gap-3">
-                        <Info className="h-5 w-5 text-primary mt-0.5" />
-                        <div className="text-sm">
-                          <p className="font-medium mb-1">Size Comparison Insight</p>
-                          <p className="text-muted-foreground">
-                            At {overlayCaratWeight} carat, different shapes appear to have different sizes due to varying depth and proportions. 
-                            Elongated shapes like Marquise and Pear typically look larger face-up, while deeper cuts like Round and Cushion 
-                            carry more weight in their depth.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <MultiShapeOverlay
+                      selectedShapes={selectedShapesForOverlay}
+                      overlayCaratIndex={overlayCaratIndex}
+                      overlayCaratWeight={overlayCaratWeight}
+                      onCaratIndexChange={setOverlayCaratIndex}
+                      onToggleShape={toggleShapeForOverlay}
+                    />
                   </motion.div>
                 ) : (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8 text-muted-foreground">
