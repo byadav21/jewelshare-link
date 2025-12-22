@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Separator } from "@/components/ui/separator";
 import { BlogComments } from "@/components/BlogComments";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import { 
   Calendar, 
   Clock, 
@@ -14,6 +16,7 @@ import {
   Tag,
   User
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 // Extended blog posts data with full content
 const blogPostsData = {
@@ -148,10 +151,60 @@ const BlogPost = () => {
     );
   }
 
+  // Article structured data
+  const articleSchema = {
+    type: "Article" as const,
+    headline: post.title,
+    description: post.excerpt,
+    image: post.image,
+    author: post.author,
+    publisher: "Cataleon",
+    datePublished: post.date,
+    dateModified: post.date
+  };
+
+  // Breadcrumb schema
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.com/" },
+      { name: "Blog", url: "https://cataleon.com/blog" },
+      { name: post.title, url: `https://cataleon.com/blog/${id}` }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title={`${post.title} | Cataleon Blog`}
+        description={post.excerpt}
+        keywords={post.tags.join(", ") + ", jewelry industry, diamond education, jewelry business"}
+        canonicalUrl={`/blog/${id}`}
+        ogType="article"
+        ogImage={post.image}
+        article={{
+          publishedTime: post.date,
+          modifiedTime: post.date,
+          author: post.author,
+          section: post.category,
+          tags: post.tags
+        }}
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[articleSchema, breadcrumbSchema]} />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav items={[
+          { label: "Blog", href: "/blog" },
+          { label: post.title }
+        ]} />
+      </div>
+      
       {/* Hero Image */}
-      <div className="relative h-96 overflow-hidden border-b">
+      <div className="relative h-96 overflow-hidden border-b mt-4">
         <img
           src={post.image}
           alt={post.title}

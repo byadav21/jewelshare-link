@@ -18,6 +18,9 @@ import { MultiShapeOverlay } from "@/components/diamond/MultiShapeOverlay";
 import { DIAMOND_SHAPES, ShapeKey } from "@/constants/diamondData";
 import { useDiamondComparison } from "@/hooks/useDiamondComparison";
 import { cn } from "@/lib/utils";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { 
   Diamond, Ruler, Scale, Sparkles, Info, ZoomIn, Hand, Search,
   CircleDot, Layers, Box
@@ -61,21 +64,67 @@ const DiamondSizingChart = () => {
 
   const shapeKeys = Object.keys(DIAMOND_SHAPES) as ShapeKey[];
 
+  // Structured data for SEO
+  const toolSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Diamond Sizing Chart",
+    description: "Interactive diamond sizing chart to compare carat weights, millimeter sizes, and visualize diamond shapes. Features 3D viewing, ring finger overlay, and multi-shape comparison.",
+    applicationCategory: "UtilityApplication",
+    operatingSystem: "Web Browser",
+    offers: { price: "0", priceCurrency: "USD" }
+  };
+
+  const faqSchema = {
+    type: "FAQPage" as const,
+    questions: [
+      { question: "How do diamond sizes compare across different shapes?", answer: "Different diamond shapes have varying face-up areas at the same carat weight. Elongated shapes like oval and marquise appear larger than round diamonds of the same weight due to their greater spread." },
+      { question: "What is the relationship between carat weight and millimeter size?", answer: "Carat weight measures mass while millimeter size measures physical dimensions. A 1 carat round diamond is approximately 6.5mm, but this varies by shape and cut quality." },
+      { question: "How do I know what diamond size will fit my ring?", answer: "Use our ring finger overlay feature to see how different carat weights look on various ring sizes. The 3D viewer helps visualize the diamond's presence on your finger." }
+    ]
+  };
+
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.io/" },
+      { name: "Calculators", url: "https://cataleon.io/calculators" },
+      { name: "Diamond Sizing Chart", url: "https://cataleon.io/diamond-sizing-chart" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Diamond Sizing Chart - Compare Carat Weights & MM Sizes | Cataleon"
+        description="Interactive diamond sizing chart to compare carat weights and millimeter dimensions across all diamond shapes. Features 3D viewing, ring finger overlay preview, and side-by-side shape comparison. Free online tool."
+        keywords="diamond size chart, carat to mm conversion, diamond dimensions, diamond shape comparison, carat weight visualization, diamond sizing guide, 3D diamond viewer"
+        canonicalUrl="/diamond-sizing-chart"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[toolSchema, faqSchema, breadcrumbSchema]} />
+
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b bg-gradient-to-br from-primary/5 via-background to-accent/5 py-16">
-        <div className="container mx-auto px-4 relative">
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
+      
+      {/* Hero Section - Clean & Clear */}
+      <section className="relative border-b bg-gradient-to-b from-primary/5 via-background to-background py-12 md:py-16">
+        <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-sm mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm mb-6">
                 <Diamond className="h-4 w-4 text-primary" />
                 <span className="text-primary font-medium">Interactive Size Guide</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">Diamond Sizing Chart</h1>
-              <p className="text-lg text-muted-foreground">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+                Diamond Sizing Chart
+              </h1>
+              <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 Explore diamond dimensions across all shapes. Compare carat weights, 
                 millimeter sizes, and visualize how each shape looks at different sizes.
               </p>
@@ -84,58 +133,63 @@ const DiamondSizingChart = () => {
         </div>
       </section>
 
-      <main className="container mx-auto px-4 py-12">
-        {/* Shape Selector */}
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        {/* Shape Selector - Clear Grid */}
         <ScrollReveal>
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Select Diamond Shape
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
-              {shapeKeys.map((shape) => (
-                <motion.button
-                  key={shape}
-                  onClick={() => setSelectedShape(shape)}
-                  className={cn(
-                    "relative p-4 rounded-xl border-2 transition-all duration-300",
-                    selectedShape === shape
-                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
-                      : "border-border hover:border-primary/50 hover:bg-muted/50"
-                  )}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <DiamondShapeSVG shape={shape} size={40} className="mx-auto mb-2" />
-                  <span className="text-xs font-medium block text-center">
-                    {DIAMOND_SHAPES[shape].name.split(" ")[0]}
-                  </span>
-                  {selectedShape === shape && (
-                    <motion.div
-                      layoutId="shapeIndicator"
-                      className="absolute inset-0 border-2 border-primary rounded-xl"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                </motion.button>
-              ))}
-            </div>
-          </div>
+          <Card className="mb-8 overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Step 1: Select Diamond Shape
+              </CardTitle>
+              <CardDescription>Choose a shape to see its size specifications</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-2 md:gap-3">
+                {shapeKeys.map((shape) => (
+                  <motion.button
+                    key={shape}
+                    onClick={() => setSelectedShape(shape)}
+                    className={cn(
+                      "relative p-3 md:p-4 rounded-xl border-2 transition-all duration-200 bg-card",
+                      selectedShape === shape
+                        ? "border-primary bg-primary/10 shadow-md ring-2 ring-primary/20"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    )}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <DiamondShapeSVG shape={shape} size={32} className="mx-auto mb-1.5" />
+                    <span className="text-[10px] md:text-xs font-medium block text-center text-foreground">
+                      {DIAMOND_SHAPES[shape].name.split(" ")[0]}
+                    </span>
+                    {selectedShape === shape && (
+                      <motion.div
+                        layoutId="shapeIndicator"
+                        className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background"
+                        initial={false}
+                      />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </ScrollReveal>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        {/* Step 2: Size Selection */}
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
           {/* Visual Preview */}
           <ScrollReveal delay={0.1}>
             <Card className="overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
+              <CardHeader className="bg-muted/30 border-b">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <ZoomIn className="h-5 w-5" />
-                      {shapeData.name}
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <ZoomIn className="h-5 w-5 text-primary" />
+                      Step 2: {shapeData.name} Preview
                     </CardTitle>
-                    <CardDescription>{shapeData.description}</CardDescription>
+                    <CardDescription>Visual comparison of carat sizes</CardDescription>
                   </div>
                   <Button
                     variant={compareMode ? "default" : "outline"}
@@ -146,14 +200,42 @@ const DiamondSizingChart = () => {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
-                <DiamondSizePreview
-                  selectedShape={selectedShape}
-                  selectedSize={selectedSize}
-                  compareMode={compareMode}
-                  compareShape={compareShape}
-                  compareSize={compareSize}
-                />
+              <CardContent className="p-4 md:p-6">
+                {/* Size Preview - Cleaner Background */}
+                <div className="relative h-56 md:h-64 flex items-center justify-center bg-gradient-to-br from-muted/50 via-muted/30 to-muted/50 rounded-xl mb-6 border border-border/50">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-4 flex items-center justify-center opacity-40">
+                    <div className="w-full h-px border-t border-dashed border-muted-foreground/50" />
+                    <div className="absolute h-full w-px border-l border-dashed border-muted-foreground/50" />
+                  </div>
+                  
+                  <div className={cn("flex items-center gap-8", compareMode && "gap-16")}>
+                    <motion.div
+                      key={`${selectedShape}-${selectedCaratIndex}`}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                      className="flex flex-col items-center"
+                    >
+                      <DiamondShapeSVG shape={selectedShape} size={getVisualScale(selectedSize.carat)} />
+                      <Badge variant="secondary" className="mt-3">{selectedSize.carat} ct</Badge>
+                    </motion.div>
+
+                    <AnimatePresence>
+                      {compareMode && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0, x: -20 }}
+                          animate={{ scale: 1, opacity: 1, x: 0 }}
+                          exit={{ scale: 0, opacity: 0, x: -20 }}
+                          className="flex flex-col items-center"
+                        >
+                          <DiamondShapeSVG shape={compareShape} size={getVisualScale(compareSize.carat)} />
+                          <Badge variant="outline" className="mt-3">{compareSize.carat} ct</Badge>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
 
                 {/* Compare Shape Selector */}
                 <AnimatePresence>
@@ -239,12 +321,12 @@ const DiamondSizingChart = () => {
           {/* Size Table */}
           <ScrollReveal delay={0.2}>
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Ruler className="h-5 w-5" />
-                  Complete Size Chart - {shapeData.name}
+              <CardHeader className="bg-muted/30 border-b">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Ruler className="h-5 w-5 text-primary" />
+                  Size Reference Table
                 </CardTitle>
-                <CardDescription>All measurements are approximate and may vary based on cut quality</CardDescription>
+                <CardDescription>Click any row to select that size • Measurements may vary by cut quality</CardDescription>
               </CardHeader>
               <CardContent>
                 <DiamondSizeTable
@@ -271,53 +353,122 @@ const DiamondSizingChart = () => {
           </ScrollReveal>
         </div>
 
-        {/* 3D Diamond Viewer */}
+        {/* 3D Diamond Viewer - Much Cleaner */}
         <ScrollReveal delay={0.25}>
-          <Card className="mt-8">
-            <CardHeader className="bg-gradient-to-r from-muted/50 via-primary/5 to-muted/50">
+          <Card className="mt-8 overflow-hidden border-2 border-primary/10">
+            <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30 border-b">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Box className="h-5 w-5" />
-                    3D Diamond Viewer
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Box className="h-5 w-5 text-primary" />
+                    Step 3: Interactive 3D View
                   </CardTitle>
-                  <CardDescription>Rotate and explore diamond shapes in 3D - click and drag to rotate</CardDescription>
+                  <CardDescription>Drag to rotate, scroll to zoom - see your diamond in 3D</CardDescription>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background border">
                     <Switch id="auto-rotate" checked={autoRotate3D} onCheckedChange={setAutoRotate3D} />
-                    <Label htmlFor="auto-rotate" className="text-sm">Auto-rotate</Label>
+                    <Label htmlFor="auto-rotate" className="text-sm font-medium cursor-pointer">Auto-rotate</Label>
                   </div>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="h-[350px] rounded-xl overflow-hidden">
-                  <Suspense fallback={
-                    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-                      <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-                    </div>
-                  }>
-                    <Diamond3DViewer shape={selectedShape} autoRotate={autoRotate3D} showFire />
-                  </Suspense>
-                </div>
-                <div className="flex flex-col justify-center space-y-4">
-                  <h3 className="text-xl font-semibold">{shapeData.name}</h3>
-                  <p className="text-muted-foreground">{shapeData.description}</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-lg bg-muted/30">
-                      <p className="text-sm text-muted-foreground">Selected Size</p>
-                      <p className="text-2xl font-bold text-primary">{selectedSize.carat} ct</p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-muted/30">
-                      <p className="text-sm text-muted-foreground">Dimensions</p>
-                      <p className="text-2xl font-bold">{selectedSize.mm} mm</p>
+            <CardContent className="p-0">
+              <div className="grid lg:grid-cols-5">
+                {/* 3D Viewer */}
+                <div className="lg:col-span-3 relative bg-slate-900">
+                  <div className="h-[380px] md:h-[420px]">
+                    <Suspense fallback={
+                      <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="relative w-12 h-12">
+                            <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
+                            <div className="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin" />
+                          </div>
+                          <span className="text-sm text-white/70">Loading 3D Diamond...</span>
+                        </div>
+                      </div>
+                    }>
+                      <Diamond3DViewer 
+                        shape={selectedShape} 
+                        autoRotate={autoRotate3D} 
+                        showFire 
+                        caratSize={selectedSize.carat}
+                      />
+                    </Suspense>
+                  </div>
+                  
+                  {/* Shape & Size Badges */}
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    <Badge className="bg-primary text-primary-foreground shadow-lg">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      {shapeData.name}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-white/90 text-slate-900 shadow-lg">
+                      {selectedSize.carat} ct
+                    </Badge>
+                  </div>
+                  
+                  {/* Controls Hint */}
+                  <div className="absolute bottom-4 left-0 right-0">
+                    <div className="flex items-center justify-center gap-6 text-xs">
+                      <span className="flex items-center gap-1.5 bg-black/60 text-white/90 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        <Hand className="h-3 w-3" /> Drag to rotate
+                      </span>
+                      <span className="flex items-center gap-1.5 bg-black/60 text-white/90 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        <ZoomIn className="h-3 w-3" /> Scroll to zoom
+                      </span>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Use mouse to rotate • Scroll to zoom • The 3D model represents the general shape characteristics
-                  </p>
+                </div>
+
+                {/* Info Panel - Clear Hierarchy */}
+                <div className="lg:col-span-2 p-5 md:p-6 bg-muted/20 lg:border-l flex flex-col justify-center space-y-4">
+                  <div className="pb-4 border-b">
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">{shapeData.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{shapeData.description}</p>
+                  </div>
+                  
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                      <Scale className="h-5 w-5 text-primary mb-2" />
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Carat Weight</p>
+                      <p className="text-2xl font-bold text-primary">{selectedSize.carat} ct</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20">
+                      <Ruler className="h-5 w-5 text-violet-500 mb-2" />
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Dimensions</p>
+                      <p className="text-2xl font-bold text-violet-500">{selectedSize.mm}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-xl bg-muted/50 border">
+                    <div className="flex items-start gap-3">
+                      <Layers className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm text-foreground">Depth: {selectedSize.depth} mm</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Total height from table facet to culet point
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                    <div className="flex items-start gap-3">
+                      <CircleDot className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm text-amber-600 dark:text-amber-400">On-Finger Appearance</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {selectedShape === "round" 
+                            ? `This ${selectedSize.carat}ct round appears ${selectedSize.carat >= 1.5 ? "substantial" : selectedSize.carat >= 1 ? "elegant" : "delicate"} when set`
+                            : `${shapeData.name} shapes often appear larger than rounds at the same carat weight`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>

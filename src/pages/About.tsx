@@ -6,6 +6,8 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import {
   Target, 
   Users, 
@@ -19,6 +21,7 @@ import {
   Twitter,
   Mail
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const About = () => {
   const navigate = useNavigate();
@@ -84,15 +87,44 @@ const About = () => {
     { number: "98%", label: "Satisfaction Rate" }
   ];
 
+  // Breadcrumb schema
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.com/" },
+      { name: "About Us", url: "https://cataleon.com/about" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="About Cataleon - Our Mission to Transform Jewelry Business Management"
+        description="Learn about Cataleon's mission to revolutionize jewelry business management. Founded in 2020, we serve 500+ active vendors managing 15,000+ products with a 98% satisfaction rate. Meet our team and discover our values."
+        keywords="about Cataleon, jewelry software company, jewelry technology, jewelry inventory platform, B2B jewelry solutions, jewelry industry innovation"
+        canonicalUrl="/about"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={breadcrumbSchema} />
+      
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-24">
         <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="mx-auto max-w-3xl text-center">
+              {/* AI Summary for search engines */}
+              <p className="sr-only">
+                This page explains Cataleon's mission, vision, core values, and team. Cataleon is a professional jewelry catalog management platform founded in 2020, serving 500+ active vendors with 15,000+ products managed and a 98% satisfaction rate.
+              </p>
               <Badge className="mb-4 gap-1.5 px-4 py-1.5" variant="secondary">
                 <Users className="h-3.5 w-3.5" />
                 About Us

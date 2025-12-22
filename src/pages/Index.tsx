@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
+import { BrandLogosCarousel } from "@/components/BrandLogosCarousel";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ParallaxImage } from "@/components/ParallaxImage";
@@ -11,6 +11,8 @@ import { AnimatedIcon } from "@/components/AnimatedIcon";
 import { ParallaxSection } from "@/components/ParallaxSection";
 import { TiltCard } from "@/components/TiltCard";
 import { InteractiveROICalculator } from "@/components/InteractiveROICalculator";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 
 import { useState, useEffect } from "react";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
@@ -23,6 +25,8 @@ import { ToolsShowcase } from "@/components/home/ToolsShowcase";
 import { CatalogFeatures } from "@/components/home/CatalogFeatures";
 import { SizingChartPreview } from "@/components/home/SizingChartPreview";
 import { CalculatorPreview } from "@/components/home/CalculatorPreview";
+import { DiamondEducationPreview } from "@/components/home/DiamondEducationPreview";
+import { HowItWorks } from "@/components/home/HowItWorks";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import vendorManagement from "@/assets/vendor-management.jpg";
@@ -152,56 +156,6 @@ const Index = () => {
     },
   ];
 
-  const faqs = [
-    {
-      question: "How does the catalog sharing work?",
-      answer:
-        "Create a shareable link with custom pricing (markup or markdown), set an expiry date, and share it with your clients. You can track views, customer interests, and video requests all from your dashboard. Each link is unique and can be customized for different client segments.",
-    },
-    {
-      question: "Can I manage multiple team members?",
-      answer:
-        "Yes! Add team members with granular permissions. Control who can view catalogs, add products, manage share links, handle custom orders, and more. Perfect for businesses with sales teams or multiple locations.",
-    },
-    {
-      question: "What types of jewelry can I manage?",
-      answer:
-        "Our platform supports loose diamonds, gemstones, and finished jewelry pieces. Each category has specialized fields for specifications like carat weight, clarity, color, certification, metal type, and more. Upload multiple images and detailed descriptions for each piece.",
-    },
-    {
-      question: "How does the Diamond Price Calculator work?",
-      answer:
-        "Our advanced diamond calculator uses Rapaport-based pricing to estimate diamond values. Simply input the 4Cs (Carat weight, Cut grade, Color grade, Clarity grade) and select the diamond shape. The calculator instantly provides price estimates and allows you to apply custom discounts or markups. Compare up to 4 diamonds side-by-side to help your customers make informed decisions. Authenticated users get unlimited calculations, while guests can perform 5 calculations per day.",
-    },
-    {
-      question: "How do video requests work?",
-      answer:
-        "When customers view your shared catalog, they can request videos of specific products. You'll receive notifications with customer details and can update the request status (pending, fulfilled, declined). Communicate directly via email or WhatsApp.",
-    },
-    {
-      question: "Is my data secure?",
-      answer:
-        "Absolutely. We use enterprise-grade security with encrypted data storage, secure authentication, and session management. You control who sees what with granular permissions and share link expiry dates. All communications are encrypted.",
-    },
-    {
-      question: "Can I track customer engagement?",
-      answer:
-        "Yes! Get detailed analytics on catalog views, popular products, customer interests, video requests, and custom orders. See which products generate the most engagement and make data-driven decisions for your inventory.",
-    },
-    {
-      question: "Do you offer import/export features?",
-      answer:
-        "Yes, you can import products in bulk using Excel/CSV files and export your catalog data, customer inquiries, and analytics reports. Perfect for integrating with your existing inventory management systems.",
-    },
-    {
-      question: "What's the pricing model?",
-      answer:
-        "We offer flexible plans based on your business size and needs. Start with a free trial to explore all features. Visit our pricing page for detailed plan comparisons and choose what works best for your jewelry business.",
-    },
-  ];
-
-  // Moved to FeaturesGrid component
-
   const benefits = [
     { icon: Zap, text: "Lightning-fast catalog updates" },
     { icon: Link2, text: "Shareable links with custom pricing" },
@@ -211,12 +165,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Cataleon - Professional Jewelry Catalog Management Platform"
+        description="Cataleon is the leading jewelry catalog management platform. Manage inventory, share catalogs with custom pricing, calculate diamond prices using Rapaport-based pricing, and track customer inquiries. Trusted by 500+ jewelry vendors worldwide."
+        keywords="jewelry catalog software, diamond price calculator, jewelry inventory management, jewelry B2B platform, loose diamonds, gemstones, jewelry vendors, Rapaport pricing, manufacturing cost estimator"
+        canonicalUrl="/"
+      />
+
       {/* Animated background elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-jewellery-from/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-40 right-20 w-96 h-96 bg-gemstone-from/10 rounded-full blur-3xl animate-pulse delay-1000" />
         <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-diamond-from/10 rounded-full blur-3xl animate-pulse delay-2000" />
       </div>
+
 
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b">
@@ -357,6 +320,9 @@ const Index = () => {
       {/* Diamond Calculator Preview */}
       <CalculatorPreview />
 
+      {/* Diamond Education Preview */}
+      <DiamondEducationPreview />
+
       {/* Catalog Features Section */}
       <CatalogFeatures />
 
@@ -434,57 +400,7 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="relative border-y bg-muted/30 py-24">
-        <ParallaxSection speed={-0.3} className="absolute inset-0 overflow-hidden opacity-10">
-          <img src={vendorManagement} alt="Vendor using platform" className="h-full w-full object-cover" />
-        </ParallaxSection>
-        <div className="container relative mx-auto px-4">
-          <ScrollReveal>
-            <div className="mb-20 text-center">
-              <h2 className="mb-6 text-5xl font-bold font-serif">How It Works</h2>
-              <p className="text-2xl text-muted-foreground max-w-2xl mx-auto">
-                Simple steps to showcase your jewelry collection
-              </p>
-            </div>
-          </ScrollReveal>
-          <div className="grid gap-8 md:grid-cols-3">
-            <ScrollReveal delay={0.1} direction="up">
-              <div className="text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-jewellery-from to-jewellery-to text-2xl font-bold text-white">
-                  1
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Add Your Inventory</h3>
-                <p className="text-muted-foreground">
-                  Upload your diamonds, gemstones, and jewelry pieces with detailed specifications, pricing, and images.
-                </p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.2} direction="up">
-              <div className="text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-gemstone-from to-gemstone-to text-2xl font-bold text-white">
-                  2
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Create Share Links</h3>
-                <p className="text-muted-foreground">
-                  Generate shareable catalog links with custom pricing adjustments and expiry dates for different
-                  clients.
-                </p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.3} direction="up">
-              <div className="text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-diamond-from to-diamond-to text-2xl font-bold text-white">
-                  3
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Manage Inquiries</h3>
-                <p className="text-muted-foreground">
-                  Track customer interests, video requests, and custom orders all in one centralized dashboard.
-                </p>
-              </div>
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* Benefits */}
       <section className="container mx-auto px-4 py-24">
@@ -530,30 +446,19 @@ const Index = () => {
         </ScrollReveal>
       </section>
 
-      {/* FAQ Section */}
-      <section className="container mx-auto px-4 py-24">
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal>
-            <div className="mb-16 text-center">
-              <h2 className="mb-6 text-5xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-2xl text-muted-foreground">
-                Everything you need to know about the platform
-              </p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.2}>
-            <Accordion type="single" collapsible className="w-full">
-              {faqs.map((faq, index) => (
-                <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger className="text-left text-lg font-semibold">{faq.question}</AccordionTrigger>
-                  <AccordionContent className="text-base text-muted-foreground">{faq.answer}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </ScrollReveal>
-        </div>
+      {/* Trusted Brands Carousel */}
+      <section className="container mx-auto px-4 py-16">
+        <ScrollReveal>
+          <div className="mb-8 text-center">
+            <h2 className="mb-4 text-3xl font-bold font-serif bg-gradient-to-r from-jewellery-from via-gemstone-from to-diamond-from bg-clip-text text-transparent">
+              Trusted by Leading Jewelry Brands
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Join the industry leaders who rely on Cataleon
+            </p>
+          </div>
+        </ScrollReveal>
+        <BrandLogosCarousel />
       </section>
 
       {/* Newsletter Section */}

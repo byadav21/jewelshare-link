@@ -11,6 +11,9 @@ import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EstimateWorkflowSteps } from "@/components/estimate/EstimateWorkflowSteps";
@@ -527,8 +530,47 @@ const ManufacturingCost = () => {
     }
   };
 
+  // Structured data for SEO
+  const toolSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Jewelry Manufacturing Cost Estimator",
+    description: "Create detailed manufacturing cost estimates for jewelry. Calculate gold, diamond, gemstone costs, making charges, profit margins, and generate professional PDF quotes.",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web Browser",
+    offers: { price: "0", priceCurrency: "USD" }
+  };
+
+  const faqSchema = {
+    type: "FAQPage" as const,
+    questions: [
+      { question: "How do I calculate jewelry manufacturing cost?", answer: "Enter the gold weight, purity, current gold rate, diamond and gemstone costs, making charges, CAD design fees, and other expenses. The estimator calculates total cost and applies your profit margin for final pricing." },
+      { question: "Can I save and share estimates with customers?", answer: "Yes, save estimates to your account and generate customer tracking links. Customers can view estimate status and updates through their personalized link." },
+      { question: "Does it support GST calculations?", answer: "Yes, the estimator supports SGST/CGST for intra-state and IGST for inter-state transactions. Configure tax percentages and the system calculates the grand total including taxes." }
+    ]
+  };
+
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.io/" },
+      { name: "Calculators", url: "https://cataleon.io/calculators" },
+      { name: "Manufacturing Cost Estimator", url: "https://cataleon.io/manufacturing-cost" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Jewelry Manufacturing Cost Estimator - Quote Generator | Cataleon"
+        description="Calculate jewelry manufacturing costs including gold, diamonds, gemstones, making charges, and profit margins. Generate professional PDF estimates and quotes. Free online tool for jewelers."
+        keywords="jewelry cost estimator, manufacturing cost calculator, jewelry quote generator, gold price calculator, making charges calculator, jewelry pricing tool"
+        canonicalUrl="/manufacturing-cost"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[toolSchema, faqSchema, breadcrumbSchema]} />
+
       <Header />
       {/* Guest Usage Limit Dialog */}
       <Dialog open={showUsageLimitDialog} onOpenChange={setShowUsageLimitDialog}>
@@ -551,7 +593,10 @@ const ManufacturingCost = () => {
       </Dialog>
 
       <div className="py-4 md:py-8 px-3 md:px-4">
-        <BackToHomeButton />
+        <div className="max-w-6xl mx-auto mb-4 flex items-center justify-between flex-wrap gap-2">
+          <BreadcrumbNav />
+          <BackToHomeButton />
+        </div>
         <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <div className="text-center space-y-3 md:space-y-4 px-4">

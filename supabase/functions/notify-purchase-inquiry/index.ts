@@ -157,6 +157,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
+    // Also send push notification to the vendor
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        },
+        body: JSON.stringify({
+          user_id: inquiry.share_links.user_id,
+          title: "New Purchase Inquiry",
+          body: `${safeCustomerName} is interested in ${safeProductName}`,
+          url: "/purchase-inquiries",
+          data: { inquiry_id, type: "purchase_inquiry" },
+        }),
+      });
+      console.log("Push notification response:", pushResponse.status);
+    } catch (pushError) {
+      console.error("Error sending push notification:", pushError);
+      // Don't fail the whole request if push fails
+    }
+
     return new Response(
       JSON.stringify({ success: true, email_id: emailResponse.data?.id }),
       {

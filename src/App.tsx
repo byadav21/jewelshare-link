@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RouteSuspense } from "@/components/RouteSuspense";
@@ -15,6 +15,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ApprovalGuard } from "@/components/ApprovalGuard";
 import { AdminGuard } from "@/components/AdminGuard";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ROUTES } from "@/constants/routes";
 import { usePWA } from "@/hooks/usePWA";
 
@@ -37,6 +38,8 @@ const AppContent = () => {
   usePWA();
 
   return (
+    <>
+    <PWAInstallPrompt />
     <Routes>
       {/* Public routes */}
       <Route 
@@ -103,6 +106,17 @@ const AppContent = () => {
         path={ROUTES.DIAMOND_SIZING_CHART} 
         element={<RouteSuspense><Pages.DiamondSizingChart /></RouteSuspense>} 
       />
+      {/* Redirect short URLs to full URLs */}
+      <Route path="/diamond-sizing" element={<Navigate to={ROUTES.DIAMOND_SIZING_CHART} replace />} />
+      <Route path="/diamond-sieve" element={<Navigate to={ROUTES.DIAMOND_SIEVE_CHART} replace />} />
+      <Route 
+        path={ROUTES.DIAMOND_SIEVE_CHART} 
+        element={<RouteSuspense><Pages.DiamondSieveChart /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.DIAMOND_EDUCATION} 
+        element={<RouteSuspense><Pages.DiamondEducation /></RouteSuspense>} 
+      />
       <Route 
         path={ROUTES.MANUFACTURING_COST} 
         element={<RouteSuspense><Pages.ManufacturingCost /></RouteSuspense>} 
@@ -142,6 +156,18 @@ const AppContent = () => {
       <Route 
         path={ROUTES.COOKIE_POLICY} 
         element={<RouteSuspense><Pages.CookiePolicyPage /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.FAQ} 
+        element={<RouteSuspense><Pages.FAQ /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.SITEMAP} 
+        element={<RouteSuspense><Pages.Sitemap /></RouteSuspense>} 
+      />
+      <Route 
+        path={ROUTES.INSTALL} 
+        element={<RouteSuspense><Pages.Install /></RouteSuspense>} 
       />
 
       {/* Auth-only route (requires login but not approval) */}
@@ -476,6 +502,7 @@ const AppContent = () => {
         element={<RouteSuspense><Pages.NotFound /></RouteSuspense>} 
       />
     </Routes>
+    </>
   );
 };
 
