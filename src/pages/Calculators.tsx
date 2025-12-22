@@ -1,11 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Gem, Wrench, ArrowRight, Sparkles } from "lucide-react";
+import { Calculator, Gem, Wrench, ArrowRight, Sparkles, Ruler, Grid3X3 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { TiltCard } from "@/components/TiltCard";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 
 const Calculators = () => {
   const navigate = useNavigate();
@@ -38,6 +41,28 @@ const Calculators = () => {
       gradient: "from-diamond-from to-diamond-to",
       path: "/diamond-calculator",
       badge: "Most Popular"
+    },
+    {
+      icon: Grid3X3,
+      title: "Diamond Sieve Size Chart",
+      description:
+        "Interactive reference chart for diamond sieve sizes. Understand the relationship between sieve numbers, mm dimensions, carat weights, and number of stones per carat. Essential for sorting and pricing melee diamonds.",
+      features: [
+        "Complete sieve size reference",
+        "MM to sieve converter",
+        "Carat weight lookup",
+        "Stones per carat calculator",
+        "Interactive search & filter"
+      ],
+      gradient: "from-indigo-500 to-purple-600",
+      path: "/diamond-sieve-chart",
+      badge: "Reference",
+      extraButtons: [
+        {
+          label: "Diamond Sizing Chart",
+          path: "/diamond-sizing-chart"
+        }
+      ]
     },
     {
       icon: Wrench,
@@ -85,9 +110,44 @@ const Calculators = () => {
     }
   ];
 
+  // Structured data for SEO
+  const toolSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Cataleon Jewelry Tools",
+    description: "Professional jewelry tools including diamond price calculator, sieve size chart, manufacturing cost estimator, and invoice generator. Essential tools for jewelry vendors and wholesalers.",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web Browser",
+    offers: { price: "0", priceCurrency: "USD" }
+  };
+
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.io/" },
+      { name: "Calculators", url: "https://cataleon.io/calculators" }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Jewelry Calculators & Tools - Diamond Pricing, Estimating | Cataleon"
+        description="Free professional jewelry tools: Diamond price calculator with Rapaport pricing, sieve size chart, manufacturing cost estimator, and invoice generator. Essential tools for jewelry businesses."
+        keywords="diamond calculator, jewelry tools, manufacturing cost estimator, diamond price calculator, jewelry invoice generator, sieve chart, carat calculator"
+        canonicalUrl="/calculators"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[toolSchema, breadcrumbSchema]} />
+
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
+      
       <div className="py-4 md:py-8 px-3 md:px-4">
       <div className="container max-w-6xl mx-auto">
         

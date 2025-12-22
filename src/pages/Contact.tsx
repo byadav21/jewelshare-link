@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 import {
   Mail, 
   Phone, 
@@ -20,6 +22,7 @@ import {
   Clock,
   CheckCircle2
 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, { message: "Name is required" }).max(100, { message: "Name must be less than 100 characters" }),
@@ -113,19 +116,19 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      details: "support@jewelrycatalog.com",
-      link: "mailto:support@jewelrycatalog.com"
+      details: "support@cataleon.com",
+      link: "mailto:support@cataleon.com"
     },
     {
       icon: Phone,
       title: "Phone",
-      details: "+1 (234) 567-890",
-      link: "tel:+1234567890"
+      details: "095991 95566",
+      link: "tel:+919599195566"
     },
     {
       icon: MapPin,
       title: "Office",
-      details: "Mumbai, Maharashtra, India",
+      details: "2nd floor, Unit no 201, Green Wood Plaza, Block B, Greenwood City, Sector 45, Gurugram, Haryana 122003",
       link: "#"
     },
     {
@@ -143,15 +146,52 @@ const Contact = () => {
     { value: "partnership", label: "Partnership" }
   ];
 
+  // Contact page structured data
+  const contactStructuredData = {
+    type: "Organization" as const,
+    name: "Hamlet E Commerce Pvt. Ltd.",
+    description: "Contact Cataleon for jewelry catalog management support, demos, and partnerships.",
+    url: "https://cataleon.com",
+    logo: "https://cataleon.com/logo.png",
+    email: "support@cataleon.com",
+    telephone: "+91-95991-95566",
+    address: {
+      streetAddress: "2nd floor, Unit no 201, Green Wood Plaza, Block B, Greenwood City, Sector 45",
+      addressLocality: "Gurugram",
+      addressRegion: "Haryana",
+      addressCountry: "India"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Contact Cataleon - Get Support, Request Demo, or Partner With Us"
+        description="Contact the Cataleon team for jewelry catalog management support, product demos, partnership opportunities, or general inquiries. We respond within 24 hours. Email: support@cataleon.com"
+        keywords="contact Cataleon, jewelry software support, request demo, jewelry platform help, B2B jewelry partnership"
+        canonicalUrl="/contact"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={contactStructuredData} />
+      
       <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
       
       {/* Hero Section */}
       <section className="border-b bg-gradient-to-br from-jewellery-from/10 via-gemstone-from/10 to-diamond-from/10 py-20">
         <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="mx-auto max-w-3xl text-center">
+              {/* AI Summary */}
+              <p className="sr-only">
+                Contact Cataleon for support, demos, or partnerships. Email: support@cataleon.com. Phone: +1 (234) 567-890. Office: Mumbai, Maharashtra, India. Business Hours: Mon-Fri 9AM-6PM IST. We respond within 24 hours.
+              </p>
               <h1 className="mb-4 text-5xl font-bold">Get in Touch</h1>
               <p className="text-xl text-muted-foreground">
                 Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.

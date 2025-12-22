@@ -14,6 +14,8 @@ export const ROUTES = {
   IMAGE_DEMO: "/image-optimization-demo",
   DIAMOND_CALCULATOR: "/diamond-calculator",
   DIAMOND_SIZING_CHART: "/diamond-sizing-chart",
+  DIAMOND_SIEVE_CHART: "/diamond-sieve-chart",
+  DIAMOND_EDUCATION: "/diamond-education",
   MANUFACTURING_COST: "/manufacturing-cost",
   INVOICE_HISTORY: "/invoice-history",
   ESTIMATE_HISTORY: "/estimate-history",
@@ -27,6 +29,9 @@ export const ROUTES = {
   PRIVACY_POLICY: "/privacy-policy",
   TERMS_OF_SERVICE: "/terms-of-service",
   COOKIE_POLICY: "/cookie-policy",
+  FAQ: "/faq",
+  SITEMAP: "/sitemap",
+  INSTALL: "/install",
   AUTH: "/auth",
   RESET_PASSWORD: "/reset-password",
 

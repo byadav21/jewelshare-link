@@ -22,12 +22,17 @@ export const NotFound = lazy(() => import("@/pages/NotFound"));
 export const ImageOptimizationDemo = lazy(() => import("@/pages/ImageOptimizationDemo"));
 export const DiamondCalculator = lazy(() => import("@/pages/DiamondCalculator"));
 export const DiamondSizingChart = lazy(() => import("@/pages/DiamondSizingChart"));
+export const DiamondSieveChart = lazy(() => import("@/pages/DiamondSieveChart"));
 export const ManufacturingCost = lazy(() => import("@/pages/ManufacturingCost"));
 export const Calculators = lazy(() => import("@/pages/Calculators"));
+export const DiamondEducation = lazy(() => import("@/pages/DiamondEducation"));
 export const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 export const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 export const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 export const CookiePolicyPage = lazy(() => import("@/pages/CookiePolicyPage"));
+export const FAQ = lazy(() => import("@/pages/FAQ"));
+export const Sitemap = lazy(() => import("@/pages/Sitemap"));
+export const Install = lazy(() => import("@/pages/Install"));
 
 // Auth-only pages
 export const PendingApproval = lazy(() => import("@/pages/PendingApproval"));

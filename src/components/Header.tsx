@@ -9,7 +9,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Link, useNavigate } from "react-router-dom";
-import { Gem, Calculator, Wrench, Menu } from "lucide-react";
+import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler, GraduationCap, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useVendorProfile } from "@/hooks/useVendorProfile";
@@ -98,6 +98,78 @@ export const Header = () => {
                         </button>
                       </NavigationMenuLink>
                     </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => navigate("/diamond-sizing-chart")}
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500">
+                              <Ruler className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium leading-none mb-1">
+                                Diamond Sizing Chart
+                              </div>
+                              <p className="text-sm leading-snug text-muted-foreground">
+                                Diamond dimensions & measurements
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => navigate("/diamond-sieve-chart")}
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
+                              <Grid3X3 className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium leading-none mb-1">
+                                Diamond Sieve Chart
+                              </div>
+                              <p className="text-sm leading-snug text-muted-foreground">
+                                Sieve sizes, MM & carat reference
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => navigate("/diamond-education")}
+                          className={cn(
+                            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                              <GraduationCap className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium leading-none mb-1">
+                                Diamond Education
+                              </div>
+                              <p className="text-sm leading-snug text-muted-foreground">
+                                Interactive Color & Clarity Charts
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      </NavigationMenuLink>
+                    </li>
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
@@ -111,6 +183,12 @@ export const Header = () => {
               <NavigationMenuItem>
                 <Link to="/contact" className={navigationMenuTriggerStyle()}>
                   Contact
+                </Link>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link to="/faq" className={navigationMenuTriggerStyle()}>
+                  FAQ
                 </Link>
               </NavigationMenuItem>
             </NavigationMenuList>
@@ -168,6 +246,30 @@ export const Header = () => {
                     <div className="text-xs text-muted-foreground">Calculate manufacturing costs</div>
                   </div>
                 </button>
+                <button
+                  onClick={() => navigate("/diamond-sizing-chart")}
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500">
+                    <Ruler className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">Diamond Sizing Chart</div>
+                    <div className="text-xs text-muted-foreground">Diamond dimensions & measurements</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => navigate("/diamond-sieve-chart")}
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
+                    <Grid3X3 className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">Diamond Sieve Chart</div>
+                    <div className="text-xs text-muted-foreground">Sieve sizes & carat reference</div>
+                  </div>
+                </button>
               </div>
 
               <Link
@@ -181,6 +283,12 @@ export const Header = () => {
                 className="text-lg font-medium transition-colors hover:text-primary"
               >
                 Contact
+              </Link>
+              <Link
+                to="/faq"
+                className="text-lg font-medium transition-colors hover:text-primary"
+              >
+                FAQ
               </Link>
 
               <div className="pt-4 border-t space-y-2">

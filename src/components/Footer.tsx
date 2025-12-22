@@ -70,6 +70,16 @@ export const Footer = () => {
                   </button>
                 </li>
                 <li>
+                  <button onClick={() => navigate("/faq")} className="transition-colors hover:text-foreground">
+                    FAQ
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate("/sitemap")} className="transition-colors hover:text-foreground">
+                    Sitemap
+                  </button>
+                </li>
+                <li>
                   <button onClick={() => navigate("/press")} className="transition-colors hover:text-foreground">
                     Press
                   </button>
@@ -101,6 +111,11 @@ export const Footer = () => {
                     Invoice Generator
                   </button>
                 </li>
+                <li>
+                  <button onClick={() => navigate("/install")} className="transition-colors hover:text-foreground">
+                    📱 Install App
+                  </button>
+                </li>
               </ul>
             </div>
 
@@ -116,13 +131,13 @@ export const Footer = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Phone className="mt-0.5 h-4 w-4 shrink-0" />
-                  <a href="tel:+1234567890" className="transition-colors hover:text-foreground">
-                    +1 (234) 567-890
+                  <a href="tel:+919599195566" className="transition-colors hover:text-foreground">
+                    095991 95566
                   </a>
                 </li>
                 <li className="flex items-start gap-2">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>Mumbai, Maharashtra, India</span>
+                  <span>2nd floor, Unit no 201, Green Wood Plaza, Block B, Greenwood City, Sector 45, Gurugram, Haryana 122003</span>
                 </li>
                 <li>
                   <button onClick={() => navigate("/contact")} className="transition-colors hover:text-foreground">
@@ -137,7 +152,7 @@ export const Footer = () => {
         <ScrollReveal delay={0.2}>
           <div className="mt-12 border-t pt-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <p className="text-sm text-muted-foreground">© 2024 Cataleon. All rights reserved.</p>
+              <p className="text-sm text-muted-foreground">© 2024 Hamlet E Commerce Pvt. Ltd. All rights reserved.</p>
               <div className="flex gap-6 text-sm text-muted-foreground">
                 <button onClick={() => navigate("/privacy-policy")} className="transition-colors hover:text-foreground">
                   Privacy Policy
