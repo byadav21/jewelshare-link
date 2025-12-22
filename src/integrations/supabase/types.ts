@@ -460,6 +460,7 @@ export type Database = {
       }
       manufacturing_cost_estimates: {
         Row: {
+          archived_at: string | null
           cad_design_charges: number | null
           camming_charges: number | null
           certification_cost: number | null
@@ -469,6 +470,7 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           diamond_cost: number | null
+          estimate_category: string | null
           estimate_name: string
           estimated_completion_date: string | null
           final_selling_price: number | null
@@ -480,6 +482,7 @@ export type Database = {
           invoice_notes: string | null
           invoice_number: string | null
           invoice_status: string | null
+          is_archived: boolean | null
           is_customer_visible: boolean | null
           is_invoice_generated: boolean | null
           last_reminder_sent_at: string | null
@@ -500,6 +503,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           cad_design_charges?: number | null
           camming_charges?: number | null
           certification_cost?: number | null
@@ -509,6 +513,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           diamond_cost?: number | null
+          estimate_category?: string | null
           estimate_name: string
           estimated_completion_date?: string | null
           final_selling_price?: number | null
@@ -520,6 +525,7 @@ export type Database = {
           invoice_notes?: string | null
           invoice_number?: string | null
           invoice_status?: string | null
+          is_archived?: boolean | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
           last_reminder_sent_at?: string | null
@@ -540,6 +546,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           cad_design_charges?: number | null
           camming_charges?: number | null
           certification_cost?: number | null
@@ -549,6 +556,7 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           diamond_cost?: number | null
+          estimate_category?: string | null
           estimate_name?: string
           estimated_completion_date?: string | null
           final_selling_price?: number | null
@@ -560,6 +568,7 @@ export type Database = {
           invoice_notes?: string | null
           invoice_number?: string | null
           invoice_status?: string | null
+          is_archived?: boolean | null
           is_customer_visible?: boolean | null
           is_invoice_generated?: boolean | null
           last_reminder_sent_at?: string | null
@@ -991,6 +1000,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       redemptions: {
         Row: {
@@ -1517,11 +1556,14 @@ export type Database = {
           making_charges_per_gram: number | null
           phone: string | null
           pincode: string | null
+          platinum_rate_per_gram: number | null
           primary_brand_color: string | null
           secondary_brand_color: string | null
           seller_categories: string[] | null
+          silver_rate_per_gram: number | null
           state: string | null
           updated_at: string | null
+          usd_exchange_rate: number | null
           user_id: string
           whatsapp_number: string | null
           whatsapp_qr_url: string | null
@@ -1547,11 +1589,14 @@ export type Database = {
           making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          platinum_rate_per_gram?: number | null
           primary_brand_color?: string | null
           secondary_brand_color?: string | null
           seller_categories?: string[] | null
+          silver_rate_per_gram?: number | null
           state?: string | null
           updated_at?: string | null
+          usd_exchange_rate?: number | null
           user_id: string
           whatsapp_number?: string | null
           whatsapp_qr_url?: string | null
@@ -1577,11 +1622,14 @@ export type Database = {
           making_charges_per_gram?: number | null
           phone?: string | null
           pincode?: string | null
+          platinum_rate_per_gram?: number | null
           primary_brand_color?: string | null
           secondary_brand_color?: string | null
           seller_categories?: string[] | null
+          silver_rate_per_gram?: number | null
           state?: string | null
           updated_at?: string | null
+          usd_exchange_rate?: number | null
           user_id?: string
           whatsapp_number?: string | null
           whatsapp_qr_url?: string | null
@@ -1738,6 +1786,7 @@ export type Database = {
           points: number
         }[]
       }
+      get_scratch_session_id: { Args: never; Returns: string }
       hard_delete_products: {
         Args: { product_ids: string[] }
         Returns: undefined

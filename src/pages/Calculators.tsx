@@ -1,10 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Gem, Wrench, ArrowRight, Sparkles } from "lucide-react";
+import { Calculator, Gem, Wrench, ArrowRight, Sparkles, Ruler, Grid3X3 } from "lucide-react";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { useNavigate } from "react-router-dom";
-import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { TiltCard } from "@/components/TiltCard";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 
 const Calculators = () => {
   const navigate = useNavigate();
@@ -37,6 +41,28 @@ const Calculators = () => {
       gradient: "from-diamond-from to-diamond-to",
       path: "/diamond-calculator",
       badge: "Most Popular"
+    },
+    {
+      icon: Grid3X3,
+      title: "Diamond Sieve Size Chart",
+      description:
+        "Interactive reference chart for diamond sieve sizes. Understand the relationship between sieve numbers, mm dimensions, carat weights, and number of stones per carat. Essential for sorting and pricing melee diamonds.",
+      features: [
+        "Complete sieve size reference",
+        "MM to sieve converter",
+        "Carat weight lookup",
+        "Stones per carat calculator",
+        "Interactive search & filter"
+      ],
+      gradient: "from-indigo-500 to-purple-600",
+      path: "/diamond-sieve-chart",
+      badge: "Reference",
+      extraButtons: [
+        {
+          label: "Diamond Sizing Chart",
+          path: "/diamond-sizing-chart"
+        }
+      ]
     },
     {
       icon: Wrench,
@@ -84,26 +110,62 @@ const Calculators = () => {
     }
   ];
 
+  // Structured data for SEO
+  const toolSchema = {
+    type: "SoftwareApplication" as const,
+    name: "Cataleon Jewelry Tools",
+    description: "Professional jewelry tools including diamond price calculator, sieve size chart, manufacturing cost estimator, and invoice generator. Essential tools for jewelry vendors and wholesalers.",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web Browser",
+    offers: { price: "0", priceCurrency: "USD" }
+  };
+
+  const breadcrumbSchema = {
+    type: "BreadcrumbList" as const,
+    items: [
+      { name: "Home", url: "https://cataleon.io/" },
+      { name: "Calculators", url: "https://cataleon.io/calculators" }
+    ]
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Jewelry Calculators & Tools - Diamond Pricing, Estimating | Cataleon"
+        description="Free professional jewelry tools: Diamond price calculator with Rapaport pricing, sieve size chart, manufacturing cost estimator, and invoice generator. Essential tools for jewelry businesses."
+        keywords="diamond calculator, jewelry tools, manufacturing cost estimator, diamond price calculator, jewelry invoice generator, sieve chart, carat calculator"
+        canonicalUrl="/calculators"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={[toolSchema, breadcrumbSchema]} />
+
+      <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
+      </div>
+      
+      <div className="py-4 md:py-8 px-3 md:px-4">
       <div className="container max-w-6xl mx-auto">
-        <BackToHomeButton />
         
         <ScrollReveal>
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Calculator className="w-12 h-12 text-primary" />
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Jewelry Calculators
+          <div className="text-center mb-8 md:mb-12">
+            <div className="flex items-center justify-center gap-2 md:gap-3 mb-3 md:mb-4">
+              <Calculator className="w-8 h-8 md:w-12 md:h-12 text-primary" />
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Jewelry Tools
               </h1>
             </div>
-            <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-              Professional tools to help you price diamonds accurately and estimate manufacturing costs for jewelry production
+            <p className="text-muted-foreground text-sm md:text-base lg:text-xl max-w-2xl mx-auto px-4">
+              Professional tools for pricing diamonds and estimating jewelry production costs
             </p>
           </div>
         </ScrollReveal>
 
-        <div className="grid gap-8 md:grid-cols-3 mb-12">
+        <div className="grid gap-4 md:gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8 md:mb-12">
           {calculators.map((calc, index) => (
             <ScrollReveal key={index} delay={0.1 * index} direction="up">
               <Card 
@@ -217,6 +279,8 @@ const Calculators = () => {
           </Card>
         </ScrollReveal>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };

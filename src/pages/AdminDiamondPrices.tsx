@@ -6,19 +6,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, Upload, Trash2, AlertCircle, History, TrendingUp, TrendingDown, RefreshCw, Search, X } from "lucide-react";
+import { Download, Upload, Trash2, AlertCircle, RefreshCw, Search, X, Database } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const AdminDiamondPrices = () => {
   const [uploading, setUploading] = useState(false);
   const [pearFile, setPearFile] = useState<File | null>(null);
   const [roundFile, setRoundFile] = useState<File | null>(null);
+  const [replaceAllPear, setReplaceAllPear] = useState(true);
+  const [replaceAllRound, setReplaceAllRound] = useState(true);
   const [displayCount, setDisplayCount] = useState(100);
+  const [pendingUpload, setPendingUpload] = useState<{ file: File; targetShape: 'pear' | 'round' } | null>(null);
   const queryClient = useQueryClient();
 
   // Filter states
@@ -82,20 +95,6 @@ const AdminDiamondPrices = () => {
   };
 
   const hasActiveFilters = filterShape || filterColorGrade || filterClarityGrade || filterCaratMin || filterCaratMax;
-
-  const { data: priceHistory, isLoading: historyLoading } = useQuery({
-    queryKey: ["diamond-price-history"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("diamond_price_history")
-        .select("*")
-        .order("changed_at", { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      return data;
-    },
-  });
 
   const downloadTemplate = () => {
     const headers = [
@@ -183,12 +182,24 @@ const AdminDiamondPrices = () => {
     };
   };
 
-  const handleFileUpload = async (file: File | null, targetShape: 'pear' | 'round') => {
+  const handleFileUpload = (file: File | null, targetShape: 'pear' | 'round') => {
     if (!file) {
       toast.error("Please select a CSV file");
       return;
     }
 
+    const shouldReplace = targetShape === 'pear' ? replaceAllPear : replaceAllRound;
+
+    if (shouldReplace) {
+      // Show confirmation dialog
+      setPendingUpload({ file, targetShape });
+    } else {
+      // Proceed directly without confirmation
+      executeUpload(file, targetShape, false);
+    }
+  };
+
+  const executeUpload = async (file: File, targetShape: 'pear' | 'round', shouldReplace: boolean) => {
     setUploading(true);
     try {
       const text = await file.text();
@@ -259,16 +270,27 @@ const AdminDiamondPrices = () => {
         return;
       }
 
-      // Insert records in batches
+      // Delete existing prices if replace all is checked
+      if (shouldReplace) {
+        if (targetShape === 'round') {
+          await supabase.from("diamond_prices").delete().eq("shape", "Round");
+        } else {
+          // Delete all non-round shapes for fancy
+          await supabase.from("diamond_prices").delete().neq("shape", "Round");
+        }
+      }
+
+      // Insert records
       const { error } = await supabase
         .from("diamond_prices")
         .insert(records);
 
       if (error) throw error;
 
+      const replaceMsg = shouldReplace ? " (replaced existing)" : "";
       const message = skippedRows > 0 
-        ? `Imported ${records.length} records (${skippedRows} rows skipped)`
-        : `Successfully imported ${records.length} price records!`;
+        ? `Imported ${records.length} records${replaceMsg} (${skippedRows} rows skipped)`
+        : `Successfully imported ${records.length} price records${replaceMsg}!`;
       
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["diamond-prices"] });
@@ -305,7 +327,6 @@ const AdminDiamondPrices = () => {
 
   const refreshData = () => {
     queryClient.invalidateQueries({ queryKey: ["diamond-prices"] });
-    queryClient.invalidateQueries({ queryKey: ["diamond-price-history"] });
     toast.success("Data refreshed");
   };
 
@@ -356,6 +377,16 @@ const AdminDiamondPrices = () => {
                     onChange={(e) => setPearFile(e.target.files?.[0] || null)}
                   />
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="replace-pear" 
+                    checked={replaceAllPear}
+                    onCheckedChange={(checked) => setReplaceAllPear(checked === true)}
+                  />
+                  <Label htmlFor="replace-pear" className="text-sm font-normal cursor-pointer">
+                    Replace all existing fancy shape prices
+                  </Label>
+                </div>
                 <Button
                   onClick={() => handleFileUpload(pearFile, 'pear')}
                   disabled={!pearFile || uploading}
@@ -379,6 +410,16 @@ const AdminDiamondPrices = () => {
                     accept=".csv"
                     onChange={(e) => setRoundFile(e.target.files?.[0] || null)}
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="replace-round" 
+                    checked={replaceAllRound}
+                    onCheckedChange={(checked) => setReplaceAllRound(checked === true)}
+                  />
+                  <Label htmlFor="replace-round" className="text-sm font-normal cursor-pointer">
+                    Replace all existing round prices
+                  </Label>
                 </div>
                 <Button
                   onClick={() => handleFileUpload(roundFile, 'round')}
@@ -555,170 +596,95 @@ const AdminDiamondPrices = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <History className="h-5 w-5" />
-              Diamond Pricing Data
+              <Database className="h-5 w-5" />
+              Current Prices
             </CardTitle>
             <CardDescription>
-              View current prices and update history
+              View current rapport prices
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="current" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="current">Current Prices</TabsTrigger>
-                <TabsTrigger value="history">Update History</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="current">
-                {isLoading ? (
-                  <p className="text-center py-8 text-muted-foreground">Loading...</p>
-                ) : totalCount === 0 ? (
-                  <p className="text-center py-8 text-muted-foreground">
-                    No pricing data yet. Upload a CSV to get started.
-                  </p>
-                ) : (
-                  <div className="border rounded-lg overflow-auto max-h-[500px]">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Shape</TableHead>
-                          <TableHead>Carat Range</TableHead>
-                          <TableHead>Color</TableHead>
-                          <TableHead>Clarity</TableHead>
-                          <TableHead>Cut</TableHead>
-                          <TableHead className="text-right">Price/Carat</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {prices.slice(0, displayCount).map((price) => (
-                          <TableRow key={price.id}>
-                            <TableCell>
-                              <Badge variant="outline">{price.shape}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              {price.carat_range_min} - {price.carat_range_max}
-                            </TableCell>
-                            <TableCell>{price.color_grade}</TableCell>
-                            <TableCell>{price.clarity_grade}</TableCell>
-                            <TableCell>{price.cut_grade}</TableCell>
-                            <TableCell className="text-right font-mono">
-                              {price.currency} {price.price_per_carat.toLocaleString()}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    {prices.length > displayCount && (
-                      <div className="flex flex-col items-center gap-2 py-4 border-t">
-                        <p className="text-sm text-muted-foreground">
-                          Showing {displayCount} of {prices.length} entries
-                        </p>
-                        <Button
-                          variant="outline"
-                          onClick={() => setDisplayCount(prev => Math.min(prev + 100, prices.length))}
-                        >
-                          Load More (100)
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="history">
-                {historyLoading ? (
-                  <p className="text-center py-8 text-muted-foreground">Loading history...</p>
-                ) : !priceHistory || priceHistory.length === 0 ? (
-                  <p className="text-center py-8 text-muted-foreground">
-                    No price updates recorded yet.
-                  </p>
-                ) : (
-                  <div className="border rounded-lg overflow-auto max-h-[500px]">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Shape</TableHead>
-                          <TableHead>Grades</TableHead>
-                          <TableHead>Change</TableHead>
-                          <TableHead className="text-right">Old Price</TableHead>
-                          <TableHead className="text-right">New Price</TableHead>
-                          <TableHead>Type</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {priceHistory.map((history) => {
-                          const priceChange = history.old_price_per_carat 
-                            ? ((history.new_price_per_carat - history.old_price_per_carat) / history.old_price_per_carat * 100)
-                            : 0;
-                          const isIncrease = priceChange > 0;
-                          
-                          return (
-                            <TableRow key={history.id}>
-                              <TableCell className="text-sm">
-                                {new Date(history.changed_at).toLocaleString()}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline">{history.shape}</Badge>
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {history.color_grade}/{history.clarity_grade}/{history.cut_grade}
-                                <div className="text-xs text-muted-foreground">
-                                  {history.carat_range_min}-{history.carat_range_max}ct
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {history.change_type === 'insert' ? (
-                                  <Badge variant="secondary">New</Badge>
-                                ) : history.change_type === 'delete' ? (
-                                  <Badge variant="destructive">Deleted</Badge>
-                                ) : priceChange !== 0 ? (
-                                  <div className="flex items-center gap-1">
-                                    {isIncrease ? (
-                                      <TrendingUp className="h-4 w-4 text-green-500" />
-                                    ) : (
-                                      <TrendingDown className="h-4 w-4 text-red-500" />
-                                    )}
-                                    <span className={isIncrease ? "text-green-600" : "text-red-600"}>
-                                      {isIncrease ? '+' : ''}{priceChange.toFixed(1)}%
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">No change</span>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-right font-mono text-sm">
-                                {history.old_price_per_carat 
-                                  ? `${history.currency} ${history.old_price_per_carat.toLocaleString()}`
-                                  : '-'}
-                              </TableCell>
-                              <TableCell className="text-right font-mono text-sm">
-                                {history.currency} {history.new_price_per_carat.toLocaleString()}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={
-                                  history.change_type === 'insert' ? 'default' :
-                                  history.change_type === 'delete' ? 'destructive' :
-                                  'secondary'
-                                }>
-                                  {history.change_type}
-                                </Badge>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                    <p className="text-sm text-muted-foreground text-center py-3 border-t">
-                      Showing last 100 updates
+            {isLoading ? (
+              <p className="text-center py-8 text-muted-foreground">Loading...</p>
+            ) : totalCount === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">
+                No pricing data yet. Upload a CSV to get started.
+              </p>
+            ) : (
+              <div className="border rounded-lg overflow-auto max-h-[500px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Shape</TableHead>
+                      <TableHead>Carat Range</TableHead>
+                      <TableHead>Color</TableHead>
+                      <TableHead>Clarity</TableHead>
+                      <TableHead>Cut</TableHead>
+                      <TableHead className="text-right">Price/Carat</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {prices.slice(0, displayCount).map((price) => (
+                      <TableRow key={price.id}>
+                        <TableCell>
+                          <Badge variant="outline">{price.shape}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {price.carat_range_min} - {price.carat_range_max}
+                        </TableCell>
+                        <TableCell>{price.color_grade}</TableCell>
+                        <TableCell>{price.clarity_grade}</TableCell>
+                        <TableCell>{price.cut_grade}</TableCell>
+                        <TableCell className="text-right font-mono">
+                          {price.currency} {price.price_per_carat.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {prices.length > displayCount && (
+                  <div className="flex flex-col items-center gap-2 py-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {displayCount} of {prices.length} entries
                     </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDisplayCount(prev => Math.min(prev + 100, prices.length))}
+                    >
+                      Load More (100)
+                    </Button>
                   </div>
                 )}
-              </TabsContent>
-            </Tabs>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!pendingUpload} onOpenChange={(open) => !open && setPendingUpload(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Replace All Prices?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all existing {pendingUpload?.targetShape === 'round' ? 'round' : 'fancy shape'} diamond prices before importing the new data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingUpload) {
+                  const shouldReplace = pendingUpload.targetShape === 'pear' ? replaceAllPear : replaceAllRound;
+                  executeUpload(pendingUpload.file, pendingUpload.targetShape, shouldReplace);
+                  setPendingUpload(null);
+                }
+              }}
+            >
+              Yes, Replace All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };

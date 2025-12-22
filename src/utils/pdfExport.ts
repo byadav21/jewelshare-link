@@ -112,7 +112,7 @@ export const exportCatalogToPDF = (
     product.diamond_weight ? `${product.diamond_weight}` : '-',
     product.weight_grams ? `${product.weight_grams}` : '-',
     product.net_weight ? `${product.net_weight}` : '-',
-    product.purity_fraction_used ? `${product.purity_fraction_used}%` : '-',
+    product.purity_fraction_used ? `${product.purity_fraction_used > 1 ? product.purity_fraction_used : (product.purity_fraction_used * 100).toFixed(0)}%` : '-',
     product.d_rate_1 ? `${product.d_rate_1.toLocaleString('en-IN')}` : '-',
     product.pointer_diamond ? `${product.pointer_diamond.toLocaleString('en-IN')}` : '-',
     product.d_value ? `${product.d_value.toLocaleString('en-IN')}` : '-',

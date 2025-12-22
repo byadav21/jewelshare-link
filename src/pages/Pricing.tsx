@@ -3,7 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Check, Gem, ArrowRight, Sparkles } from "lucide-react";
-import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -124,15 +128,47 @@ const Pricing = () => {
     { feature: "Support", starter: "Email", professional: "Priority Email", enterprise: "Phone + Email" }
   ];
 
+  // Product schema for pricing
+  const pricingSchema = {
+    type: "Product" as const,
+    name: "Cataleon Professional Plan",
+    description: "Professional jewelry catalog management with up to 1,000 products, 10 share links, advanced analytics, and team collaboration features.",
+    image: "https://cataleon.com/og-image.png",
+    brand: "Cataleon",
+    offers: {
+      price: "49",
+      priceCurrency: "USD",
+      availability: "InStock"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-6">
-        <BackToHomeButton />
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="Pricing Plans - Cataleon Jewelry Catalog Management"
+        description="Choose the perfect Cataleon plan for your jewelry business. Start free with our Essentials plan, or upgrade to Professional ($49/mo) or Enterprise ($149/mo) for unlimited products and advanced features. 14-day money-back guarantee."
+        keywords="jewelry software pricing, catalog management plans, jewelry inventory cost, B2B jewelry platform pricing, diamond calculator pricing"
+        canonicalUrl="/pricing"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData data={pricingSchema} />
+      
+      <Header />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-4">
+        <BreadcrumbNav />
       </div>
       
-      {/* Header */}
+      {/* Hero Section */}
       <section className="border-b">
         <div className="container mx-auto px-4 py-16 text-center">
+          {/* AI Summary */}
+          <p className="sr-only">
+            This page shows Cataleon pricing plans. Essentials: Free 30-day trial with unlimited calculators. Starter: Free forever with 100 products. Professional: $49/month with 1,000 products and team features. Enterprise: $149/month with unlimited everything. All plans include diamond calculator and manufacturing cost estimator.
+          </p>
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm">
             <Sparkles className="h-4 w-4 text-jewellery-from" />
             <span className="text-muted-foreground">Simple, Transparent Pricing</span>
@@ -274,6 +310,8 @@ const Pricing = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

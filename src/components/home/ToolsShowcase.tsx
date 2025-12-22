@@ -74,7 +74,10 @@ export const ToolsShowcase = () => {
         {tools.map((tool, index) => (
           <ScrollReveal key={index} delay={0.1 * index}>
             <TiltCard maxTilt={6} scale={1.05}>
-              <Card className="group relative overflow-hidden border-2 h-full hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300">
+              <Card 
+                className="group relative overflow-hidden border-2 h-full hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
+                onClick={() => navigate(tool.link)}
+              >
                 <div className={`absolute inset-0 bg-gradient-to-br ${tool.gradient} opacity-0 transition-opacity group-hover:opacity-10`} />
                 <CardContent className="p-8">
                   <div className={`mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${tool.gradient} shadow-lg group-hover:shadow-xl transition-all duration-300`}>

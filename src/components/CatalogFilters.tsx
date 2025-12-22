@@ -16,6 +16,10 @@ export interface FilterState {
   diamondColor: string;
   diamondClarity: string;
   deliveryType: string;
+  minDiamondWeight: string;
+  maxDiamondWeight: string;
+  minNetWeight: string;
+  maxNetWeight: string;
   // Gemstone specific
   gemstoneType: string;
   color: string;
@@ -90,6 +94,10 @@ export const CatalogFilters = ({
       diamondColor: "",
       diamondClarity: "",
       deliveryType: "",
+      minDiamondWeight: "",
+      maxDiamondWeight: "",
+      minNetWeight: "",
+      maxNetWeight: "",
       gemstoneType: "",
       color: "",
       clarity: "",
@@ -135,7 +143,7 @@ export const CatalogFilters = ({
       </div>
 
       <div className={`grid grid-cols-2 gap-2 sm:gap-4 ${
-        productType === 'Jewellery' ? 'lg:grid-cols-3 xl:grid-cols-7' : 
+        productType === 'Jewellery' ? 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6' : 
         productType === 'Gemstones' ? 'lg:grid-cols-3 xl:grid-cols-8' :
         'lg:grid-cols-3 xl:grid-cols-6'
       }`}>

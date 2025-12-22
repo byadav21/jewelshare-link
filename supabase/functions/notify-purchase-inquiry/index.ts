@@ -7,6 +7,39 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 emails per minute per IP
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// HTML encode user inputs to prevent injection
+function htmlEncode(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface NotificationRequest {
@@ -19,6 +52,22 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limiting
+  const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                   req.headers.get("x-real-ip") || 
+                   "unknown";
+  
+  if (!checkRateLimit(clientIP)) {
+    console.log(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      { 
+        status: 429, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      }
+    );
+  }
+
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -26,6 +75,8 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const { inquiry_id }: NotificationRequest = await req.json();
+
+    console.log("Processing purchase inquiry notification for:", inquiry_id);
 
     // Fetch inquiry details with related product and vendor info
     const { data: inquiry, error: inquiryError } = await supabaseClient
@@ -57,30 +108,38 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Sanitize all user inputs
+    const safeProductName = htmlEncode(inquiry.products?.name);
+    const safeProductSku = htmlEncode(inquiry.products?.sku);
+    const safeCustomerName = htmlEncode(inquiry.customer_name);
+    const safeCustomerEmail = htmlEncode(inquiry.customer_email);
+    const safeCustomerPhone = htmlEncode(inquiry.customer_phone);
+    const safeMessage = htmlEncode(inquiry.message);
+
     // Send email notification
     const emailResponse = await resend.emails.send({
       from: "Jewelry Platform <onboarding@resend.dev>",
       to: [vendorProfile.email],
-      subject: `New Purchase Inquiry: ${inquiry.products.name}`,
+      subject: `New Purchase Inquiry: ${safeProductName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">New Purchase Inquiry Received</h2>
           
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #555;">Product Details</h3>
-            <p><strong>Product:</strong> ${inquiry.products.name}</p>
-            ${inquiry.products.sku ? `<p><strong>SKU:</strong> ${inquiry.products.sku}</p>` : ""}
+            <p><strong>Product:</strong> ${safeProductName}</p>
+            ${safeProductSku ? `<p><strong>SKU:</strong> ${safeProductSku}</p>` : ""}
             <p><strong>Quantity:</strong> ${inquiry.quantity}</p>
-            <p><strong>Unit Price:</strong> ₹${inquiry.products.retail_price.toLocaleString("en-IN")}</p>
-            <p><strong>Total Value:</strong> ₹${(inquiry.products.retail_price * inquiry.quantity).toLocaleString("en-IN")}</p>
+            <p><strong>Unit Price:</strong> Rs.${inquiry.products?.retail_price?.toLocaleString("en-IN") || 'N/A'}</p>
+            <p><strong>Total Value:</strong> Rs.${((inquiry.products?.retail_price || 0) * inquiry.quantity).toLocaleString("en-IN")}</p>
           </div>
 
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #555;">Customer Information</h3>
-            <p><strong>Name:</strong> ${inquiry.customer_name}</p>
-            <p><strong>Email:</strong> ${inquiry.customer_email}</p>
-            ${inquiry.customer_phone ? `<p><strong>Phone:</strong> ${inquiry.customer_phone}</p>` : ""}
-            ${inquiry.message ? `<p><strong>Message:</strong><br/>${inquiry.message}</p>` : ""}
+            <p><strong>Name:</strong> ${safeCustomerName}</p>
+            <p><strong>Email:</strong> ${safeCustomerEmail}</p>
+            ${safeCustomerPhone ? `<p><strong>Phone:</strong> ${safeCustomerPhone}</p>` : ""}
+            ${safeMessage ? `<p><strong>Message:</strong><br/>${safeMessage}</p>` : ""}
           </div>
 
           <p style="color: #666; margin-top: 30px;">
@@ -97,6 +156,29 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Email sent successfully:", emailResponse);
+
+    // Also send push notification to the vendor
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        },
+        body: JSON.stringify({
+          user_id: inquiry.share_links.user_id,
+          title: "New Purchase Inquiry",
+          body: `${safeCustomerName} is interested in ${safeProductName}`,
+          url: "/purchase-inquiries",
+          data: { inquiry_id, type: "purchase_inquiry" },
+        }),
+      });
+      console.log("Push notification response:", pushResponse.status);
+    } catch (pushError) {
+      console.error("Error sending push notification:", pushError);
+      // Don't fail the whole request if push fails
+    }
 
     return new Response(
       JSON.stringify({ success: true, email_id: emailResponse.data?.id }),

@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, CheckCircle2, Video } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { Footer } from "@/components/Footer";
 
 const Demo = () => {
   const navigate = useNavigate();
@@ -176,6 +177,9 @@ const Demo = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -12,26 +12,39 @@ export interface VendorBranding {
   address?: string;
 }
 
+export type MetalType = 'gold' | 'platinum' | 'silver';
+
 export interface LineItem {
   id: string;
   item_name: string;
   description: string;
   image_url: string;
+  certificate_image_url?: string;
+  metal_type?: MetalType;
+  metal_rate?: number;
   diamond_weight: number;
   diamond_per_carat_price: number;
   diamond_color: string;
   diamond_clarity: string;
   diamond_cut: string;
   diamond_certification: string;
+  diamond_shape?: string;
+  diamond_fluorescence?: string;
+  diamond_measurements?: string;
   gemstone_weight: number;
   gemstone_type: string;
   gemstone_color: string;
   gemstone_clarity: string;
+  gemstone_origin?: string;
+  gemstone_treatment?: string;
+  gemstone_shape?: string;
+  gemstone_per_carat_price?: number;
   net_weight: number;
   gross_weight: number;
   purity_fraction: number;
   diamond_cost: number;
   gemstone_cost: number;
+  metal_cost?: number;
   gold_cost: number;
   making_charges: number;
   certification_cost: number;
@@ -48,6 +61,7 @@ export interface InvoiceData {
   paymentTerms?: string;
   estimateName: string;
   status: string;
+  invoiceType?: 'tax' | 'export' | 'proforma';
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
@@ -83,11 +97,21 @@ export interface InvoiceData {
   invoiceNotes?: string;
   details?: any;
   vendorBranding?: VendorBranding;
-  template?: 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
+  template?: 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury' | 'loose_diamond' | 'gemstone';
   lineItems?: LineItem[];
+  estimateCategory?: 'jewelry' | 'loose_diamond' | 'gemstone';
 }
 
-type InvoiceTemplate = 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury';
+type InvoiceTemplate = 'detailed' | 'summary' | 'minimal' | 'traditional' | 'modern' | 'luxury' | 'loose_diamond' | 'gemstone';
+
+// Helper function to get invoice type label
+const getInvoiceTypeLabel = (type?: 'tax' | 'export' | 'proforma'): string => {
+  switch (type) {
+    case 'export': return 'EXPORT INVOICE';
+    case 'proforma': return 'PROFORMA INVOICE';
+    default: return 'TAX INVOICE';
+  }
+};
 
 // Helper function for consistent currency formatting (PDF-safe)
 const formatCurrency = (amount: number) => {
@@ -141,6 +165,16 @@ const loadImageAsBase64 = async (url: string): Promise<string | null> => {
 
 export const generateInvoicePDF = async (data: InvoiceData) => {
   const template = data.template || 'detailed';
+  
+  // Auto-select loose diamond template if category is loose_diamond
+  if (data.estimateCategory === 'loose_diamond' || template === 'loose_diamond') {
+    return await generateLooseDiamondInvoice(data);
+  }
+  
+  // Auto-select gemstone template if category is gemstone
+  if (data.estimateCategory === 'gemstone' || template === 'gemstone') {
+    return await generateGemstoneInvoice(data);
+  }
   
   switch (template) {
     case 'summary':
@@ -242,14 +276,16 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
       doc.text(data.vendorBranding.tagline, nameStartX, 28, { align: nameAlign });
     }
     
-    // INVOICE label
+    // INVOICE label with type
+    const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text('TAX INVOICE', nameStartX, 36, { align: nameAlign });
+    doc.text(invoiceLabel, nameStartX, 36, { align: nameAlign });
   } else {
+    const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
     doc.setFontSize(26);
-    doc.text('TAX INVOICE', pageWidth / 2, 28, { align: 'center' });
+    doc.text(invoiceLabel, pageWidth / 2, 28, { align: 'center' });
   }
   
   // Reset text color
@@ -354,6 +390,30 @@ const generateDetailedInvoice = async (data: InvoiceData) => {
     doc.text('Terms:', 20, infoY);
     doc.setFont('helvetica', 'normal');
     doc.text(data.paymentTerms, 35, infoY);
+  }
+  
+  // Payment status badge
+  if (data.status) {
+    const statusColors: Record<string, { bg: [number, number, number]; text: [number, number, number] }> = {
+      paid: { bg: [220, 252, 231], text: [22, 163, 74] },
+      partial: { bg: [254, 249, 195], text: [202, 138, 4] },
+      pending: { bg: [254, 226, 226], text: [220, 38, 38] },
+    };
+    const statusLabels: Record<string, string> = {
+      paid: 'PAID',
+      partial: 'PARTIAL',
+      pending: 'UNPAID',
+    };
+    const statusConfig = statusColors[data.status] || statusColors.pending;
+    const statusLabel = statusLabels[data.status] || 'UNPAID';
+    
+    doc.setFillColor(...statusConfig.bg);
+    doc.roundedRect(pageWidth - 50, 55, 36, 10, 2, 2, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...statusConfig.text);
+    doc.text(statusLabel, pageWidth - 32, 61.5, { align: 'center' });
+    doc.setTextColor(40, 40, 50);
   }
   
   // Customer Details Section with enhanced design
@@ -852,15 +912,6 @@ const renderTotalsSection = (
   doc.text(formatCurrency(data.totalCost), pageWidth - 20, lineY, { align: 'right' });
   lineY += 6;
   
-  // Profit Margin
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(80, 80, 90);
-  doc.text(`Profit Margin (${data.profitMargin}%):`, 20, lineY);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(22, 163, 74);
-  doc.text(formatCurrency((data.finalSellingPrice - data.totalCost)), pageWidth - 20, lineY, { align: 'right' });
-  lineY += 6;
-  
   // Amount before tax with subtle separator
   doc.setDrawColor(220, 225, 235);
   doc.setLineWidth(0.3);
@@ -986,7 +1037,8 @@ const generateSummaryInvoice = async (data: InvoiceData) => {
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('INVOICE', pageWidth / 2, 22, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, 22, { align: 'center' });
   
   doc.setTextColor(0, 0, 0);
   
@@ -1061,7 +1113,8 @@ const generateMinimalInvoice = async (data: InvoiceData) => {
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('INVOICE', pageWidth / 2, 30, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, 30, { align: 'center' });
   
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(12);
@@ -1163,12 +1216,12 @@ const generateTraditionalInvoice = async (data: InvoiceData) => {
   doc.line(lineMargin, yPos, pageWidth - lineMargin, yPos);
   doc.circle(pageWidth / 2, yPos, 1, 'F');
   
-  // INVOICE title
   yPos += 12;
   doc.setFontSize(24);
   doc.setFont('times', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('INVOICE', pageWidth / 2, yPos, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, yPos, { align: 'center' });
   
   // Invoice details box
   yPos += 15;
@@ -1338,7 +1391,8 @@ const generateModernInvoice = async (data: InvoiceData) => {
   doc.setFontSize(48);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text('INVOICE', 20, 50);
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, 20, 50);
   
   // Invoice details - clean alignment
   let yPos = 65;
@@ -1518,7 +1572,8 @@ const generateLuxuryInvoice = async (data: InvoiceData) => {
   doc.setFontSize(20);
   doc.setFont('times', 'bold');
   doc.setTextColor(deepPurple.r, deepPurple.g, deepPurple.b);
-  doc.text('INVOICE', pageWidth / 2, yPos, { align: 'center' });
+  const invoiceLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceLabel, pageWidth / 2, yPos, { align: 'center' });
   
   // Elegant info boxes
   yPos += 15;
@@ -1640,5 +1695,947 @@ const generateLuxuryInvoice = async (data: InvoiceData) => {
   }
   
   const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_Luxury.pdf`;
+  doc.save(fileName);
+};
+
+// Loose Diamond Invoice Template - specialized for loose diamond sales
+const generateLooseDiamondInvoice = async (data: InvoiceData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  // Diamond-themed colors
+  const diamondBlue = { r: 37, g: 99, b: 235 };
+  const crystalWhite = { r: 248, g: 250, b: 252 };
+  const deepGray = { r: 30, g: 41, b: 59 };
+  const accentSilver = { r: 148, g: 163, b: 184 };
+  
+  // Parse vendor colors if available
+  const primaryColor = data.vendorBranding?.primaryColor || '#2563eb';
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : diamondBlue;
+  };
+  const primaryRgb = hexToRgb(primaryColor);
+  
+  // Header with diamond motif
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(0, 0, pageWidth, 45, 'F');
+  
+  // Diamond pattern accent
+  doc.setFillColor(255, 255, 255);
+  doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+  for (let i = 0; i < 5; i++) {
+    const x = 20 + i * 40;
+    doc.moveTo(x, 22);
+    doc.lineTo(x + 8, 10);
+    doc.lineTo(x + 16, 22);
+    doc.lineTo(x + 8, 34);
+    doc.close();
+    doc.fill();
+  }
+  doc.setGState(new (doc as any).GState({ opacity: 1 }));
+  
+  // Invoice Type Label
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(255, 255, 255);
+  const invoiceTypeLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceTypeLabel, pageWidth - 20, 12, { align: 'right' });
+  
+  // Main Title
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('LOOSE DIAMOND INVOICE', 20, 28);
+  
+  // Invoice Number
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Invoice: ${data.invoiceNumber}`, 20, 38);
+  
+  // Vendor logo on header right
+  let logoWidth = 0;
+  if (data.vendorBranding?.logo) {
+    try {
+      const logoBase64 = await loadImageAsBase64(data.vendorBranding.logo);
+      if (logoBase64) {
+        // Add white background for logo
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(pageWidth - 45, 8, 30, 30, 2, 2, 'F');
+        doc.addImage(logoBase64, 'PNG', pageWidth - 43, 10, 26, 26);
+        logoWidth = 35;
+      }
+    } catch (error) {
+      console.error('Error loading logo:', error);
+    }
+  }
+  
+  // Vendor info on header right (adjusted for logo)
+  const vendorTextX = logoWidth > 0 ? pageWidth - 50 : pageWidth - 20;
+  if (data.vendorBranding?.name) {
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.vendorBranding.name, vendorTextX, 28, { align: 'right' });
+  }
+  if (data.vendorBranding?.phone) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Tel: ${data.vendorBranding.phone}`, vendorTextX, 38, { align: 'right' });
+  }
+  
+  let yPos = 55;
+  
+  // Date and Payment Status Row
+  doc.setFillColor(crystalWhite.r, crystalWhite.g, crystalWhite.b);
+  doc.rect(0, yPos, pageWidth, 18, 'F');
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+  doc.text(`Date: ${data.invoiceDate}`, 20, yPos + 11);
+  
+  if (data.paymentDueDate) {
+    doc.text(`Due: ${data.paymentDueDate}`, 80, yPos + 11);
+  }
+  
+  // Payment Status Badge
+  if (data.status) {
+    const statusColors: Record<string, { bg: [number, number, number]; text: [number, number, number] }> = {
+      paid: { bg: [220, 252, 231], text: [22, 163, 74] },
+      partial: { bg: [254, 249, 195], text: [202, 138, 4] },
+      pending: { bg: [254, 226, 226], text: [220, 38, 38] },
+    };
+    const statusConfig = statusColors[data.status] || statusColors.pending;
+    const statusText = data.status.toUpperCase();
+    const statusWidth = doc.getTextWidth(statusText) + 12;
+    
+    doc.setFillColor(...statusConfig.bg);
+    doc.roundedRect(pageWidth - 20 - statusWidth, yPos + 4, statusWidth, 10, 2, 2, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...statusConfig.text);
+    doc.text(statusText, pageWidth - 20 - statusWidth + 6, yPos + 11);
+  }
+  
+  yPos += 25;
+  
+  // Customer Information Section
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('BILL TO', 20, yPos);
+  
+  yPos += 6;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+  
+  if (data.customerName) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.customerName, 20, yPos);
+    yPos += 5;
+    doc.setFont('helvetica', 'normal');
+  }
+  if (data.customerPhone) {
+    doc.text(`Phone: ${data.customerPhone}`, 20, yPos);
+    yPos += 5;
+  }
+  if (data.customerEmail) {
+    doc.text(`Email: ${data.customerEmail}`, 20, yPos);
+    yPos += 5;
+  }
+  if (data.customerAddress) {
+    const addressLines = doc.splitTextToSize(data.customerAddress, 80);
+    doc.text(addressLines, 20, yPos);
+    yPos += addressLines.length * 5;
+  }
+  
+  yPos += 10;
+  
+  // Diamond Specifications Table Header
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(15, yPos, pageWidth - 30, 10, 'F');
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('DIAMOND SPECIFICATIONS', 20, yPos + 7);
+  doc.text('AMOUNT', pageWidth - 20, yPos + 7, { align: 'right' });
+  
+  yPos += 15;
+  
+  // Collect certificate images for later
+  const certificateImages: { itemName: string; imageUrl: string }[] = [];
+  
+  // Line items for loose diamonds
+  if (data.lineItems && data.lineItems.length > 0) {
+    for (let index = 0; index < data.lineItems.length; index++) {
+      const item = data.lineItems[index];
+      
+      // Alternate row background
+      if (index % 2 === 0) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(15, yPos - 4, pageWidth - 30, 40, 'F');
+      }
+      
+      // Item name with certificate indicator
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+      const itemName = item.item_name || `Diamond ${index + 1}`;
+      doc.text(itemName, 20, yPos);
+      
+      // If certificate exists, add indicator and store for later
+      if (item.certificate_image_url) {
+        certificateImages.push({ itemName, imageUrl: item.certificate_image_url });
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        doc.text('(Certificate - Page 2)', 20 + doc.getTextWidth(itemName) + 5, yPos);
+      }
+      
+      // Diamond 4Cs specifications
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+      
+      let specY = yPos + 5;
+      const specs = [];
+      if (item.diamond_weight) specs.push(`Weight: ${item.diamond_weight} ct`);
+      if (item.diamond_color) specs.push(`Color: ${item.diamond_color}`);
+      if (item.diamond_clarity) specs.push(`Clarity: ${item.diamond_clarity}`);
+      if (item.diamond_cut) specs.push(`Cut: ${item.diamond_cut}`);
+      if (item.diamond_shape) specs.push(`Shape: ${item.diamond_shape}`);
+      if (item.diamond_certification) specs.push(`Cert: ${item.diamond_certification}`);
+      
+      const specLine1 = specs.slice(0, 3).join(' | ');
+      const specLine2 = specs.slice(3).join(' | ');
+      
+      doc.text(specLine1, 20, specY);
+      if (specLine2) {
+        doc.text(specLine2, 20, specY + 4);
+      }
+      
+      // Additional specs line
+      const additionalSpecs = [];
+      if (item.diamond_fluorescence) additionalSpecs.push(`Fluorescence: ${item.diamond_fluorescence}`);
+      if (item.diamond_measurements) additionalSpecs.push(`Measurements: ${item.diamond_measurements}`);
+      if (additionalSpecs.length > 0) {
+        doc.text(additionalSpecs.join(' | '), 20, specY + 8);
+      }
+      
+      // Per carat price
+      if (item.diamond_per_carat_price) {
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Rs. ${item.diamond_per_carat_price.toLocaleString('en-IN')} /ct`, 20, specY + 14);
+      }
+      
+      // Subtotal
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+      doc.text(formatCurrency(item.diamond_cost || item.subtotal || 0), pageWidth - 20, yPos, { align: 'right' });
+      
+      yPos += 44;
+    }
+  } else {
+    // Single diamond info from main data
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, yPos - 4, pageWidth - 30, 25, 'F');
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    doc.text('Loose Diamond', 20, yPos);
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+    doc.text(`Weight: ${data.netWeight || 0} ct`, 20, yPos + 5);
+    
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text(formatCurrency(data.diamondCost || 0), pageWidth - 20, yPos, { align: 'right' });
+    
+    yPos += 30;
+  }
+  
+  // Cost breakdown section
+  yPos += 5;
+  doc.setDrawColor(accentSilver.r, accentSilver.g, accentSilver.b);
+  doc.setLineWidth(0.3);
+  doc.line(15, yPos, pageWidth - 15, yPos);
+  yPos += 8;
+  
+  // Additional costs (if any)
+  const additionalCosts = [
+    { label: 'Certification Cost', value: data.certificationCost },
+    { label: 'Shipping Charges', value: data.shippingCharges },
+  ].filter(c => c.value && c.value > 0);
+  
+  if (additionalCosts.length > 0) {
+    doc.setFontSize(9);
+    additionalCosts.forEach(cost => {
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+      doc.text(cost.label, 20, yPos);
+      doc.text(formatCurrency(cost.value || 0), pageWidth - 20, yPos, { align: 'right' });
+      yPos += 6;
+    });
+  }
+  
+  // GST if applicable
+  if (data.gstMode === 'sgst_cgst' && (data.sgstAmount || data.cgstAmount)) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    if (data.sgstAmount) {
+      doc.text(`SGST (${data.sgstPercentage}%)`, 20, yPos);
+      doc.text(formatCurrency(data.sgstAmount), pageWidth - 20, yPos, { align: 'right' });
+      yPos += 6;
+    }
+    if (data.cgstAmount) {
+      doc.text(`CGST (${data.cgstPercentage}%)`, 20, yPos);
+      doc.text(formatCurrency(data.cgstAmount), pageWidth - 20, yPos, { align: 'right' });
+      yPos += 6;
+    }
+  } else if (data.gstMode === 'igst' && data.igstAmount) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    doc.text(`IGST (${data.igstPercentage}%)`, 20, yPos);
+    doc.text(formatCurrency(data.igstAmount), pageWidth - 20, yPos, { align: 'right' });
+    yPos += 6;
+  }
+  
+  yPos += 5;
+  
+  // Grand Total Box
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.roundedRect(pageWidth - 95, yPos, 80, 22, 3, 3, 'F');
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('GRAND TOTAL', pageWidth - 90, yPos + 8);
+  
+  doc.setFontSize(14);
+  doc.text(formatCurrency(data.grandTotal || data.finalSellingPrice || 0), pageWidth - 90, yPos + 17);
+  
+  // USD Equivalent if available
+  if (data.exchangeRate && data.grandTotal) {
+    yPos += 28;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+    const usdAmount = (data.grandTotal / data.exchangeRate).toFixed(2);
+    doc.text(`USD Equivalent: $ ${Number(usdAmount).toLocaleString('en-US')} (Rate: ${data.exchangeRate})`, pageWidth - 20, yPos, { align: 'right' });
+  }
+  
+  // Notes section
+  if (data.invoiceNotes) {
+    yPos += 15;
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(15, yPos, pageWidth - 30, 25, 2, 2, 'F');
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text('NOTES', 20, yPos + 6);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    const noteLines = doc.splitTextToSize(data.invoiceNotes, pageWidth - 50);
+    doc.text(noteLines.slice(0, 2), 20, yPos + 12);
+  }
+  
+  // Footer
+  const footerY = pageHeight - 25;
+  doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.setLineWidth(0.5);
+  doc.line(15, footerY, pageWidth - 15, footerY);
+  
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+  doc.text('Thank you for your business', pageWidth / 2, footerY + 6, { align: 'center' });
+  
+  if (data.vendorBranding?.email || data.vendorBranding?.phone) {
+    let contactInfo = '';
+    if (data.vendorBranding.phone) contactInfo += `Tel: ${data.vendorBranding.phone}`;
+    if (data.vendorBranding.phone && data.vendorBranding.email) contactInfo += ' | ';
+    if (data.vendorBranding.email) contactInfo += `Email: ${data.vendorBranding.email}`;
+    doc.text(contactInfo, pageWidth / 2, footerY + 12, { align: 'center' });
+  }
+  
+  // Calculate total pages
+  const totalPages = certificateImages.length > 0 ? 2 : 1;
+  
+  // Page number
+  doc.setFontSize(7);
+  doc.text(`Page 1 of ${totalPages}`, pageWidth - 20, footerY + 18, { align: 'right' });
+  
+  // Add certificate images page if any certificates exist
+  if (certificateImages.length > 0) {
+    doc.addPage();
+    let certYPos = 20;
+    
+    // Certificate page header
+    doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+    
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('DIAMOND CERTIFICATES', 20, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Invoice: ${data.invoiceNumber}`, pageWidth - 20, 20, { align: 'right' });
+    
+    certYPos = 45;
+    
+    // Load and add certificate images
+    for (let i = 0; i < certificateImages.length; i++) {
+      const cert = certificateImages[i];
+      
+      // Check if we need a new page (leave room for image + caption)
+      if (certYPos > pageHeight - 100) {
+        doc.addPage();
+        certYPos = 20;
+      }
+      
+      // Certificate label
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+      doc.text(`Certificate for: ${cert.itemName}`, 20, certYPos);
+      certYPos += 8;
+      
+      // Try to load and embed the certificate image
+      try {
+        const imageData = await loadImageAsBase64(cert.imageUrl);
+        if (imageData) {
+          // Calculate image dimensions to fit the page
+          const maxWidth = pageWidth - 40;
+          const maxHeight = 120;
+          
+          // Add image with border
+          doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          doc.setLineWidth(0.5);
+          doc.rect(19, certYPos - 1, maxWidth + 2, maxHeight + 2, 'S');
+          
+          doc.addImage(imageData, 'JPEG', 20, certYPos, maxWidth, maxHeight);
+          certYPos += maxHeight + 15;
+        } else {
+          // Fallback if image fails to load
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+          doc.text('Certificate image could not be loaded', 20, certYPos);
+          certYPos += 15;
+        }
+      } catch (error) {
+        console.error('Error loading certificate image:', error);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+        doc.text('Certificate image could not be loaded', 20, certYPos);
+        certYPos += 15;
+      }
+    }
+    
+    // Footer on certificate page
+    const certFooterY = pageHeight - 15;
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+    doc.text(`Page 2 of ${totalPages}`, pageWidth - 20, certFooterY, { align: 'right' });
+    
+    if (data.vendorBranding?.name) {
+      doc.text(data.vendorBranding.name, 20, certFooterY);
+    }
+  }
+  
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_LooseDiamond.pdf`;
+  doc.save(fileName);
+};
+
+// Gemstone Invoice Template - Similar to Loose Diamond but with gemstone-focused styling
+const generateGemstoneInvoice = async (data: InvoiceData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  // Gemstone-inspired color palette
+  const emeraldGreen = { r: 16, g: 185, b: 129 };
+  const deepGray = { r: 30, g: 41, b: 59 };
+  const crystalWhite = { r: 248, g: 250, b: 252 };
+  const accentSilver = { r: 100, g: 116, b: 139 };
+  
+  const primaryColor = data.vendorBranding?.primaryColor || '#10b981';
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : emeraldGreen;
+  };
+  const primaryRgb = hexToRgb(primaryColor);
+  
+  // Header with gemstone motif
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(0, 0, pageWidth, 45, 'F');
+  
+  // Gemstone pattern accent (hexagonal shapes)
+  doc.setFillColor(255, 255, 255);
+  doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+  for (let i = 0; i < 6; i++) {
+    const x = 15 + i * 35;
+    doc.moveTo(x, 22);
+    doc.lineTo(x + 6, 12);
+    doc.lineTo(x + 14, 12);
+    doc.lineTo(x + 20, 22);
+    doc.lineTo(x + 14, 32);
+    doc.lineTo(x + 6, 32);
+    doc.close();
+    doc.fill();
+  }
+  doc.setGState(new (doc as any).GState({ opacity: 1 }));
+  
+  // Invoice Type Label
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(255, 255, 255);
+  const invoiceTypeLabel = getInvoiceTypeLabel(data.invoiceType);
+  doc.text(invoiceTypeLabel, pageWidth - 20, 12, { align: 'right' });
+  
+  // Main Title
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('GEMSTONE INVOICE', 20, 28);
+  
+  // Invoice Number
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Invoice: ${data.invoiceNumber}`, 20, 38);
+  
+  // Vendor logo on header right
+  let logoWidth = 0;
+  if (data.vendorBranding?.logo) {
+    try {
+      const logoBase64 = await loadImageAsBase64(data.vendorBranding.logo);
+      if (logoBase64) {
+        // Add white background for logo
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(pageWidth - 45, 8, 30, 30, 2, 2, 'F');
+        doc.addImage(logoBase64, 'PNG', pageWidth - 43, 10, 26, 26);
+        logoWidth = 35;
+      }
+    } catch (error) {
+      console.error('Error loading logo:', error);
+    }
+  }
+  
+  // Vendor info on header right (adjusted for logo)
+  const vendorTextX = logoWidth > 0 ? pageWidth - 50 : pageWidth - 20;
+  if (data.vendorBranding?.name) {
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.vendorBranding.name, vendorTextX, 28, { align: 'right' });
+  }
+  if (data.vendorBranding?.phone) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Tel: ${data.vendorBranding.phone}`, vendorTextX, 38, { align: 'right' });
+  }
+  
+  let yPos = 55;
+  
+  // Date and Payment Status Row
+  doc.setFillColor(crystalWhite.r, crystalWhite.g, crystalWhite.b);
+  doc.rect(0, yPos, pageWidth, 18, 'F');
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+  doc.text(`Date: ${data.invoiceDate}`, 20, yPos + 11);
+  
+  if (data.paymentDueDate) {
+    doc.text(`Due: ${data.paymentDueDate}`, 80, yPos + 11);
+  }
+  
+  // Payment Status Badge
+  if (data.status) {
+    const statusColors: Record<string, { bg: [number, number, number]; text: [number, number, number] }> = {
+      paid: { bg: [220, 252, 231], text: [22, 163, 74] },
+      partial: { bg: [254, 249, 195], text: [202, 138, 4] },
+      pending: { bg: [254, 226, 226], text: [220, 38, 38] },
+    };
+    const statusConfig = statusColors[data.status] || statusColors.pending;
+    const statusText = data.status.toUpperCase();
+    const statusWidth = doc.getTextWidth(statusText) + 12;
+    
+    doc.setFillColor(...statusConfig.bg);
+    doc.roundedRect(pageWidth - 20 - statusWidth, yPos + 4, statusWidth, 10, 2, 2, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...statusConfig.text);
+    doc.text(statusText, pageWidth - 20 - statusWidth + 6, yPos + 11);
+  }
+  
+  yPos += 25;
+  
+  // Customer Information Section
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.text('BILL TO', 20, yPos);
+  
+  yPos += 6;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+  
+  if (data.customerName) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.customerName, 20, yPos);
+    yPos += 5;
+    doc.setFont('helvetica', 'normal');
+  }
+  if (data.customerPhone) {
+    doc.text(`Phone: ${data.customerPhone}`, 20, yPos);
+    yPos += 5;
+  }
+  if (data.customerEmail) {
+    doc.text(`Email: ${data.customerEmail}`, 20, yPos);
+    yPos += 5;
+  }
+  if (data.customerAddress) {
+    const addressLines = doc.splitTextToSize(data.customerAddress, 80);
+    doc.text(addressLines, 20, yPos);
+    yPos += addressLines.length * 5;
+  }
+  
+  yPos += 10;
+  
+  // Gemstone Specifications Table Header
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(15, yPos, pageWidth - 30, 10, 'F');
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('GEMSTONE SPECIFICATIONS', 20, yPos + 7);
+  doc.text('AMOUNT', pageWidth - 20, yPos + 7, { align: 'right' });
+  
+  yPos += 15;
+  
+  // Collect certificate images for later
+  const certificateImages: { itemName: string; imageUrl: string }[] = [];
+  
+  // Line items for gemstones
+  if (data.lineItems && data.lineItems.length > 0) {
+    for (let index = 0; index < data.lineItems.length; index++) {
+      const item = data.lineItems[index];
+      
+      // Alternate row background
+      if (index % 2 === 0) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(15, yPos - 4, pageWidth - 30, 44, 'F');
+      }
+      
+      // Item name with certificate indicator
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+      const itemName = item.item_name || item.gemstone_type || `Gemstone ${index + 1}`;
+      doc.text(itemName, 20, yPos);
+      
+      // If certificate exists, add indicator and store for later
+      if (item.certificate_image_url) {
+        certificateImages.push({ itemName, imageUrl: item.certificate_image_url });
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        doc.text('(Certificate - Page 2)', 20 + doc.getTextWidth(itemName) + 5, yPos);
+      }
+      
+      // Gemstone specifications
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+      
+      let specY = yPos + 5;
+      const specs = [];
+      if (item.gemstone_type) specs.push(`Type: ${item.gemstone_type}`);
+      if (item.gemstone_weight) specs.push(`Weight: ${item.gemstone_weight} ct`);
+      if (item.gemstone_color) specs.push(`Color: ${item.gemstone_color}`);
+      if (item.gemstone_clarity) specs.push(`Clarity: ${item.gemstone_clarity}`);
+      if (item.gemstone_origin) specs.push(`Origin: ${item.gemstone_origin}`);
+      if (item.gemstone_treatment) specs.push(`Treatment: ${item.gemstone_treatment}`);
+      if (item.gemstone_shape) specs.push(`Shape: ${item.gemstone_shape}`);
+      
+      const specLine1 = specs.slice(0, 3).join(' | ');
+      const specLine2 = specs.slice(3, 6).join(' | ');
+      const specLine3 = specs.slice(6).join(' | ');
+      
+      doc.text(specLine1, 20, specY);
+      if (specLine2) {
+        doc.text(specLine2, 20, specY + 4);
+      }
+      if (specLine3) {
+        doc.text(specLine3, 20, specY + 8);
+      }
+      
+      // Per carat price
+      if (item.gemstone_per_carat_price) {
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Rs. ${item.gemstone_per_carat_price.toLocaleString('en-IN')} /ct`, 20, specY + 14);
+      }
+      
+      // Certification info
+      if (item.diamond_certification) {
+        doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+        doc.text(`Cert: ${item.diamond_certification}`, 20, specY + 18);
+      }
+      
+      // Subtotal
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+      doc.text(formatCurrency(item.gemstone_cost || item.subtotal || 0), pageWidth - 20, yPos, { align: 'right' });
+      
+      yPos += 48;
+    }
+  } else {
+    // Single gemstone info from main data
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, yPos - 4, pageWidth - 30, 25, 'F');
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    doc.text('Loose Gemstone', 20, yPos);
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+    doc.text(`Weight: ${data.netWeight || 0} ct`, 20, yPos + 5);
+    
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text(formatCurrency(data.gemstoneCost || 0), pageWidth - 20, yPos, { align: 'right' });
+    
+    yPos += 30;
+  }
+  
+  // Cost breakdown section
+  yPos += 5;
+  doc.setDrawColor(accentSilver.r, accentSilver.g, accentSilver.b);
+  doc.setLineWidth(0.3);
+  doc.line(15, yPos, pageWidth - 15, yPos);
+  yPos += 8;
+  
+  // Additional costs
+  const additionalCosts = [
+    { label: 'Certification Cost', value: data.certificationCost },
+    { label: 'Shipping Charges', value: data.shippingCharges },
+  ].filter(c => c.value && c.value > 0);
+  
+  if (additionalCosts.length > 0) {
+    doc.setFontSize(9);
+    additionalCosts.forEach(cost => {
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+      doc.text(cost.label, 20, yPos);
+      doc.text(formatCurrency(cost.value || 0), pageWidth - 20, yPos, { align: 'right' });
+      yPos += 6;
+    });
+  }
+  
+  // GST if applicable
+  if (data.gstMode === 'sgst_cgst' && (data.sgstAmount || data.cgstAmount)) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    if (data.sgstAmount) {
+      doc.text(`SGST (${data.sgstPercentage}%)`, 20, yPos);
+      doc.text(formatCurrency(data.sgstAmount), pageWidth - 20, yPos, { align: 'right' });
+      yPos += 6;
+    }
+    if (data.cgstAmount) {
+      doc.text(`CGST (${data.cgstPercentage}%)`, 20, yPos);
+      doc.text(formatCurrency(data.cgstAmount), pageWidth - 20, yPos, { align: 'right' });
+      yPos += 6;
+    }
+  } else if (data.gstMode === 'igst' && data.igstAmount) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    doc.text(`IGST (${data.igstPercentage}%)`, 20, yPos);
+    doc.text(formatCurrency(data.igstAmount), pageWidth - 20, yPos, { align: 'right' });
+    yPos += 6;
+  }
+  
+  yPos += 5;
+  
+  // Grand Total Box
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.roundedRect(pageWidth - 95, yPos, 80, 22, 3, 3, 'F');
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('GRAND TOTAL', pageWidth - 90, yPos + 8);
+  
+  doc.setFontSize(14);
+  doc.text(formatCurrency(data.grandTotal || data.finalSellingPrice || 0), pageWidth - 90, yPos + 17);
+  
+  // USD Equivalent
+  if (data.exchangeRate && data.grandTotal) {
+    yPos += 28;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+    const usdAmount = (data.grandTotal / data.exchangeRate).toFixed(2);
+    doc.text(`USD Equivalent: $ ${Number(usdAmount).toLocaleString('en-US')} (Rate: ${data.exchangeRate})`, pageWidth - 20, yPos, { align: 'right' });
+  }
+  
+  // Notes section
+  if (data.invoiceNotes) {
+    yPos += 15;
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(15, yPos, pageWidth - 30, 25, 2, 2, 'F');
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text('NOTES', 20, yPos + 6);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+    const noteLines = doc.splitTextToSize(data.invoiceNotes, pageWidth - 50);
+    doc.text(noteLines.slice(0, 2), 20, yPos + 12);
+  }
+  
+  // Footer
+  const footerY = pageHeight - 25;
+  doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.setLineWidth(0.5);
+  doc.line(15, footerY, pageWidth - 15, footerY);
+  
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+  doc.text('Thank you for your business', pageWidth / 2, footerY + 6, { align: 'center' });
+  
+  if (data.vendorBranding?.email || data.vendorBranding?.phone) {
+    let contactInfo = '';
+    if (data.vendorBranding.phone) contactInfo += `Tel: ${data.vendorBranding.phone}`;
+    if (data.vendorBranding.phone && data.vendorBranding.email) contactInfo += ' | ';
+    if (data.vendorBranding.email) contactInfo += `Email: ${data.vendorBranding.email}`;
+    doc.text(contactInfo, pageWidth / 2, footerY + 12, { align: 'center' });
+  }
+  
+  // Calculate total pages
+  const totalPages = certificateImages.length > 0 ? 2 : 1;
+  
+  // Page number
+  doc.setFontSize(7);
+  doc.text(`Page 1 of ${totalPages}`, pageWidth - 20, footerY + 18, { align: 'right' });
+  
+  // Add certificate images page if any certificates exist
+  if (certificateImages.length > 0) {
+    doc.addPage();
+    let certYPos = 20;
+    
+    // Certificate page header
+    doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+    
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('GEMSTONE CERTIFICATES', 20, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Invoice: ${data.invoiceNumber}`, pageWidth - 20, 20, { align: 'right' });
+    
+    certYPos = 45;
+    
+    // Load and add certificate images
+    for (let i = 0; i < certificateImages.length; i++) {
+      const cert = certificateImages[i];
+      
+      // Check if we need a new page (leave room for image + caption)
+      if (certYPos > pageHeight - 100) {
+        doc.addPage();
+        certYPos = 20;
+      }
+      
+      // Certificate label
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(deepGray.r, deepGray.g, deepGray.b);
+      doc.text(`Certificate for: ${cert.itemName}`, 20, certYPos);
+      certYPos += 8;
+      
+      // Try to load and embed the certificate image
+      try {
+        const imageData = await loadImageAsBase64(cert.imageUrl);
+        if (imageData) {
+          // Calculate image dimensions to fit the page
+          const maxWidth = pageWidth - 40;
+          const maxHeight = 120;
+          
+          // Add image with border
+          doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+          doc.setLineWidth(0.5);
+          doc.rect(19, certYPos - 1, maxWidth + 2, maxHeight + 2, 'S');
+          
+          doc.addImage(imageData, 'JPEG', 20, certYPos, maxWidth, maxHeight);
+          certYPos += maxHeight + 15;
+        } else {
+          // Fallback if image fails to load
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+          doc.text('Certificate image could not be loaded', 20, certYPos);
+          certYPos += 15;
+        }
+      } catch (error) {
+        console.error('Error loading certificate image:', error);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+        doc.text('Certificate image could not be loaded', 20, certYPos);
+        certYPos += 15;
+      }
+    }
+    
+    // Footer on certificate page
+    const certFooterY = pageHeight - 15;
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(accentSilver.r, accentSilver.g, accentSilver.b);
+    doc.text(`Page 2 of ${totalPages}`, pageWidth - 20, certFooterY, { align: 'right' });
+    
+    if (data.vendorBranding?.name) {
+      doc.text(data.vendorBranding.name, 20, certFooterY);
+    }
+  }
+  
+  const fileName = `Invoice_${data.invoiceNumber.replace(/[^a-z0-9]/gi, '_')}_Gemstone.pdf`;
   doc.save(fileName);
 };

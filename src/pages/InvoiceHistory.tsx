@@ -60,7 +60,10 @@ const InvoiceHistory = () => {
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
-  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [paymentDateDialogOpen, setPaymentDateDialogOpen] = useState(false);
+  const [paymentDateInvoice, setPaymentDateInvoice] = useState<Invoice | null>(null);
+  const [selectedPaymentDate, setSelectedPaymentDate] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchInvoices();
@@ -70,7 +73,7 @@ const InvoiceHistory = () => {
     filterInvoices();
   }, [searchTerm, statusFilter, paymentStatusFilter, invoices, dateFrom, dateTo]);
 
-  const fetchInvoices = async () => {
+const fetchInvoices = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -81,7 +84,7 @@ const InvoiceHistory = () => {
 
       const { data, error } = await supabase
         .from("manufacturing_cost_estimates")
-        .select("*")
+        .select("id, invoice_number, invoice_date, customer_name, customer_email, customer_phone, final_selling_price, status, invoice_status, payment_date, payment_due_date, estimate_name, created_at, last_reminder_sent_at")
         .eq("user_id", user.id)
         .eq("is_invoice_generated", true)
         .not("invoice_number", "is", null)
@@ -249,11 +252,21 @@ const InvoiceHistory = () => {
     }
   };
 
-  const handlePaymentStatusUpdate = async (invoiceId: string, newPaymentStatus: string) => {
+  const handlePaymentStatusChange = (invoice: Invoice, newStatus: string) => {
+    if (newStatus === "paid") {
+      setPaymentDateInvoice(invoice);
+      setSelectedPaymentDate(new Date());
+      setPaymentDateDialogOpen(true);
+    } else {
+      handlePaymentStatusUpdate(invoice.id, newStatus, null);
+    }
+  };
+
+  const handlePaymentStatusUpdate = async (invoiceId: string, newPaymentStatus: string, paymentDate: Date | null) => {
     try {
       const updateData: any = { invoice_status: newPaymentStatus };
-      if (newPaymentStatus === "paid") {
-        updateData.payment_date = new Date().toISOString();
+      if (newPaymentStatus === "paid" && paymentDate) {
+        updateData.payment_date = paymentDate.toISOString();
       } else if (newPaymentStatus === "pending" || newPaymentStatus === "cancelled") {
         updateData.payment_date = null;
       }
@@ -271,6 +284,13 @@ const InvoiceHistory = () => {
       console.error("Error updating payment status:", error);
       toast.error("Failed to update payment status");
     }
+  };
+
+  const handleConfirmPaymentDate = async () => {
+    if (!paymentDateInvoice) return;
+    await handlePaymentStatusUpdate(paymentDateInvoice.id, "paid", selectedPaymentDate);
+    setPaymentDateDialogOpen(false);
+    setPaymentDateInvoice(null);
   };
 
   const handleSendPaymentReminder = async (invoice: Invoice) => {
@@ -603,9 +623,33 @@ const InvoiceHistory = () => {
             </div>
 
             {loading ? (
-              <div className="text-center py-16">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                <p className="text-muted-foreground text-lg">Loading invoices...</p>
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="rounded-lg border bg-card p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="h-5 w-5 bg-muted animate-pulse rounded mt-1" />
+                        <div className="space-y-3 flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-36 bg-muted animate-pulse rounded-lg" />
+                            <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
+                            <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                            <div className="h-4 w-40 bg-muted animate-pulse rounded" />
+                          </div>
+                          <div className="h-7 w-32 bg-muted animate-pulse rounded" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <div className="h-9 w-24 bg-muted animate-pulse rounded" />
+                        <div className="h-9 w-24 bg-muted animate-pulse rounded" />
+                        <div className="h-9 w-20 bg-muted animate-pulse rounded" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredInvoices.length === 0 ? (
               <div className="text-center py-16">
@@ -709,14 +753,14 @@ const InvoiceHistory = () => {
                             <div className="flex flex-wrap gap-2 pt-2">
                               <Select 
                                 value={invoice.invoice_status || "pending"}
-                                onValueChange={(value) => handlePaymentStatusUpdate(invoice.id, value)}
+                                onValueChange={(value) => handlePaymentStatusChange(invoice, value)}
                               >
                                 <SelectTrigger className="w-[150px] h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="paid">Paid</SelectItem>
+                                  <SelectItem value="paid">Mark as Paid</SelectItem>
                                   <SelectItem value="overdue">Overdue</SelectItem>
                                   <SelectItem value="cancelled">Cancelled</SelectItem>
                                 </SelectContent>
@@ -786,6 +830,44 @@ const InvoiceHistory = () => {
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete Invoice
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={paymentDateDialogOpen} onOpenChange={setPaymentDateDialogOpen}>
+          <AlertDialogContent className="sm:max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                Mark Invoice as Paid
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Select the payment date for invoice <strong>{paymentDateInvoice?.invoice_number}</strong>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-sm font-medium text-muted-foreground">Payment Date</div>
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedPaymentDate}
+                  onSelect={(date) => date && setSelectedPaymentDate(date)}
+                  className="rounded-md border"
+                  initialFocus
+                />
+                <div className="text-sm text-muted-foreground">
+                  Selected: <span className="font-medium text-foreground">{format(selectedPaymentDate, "MMMM dd, yyyy")}</span>
+                </div>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setPaymentDateInvoice(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmPaymentDate}
+                className="bg-green-600 text-white hover:bg-green-700"
+              >
+                Confirm Payment
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
