@@ -9,28 +9,35 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Link, useNavigate } from "react-router-dom";
-import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler, GraduationCap, HelpCircle } from "lucide-react";
+import { Gem, Calculator, Wrench, Menu, Grid3X3, Ruler, GraduationCap, X, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useVendorProfile } from "@/hooks/useVendorProfile";
+import { useState } from "react";
 
 export const Header = () => {
   const navigate = useNavigate();
   const { vendorName } = useVendorProfile();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-top">
+      <div className="container flex h-14 sm:h-16 items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80 touch-active">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
               <Gem className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold hidden sm:inline-block">Cataleon</span>
+            <span className="text-base sm:text-lg font-bold">Cataleon</span>
           </Link>
           {vendorName && (
-            <span className="text-sm text-muted-foreground hidden md:inline-block">
+            <span className="text-sm text-muted-foreground hidden lg:inline-block">
               Hello, <span className="font-semibold text-foreground">{vendorName}</span>
             </span>
           )}
@@ -205,101 +212,155 @@ export const Header = () => {
         </div>
 
         {/* Mobile Navigation */}
-        <Sheet>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="touch-target">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[300px]">
-            <nav className="flex flex-col gap-4 mt-8">
-              <Link
-                to="/pricing"
-                className="text-lg font-medium transition-colors hover:text-primary"
-              >
-                Pricing
-              </Link>
-              
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-muted-foreground">Tools</p>
+          <SheetContent side="right" className="w-full sm:w-[350px] p-0 safe-top">
+            <SheetHeader className="p-4 border-b">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-diamond-from">
+                    <Gem className="h-5 w-5 text-white" />
+                  </div>
+                  <SheetTitle className="text-lg font-bold">Menu</SheetTitle>
+                </div>
+              </div>
+            </SheetHeader>
+            
+            <nav className="flex flex-col overflow-y-auto scroll-smooth-mobile" style={{ height: 'calc(100vh - 140px)' }}>
+              {/* Main Navigation */}
+              <div className="p-4 space-y-1">
                 <button
-                  onClick={() => navigate("/diamond-calculator")}
-                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => handleNavigate("/pricing")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-diamond-from to-diamond-to">
-                    <Calculator className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Diamond Calculator</div>
-                    <div className="text-xs text-muted-foreground">Price diamonds accurately</div>
-                  </div>
+                  <span className="text-base font-medium">Pricing</span>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>
+                
                 <button
-                  onClick={() => navigate("/manufacturing-cost")}
-                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => handleNavigate("/about")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-jewellery-from to-jewellery-to">
-                    <Wrench className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Cost Estimator</div>
-                    <div className="text-xs text-muted-foreground">Calculate manufacturing costs</div>
-                  </div>
+                  <span className="text-base font-medium">About</span>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>
+                
                 <button
-                  onClick={() => navigate("/diamond-sizing-chart")}
-                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => handleNavigate("/contact")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500">
-                    <Ruler className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Diamond Sizing Chart</div>
-                    <div className="text-xs text-muted-foreground">Diamond dimensions & measurements</div>
-                  </div>
+                  <span className="text-base font-medium">Contact</span>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>
+                
                 <button
-                  onClick={() => navigate("/diamond-sieve-chart")}
-                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => handleNavigate("/faq")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
-                    <Grid3X3 className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Diamond Sieve Chart</div>
-                    <div className="text-xs text-muted-foreground">Sieve sizes & carat reference</div>
-                  </div>
+                  <span className="text-base font-medium">FAQ</span>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>
               </div>
 
-              <Link
-                to="/about"
-                className="text-lg font-medium transition-colors hover:text-primary"
-              >
-                About
-              </Link>
-              <Link
-                to="/contact"
-                className="text-lg font-medium transition-colors hover:text-primary"
-              >
-                Contact
-              </Link>
-              <Link
-                to="/faq"
-                className="text-lg font-medium transition-colors hover:text-primary"
-              >
-                FAQ
-              </Link>
-
-              <div className="pt-4 border-t space-y-2">
-                <Button variant="outline" className="w-full" onClick={() => navigate("/auth")}>
-                  Sign In
-                </Button>
-                <Button className="w-full" onClick={() => navigate("/catalog")}>
-                  Access Catalog
-                </Button>
+              {/* Tools Section */}
+              <div className="px-4 pb-4">
+                <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tools</p>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => handleNavigate("/diamond-calculator")}
+                    className="flex items-center gap-3 w-full text-left p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-diamond-from to-diamond-to shadow-md">
+                      <Calculator className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">Diamond Calculator</div>
+                      <div className="text-xs text-muted-foreground truncate">Price diamonds accurately</div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </button>
+                  
+                  <button
+                    onClick={() => handleNavigate("/manufacturing-cost")}
+                    className="flex items-center gap-3 w-full text-left p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-jewellery-from to-jewellery-to shadow-md">
+                      <Wrench className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">Cost Estimator</div>
+                      <div className="text-xs text-muted-foreground truncate">Calculate manufacturing costs</div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </button>
+                  
+                  <button
+                    onClick={() => handleNavigate("/diamond-sizing-chart")}
+                    className="flex items-center gap-3 w-full text-left p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-md">
+                      <Ruler className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">Diamond Sizing Chart</div>
+                      <div className="text-xs text-muted-foreground truncate">Dimensions & measurements</div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </button>
+                  
+                  <button
+                    onClick={() => handleNavigate("/diamond-sieve-chart")}
+                    className="flex items-center gap-3 w-full text-left p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-md">
+                      <Grid3X3 className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">Diamond Sieve Chart</div>
+                      <div className="text-xs text-muted-foreground truncate">Sieve sizes & carat reference</div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </button>
+                  
+                  <button
+                    onClick={() => handleNavigate("/diamond-education")}
+                    className="flex items-center gap-3 w-full text-left p-4 rounded-xl hover:bg-accent active:bg-accent/80 transition-colors touch-active"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-md">
+                      <GraduationCap className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">Diamond Education</div>
+                      <div className="text-xs text-muted-foreground truncate">Interactive learning modules</div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </button>
+                </div>
               </div>
             </nav>
+
+            {/* Fixed Bottom Actions */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-background safe-bottom">
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-12 text-base touch-active" 
+                  onClick={() => handleNavigate("/auth")}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  className="flex-1 h-12 text-base touch-active" 
+                  onClick={() => handleNavigate("/catalog")}
+                >
+                  Catalog
+                </Button>
+              </div>
+            </div>
           </SheetContent>
         </Sheet>
       </div>

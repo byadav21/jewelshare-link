@@ -9,32 +9,32 @@ export const Footer = () => {
   return (
     <>
       <BackToTop />
-      <footer className="border-t bg-card/50 backdrop-blur-sm">
-      <div className="container mx-auto px-4 py-16">
+      <footer className="border-t bg-card/50 backdrop-blur-sm safe-bottom">
+      <div className="container mx-auto px-4 py-10 sm:py-12 md:py-16">
         <ScrollReveal>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
             {/* Brand */}
-            <div className="lg:col-span-1">
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-jewellery-from to-jewellery-to">
-                  <Gem className="h-5 w-5 text-white" />
+            <div className="col-span-2 sm:col-span-2 lg:col-span-1">
+              <div className="mb-3 sm:mb-4 flex items-center gap-2">
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-br from-jewellery-from to-jewellery-to">
+                  <Gem className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">Cataleon</span>
+                <span className="text-lg sm:text-xl font-bold">Cataleon</span>
               </div>
-              <p className="mb-4 text-sm text-muted-foreground">
+              <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground">
                 The complete platform for jewelry vendors to manage inventory, share catalogs, and grow their business.
               </p>
-              <div className="flex gap-3">
-                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground">
+              <div className="flex gap-2 sm:gap-3">
+                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground touch-active">
                   <Facebook className="h-4 w-4" />
                 </a>
-                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground">
+                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground touch-active">
                   <Twitter className="h-4 w-4" />
                 </a>
-                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground">
+                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground touch-active">
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground">
+                <a href="#" className="rounded-lg bg-muted p-2 transition-colors hover:bg-primary hover:text-primary-foreground touch-active">
                   <Linkedin className="h-4 w-4" />
                 </a>
               </div>
